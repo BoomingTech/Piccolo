@@ -1,0 +1,8 @@
+{
+    "sub_meshes": [
+      {
+        "obj_file_ref": "asset/objects/environment/floor/mesh/floor.obj",
+        "material": "asset/objects/environment/_material/white.material.json"
+      }
+    ]
+  }

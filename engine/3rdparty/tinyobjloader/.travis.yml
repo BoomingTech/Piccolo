@@ -1,0 +1,56 @@
+language: cpp
+sudo: required
+matrix:
+  include:
+  - addons: &1
+      apt:
+        sources:
+        - george-edison55-precise-backports
+        - ubuntu-toolchain-r-test
+        - llvm-toolchain-precise-3.7
+        packages:
+        - cmake
+        - cmake-data
+        - ninja-build
+        - g++-4.9
+        - clang-3.7
+    compiler: clang
+    env: DEPLOY_BUILD=1 COMPILER_VERSION=3.7 BUILD_TYPE=Debug
+  - addons: *1
+    compiler: clang
+    env: COMPILER_VERSION=3.7 BUILD_TYPE=Release
+  - addons: &2
+      apt:
+        sources:
+        - george-edison55-precise-backports
+        - ubuntu-toolchain-r-test
+        packages:
+        - cmake
+        - cmake-data
+        - ninja-build
+        - g++-4.9
+    compiler: gcc
+    env: COMPILER_VERSION=4.9 BUILD_TYPE=Debug
+  - addons: *2
+    compiler: gcc
+    env: COMPILER_VERSION=4.9 BUILD_TYPE=Release
+  - addons: *1
+    compiler: clang
+    env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug
+before_install:
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade; fi
+- if [ -n "$REPORT_COVERAGE" ]; then sudo apt-get update python; fi
+- if [ -n "$REPORT_COVERAGE" ]; then sudo apt-get install python-dev libffi-dev libssl-dev; fi
+- if [ -n "$REPORT_COVERAGE" ]; then sudo pip install --upgrade pip; fi
+- if [ -n "$REPORT_COVERAGE" ]; then CXX=g++ pip install --user requests[security]; fi
+- if [ -n "$REPORT_COVERAGE" ]; then CXX=g++ pip install --user cpp-coveralls; fi
+script:
+- cd tests
+- make check
+- if [ -n "$REPORT_COVERAGE" ]; then coveralls -b . -r .. -e examples -e tools -e
+  jni -e python -e images -E ".*CompilerId.*" -E ".*feature_tests.*" ; fi
+- cd ..
+- rm -rf dist
+- mkdir dist
+- cp tiny_obj_loader.h dist/
+

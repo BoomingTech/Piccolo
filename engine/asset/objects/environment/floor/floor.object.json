@@ -1,0 +1,5 @@
+{
+  "components": [
+      "asset/objects/environment/floor/mesh/floor.mesh.component.json"
+  ]
+}

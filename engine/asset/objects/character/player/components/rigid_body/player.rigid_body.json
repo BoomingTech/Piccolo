@@ -1,0 +1,28 @@
+{
+  "shapes": [
+    {
+      "$context":{
+        "local_transform": {
+          "translation" : {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "rotate": {},
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "half_extents": {
+          "x": 0.3,
+          "y": 0.3,
+          "z": 1
+        }
+      },
+      "$typeName": "RigidBodyBoxShape"
+    }
+  ],
+  "inverse_mass": 0.8
+}

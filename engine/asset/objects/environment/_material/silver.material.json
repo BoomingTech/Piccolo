@@ -1,0 +1,7 @@
+{
+  "base_colour_texture_file": "asset/objects/_textures/silver.tga",
+  "metallic_roughness_texture_file": "asset/objects/_textures/mr.tga",
+  "normal_texture_file": "asset/objects/_textures/n.tga",
+  "occlusion_texture_file": "",
+  "emissive_texture_file": ""
+}

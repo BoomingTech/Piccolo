@@ -1,0 +1,25 @@
+newmtl white
+Ka 0 0 0
+Kd 1 1 1
+Ks 0 0 0
+refl reflection.tga
+
+newmtl red
+Ka 0 0 0
+Kd 1 0 0
+Ks 0 0 0
+
+newmtl green
+Ka 0 0 0
+Kd 0 1 0
+Ks 0 0 0
+
+newmtl blue
+Ka 0 0 0
+Kd 0 0 1
+Ks 0 0 0
+
+newmtl light
+Ka 20 20 20
+Kd 1 1 1
+Ks 0 0 0

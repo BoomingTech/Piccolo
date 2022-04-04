@@ -1,0 +1,36 @@
+newmtl default
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0
+Kt 0.1 0.2 0.3
+map_Ka -clamp on ambient.jpg
+map_Kd -o 0.1 diffuse.jpg
+map_Ks -s 0.1 0.2 specular.jpg
+map_Ns -t 0.1 0.2 0.3 specular_highlight.jpg
+map_bump -bm 3 bumpmap.jpg
+
+newmtl bm2
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0
+Kt 0.1 0.2 0.3
+# blendu
+map_Kd -blendu on diffuse.jpg
+map_Ks -blendv off specular.jpg
+map_Ns -mm 0.1 0.3 specular_highlight.jpg
+# -bm after filename
+map_bump -imfchan r bumpmap2.jpg -bm 1.5
+
+newmtl bm3
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0
+Kt 0.1 0.2 0.3
+# type
+map_Kd -type sphere diffuse.jpg
+map_Ks -type cube_top specular.jpg
+map_Ns -type cube_bottom specular_highlight.jpg
+map_Ka -type cube_left ambient.jpg
+map_d -type cube_right alpha.jpg
+map_bump -type cube_front bump.jpg
+disp -type cube_back displacement.jpg

@@ -1,0 +1,4 @@
+{
+  "type_name": "RigidBodyComponent",
+  "component": "asset/objects/environment/wall/rigid_body/wall.rigid_body.json"
+}

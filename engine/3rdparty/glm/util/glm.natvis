@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- GLM visualizers for Visual Studio -->
+<!-- Copy this file to -->
+<!-- %USERPROFILE%\Douments\Visual Studio 2019\Visualizers\ (replace '2019' when necessary) -->
+<!-- or -->
+<!-- %VSINSTALLDIR%\Common7\Packages\Debugger\Visualizers\ (requires admin access) -->
+<!-- See also https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<Type Name="glm::vec&lt;1,*&gt;">
+		<DisplayString>{x}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="glm::vec&lt;2,*&gt;">
+		<DisplayString>{x}, {y}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="glm::vec&lt;3,*&gt;">
+		<DisplayString>{x}, {y}, {z}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="glm::vec&lt;4,*&gt;">
+		<DisplayString>{x}, {y}, {z}, {w}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="glm::qua&lt;*&gt;">
+		<DisplayString>{x}, {y}, {z}, {w}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="glm::tdualquat&lt;*&gt;">
+		<DisplayString>(({real.x}, {real.y}, {real.z}), {real.w}), (({dual.x}, {dual.y}, {dual.z}), {dual.w})</DisplayString>
+		<Expand>
+			<Item Name="real">real</Item>
+			<Item Name="dual">dual</Item>
+		</Expand>
+	</Type>
+
+</AutoVisualizer>
+

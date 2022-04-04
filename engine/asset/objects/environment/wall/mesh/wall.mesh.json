@@ -1,0 +1,8 @@
+{
+  "sub_meshes": [
+    {
+      "obj_file_ref": "asset/objects/environment/wall/mesh/wall.obj",
+      "material": "asset/objects/environment/_material/gold.material.json"
+    }
+  ]
+}

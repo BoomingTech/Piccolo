@@ -1,0 +1,7 @@
+{
+  "base_colour_texture_file": "asset/objects/character/player/components/mesh/_textures/xiaobairen1k_BaseColor.tga",
+  "metallic_roughness_texture_file": "asset/objects/character/player/components/mesh/_textures/xiaobairen1k_OcclusionRoughnessMetallic.tga",
+  "normal_texture_file": "asset/objects/character/player/components/mesh/_textures/xiaobairen1k_Normal.tga",
+  "occlusion_texture_file": "",
+  "emissive_texture_file": "asset/objects/character/player/components/mesh/_textures/xiaobairen1k_Emissive.tga"
+}

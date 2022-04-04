@@ -1,0 +1,11 @@
+newmtl None
+Ka 0 0 0
+Kd 0 0 1
+Ks 0 0 0
+
+newmtl None1
+Ka 0 0 0
+Kd 1 0 0
+Ks 0 0 0
+
+

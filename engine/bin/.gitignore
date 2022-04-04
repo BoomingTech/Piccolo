@@ -1,0 +1,7 @@
+!*.exe
+!*.dll
+!*.dylib
+!x64/
+!macOS/
+!Linux/
+*.json
