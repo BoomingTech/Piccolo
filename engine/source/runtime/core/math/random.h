@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cfloat>
-#include <execution>
+#include <exception>
 #include <random>
 
 namespace Chaos
