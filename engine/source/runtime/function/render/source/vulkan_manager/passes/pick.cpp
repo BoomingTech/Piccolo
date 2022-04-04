@@ -35,7 +35,8 @@ namespace Pilot
                                  m_p_vulkan_context->_swapchain_extent.width,
                                  m_p_vulkan_context->_swapchain_extent.height,
                                  _framebuffer.attachments[0].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
+                                 // use linear tiling to avoid pick problem on some machine
+                                 VK_IMAGE_TILING_LINEAR,
                                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                  _framebuffer.attachments[0].image,

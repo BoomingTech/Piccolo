@@ -49,16 +49,21 @@ void Pilot::PVulkanManager::beginFrame()
                               VK_NULL_HANDLE,
                               &m_current_swapchain_image_index);
 
-    if (acquire_image_result == VK_ERROR_OUT_OF_DATE_KHR)
+    if (acquire_image_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_image_result == VK_SUBOPTIMAL_KHR)
     {
         recreateSwapChain();
         m_frame_swapchain_image_acquired[m_current_frame_index] = false;
-        return;
-    }
-    else if (acquire_image_result == VK_SUBOPTIMAL_KHR)
-    {
-        recreateSwapChain();
-        m_frame_swapchain_image_acquired[m_current_frame_index] = false;
+
+        // recreate semaphore to avoid vulkan validation error on some machine
+        vkDestroySemaphore(
+            m_vulkan_context._device, m_image_available_for_render_semaphores[m_current_frame_index], nullptr);
+        VkSemaphoreCreateInfo semaphore_create_info {};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        vkCreateSemaphore(m_vulkan_context._device,
+                          &semaphore_create_info,
+                          nullptr,
+                          &m_image_available_for_render_semaphores[m_current_frame_index]);
+
         return;
     }
     else
