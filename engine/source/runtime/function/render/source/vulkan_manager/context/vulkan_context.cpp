@@ -323,24 +323,28 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
         std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
         vkEnumeratePhysicalDevices(_instance, &physical_device_count, physical_devices.data());
 
-        std::vector<std::pair<int,VkPhysicalDevice>> ranked_physical_devices;
-        for(const auto& device : physical_devices) {
+        std::vector<std::pair<int, VkPhysicalDevice>> ranked_physical_devices;
+        for (const auto& device : physical_devices)
+        {
             VkPhysicalDeviceProperties physical_device_properties;
             vkGetPhysicalDeviceProperties(device, &physical_device_properties);
             int score = 0;
 
-            if(physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-                score += 1000;  
-            } else if(physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+            if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            {
+                score += 1000;
+            }
+            else if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+            {
                 score += 100;
             }
 
-            ranked_physical_devices.push_back({score,device});
+            ranked_physical_devices.push_back({score, device});
         }
 
         std::sort(ranked_physical_devices.begin(), ranked_physical_devices.end());
         std::reverse(ranked_physical_devices.begin(), ranked_physical_devices.end());
-        
+
         for (const auto& device : ranked_physical_devices)
         {
             if (isDeviceSuitable(device.second))
