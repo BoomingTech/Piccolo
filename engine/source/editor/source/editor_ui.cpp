@@ -1,6 +1,6 @@
 #include "editor/include/editor_ui.h"
 
-#include "editor//include/editor.h"
+#include "editor/include/editor.h"
 
 #include "runtime/core/base/macro.h"
 #include "runtime/core/meta/reflection/reflection.h"
@@ -284,7 +284,7 @@ namespace Pilot
         showEditorWorldObjectsWindow(&asset_window_open);
         showEditorGameWindow(&game_engine_window_open);
         showEditorFileContentWindow(&file_content_window_open);
-        showEditorDetialWindow(&detail_window_open);
+        showEditorDetailWindow(&detail_window_open);
     }
 
     void EditorUI::showEditorMenu(bool* p_open)
@@ -490,7 +490,7 @@ namespace Pilot
         delete[] fields;
     }
 
-    void EditorUI::showEditorDetialWindow(bool* p_open)
+    void EditorUI::showEditorDetailWindow(bool* p_open)
     {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 
@@ -662,9 +662,13 @@ namespace Pilot
         new_window_size.x       = ImGui::GetWindowSize().x;
         new_window_size.y       = ImGui::GetWindowSize().y - 38.0f;
 
+        float dpiScale = main_viewport->DpiScale;
         // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
-            m_editor->onWindowChanged(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
+            m_editor->onWindowChanged(dpiScale * new_window_pos.x,
+                                      dpiScale * new_window_pos.y,
+                                      dpiScale * new_window_size.x,
+                                      dpiScale * new_window_size.y);
 
             m_engine_window_pos  = new_window_pos;
             m_engine_window_size = new_window_size;
