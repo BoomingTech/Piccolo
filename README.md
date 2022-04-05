@@ -25,13 +25,13 @@ To build Pilot, you must first install the following tools.
 ### Ubuntu 20.04
  - apt install the following packages
 ```
-apt install git
-apt install cmake
-apt install clang
-apt install libxcb1-dev
-apt install libvulkan-dev
-apt install vulkan-validationlayers
-apt install mesa-vulkan-drivers
+sudo apt install git
+sudo apt install cmake
+sudo apt install clang
+sudo apt install libxcb1-dev
+sudo apt install libvulkan-dev
+sudo apt install vulkan-validationlayers
+sudo apt install mesa-vulkan-drivers
 ```  
 - [NVIDIA driver](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#runfile) (The AMD and Intel driver is open-source, and thus is installed automatically by mesa-vulkan-drivers)
 
