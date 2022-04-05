@@ -24,8 +24,8 @@ set(THIRD_PARTY_DIR "${ENGINE_ROOT_DIR}/3rdparty")
 set(ENGINE_ASSET_DIR "/asset")
 set(ENGINE_SCHEMA_DIR "/schema")
 
-if(WIN32)
-  add_definitions("/MP")
+if(MSVC)
+    add_compile_options("/MP")
 endif()
 
 set(vulkan_include ${THIRD_PARTY_DIR}/VulkanSDK/include)
