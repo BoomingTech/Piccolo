@@ -328,7 +328,15 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
             if (isDeviceSuitable(device))
             {
                 _physical_device = device;
-                break;
+
+                VkPhysicalDeviceProperties physical_device_properties;
+                vkGetPhysicalDeviceProperties(device, &physical_device_properties);
+
+                // Discrete GPU has higher priority
+                if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                {
+                    break;
+                }
             }
         }
 
