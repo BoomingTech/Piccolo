@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "runtime/core/math/math.h"
 #include "runtime/core/math/quaternion.h"
 #include "runtime/core/math/vector3.h"
