@@ -339,6 +339,7 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
         }
 
         std::sort(ranked_physical_devices.begin(), ranked_physical_devices.end());
+        std::reverse(ranked_physical_devices.begin(), ranked_physical_devices.end());
         
         for (const auto& device : ranked_physical_devices)
         {
