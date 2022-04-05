@@ -6,7 +6,7 @@
   </a>
 </p>
 
-**Pilot Engine** is a tiny game engine used for the [gams104](https://games104.boomingtech.com) course.
+**Pilot Engine** is a tiny game engine used for the [GAMES104](https://games104.boomingtech.com) course.
 
 ## Prerequisites
 
