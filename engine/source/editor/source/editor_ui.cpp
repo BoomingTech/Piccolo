@@ -655,16 +655,26 @@ namespace Pilot
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Press Left Alt key to display the mouse cursor!");
         }
 
+        auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
+
         Vector2 new_window_pos  = {0.0f, 0.0f};
         Vector2 new_window_size = {0.0f, 0.0f};
         new_window_pos.x        = ImGui::GetWindowPos().x;
-        new_window_pos.y        = ImGui::GetWindowPos().y + 38.0f;
+        new_window_pos.y        = ImGui::GetWindowPos().y + menu_bar_rect.Min.y;
         new_window_size.x       = ImGui::GetWindowSize().x;
-        new_window_size.y       = ImGui::GetWindowSize().y - 38.0f;
+        new_window_size.y       = ImGui::GetWindowSize().y - menu_bar_rect.Min.y;
 
-        // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
+        if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
+#if defined(__MACH__)
+            float dpi_scale = main_viewport->DpiScale;
+            m_editor->onWindowChanged(new_window_pos.x * dpi_scale,
+                                      new_window_pos.y * dpi_scale,
+                                      new_window_size.x * dpi_scale,
+                                      new_window_size.y * dpi_scale);
+#else
             m_editor->onWindowChanged(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
+#endif
 
             m_engine_window_pos  = new_window_pos;
             m_engine_window_size = new_window_size;
