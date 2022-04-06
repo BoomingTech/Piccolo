@@ -6,8 +6,8 @@ namespace Pilot
     {
         // create translation axis render mesh
 
-        float const radius   = 0.031f;
-        int const   segments = 12;
+        const float radius   = 0.031f;
+        const int   segments = 12;
 
         uint32_t stride = sizeof(Mesh_PosNormalTangentTex0Vertex);
         // vertex
@@ -154,9 +154,9 @@ namespace Pilot
     {
         // create rotation axis render mesh
 
-        float const inner_radius = 0.9f;
-        float const outer_radius = 1.0f;
-        int const   segments     = 24;
+        const float inner_radius = 0.9f;
+        const float outer_radius = 1.0f;
+        const int   segments     = 24;
 
         uint32_t stride = sizeof(Mesh_PosNormalTangentTex0Vertex);
         // vertex
@@ -300,8 +300,8 @@ namespace Pilot
 
     EditorScaleAxis::EditorScaleAxis()
     {
-        float const radius   = 0.031f;
-        int const   segments = 12;
+        const float radius   = 0.031f;
+        const int   segments = 12;
         // DynamicArray<Vector4> positions((2 * segments + 8) * 3 + 8);
 
         uint32_t stride = sizeof(Mesh_PosNormalTangentTex0Vertex);

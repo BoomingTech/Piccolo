@@ -73,13 +73,13 @@ namespace Pilot
                                      const Transform& world_transform_a,
                                      const Transform& world_transform_b,
                                      CollisionInfo&   collision_info);
-        static bool SphereIntersection(const float      sphere_a_radius,
-                                       const float      sphere_b_radius,
+        static bool SphereIntersection(float            sphere_a_radius,
+                                       float            sphere_b_radius,
                                        const Transform& world_transform_a,
                                        const Transform& world_transform_b,
                                        CollisionInfo&   collision_info);
         static bool AABBSphereIntersection(const Vector3&   box_size,
-                                           const float      sphere_radius,
+                                           float            sphere_radius,
                                            const Transform& world_transform_a,
                                            const Transform& world_transform_b,
                                            CollisionInfo&   collision_info);
@@ -89,7 +89,7 @@ namespace Pilot
                                     const Transform& world_transform_b,
                                     CollisionInfo&   collision_info);
         static bool OBBSphereIntersection(const Vector3&   box_size,
-                                          const float      sphere_radius,
+                                          float            sphere_radius,
                                           const Transform& world_transform_a,
                                           const Transform& world_transform_b,
                                           CollisionInfo&   collision_info);
@@ -108,7 +108,7 @@ namespace Pilot
                                        RayCollision&    collision);
         static bool RaySphereIntersection(const Ray&       r,
                                           const Transform& world_transform,
-                                          const float      sphere_radius,
+                                          float            sphere_radius,
                                           RayCollision&    collision);
     };
 } // namespace Pilot

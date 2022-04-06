@@ -39,8 +39,8 @@ namespace Pilot
         void destroy() override {}
 
     private:
-        void tickFirstPersonCamera(const float delta_time);
-        void tickThirdPersonCamera(const float delta_time);
+        void tickFirstPersonCamera(float delta_time);
+        void tickThirdPersonCamera(float delta_time);
         void tickFreeCamera();
     };
 } // namespace Pilot

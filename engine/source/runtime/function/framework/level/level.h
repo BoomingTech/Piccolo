@@ -22,14 +22,14 @@ namespace Pilot
         void load(const std::string& level_res_url);
         void save();
 
-        void tickAll(const float delta_time);
+        void tickAll(float delta_time);
 
         const std::string& getLevelResUrl() const { return m_level_res_url; }
 
         const std::unordered_map<size_t, GObject*>& getAllGObjects() const { return m_gobjects; }
-        GObject*                                    getGObjectByID(const size_t go_id) const;
+        GObject*                                    getGObjectByID(size_t go_id) const;
 
         const size_t createObject(const ObjectInstanceRes& object_instance_res);
-        void         deleteGObjectByID(const size_t go_id);
+        void         deleteGObjectByID(size_t go_id);
     };
 } // namespace Pilot

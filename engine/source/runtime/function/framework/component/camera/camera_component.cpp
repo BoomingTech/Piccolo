@@ -65,7 +65,7 @@ namespace Pilot
         }
     }
 
-    void CameraComponent::tickFirstPersonCamera(const float delta_time)
+    void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
         Quaternion q_yaw, q_pitch;
 
@@ -96,7 +96,7 @@ namespace Pilot
         parent_transform->setRotation(object_rotation);
     }
 
-    void CameraComponent::tickThirdPersonCamera(const float delta_time)
+    void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
         ThirdPersonCameraParameter* para = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
 

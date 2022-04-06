@@ -15,7 +15,7 @@ namespace Pilot
         Component {parent_object}, m_move_speed {motor_param.m_move_speed}, m_cct {motor_param.m_half_extent}
     {}
 
-    void MotorComponent::tick(const float delta_time)
+    void MotorComponent::tick(float delta_time)
     {
         if ((m_tick_in_editor_mode == false) && g_is_editor_mode)
             return;
@@ -23,7 +23,7 @@ namespace Pilot
         tickPlayerMotor(delta_time);
     }
 
-    void MotorComponent::tickPlayerMotor(const float delta_time)
+    void MotorComponent::tickPlayerMotor(float delta_time)
     {
 
         TransformComponent* transform_component =

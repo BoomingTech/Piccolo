@@ -488,12 +488,7 @@ namespace Pilot
         }
 
         //-----------------------------------------------------------------------
-        float getMinor(const size_t r0,
-                       const size_t r1,
-                       const size_t r2,
-                       const size_t c0,
-                       const size_t c1,
-                       const size_t c2) const
+        float getMinor(size_t r0, size_t r1, size_t r2, size_t c0, size_t c1, size_t c2) const
         {
             return m_mat[r0][c0] * (m_mat[r1][c1] * m_mat[r2][c2] - m_mat[r2][c1] * m_mat[r1][c2]) -
                    m_mat[r0][c1] * (m_mat[r1][c0] * m_mat[r2][c2] - m_mat[r2][c0] * m_mat[r1][c2]) +

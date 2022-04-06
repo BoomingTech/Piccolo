@@ -15,10 +15,7 @@ namespace Pilot
             return false;
     }
 
-    float Math::clamp(const float v, const float min, const float max)
-    {
-        return (v < min) ? min : ((v > max) ? max : v);
-    }
+    float Math::clamp(float v, float min, float max) { return (v < min) ? min : ((v > max) ? max : v); }
 
     float Math::getMaxElement(float x, float y, float z) { return std::max(std::max(x, y), z); }
 
@@ -165,12 +162,8 @@ namespace Pilot
         return ret;
     }
 
-    Matrix4x4 Math::makeOrthographicProjectionMatrix(const float left,
-                                                     const float right,
-                                                     const float bottom,
-                                                     const float top,
-                                                     const float znear,
-                                                     const float zfar)
+    Matrix4x4
+    Math::makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar)
     {
         float inv_width    = 1.0f / (right - left);
         float inv_height   = 1.0f / (top - bottom);

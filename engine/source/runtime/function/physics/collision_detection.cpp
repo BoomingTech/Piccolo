@@ -194,8 +194,8 @@ namespace Pilot
         return false;
     }
 
-    bool CollisionDetection::SphereIntersection(const float      sphere_a_radius,
-                                                const float      sphere_b_radius,
+    bool CollisionDetection::SphereIntersection(float            sphere_a_radius,
+                                                float            sphere_b_radius,
                                                 const Transform& world_transform_a,
                                                 const Transform& world_transform_b,
                                                 CollisionInfo&   collision_info)
@@ -220,7 +220,7 @@ namespace Pilot
     }
 
     bool CollisionDetection::AABBSphereIntersection(const Vector3&   box_size,
-                                                    const float      sphere_radius,
+                                                    float            sphere_radius,
                                                     const Transform& world_transform_a,
                                                     const Transform& world_transform_b,
                                                     CollisionInfo&   collision_info)
@@ -384,7 +384,7 @@ namespace Pilot
     }
 
     bool CollisionDetection::OBBSphereIntersection(const Vector3&   box_size,
-                                                   const float      sphere_radius,
+                                                   float            sphere_radius,
                                                    const Transform& world_transform_a,
                                                    const Transform& world_transform_b,
                                                    CollisionInfo&   collision_info)
@@ -537,7 +537,7 @@ namespace Pilot
 
     bool CollisionDetection::RaySphereIntersection(const Ray&       r,
                                                    const Transform& world_transform,
-                                                   const float      sphere_radius,
+                                                   float            sphere_radius,
                                                    RayCollision&    collision)
     {
         Vector3 sphere_pos = world_transform.m_position;
