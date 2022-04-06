@@ -21,13 +21,13 @@ namespace Pilot
 
         explicit Vector4(float coords[4]) : x {coords[0]}, y {coords[1]}, z {coords[2]}, w {coords[3]} {}
 
-        float operator[](const size_t i) const
+        float operator[](size_t i) const
         {
             assert(i < 4);
             return *(&x + i);
         }
 
-        float& operator[](const size_t i)
+        float& operator[](size_t i)
         {
             assert(i < 4);
             return *(&x + i);

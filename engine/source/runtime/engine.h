@@ -61,7 +61,7 @@ namespace Pilot
         ThreeFrameBuffers              m_tri_frame_buffer;
         std::shared_ptr<PilotRenderer> m_renderer;
 
-        void logicalTick(const float delta_time);
+        void logicalTick(float delta_time);
         bool rendererTick();
 
     public:

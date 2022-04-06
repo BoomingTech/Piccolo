@@ -41,7 +41,7 @@ namespace Pilot
     public:
         explicit Radian(float r = 0) : m_rad(r) {}
         Radian(const Degree& d);
-        Radian& operator=(const float f)
+        Radian& operator=(float f)
         {
             m_rad = f;
             return *this;
@@ -52,7 +52,7 @@ namespace Pilot
         float valueDegrees() const; // see bottom of this file
         float valueAngleUnits() const;
 
-        void setValue(const float f) { m_rad = f; }
+        void setValue(float f) { m_rad = f; }
 
         const Radian& operator+() const { return *this; }
         Radian        operator+(const Radian& r) const { return Radian(m_rad + r.m_rad); }
@@ -106,7 +106,7 @@ namespace Pilot
     public:
         explicit Degree(float d = 0) : m_deg(d) {}
         Degree(const Radian& r) : m_deg(r.valueDegrees()) {}
-        Degree& operator=(const float f)
+        Degree& operator=(float f)
         {
             m_deg = f;
             return *this;
@@ -213,7 +213,7 @@ namespace Pilot
         static float sqrt(float fValue) { return float(::sqrt(fValue)); }
         static float invSqrt(float value) { return 1.f / sqrt(value); }
         static bool  realEqual(float a, float b, float tolerance = std::numeric_limits<float>::epsilon());
-        static float clamp(const float v, const float min, const float max);
+        static float clamp(float v, float min, float max);
         static float getMaxElement(float x, float y, float z);
 
         static float degreesToRadians(float degrees);
@@ -266,12 +266,8 @@ namespace Pilot
 
         static Matrix4x4 makePerspectiveMatrix(Radian fovy, float aspect, float znear, float zfar);
 
-        static Matrix4x4 makeOrthographicProjectionMatrix(const float left,
-                                                          const float right,
-                                                          const float bottom,
-                                                          const float top,
-                                                          const float znear,
-                                                          const float zfar);
+        static Matrix4x4
+        makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
     };
 
     // these functions could not be defined within the class definition of class

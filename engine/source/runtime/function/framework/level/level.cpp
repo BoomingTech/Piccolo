@@ -94,7 +94,7 @@ namespace Pilot
         asset_manager.saveAsset(output_level_res, asset_manager.getFullPath(m_level_res_url));
     }
 
-    void Level::tickAll(const float delta_time)
+    void Level::tickAll(float delta_time)
     {
         for (const auto& id_object_pair : m_gobjects)
         {
@@ -107,7 +107,7 @@ namespace Pilot
         SceneManager::getInstance().syncSceneObjects();
     }
 
-    GObject* Level::getGObjectByID(const size_t go_id) const
+    GObject* Level::getGObjectByID(size_t go_id) const
     {
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())
@@ -118,7 +118,7 @@ namespace Pilot
         return nullptr;
     }
 
-    void Level::deleteGObjectByID(const size_t go_id)
+    void Level::deleteGObjectByID(size_t go_id)
     {
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())

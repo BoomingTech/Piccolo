@@ -19,9 +19,9 @@ namespace Pilot
     public:
         Vector2() {}
 
-        Vector2(const float x_, const float y_) : x(x_), y(y_) {}
+        Vector2(float x_, float y_) : x(x_), y(y_) {}
 
-        explicit Vector2(const float scaler) : x(scaler), y(scaler) {}
+        explicit Vector2(float scaler) : x(scaler), y(scaler) {}
 
         explicit Vector2(const float v[2]) : x(v[0]), y(v[1]) {}
 
@@ -40,11 +40,11 @@ namespace Pilot
 
         Vector2 operator-(const Vector2& rhs) const { return Vector2(x - rhs.x, y - rhs.y); }
 
-        Vector2 operator*(const float scalar) const { return Vector2(x * scalar, y * scalar); }
+        Vector2 operator*(float scalar) const { return Vector2(x * scalar, y * scalar); }
 
         Vector2 operator*(const Vector2& rhs) const { return Vector2(x * rhs.x, y * rhs.y); }
 
-        Vector2 operator/(const float scale) const
+        Vector2 operator/(float scale) const
         {
             assert(scale != 0.0);
 
@@ -59,23 +59,20 @@ namespace Pilot
         Vector2 operator-() const { return Vector2(-x, -y); }
 
         // overloaded operators to help Vector2
-        friend Vector2 operator*(const float scalar, const Vector2& rhs)
-        {
-            return Vector2(scalar * rhs.x, scalar * rhs.y);
-        }
+        friend Vector2 operator*(float scalar, const Vector2& rhs) { return Vector2(scalar * rhs.x, scalar * rhs.y); }
 
-        friend Vector2 operator/(const float fScalar, const Vector2& rhs)
+        friend Vector2 operator/(float fScalar, const Vector2& rhs)
         {
             return Vector2(fScalar / rhs.x, fScalar / rhs.y);
         }
 
-        friend Vector2 operator+(const Vector2& lhs, const float rhs) { return Vector2(lhs.x + rhs, lhs.y + rhs); }
+        friend Vector2 operator+(const Vector2& lhs, float rhs) { return Vector2(lhs.x + rhs, lhs.y + rhs); }
 
-        friend Vector2 operator+(const float lhs, const Vector2& rhs) { return Vector2(lhs + rhs.x, lhs + rhs.y); }
+        friend Vector2 operator+(float lhs, const Vector2& rhs) { return Vector2(lhs + rhs.x, lhs + rhs.y); }
 
-        friend Vector2 operator-(const Vector2& lhs, const float rhs) { return Vector2(lhs.x - rhs, lhs.y - rhs); }
+        friend Vector2 operator-(const Vector2& lhs, float rhs) { return Vector2(lhs.x - rhs, lhs.y - rhs); }
 
-        friend Vector2 operator-(const float lhs, const Vector2& rhs) { return Vector2(lhs - rhs.x, lhs - rhs.y); }
+        friend Vector2 operator-(float lhs, const Vector2& rhs) { return Vector2(lhs - rhs.x, lhs - rhs.y); }
 
         // arithmetic updates
         Vector2& operator+=(const Vector2& rhs)
@@ -86,7 +83,7 @@ namespace Pilot
             return *this;
         }
 
-        Vector2& operator+=(const float scalar)
+        Vector2& operator+=(float scalar)
         {
             x += scalar;
             y += scalar;
@@ -102,7 +99,7 @@ namespace Pilot
             return *this;
         }
 
-        Vector2& operator-=(const float scalar)
+        Vector2& operator-=(float scalar)
         {
             x -= scalar;
             y -= scalar;
@@ -110,7 +107,7 @@ namespace Pilot
             return *this;
         }
 
-        Vector2& operator*=(const float scalar)
+        Vector2& operator*=(float scalar)
         {
             x *= scalar;
             y *= scalar;
@@ -126,7 +123,7 @@ namespace Pilot
             return *this;
         }
 
-        Vector2& operator/=(const float scalar)
+        Vector2& operator/=(float scalar)
         {
             assert(scalar != 0.0);
 
@@ -331,10 +328,7 @@ namespace Pilot
         /// Check whether this vector contains valid values
         bool isNaN() const { return Math::isNan(x) || Math::isNan(y); }
 
-        static Vector2 lerp(const Vector2& lhs, const Vector2& rhs, const float alpha)
-        {
-            return lhs + alpha * (rhs - lhs);
-        }
+        static Vector2 lerp(const Vector2& lhs, const Vector2& rhs, float alpha) { return lhs + alpha * (rhs - lhs); }
 
         // special points
         static const Vector2 ZERO;

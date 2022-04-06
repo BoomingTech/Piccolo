@@ -28,7 +28,7 @@ namespace Pilot
         void reloadCurrentLevel();
         void saveCurrentLevel();
 
-        void   tick(const float delta_time);
+        void   tick(float delta_time);
         Level* getCurrentActiveLevel() const { return m_current_active_level; }
 
     private:

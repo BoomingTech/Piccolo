@@ -19,7 +19,7 @@ namespace Pilot
 
         void setParentObject(GObject * object) { m_parent_object = object; }
 
-        virtual void tick(const float delta_time) {};
+        virtual void tick(float delta_time) {};
         virtual void destroy() {};
 
         bool m_tick_in_editor_mode {false};

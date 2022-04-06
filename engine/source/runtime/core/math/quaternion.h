@@ -86,15 +86,12 @@ namespace Pilot
         Quaternion mul(const Quaternion& rhs) const { return (*this) * rhs; }
         Quaternion operator*(const Quaternion& rhs) const;
 
-        Quaternion operator*(const float scalar) const
-        {
-            return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar);
-        }
+        Quaternion operator*(float scalar) const { return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar); }
 
         //// rotation of a vector by a quaternion
         Vector3 operator*(const Vector3& rhs) const;
 
-        Quaternion operator/(const float scalar) const
+        Quaternion operator/(float scalar) const
         {
             assert(scalar != 0.0f);
             return Quaternion(w / scalar, x / scalar, y / scalar, z / scalar);

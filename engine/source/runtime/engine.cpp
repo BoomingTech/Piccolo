@@ -105,7 +105,7 @@ namespace Pilot
         }
     }
 
-    void PilotEngine::logicalTick(const float delta_time)
+    void PilotEngine::logicalTick(float delta_time)
     {
         m_tri_frame_buffer.producingBufferShift();
         PublicSingleton<WorldManager>::getInstance().tick(delta_time);

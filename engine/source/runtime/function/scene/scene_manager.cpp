@@ -494,7 +494,7 @@ namespace Pilot
             m_scene->m_camera->setMainViewMatrix(view_matrix, type);
         }
     }
-    void SceneManager::setFOV(const float fov)
+    void SceneManager::setFOV(float fov)
     {
         if (m_scene && m_scene->m_camera)
         {
@@ -866,7 +866,7 @@ namespace Pilot
         }
     }
 
-    const size_t SceneManager::getGObjectIDByMeshID(const size_t mesh_id) const
+    const size_t SceneManager::getGObjectIDByMeshID(size_t mesh_id) const
     {
         auto iter = m_mesh_id_gobejct_id_map.find(mesh_id);
         if (iter == m_mesh_id_gobejct_id_map.end())
