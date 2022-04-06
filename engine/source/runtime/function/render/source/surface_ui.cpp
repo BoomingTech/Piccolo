@@ -5,9 +5,6 @@
 #include "runtime/function/render/include/render/surface.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
-
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <stb_image.h>
@@ -26,14 +23,8 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-    auto  monitor = glfwGetPrimaryMonitor();
-    float x_scale = 1.0f;
-    float y_scale = 1.0f;
-    glfwGetMonitorContentScale(monitor, &x_scale, &y_scale);
-    float scale_min = std::min(x_scale, y_scale);
-
     io.Fonts->AddFontFromFileTTF(
-        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), 16 * scale_min, nullptr, nullptr);
+        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), 16, nullptr, nullptr);
     io.Fonts->Build();
     style.WindowPadding   = ImVec2(1.0, 0);
     style.FramePadding    = ImVec2(14.0, 2.0f);
