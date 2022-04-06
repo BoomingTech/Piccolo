@@ -97,7 +97,7 @@ namespace Pilot
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
-                ImGui::Text(name.c_str());
+                ImGui::Text("%s", name.c_str());
                 ImGui::SameLine();
                 ImGui::InputInt(label.c_str(), static_cast<int*>(value_ptr));
             }
@@ -106,7 +106,7 @@ namespace Pilot
                 if (g_editor_node_state_array[g_node_depth].second)
                 {
                     std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                    ImGui::Text((name + ":").c_str());
+                    ImGui::Text("%s", (name + ":").c_str());
                     ImGui::InputInt(full_label.c_str(), static_cast<int*>(value_ptr));
                 }
             }
@@ -115,7 +115,7 @@ namespace Pilot
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
-                ImGui::Text(name.c_str());
+                ImGui::Text("%s", name.c_str());
                 ImGui::SameLine();
                 ImGui::InputFloat(label.c_str(), static_cast<float*>(value_ptr));
             }
@@ -124,7 +124,7 @@ namespace Pilot
                 if (g_editor_node_state_array[g_node_depth].second)
                 {
                     std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                    ImGui::Text((name + ":").c_str());
+                    ImGui::Text("%s", (name + ":").c_str());
                     ImGui::InputFloat(full_label.c_str(), static_cast<float*>(value_ptr));
                 }
             }
@@ -135,7 +135,7 @@ namespace Pilot
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
-                ImGui::Text(name.c_str());
+                ImGui::Text("%s", name.c_str());
                 ImGui::SameLine();
                 ImGui::DragFloat3(label.c_str(), val);
             }
@@ -144,7 +144,7 @@ namespace Pilot
                 if (g_editor_node_state_array[g_node_depth].second)
                 {
                     std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                    ImGui::Text((name + ":").c_str());
+                    ImGui::Text("%s", (name + ":").c_str());
                     ImGui::DragFloat3(full_label.c_str(), val);
                 }
             }
@@ -158,7 +158,7 @@ namespace Pilot
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
-                ImGui::Text(name.c_str());
+                ImGui::Text("%s", name.c_str());
                 ImGui::SameLine();
                 ImGui::DragFloat4(label.c_str(), val);
             }
@@ -167,7 +167,7 @@ namespace Pilot
                 if (g_editor_node_state_array[g_node_depth].second)
                 {
                     std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                    ImGui::Text((name + ":").c_str());
+                    ImGui::Text("%s", (name + ":").c_str());
                     ImGui::DragFloat4(full_label.c_str(), val);
                 }
             }
@@ -181,16 +181,16 @@ namespace Pilot
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
-                ImGui::Text(name.c_str());
+                ImGui::Text("%s", name.c_str());
                 ImGui::SameLine();
-                ImGui::Text((*static_cast<std::string*>(value_ptr)).c_str());
+                ImGui::Text("%s", (*static_cast<std::string*>(value_ptr)).c_str());
             }
             else
             {
                 if (g_editor_node_state_array[g_node_depth].second)
                 {
                     std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                    ImGui::Text((name + ":").c_str());
+                    ImGui::Text("%s", (name + ":").c_str());
                     std::string value_str = *static_cast<std::string*>(value_ptr);
                     if (value_str.find_first_of('/') != std::string::npos)
                     {
@@ -205,7 +205,7 @@ namespace Pilot
                             value_str.clear();
                         }
                     }
-                    ImGui::Text(value_str.c_str());
+                    ImGui::Text("%s", value_str.c_str());
                 }
             }
         };
