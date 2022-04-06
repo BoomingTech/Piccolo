@@ -56,15 +56,15 @@ namespace Pilot
         int                        fields_count = meta.m_meta.getFieldsList(fields);
         for (int i = 0; i < fields_count; ++i)
         {
-            auto filed_accesser = fields[i];
-            std::cout << filed_accesser.getFieldTypeName() << " " << filed_accesser.getFieldName() << " "
-                      << (char*)filed_accesser.get(meta.m_instance) << std::endl;
-            if (filed_accesser.isArrayType())
+            auto field_accesser = fields[i];
+            std::cout << field_accesser.getFieldTypeName() << " " << field_accesser.getFieldName() << " "
+                      << (char*)field_accesser.get(meta.m_instance) << std::endl;
+            if (field_accesser.isArrayType())
             {
                 Reflection::ArrayAccessor array_accesser;
-                if (Reflection::TypeMeta::newArrayAccessorFromName(filed_accesser.getFieldTypeName(), array_accesser))
+                if (Reflection::TypeMeta::newArrayAccessorFromName(field_accesser.getFieldTypeName(), array_accesser))
                 {
-                    void* field_instance = filed_accesser.get(meta.m_instance);
+                    void* field_instance = field_accesser.get(meta.m_instance);
                     int   count          = array_accesser.getSize(field_instance);
                     auto  typeMetaItem   = Reflection::TypeMeta::newMetaFromName(array_accesser.getElementTypeName());
                     for (int index = 0; index < count; ++index)

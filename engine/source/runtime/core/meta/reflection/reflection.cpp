@@ -9,10 +9,10 @@ namespace Pilot
         const char* k_unknown      = "Unknown";
 
         static std::map<std::string, class_function_tuple*>      m_class_map;
-        static std::multimap<std::string, filed_function_tuple*> m_field_map;
+        static std::multimap<std::string, field_function_tuple*> m_field_map;
         static std::map<std::string, array_function_tuple*>      m_array_map;
 
-        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, filed_function_tuple* value)
+        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, field_function_tuple* value)
         {
             m_field_map.insert(std::make_pair(name, value));
         }
@@ -65,14 +65,14 @@ namespace Pilot
             m_is_valid = false;
             m_fields.clear();
 
-            auto fileds_iter = m_field_map.equal_range(type_name);
-            while (fileds_iter.first != fileds_iter.second)
+            auto fields_iter = m_field_map.equal_range(type_name);
+            while (fields_iter.first != fields_iter.second)
             {
-                FieldAccessor f_field(fileds_iter.first->second);
+                FieldAccessor f_field(fields_iter.first->second);
                 m_fields.emplace_back(f_field);
                 m_is_valid = true;
 
-                ++fileds_iter.first;
+                ++fields_iter.first;
             }
         }
 
@@ -180,7 +180,7 @@ namespace Pilot
             m_functions       = nullptr;
         }
 
-        FieldAccessor::FieldAccessor(filed_function_tuple* functions) : m_functions(functions)
+        FieldAccessor::FieldAccessor(field_function_tuple* functions) : m_functions(functions)
         {
             m_field_type_name = k_unknown_type;
             m_field_name      = k_unknown;

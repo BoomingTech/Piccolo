@@ -84,7 +84,7 @@ namespace Pilot
     typedef std::function<int(Reflection::ReflectionInstance*&, void*)> getBaseClassReflectionInstanceListFunc;
 
     typedef std::tuple<setFuncion, getFuncion, getNameFuncion, getNameFuncion, getNameFuncion, getBoolFunc>
-        filed_function_tuple;
+        field_function_tuple;
     typedef std::tuple<getBaseClassReflectionInstanceListFunc, constructorWithPJson, writePJsonByName>
                                                                                                 class_function_tuple;
     typedef std::tuple<setArrayFunc, getArrayFunc, getSizeFunc, getNameFuncion, getNameFuncion> array_function_tuple;
@@ -95,7 +95,7 @@ namespace Pilot
         {
         public:
             static void registerToClassMap(const char* name, class_function_tuple* value);
-            static void registerToFieldMap(const char* name, filed_function_tuple* value);
+            static void registerToFieldMap(const char* name, field_function_tuple* value);
             static void registerToArrayMap(const char* name, array_function_tuple* value);
 
             static void unregisterAll();
@@ -169,10 +169,10 @@ namespace Pilot
             FieldAccessor& operator=(const FieldAccessor& dest);
 
         private:
-            FieldAccessor(filed_function_tuple* functions);
+            FieldAccessor(field_function_tuple* functions);
 
         private:
-            filed_function_tuple* m_functions;
+            field_function_tuple* m_functions;
             const char*           m_field_name;
             const char*           m_field_type_name;
         };
