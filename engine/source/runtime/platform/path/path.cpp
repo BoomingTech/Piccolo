@@ -17,7 +17,7 @@ namespace Pilot
         {
             segments.emplace_back(iter->generic_string());
         }
-        return move(segments);
+        return segments;
     }
 
     const tuple<string, string, string> Path::getFileExtensions(const filesystem::path& file_path) const
