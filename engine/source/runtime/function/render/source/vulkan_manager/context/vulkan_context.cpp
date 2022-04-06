@@ -357,9 +357,9 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
             }
         }
 
-        if (VK_NULL_HANDLE == _physical_device)
+        if (_physical_device == VK_NULL_HANDLE)
         {
-            throw std::runtime_error("enumerate physical devices");
+            throw std::runtime_error("failed to find suitable physical devices");
         }
     }
 }
