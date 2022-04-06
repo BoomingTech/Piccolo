@@ -34,9 +34,9 @@ namespace Pilot
         Vector3    getScale() const { return m_transform_buffer[m_current_index].m_scale; }
         Quaternion getRotation() const { return m_transform_buffer[m_current_index].m_rotation; }
 
-        void setPosition(const Vector3& new_translation)
+        void setPosition(const Vector3& new_transition)
         {
-            m_transform_buffer[m_next_index].m_position = new_translation;
+            m_transform_buffer[m_next_index].m_position = new_transition;
         }
         void setScale(const Vector3& new_scale) { m_transform_buffer[m_next_index].m_scale = new_scale; }
         void setRotation(const Quaternion& new_rotation) { m_transform_buffer[m_next_index].m_rotation = new_rotation; }
