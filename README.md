@@ -17,7 +17,7 @@ To build Pilot, you must first install the following tools.
 - CMake 3.19 (or more recent)
 - Git 2.1 (or more recent)
 
-### MacOS >= 10.15 (x86_64)
+### macOS >= 10.15 (x86_64)
 - Xcode 12.3 (or more recent)
 - CMake 3.19 (or more recent)
 - Git 2.1 (or more recent)
@@ -45,7 +45,7 @@ Or you can use the following command to generate the **Visual Studio** project f
 cmake -S engine/ -B build
 ```
 
-### Build on MacOS
+### Build on macOS
 
 > The following build instructions only tested on specific hardware of x86_64, and do not support M1 chips. For M1 compatible, we will release later.
 

@@ -49,7 +49,7 @@ namespace Pilot
         void showEditorWorldObjectsWindow(bool* p_open);
         void showEditorFileContentWindow(bool* p_open);
         void showEditorGameWindow(bool* p_open);
-        void showEditorDetialWindow(bool* p_open);
+        void showEditorDetailWindow(bool* p_open);
 
         void onReset();
         void onCursorPos(double xpos, double ypos);

@@ -3,7 +3,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include "editor//include/editor.h"
+#include "editor/include/editor.h"
 #include "runtime/engine.h"
 
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
