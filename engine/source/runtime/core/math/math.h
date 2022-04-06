@@ -41,7 +41,7 @@ namespace Pilot
     public:
         explicit Radian(float r = 0) : m_rad(r) {}
         Radian(const Degree& d);
-        Radian& operator=(const float& f)
+        Radian& operator=(const float f)
         {
             m_rad = f;
             return *this;
@@ -52,7 +52,7 @@ namespace Pilot
         float valueDegrees() const; // see bottom of this file
         float valueAngleUnits() const;
 
-        void setValue(const float& f) { m_rad = f; }
+        void setValue(const float f) { m_rad = f; }
 
         const Radian& operator+() const { return *this; }
         Radian        operator+(const Radian& r) const { return Radian(m_rad + r.m_rad); }
@@ -106,7 +106,7 @@ namespace Pilot
     public:
         explicit Degree(float d = 0) : m_deg(d) {}
         Degree(const Radian& r) : m_deg(r.valueDegrees()) {}
-        Degree& operator=(const float& f)
+        Degree& operator=(const float f)
         {
             m_deg = f;
             return *this;
