@@ -153,7 +153,16 @@ namespace Pilot
             // 1 / tan(fovy * 0.5) = aspect / tan(fovx * 0.5)
             // tan(fovy * 0.5) = tan(fovx * 0.5) / aspect
 
-            m_fovy = Radian(Math::atan(Math::tan(Radian(Degree(m_fovx) * 0.5f)) / m_aspect) * 2.0f).valueDegrees();
+            if (aspect > 1.0f)
+            {
+                m_fovy = Degree(90.f).valueDegrees() / aspect;
+                m_fovx = Radian(Math::atan(Math::tan(Radian(Degree(m_fovy) * 0.5f)) * m_aspect) * 2.0f).valueDegrees();
+            }
+            else
+            {
+                m_fovx = Degree(90.f).valueDegrees() * aspect;
+                m_fovy = Radian(Math::atan(Math::tan(Radian(Degree(m_fovx) * 0.5f)) / m_aspect) * 2.0f).valueDegrees();
+            }
         }
 
         void setFOVx(float fovx) { m_fovx = fovx; }
