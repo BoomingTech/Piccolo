@@ -664,7 +664,7 @@ namespace Pilot
         new_window_size.x       = ImGui::GetWindowSize().x;
         new_window_size.y       = ImGui::GetWindowSize().y - menu_bar_rect.Min.y;
 
-        if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
+        // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
 #if defined(__MACH__)
             float dpi_scale = main_viewport->DpiScale;
