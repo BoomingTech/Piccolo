@@ -6,7 +6,7 @@ namespace Pilot
 {
     Bone* find_by_index(Bone* bones, int key, int size, bool is_flat)
     {
-        if (key == std::numeric_limits<size_t>().max())
+        if (key == std::numeric_limits<int>::max())
             return nullptr;
         if (is_flat)
         {
@@ -28,7 +28,7 @@ namespace Pilot
 
     std::shared_ptr<RawBone> find_by_index(std::vector<std::shared_ptr<RawBone>>& bones, int key, bool is_flat)
     {
-        if (key == std::numeric_limits<size_t>().max())
+        if (key == std::numeric_limits<int>::max())
             return nullptr;
         if (is_flat)
         {
@@ -54,6 +54,6 @@ namespace Pilot
             if (iter.name == name)
                 return iter.index;
         }
-        return std::numeric_limits<size_t>().max();
+        return std::numeric_limits<int>::max();
     }
 } // namespace Pilot

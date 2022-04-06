@@ -13,7 +13,7 @@ namespace Pilot
     {
         Vector3 delta      = position_b - position_a;
         Vector3 total_size = half_dimensions_b.absoluteCopy() + half_dimensions_a.absoluteCopy();
-        if (abs(delta.x) < total_size.x && abs(delta.y) < total_size.y && abs(delta.z) < total_size.z)
+        if (fabsf(delta.x) < total_size.x && fabsf(delta.y) < total_size.y && fabsf(delta.z) < total_size.z)
         {
             return true;
         }
@@ -284,7 +284,7 @@ namespace Pilot
             for (int j = 0; j < 3; ++j)
             {
                 p_r[i * 3 + j]  = volume_a_axis[i].dotProduct(volume_b_axis[j]);
-                p_rf[i * 3 + j] = 1e-6f + abs(p_r[i * 3 + j]);
+                p_rf[i * 3 + j] = 1e-6f + fabsf(p_r[i * 3 + j]);
             }
         }
 
@@ -294,7 +294,7 @@ namespace Pilot
             ra = half_dimensions_a[i];
             rb = half_dimensions_b[0] * p_rf[i * 3 + 0] + half_dimensions_b[1] * p_rf[i * 3 + 1] +
                  half_dimensions_b[2] * p_rf[i * 3 + 2];
-            t = abs(p_t[i]);
+            t = fabsf(p_t[i]);
 
             if (t > ra + rb)
             {
@@ -308,7 +308,7 @@ namespace Pilot
             ra = half_dimensions_a[0] * p_rf[0 * 3 + i] + half_dimensions_a[1] * p_rf[1 * 3 + i] +
                  half_dimensions_a[2] * p_rf[2 * 3 + i];
             rb = half_dimensions_b[i];
-            t  = abs(p_t[0] * p_r[0 * 3 + i] + p_t[1] * p_r[1 * 3 + i] + p_t[2] * p_r[2 * 3 + i]);
+            t  = fabsf(p_t[0] * p_r[0 * 3 + i] + p_t[1] * p_r[1 * 3 + i] + p_t[2] * p_r[2 * 3 + i]);
 
             if (t > ra + rb)
             {
@@ -320,63 +320,63 @@ namespace Pilot
         // L = A0 * B0
         ra = half_dimensions_a[1] * p_rf[2 * 3 + 0] + half_dimensions_a[2] * p_rf[1 * 3 + 0];
         rb = half_dimensions_b[1] * p_rf[0 * 3 + 2] + half_dimensions_b[2] * p_rf[0 * 3 + 1];
-        t  = abs(p_t[2] * p_r[1 * 3 + 0] - p_t[1] * p_r[2 * 3 + 0]);
+        t  = fabsf(p_t[2] * p_r[1 * 3 + 0] - p_t[1] * p_r[2 * 3 + 0]);
         if (t > ra + rb)
             return false;
 
         // L = A0 * B1
         ra = half_dimensions_a[1] * p_rf[2 * 3 + 1] + half_dimensions_a[2] * p_rf[1 * 3 + 1];
         rb = half_dimensions_b[0] * p_rf[0 * 3 + 2] + half_dimensions_b[2] * p_rf[0 * 3 + 0];
-        t  = abs(p_t[2] * p_r[1 * 3 + 1] - p_t[1] * p_r[2 * 3 + 1]);
+        t  = fabsf(p_t[2] * p_r[1 * 3 + 1] - p_t[1] * p_r[2 * 3 + 1]);
         if (t > ra + rb)
             return false;
 
         // L = A0 * B2
         ra = half_dimensions_a[1] * p_rf[2 * 3 + 2] + half_dimensions_a[2] * p_rf[1 * 3 + 2];
         rb = half_dimensions_b[0] * p_rf[0 * 3 + 1] + half_dimensions_b[1] * p_rf[0 * 3 + 0];
-        t  = abs(p_t[2] * p_r[1 * 3 + 2] - p_t[1] * p_r[2 * 3 + 2]);
+        t  = fabsf(p_t[2] * p_r[1 * 3 + 2] - p_t[1] * p_r[2 * 3 + 2]);
         if (t > ra + rb)
             return false;
 
         // L = A1 * B0
         ra = half_dimensions_a[0] * p_rf[2 * 3 + 0] + half_dimensions_a[2] * p_rf[0 * 3 + 0];
         rb = half_dimensions_b[1] * p_rf[1 * 3 + 2] + half_dimensions_b[2] * p_rf[1 * 3 + 1];
-        t  = abs(p_t[0] * p_r[2 * 3 + 0] - p_t[2] * p_r[0 * 3 + 0]);
+        t  = fabsf(p_t[0] * p_r[2 * 3 + 0] - p_t[2] * p_r[0 * 3 + 0]);
         if (t > ra + rb)
             return false;
 
         // L = A1 * B1
         ra = half_dimensions_a[0] * p_rf[2 * 3 + 1] + half_dimensions_a[2] * p_rf[0 * 3 + 1];
         rb = half_dimensions_b[0] * p_rf[1 * 3 + 2] + half_dimensions_b[2] * p_rf[1 * 3 + 0];
-        t  = abs(p_t[0] * p_r[2 * 3 + 1] - p_t[2] * p_r[0 * 3 + 1]);
+        t  = fabsf(p_t[0] * p_r[2 * 3 + 1] - p_t[2] * p_r[0 * 3 + 1]);
         if (t > ra + rb)
             return false;
 
         // L = A1 * B2
         ra = half_dimensions_a[0] * p_rf[2 * 3 + 2] + half_dimensions_a[2] * p_rf[0 * 3 + 2];
         rb = half_dimensions_b[0] * p_rf[1 * 3 + 1] + half_dimensions_b[1] * p_rf[1 * 3 + 0];
-        t  = abs(p_t[0] * p_r[2 * 3 + 2] - p_t[2] * p_r[0 * 3 + 2]);
+        t  = fabsf(p_t[0] * p_r[2 * 3 + 2] - p_t[2] * p_r[0 * 3 + 2]);
         if (t > ra + rb)
             return false;
 
         // L = A2 * B0
         ra = half_dimensions_a[0] * p_rf[1 * 3 + 0] + half_dimensions_a[1] * p_rf[0 * 3 + 0];
         rb = half_dimensions_b[1] * p_rf[2 * 3 + 2] + half_dimensions_b[2] * p_rf[2 * 3 + 1];
-        t  = abs(p_t[1] * p_r[0 * 3 + 0] - p_t[0] * p_r[1 * 3 + 0]);
+        t  = fabsf(p_t[1] * p_r[0 * 3 + 0] - p_t[0] * p_r[1 * 3 + 0]);
         if (t > ra + rb)
             return false;
 
         // L = A2 * B1
         ra = half_dimensions_a[0] * p_rf[1 * 3 + 1] + half_dimensions_a[1] * p_rf[0 * 3 + 1];
         rb = half_dimensions_b[0] * p_rf[2 * 3 + 2] + half_dimensions_b[2] * p_rf[2 * 3 + 0];
-        t  = abs(p_t[1] * p_r[0 * 3 + 1] - p_t[0] * p_r[1 * 3 + 1]);
+        t  = fabsf(p_t[1] * p_r[0 * 3 + 1] - p_t[0] * p_r[1 * 3 + 1]);
         if (t > ra + rb)
             return false;
 
         // L = A2 * B2
         ra = half_dimensions_a[0] * p_rf[1 * 3 + 2] + half_dimensions_a[1] * p_rf[0 * 3 + 2];
         rb = half_dimensions_b[0] * p_rf[2 * 3 + 1] + half_dimensions_b[1] * p_rf[2 * 3 + 0];
-        t  = abs(p_t[1] * p_r[0 * 3 + 2] - p_t[0] * p_r[1 * 3 + 2]);
+        t  = fabsf(p_t[1] * p_r[0 * 3 + 2] - p_t[0] * p_r[1 * 3 + 2]);
         if (t > ra + rb)
             return false;
 

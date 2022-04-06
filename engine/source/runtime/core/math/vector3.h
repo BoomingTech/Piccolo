@@ -396,7 +396,7 @@ namespace Pilot
             return q;
         }
 
-        /** Returnsk_true if this vector is zero length. */
+        /** Returns true if this vector is zero length. */
         bool isZeroLength(void) const
         {
             float sqlen = (x * x) + (y * y) + (z * z);
@@ -428,7 +428,7 @@ namespace Pilot
         */
         Vector3 project(const Vector3& normal) const { return Vector3(*this - (this->dotProduct(normal) * normal)); }
 
-        Vector3 absoluteCopy() const { return Vector3(abs(x), abs(y), abs(z)); }
+        Vector3 absoluteCopy() const { return Vector3(fabsf(x), fabsf(y), fabsf(z)); }
 
         static Vector3 lerp(const Vector3& lhs, const Vector3& rhs, const float alpha)
         {
