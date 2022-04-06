@@ -6,6 +6,8 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
 
+#include <string.h>
+
 namespace Pilot
 {
     /** Class encapsulating a standard 4x4 homogeneous matrix.
