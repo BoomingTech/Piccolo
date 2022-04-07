@@ -68,7 +68,7 @@
 #include <iostream>
 #include <set>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 #include <string>
 
 void Pilot::PVulkanContext::initialize(GLFWwindow* window)

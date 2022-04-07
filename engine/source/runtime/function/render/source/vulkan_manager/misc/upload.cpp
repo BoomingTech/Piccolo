@@ -1,5 +1,5 @@
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_manager.h"
-#include <string.h>
+#include <cstring>
 
 void Pilot::PVulkanManager::updateMeshData(bool                                          enable_vertex_blending,
                                            uint32_t                                      index_buffer_size,
