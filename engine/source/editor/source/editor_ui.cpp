@@ -553,9 +553,16 @@ namespace Pilot
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
             ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
-            Pilot::EditorFileService editor_file_service;
-            editor_file_service.buildEngineFileTree();
-            EditorFileNode* editor_root_node = editor_file_service.getEditorRootNode();
+
+            auto current_time = std::chrono::steady_clock::now();
+            if (current_time - m_last_file_tree_update > std::chrono::seconds(1))
+            {
+                m_editor_file_service.buildEngineFileTree();
+                m_last_file_tree_update = current_time;
+            }
+            m_last_file_tree_update = current_time;
+
+            EditorFileNode* editor_root_node = m_editor_file_service.getEditorRootNode();
             buildEditorFileAssstsUITree(editor_root_node);
             ImGui::EndTable();
         }

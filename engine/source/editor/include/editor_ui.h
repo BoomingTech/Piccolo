@@ -10,6 +10,7 @@
 
 #include "editor/include/editor_file_service.h"
 
+#include <chrono>
 #include <map>
 #include <vector>
 
@@ -93,5 +94,8 @@ namespace Pilot
         EditorTranslationAxis m_translation_axis;
         EditorRotationAxis    m_rotation_axis;
         EditorScaleAxis       m_scale_aixs;
+
+        EditorFileService                                  m_editor_file_service;
+        std::chrono::time_point<std::chrono::steady_clock> m_last_file_tree_update;
     };
 } // namespace Pilot
