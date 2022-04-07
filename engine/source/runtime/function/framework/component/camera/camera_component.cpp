@@ -114,7 +114,7 @@ namespace Pilot
 
         parent_transform->setRotation(q_yaw * parent_transform->getRotation());
 
-        Vector3 center_pos = parent_transform->getPosition() + Vector3::UNIT_Z * 0.5f;
+        Vector3 center_pos = parent_transform->getPosition() + Vector3::UNIT_Z * vertical_offset - 0.5f;
         Vector3 camera_pos =
             parent_transform->getRotation() * para->m_cursor_pitch * offset + parent_transform->getPosition();
         Vector3 camera_forward = center_pos - camera_pos;

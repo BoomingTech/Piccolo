@@ -1,7 +1,7 @@
 {
   "parameter": {
 	  "$context":{
-      "fov": 89,
+      "fov": 70,
       "horizontal_offset":3,
       "vertical_offset":2
     },
