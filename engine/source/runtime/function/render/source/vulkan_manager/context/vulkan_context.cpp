@@ -359,7 +359,7 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
 
         if (_physical_device == VK_NULL_HANDLE)
         {
-            throw std::runtime_error("failed to find suitable physical devices");
+            throw std::runtime_error("failed to find suitable physical device");
         }
     }
 }
