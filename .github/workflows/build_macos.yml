@@ -11,11 +11,11 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [debug, release]
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-      - run: cmake -S . -B build -G "Xcode"
-      - run: cmake --build build --config ${{matrix.configuration}} 
-      
+
+      - name: Build
+        run: ./build_macOS.sh ${{matrix.configuration}}
