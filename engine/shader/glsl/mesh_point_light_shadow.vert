@@ -3,22 +3,16 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "constants.h"
+#include "structures.h"
 
 layout(set = 0, binding = 1) readonly buffer _unused_name_per_drawcall
 {
-    mat4 model_matrices[m_mesh_per_drawcall_max_instance_count];
-    float enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
+    VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
 };
 
 layout(set = 0, binding = 2) readonly buffer _unused_name_per_drawcall_vertex_blending
 {
     mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
-};
-
-struct VulkanMeshVertexJointBinding
-{
-    highp ivec4 indices;
-    highp vec4 weights;
 };
 
 layout(set = 1, binding = 0) readonly buffer _unused_name_per_mesh_joint_binding
@@ -32,8 +26,8 @@ layout(location = 0) out highp vec3 out_position_world_space;
 
 void main()
 {
-    highp mat4 model_matrix = model_matrices[gl_InstanceIndex];
-    highp float enable_vertex_blending = enable_vertex_blendings[gl_InstanceIndex];
+    highp mat4 model_matrix = mesh_instances[gl_InstanceIndex].model_matrix;
+    highp float enable_vertex_blending = mesh_instances[gl_InstanceIndex].enable_vertex_blending;
 
     highp vec3 model_position;
     if (enable_vertex_blending > 0.0)

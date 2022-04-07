@@ -181,11 +181,12 @@ void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& conte
     // null descriptor
     PVulkanUtil::createBuffer(context._physical_device,
                               context._device,
-                              1,
+                              64,
                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                               0,
                               _storage_buffer._global_null_descriptor_storage_buffer,
                               _storage_buffer._global_null_descriptor_storage_buffer_memory);
+    static_assert(64 >= sizeof(PMeshVertex::VulkanMeshVertexJointBinding), "");
 }
 
 void Pilot::PGlobalRenderResource::mapStorageBuffer(PVulkanContext& context)

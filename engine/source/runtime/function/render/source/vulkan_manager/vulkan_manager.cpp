@@ -117,13 +117,6 @@ void Pilot::PVulkanManager::beginFrame()
 
         m_vulkan_context._vkCmdBeginRenderPass(
             m_command_buffers[m_current_frame_index], &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-        if (m_enable_debug_untils_label)
-        {
-            VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_vulkan_context._vkCmdBeginDebugUtilsLabelEXT(m_command_buffers[m_current_frame_index], &label_info);
-        }
     }
 
     m_mesh_lighting_pass.draw();
