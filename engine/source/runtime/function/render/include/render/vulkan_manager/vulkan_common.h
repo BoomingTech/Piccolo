@@ -51,10 +51,18 @@ namespace Pilot
         glm::mat4                   directional_light_proj_view;
     };
 
+    struct VulkanMeshInstance
+    {
+        float enable_vertex_blending;
+        float _padding_enable_vertex_blending_1;
+        float _padding_enable_vertex_blending_2;
+        float _padding_enable_vertex_blending_3;
+        glm::mat4 model_matrix;
+    };
+
     struct MeshPerdrawcallStorageBufferObject
     {
-        glm::mat4 model_matrices[m_mesh_per_drawcall_max_instance_count];
-        float     enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPerdrawcallVertexBlendingStorageBufferObject
@@ -87,8 +95,7 @@ namespace Pilot
 
     struct MeshPointLightShadowPerdrawcallStorageBufferObject
     {
-        glm::mat4 model_matrices[m_mesh_per_drawcall_max_instance_count];
-        float     enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPointLightShadowPerdrawcallVertexBlendingStorageBufferObject
@@ -103,8 +110,7 @@ namespace Pilot
 
     struct MeshDirectionalLightShadowPerdrawcallStorageBufferObject
     {
-        glm::mat4 model_matrices[m_mesh_per_drawcall_max_instance_count];
-        float     enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject
