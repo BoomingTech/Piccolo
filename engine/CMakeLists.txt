@@ -34,6 +34,8 @@ if(WIN32)
     set(vulkan_lib ${THIRD_PARTY_DIR}/VulkanSDK/lib/Win32/vulkan-1.lib)
     set(glslangValidator_executable ${THIRD_PARTY_DIR}/VulkanSDK/bin/Win32/glslangValidator.exe)
     add_compile_definitions("PILOT_VK_LAYER_PATH=${THIRD_PARTY_DIR}/VulkanSDK/bin/Win32")
+	# For VS2017  error LNK2005: "public: static class Pilot::Vector3 const Pilot::PCamera::X" (?X@PCamera@Pilot@@2VVector3@2@B) 已经在 axis.obj 中定义
+	add_link_options("/FORCE:MULTIPLE")
 elseif(UNIX)
     if(APPLE)
       set(vulkan_lib ${THIRD_PARTY_DIR}/VulkanSDK/lib/MacOS/libvulkan.1.dylib)
