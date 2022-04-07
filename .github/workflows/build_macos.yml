@@ -1,0 +1,21 @@
+name: Build MacOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - run: cmake -S engine -B build -G "Xcode"
+      - run: cmake --build build --config ${{matrix.configuration}} 
+      

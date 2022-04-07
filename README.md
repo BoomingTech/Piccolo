@@ -8,6 +8,13 @@
 
 **Pilot Engine** is a tiny game engine used for the [GAMES104](https://games104.boomingtech.com) course.
 
+## Continuous build status    
+    
+Build Type | Status  
+:-: | :-:  
+**Build Linux** | [![Build Linux](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml)  
+**Build MacOS** | [![Build MacOS](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml)  
+
 ## Prerequisites
 
 To build Pilot, you must first install the following tools.

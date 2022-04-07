@@ -1,0 +1,28 @@
+name: Build Linux
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [debug, release]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - run: sudo apt install libxrandr-dev
+      - run: sudo apt install libxinerama-dev
+      - run: sudo apt install libxcursor-dev
+      - run: sudo apt install libxi-dev
+      - run: sudo apt install libglvnd-dev
+      - run: sudo apt install libvulkan-dev
+      - run: mkdir -p "./build_github_workflows"
+      - run: curl -o "./build_github_workflows/cmake-3.19.8-Linux-x86_64.tar.gz" -L https://github.com/Kitware/CMake/releases/download/v3.19.8/cmake-3.19.8-Linux-x86_64.tar.gz
+      - run: tar xf "./build_github_workflows/cmake-3.19.8-Linux-x86_64.tar.gz" -C "./build_github_workflows"
+      - run: ./build_linux.sh ${{matrix.configuration}} 
