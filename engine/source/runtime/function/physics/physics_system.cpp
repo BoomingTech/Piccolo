@@ -40,6 +40,7 @@ namespace Pilot
             updateCollisionList(); // Remove any old collisions
 
             integrateVelocity(iteration_delta_time); // update positions from new velocity changes
+            updateShapesTransform();
 
             m_delta_time_offset -= iteration_delta_time;
         }
@@ -118,7 +119,7 @@ namespace Pilot
                 bool is_hit = CollisionDetection::IsOverlap(actor_position,
                                                             box_shape->m_global_transform.m_position,
                                                             actor_half_dimensions,
-                                                            box_shape->m_half_extents);
+                                                            box_shape->m_half_extents * box_shape->m_global_transform.m_scale);
 
                 if (is_hit)
                     return true;
@@ -197,6 +198,12 @@ namespace Pilot
             // std::cout << "actor id : " << i++ << "   after tick pos: " << pos.x << " " << pos.y << " " << pos.z <<
             // std::endl;
         }
+    }
+
+    void PhysicsSystem::updateShapesTransform()
+    {
+        for (auto& actor : m_physics_actors)
+            actor->updateShapesTramsform();
     }
 
     void PhysicsSystem::updateCollisionList()

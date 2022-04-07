@@ -137,4 +137,18 @@ namespace Pilot
     }
 
     Matrix3x3 PhysicsActor::getInertiaTensor() const { return m_inverse_inertia_tensor; }
+
+    void PhysicsActor::updateShapesTramsform()
+    {
+        for (auto& shape : m_rigidbody_shapes)
+        {
+            const TransformComponent* transform_component = m_parent_object->tryGetComponentConst(TransformComponent);
+
+            Matrix4x4 global_transform_matrix =
+                transform_component->getTransformConst().getMatrix() * shape->m_local_transform.getMatrix();
+            global_transform_matrix.decomposition(shape->m_global_transform.m_position,
+                                                  shape->m_global_transform.m_scale,
+                                                  shape->m_global_transform.m_rotation);
+        }
+    }
 } // namespace Pilot

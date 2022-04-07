@@ -8,6 +8,7 @@
 
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
+#include "runtime/function/physics/physics_system.h"
 #include "runtime/function/render/include/render/framebuffer.h"
 #include "runtime/function/render/include/render/render.h"
 #include "runtime/function/render/include/render/surface.h"
@@ -111,7 +112,7 @@ namespace Pilot
         PublicSingleton<WorldManager>::getInstance().tick(delta_time);
         PublicSingleton<SceneManager>::getInstance().tick(m_tri_frame_buffer.getProducingBuffer());
         PublicSingleton<InputSystem>::getInstance().tick();
-        // PublicSingleton<PhysicsSystem>::getInstance().tick(delta_time);
+        PublicSingleton<PhysicsSystem>::getInstance().tick(delta_time);
     }
 
     bool PilotEngine::rendererTick() { return m_renderer->tick(); }

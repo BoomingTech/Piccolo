@@ -34,6 +34,7 @@ namespace Pilot
 
         void integrateAccelerate(float delta_time);
         void integrateVelocity(float delta_time);
+        void updateShapesTransform();
 
         void updateCollisionList();
 

@@ -45,6 +45,8 @@ namespace Pilot
         void      updateInertiaTensor();
         Matrix3x3 getInertiaTensor() const;
 
+        void updateShapesTramsform();
+
         const std::vector<RigidBodyShapeBase*>& getShapes() const { return m_rigidbody_shapes; }
         Transform&                              getTransform() { return m_global_transform; }
 
