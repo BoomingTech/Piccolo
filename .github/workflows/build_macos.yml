@@ -16,6 +16,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-      - run: cmake -S engine -B build -G "Xcode"
+      - run: cmake -S . -B build -G "Xcode"
       - run: cmake --build build --config ${{matrix.configuration}} 
       
