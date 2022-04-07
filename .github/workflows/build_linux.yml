@@ -16,10 +16,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-      - run: sudo apt install libxrandr-dev
-      - run: sudo apt install libxinerama-dev
-      - run: sudo apt install libxcursor-dev
-      - run: sudo apt install libxi-dev
-      - run: sudo apt install libglvnd-dev
-      - run: sudo apt install libvulkan-dev
-      - run: ./build_linux.sh ${{matrix.configuration}} 
+
+      - name: Install dependencies
+        run: sudo apt install libxrandr-dev, libxinerama-dev, libxcursor-dev, libxi-dev, libglvnd-dev, libvulkan-dev
+        
+      - name: Build
+        run: ./build_linux.sh ${{matrix.configuration}} 
