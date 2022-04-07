@@ -176,7 +176,7 @@ namespace Pilot
         instead.
         */
 
-        float length() const { return sqrt(x * x + y * y + z * z); }
+        float length() const { return std::hypot(x, y, z); }
 
         /** Returns the square of the length(magnitude) of the vector.
         @remarks
@@ -242,7 +242,7 @@ namespace Pilot
 
         void normalise()
         {
-            float length = sqrt(x * x + y * y + z * z);
+            float length = std::hypot(x, y, z);
             if (length == 0.f)
                 return;
 

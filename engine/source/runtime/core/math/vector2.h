@@ -150,7 +150,7 @@ namespace Pilot
         length (e.g. for just comparing lengths) use squaredLength()
         instead.
         */
-        float length() const { return sqrt(x * x + y * y); }
+        float length() const { return std::hypot(x, y); }
 
         /** Returns the square of the length(magnitude) of the vector.
         @remarks
@@ -213,7 +213,7 @@ namespace Pilot
 
         float normalise()
         {
-            float lengh = sqrt(x * x + y * y);
+            float lengh = std::hypot(x, y);
 
             if (lengh > 0.0f)
             {
