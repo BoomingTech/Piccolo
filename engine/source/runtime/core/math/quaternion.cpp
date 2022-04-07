@@ -129,7 +129,7 @@ namespace Pilot
         // The quaternion representing the rotation is
         //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
 
-        float sqr_len = std::hypot(x, y, z);
+        float sqr_len = x * x + y * y + z * z;
         if (sqr_len > 0.0)
         {
             angle         = 2.0 * Math::acos(w);
