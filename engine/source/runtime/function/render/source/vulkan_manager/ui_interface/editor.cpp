@@ -4,7 +4,7 @@
 
 #include <glm/gtx/matrix_decompose.hpp>
 
-#include <string.h>
+#include <cstring>
 
 namespace Pilot
 {
