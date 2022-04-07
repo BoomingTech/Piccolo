@@ -34,6 +34,6 @@ mkdir -p "engine/shader/generated/spv"
 
 export CC=clang
 export CXX=clang++
-cmake -S engine -B build "${CMAKE_ARG_BUILD_TYPE_CONFIG}" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake -S . -B build "${CMAKE_ARG_BUILD_TYPE_CONFIG}" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 cmake --build "${MY_DIR}/build" -- -j

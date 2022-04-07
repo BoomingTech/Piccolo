@@ -57,7 +57,7 @@ You may execute the **build_windows.bat**. This batch file will generate the pro
 
 Or you can use the following command to generate the **Visual Studio** project firstly, then open the solution in the build directory and build it manually.
 ```
-cmake -S engine/ -B build
+cmake -S . -B build
 ```
 
 ### Build on macOS
@@ -68,7 +68,7 @@ To compile Pilot, you must have the most recent version of Xcode installed.
 Then run 'cmake' from the project's root directory, to generate a project of Xcode.
 
 ```
-cmake -S engine/ -B build -G "Xcode"
+cmake -S . -B build -G "Xcode"
 ```
 and you can build the project with 
 ```
