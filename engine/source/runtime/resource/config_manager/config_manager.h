@@ -8,7 +8,6 @@ namespace Pilot
 {
     class ConfigManager final : public PublicSingleton<ConfigManager>
     {
-        friend class PublicSingleton<ConfigManager>;
 
     public:
         ConfigManager(const ConfigManager&) = delete;
@@ -30,12 +29,12 @@ namespace Pilot
 
         void clear();
 
-        const std::filesystem::path& getRootFolder() const;
-        const std::filesystem::path& getAssetFolder() const;
-        const std::filesystem::path& getSchemaFolder() const;
-        const std::filesystem::path& getDefaultWorldPath() const;
-        const std::filesystem::path& getEditorBigIconPath() const;
-        const std::filesystem::path& getEditorSmallIconPath() const;
-        const std::filesystem::path& getEditorFontPath() const;
+		const std::filesystem::path& getRootFolder() const { return m_root_folder; };
+		const std::filesystem::path& getAssetFolder() const { return m_asset_folder; };
+		const std::filesystem::path& getSchemaFolder() const { return m_schema_folder; };
+		const std::filesystem::path& getDefaultWorldPath() const { return m_default_world_path; };
+		const std::filesystem::path& getEditorBigIconPath() const { return m_editor_big_icon_path; };
+		const std::filesystem::path& getEditorSmallIconPath() const { return m_editor_small_icon_path; };
+		const std::filesystem::path& getEditorFontPath() const { return m_editor_font_path; };
     };
 } // namespace Pilot

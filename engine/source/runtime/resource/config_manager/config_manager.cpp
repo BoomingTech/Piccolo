@@ -54,17 +54,4 @@ namespace Pilot
         m_default_world_path.clear();
     }
 
-    const std::filesystem::path& ConfigManager::getRootFolder() const { return m_root_folder; }
-
-    const std::filesystem::path& ConfigManager::getAssetFolder() const { return m_asset_folder; }
-
-    const std::filesystem::path& ConfigManager::getSchemaFolder() const { return m_schema_folder; }
-
-    const std::filesystem::path& ConfigManager::getDefaultWorldPath() const { return m_default_world_path; }
-
-    const std::filesystem::path& ConfigManager::getEditorBigIconPath() const { return m_editor_big_icon_path; }
-
-    const std::filesystem::path& ConfigManager::getEditorSmallIconPath() const { return m_editor_small_icon_path; }
-
-    const std::filesystem::path& ConfigManager::getEditorFontPath() const { return m_editor_font_path; }
 } // namespace Pilot
