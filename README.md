@@ -32,11 +32,19 @@ To build Pilot, you must first install the following tools.
 ### Ubuntu 20.04
  - apt install the following packages
 ```
-sudo apt install git
+sudo apt install libxrandr-dev
+sudo apt install libxrender-dev
+sudo apt install libxinerama-dev
+sudo apt install libxcursor-dev
+sudo apt install libxi-dev
+sudo apt install libglvnd-dev
+sudo apt install libvulkan-dev
 sudo apt install cmake
 sudo apt install clang
-sudo apt install libxcb1-dev
-sudo apt install libvulkan-dev
+sudo apt install libc++-dev
+sudo apt install libglew-dev
+sudo apt install libglfw3-dev
+sudo apt install libtbb-dev
 sudo apt install vulkan-validationlayers
 sudo apt install mesa-vulkan-drivers
 ```  
@@ -68,5 +76,5 @@ cmake --build build --config Release
 ```
 
 ### Build on Ubuntu 20.04 
-You can execute the **build_linux.sh** to build the binaries.  
-  
+You can execute the **build_linux.sh** to build the binaries.
+
