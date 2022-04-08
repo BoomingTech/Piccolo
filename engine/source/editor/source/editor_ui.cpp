@@ -679,6 +679,9 @@ namespace Pilot
         // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
 #if defined(__MACH__)
+            // The dpi_scale is not reactive to DPI changes or monitor switching, it might be a bug from ImGui.
+            // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
+            // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
             float dpi_scale = main_viewport->DpiScale;
             m_editor->onWindowChanged(new_window_pos.x * dpi_scale,
                                       new_window_pos.y * dpi_scale,
