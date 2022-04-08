@@ -2,6 +2,7 @@
 
 #include "runtime/core/math/random.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -207,14 +208,14 @@ namespace Pilot
     public:
         Math();
 
-        static float abs(float value) { return float(fabs(value)); }
+        static float abs(float value) { return std::fabs(value); }
         static bool  isNan(float f) { return std::isnan(f); }
         static float sqr(float value) { return value * value; }
-        static float sqrt(float fValue) { return float(::sqrt(fValue)); }
+        static float sqrt(float fValue) { return std::sqrt(fValue); }
         static float invSqrt(float value) { return 1.f / sqrt(value); }
         static bool  realEqual(float a, float b, float tolerance = std::numeric_limits<float>::epsilon());
-        static float clamp(float v, float min, float max);
-        static float getMaxElement(float x, float y, float z);
+        static float clamp(float v, float min, float max) { return std::clamp(v, min, max); }
+        static float getMaxElement(float x, float y, float z) { return std::max({x, y, z}); }
 
         static float degreesToRadians(float degrees);
         static float radiansToDegrees(float radians);
@@ -223,39 +224,39 @@ namespace Pilot
         static float angleUnitsToDegrees(float units);
         static float degreesToAngleUnits(float degrees);
 
-        static float  sin(const Radian& rad) { return ::sin(rad.valueRadians()); }
-        static float  sin(float value) { return ::sin(value); }
-        static float  cos(const Radian& rad) { return ::cos(rad.valueRadians()); }
-        static float  cos(float value) { return ::cos(value); }
-        static float  tan(const Radian& rad) { return ::tan(rad.valueRadians()); }
-        static float  tan(float value) { return ::tan(value); }
+        static float  sin(const Radian& rad) { return std::sin(rad.valueRadians()); }
+        static float  sin(float value) { return std::sin(value); }
+        static float  cos(const Radian& rad) { return std::cos(rad.valueRadians()); }
+        static float  cos(float value) { return std::cos(value); }
+        static float  tan(const Radian& rad) { return std::tan(rad.valueRadians()); }
+        static float  tan(float value) { return std::tan(value); }
         static Radian acos(float value);
         static Radian asin(float value);
-        static Radian atan(float value) { return Radian(::atan(value)); }
-        static Radian atan2(float y_v, float x_v) { return Radian(::atan2(y_v, x_v)); }
+        static Radian atan(float value) { return Radian(std::atan(value)); }
+        static Radian atan2(float y_v, float x_v) { return Radian(std::atan2(y_v, x_v)); }
 
         template<class T>
         static constexpr T max(const T A, const T B)
         {
-            return (A >= B) ? A : B;
+            return std::max(A, B);
         }
 
         template<class T>
         static constexpr T min(const T A, const T B)
         {
-            return (A <= B) ? A : B;
+            return std::min(A, B);
         }
 
         template<class T>
         static constexpr T max3(const T A, const T B, const T C)
         {
-            return max(max(A, B), C);
+            return std::max({A, B, C});
         }
 
         template<class T>
         static constexpr T min3(const T A, const T B, const T C)
         {
-            return min(min(A, B), C);
+            return std::min({A, B, C});
         }
 
         static Matrix4x4
