@@ -75,7 +75,7 @@ and you can build the project with
 cmake --build build --config Release
 ```
 
-Or you can execute the **build_macOS.sh** to build the binaries.
+Or you can execute the **build_macos.sh** to build the binaries.
 
 ### Build on Ubuntu 20.04
 You can execute the **build_linux.sh** to build the binaries.
