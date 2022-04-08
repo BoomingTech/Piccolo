@@ -1,10 +1,12 @@
 #ifndef GLFW_INCLUDE_VULKAN
 #define GLFW_INCLUDE_VULKAN 1
 #endif
+#include "GLFW/glfw3.h"
 
 #include "runtime/function/render/include/render/surface.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include <algorithm>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <stb_image.h>
@@ -23,8 +25,16 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-    io.Fonts->AddFontFromFileTTF(
-        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), 16, nullptr, nullptr);
+    {
+        float xscale, yscale;
+        glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), &xscale, &yscale);
+        std::cout<<"scale: "<<xscale<<" "<<yscale<<"\n";
+        float scale_ratio = std::min<float>(xscale, yscale);
+        io.Fonts->AddFontFromFileTTF(ConfigManager::getInstance().getEditorFontPath().generic_string().data(),
+                                     16 * scale_ratio,
+                                     nullptr,
+                                     nullptr);
+    }
     io.Fonts->Build();
     style.WindowPadding   = ImVec2(1.0, 0);
     style.FramePadding    = ImVec2(14.0, 2.0f);
