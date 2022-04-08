@@ -18,4 +18,4 @@ jobs:
           submodules: 'true'
 
       - name: Build
-        run: ./build_macOS.sh ${{matrix.configuration}}
+        run: ./build_macos.sh ${{matrix.configuration}}
