@@ -44,6 +44,7 @@ namespace Pilot
         void        createComponentUI(Reflection::ReflectionInstance& instance);
         void        createLeafNodeUI(Reflection::ReflectionInstance& instance);
         std::string getLeafUINodeParentLabel();
+        bool        isCursorInRect(Vector2 pos, Vector2 size) const;
 
         void showEditorUI();
         void showEditorMenu(bool* p_open);
