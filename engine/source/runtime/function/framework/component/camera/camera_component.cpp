@@ -80,12 +80,6 @@ namespace Pilot
         m_left   = q_yaw * q_pitch * m_left;
         m_up     = m_foward.crossProduct(m_left);
 
-        // glm::vec3 eye = GLMUtil::fromVec3(eye_pos);
-        // glm::vec3 forwad = GLMUtil::fromVec3(m_foward);
-        // glm::vec3 up = GLMUtil::fromVec3(m_up);
-
-        // Matrix4x4 desired_mat = GLMUtil::toMat4x4(glm::lookAtRH(eye, eye + forwad, up));
-
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, m_foward, m_up);
         SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
 
@@ -98,33 +92,28 @@ namespace Pilot
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
-        ThirdPersonCameraParameter* para = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
+        ThirdPersonCameraParameter* param = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
 
         Quaternion q_yaw, q_pitch;
 
         q_yaw.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_yaw, Vector3::UNIT_Z);
         q_pitch.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_pitch, m_left);
 
-        para->m_cursor_pitch = para->m_cursor_pitch * q_pitch;
+        param->m_cursor_pitch = param->m_cursor_pitch * q_pitch;
 
         TransformComponent* parent_transform  = m_parent_object->tryGetComponent(TransformComponent);
-        const float         vertical_offset   = para->m_vertical_offset;
-        const float         horizontal_offset = para->m_horizontal_offset;
+        const float         vertical_offset   = param->m_vertical_offset;
+        const float         horizontal_offset = param->m_horizontal_offset;
         Vector3             offset            = Vector3(0, horizontal_offset, vertical_offset);
 
         parent_transform->setRotation(q_yaw * parent_transform->getRotation());
 
-        Vector3 center_pos = parent_transform->getPosition() + Vector3::UNIT_Z * vertical_offset - 0.5f;
+        Vector3 center_pos = parent_transform->getPosition() + Vector3::UNIT_Z * vertical_offset;
         Vector3 camera_pos =
-            parent_transform->getRotation() * para->m_cursor_pitch * offset + parent_transform->getPosition();
+            parent_transform->getRotation() * param->m_cursor_pitch * offset + parent_transform->getPosition();
         Vector3 camera_forward = center_pos - camera_pos;
-        Vector3 camera_up      = parent_transform->getRotation() * para->m_cursor_pitch * Vector3::UNIT_Z;
+        Vector3 camera_up      = parent_transform->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
 
-        // glm::vec3 pos = camera_pos.toGLMVec3();
-        // glm::vec3 forwad = camera_forward.toGLMVec3();
-        // glm::vec3 up = camera_up.toGLMVec3();
-
-        // auto desired_mat = glm::lookAtRH(pos, pos + forwad, up);
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
         SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
     }
