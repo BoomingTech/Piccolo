@@ -1,0 +1,22 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    # windows 10 with latest image
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [debug, release]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+        
+      - name: Build
+        run: ./build_windows.bat ${{matrix.configuration}} 
