@@ -222,6 +222,11 @@ namespace Pilot
         return parent_label;
     }
 
+    bool EditorUI::isCursorInRect(Vector2 pos, Vector2 size) const
+    {
+        return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
+    }
+
     GObject* EditorUI::getSelectedGObject() const
     {
         GObject* selected_object = nullptr;
@@ -633,7 +638,7 @@ namespace Pilot
             {
                 ImGui::PushID("Editor Mode");
                 ImGui::Button("Editor Mode");
-                if (ImGui::IsItemClicked(0))
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     m_is_editor_mode = !m_is_editor_mode;
                     drawSelectedEntityAxis();
@@ -645,7 +650,7 @@ namespace Pilot
             else
             {
                 ImGui::Button("Game Mode");
-                if (ImGui::IsItemClicked(0))
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     m_is_editor_mode = !m_is_editor_mode;
                     g_is_editor_mode = true;
@@ -923,8 +928,7 @@ namespace Pilot
             {
                 glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-                if (m_mouse_x > m_engine_window_pos.x && m_mouse_x < (m_engine_window_pos.x + m_engine_window_size.x) &&
-                    m_mouse_y > m_engine_window_pos.y && m_mouse_y < (m_engine_window_pos.y + m_engine_window_size.y))
+                if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
                 {
                     Vector2 cursor_uv = Vector2((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
                                                 (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
@@ -951,8 +955,7 @@ namespace Pilot
             return;
         }
         // wheel scrolled up = zoom in by 2 extra degrees
-        if (m_mouse_x > m_engine_window_pos.x && m_mouse_x < (m_engine_window_pos.x + m_engine_window_size.x) &&
-            m_mouse_y > m_engine_window_pos.y && m_mouse_y < (m_engine_window_pos.y + m_engine_window_size.y))
+        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
         {
             m_tmp_uistate->m_editor_camera->zoom((float)yoffset * 2.0f);
         }
@@ -969,8 +972,7 @@ namespace Pilot
         if (current_active_level == nullptr)
             return;
 
-        if (m_mouse_x > m_engine_window_pos.x && m_mouse_x < (m_engine_window_pos.x + m_engine_window_size.x) &&
-            m_mouse_y > m_engine_window_pos.y && m_mouse_y < (m_engine_window_pos.y + m_engine_window_size.y))
+        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
         {
             if (key == GLFW_MOUSE_BUTTON_LEFT)
             {
