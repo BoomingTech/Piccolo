@@ -323,7 +323,7 @@ namespace Pilot
         return SceneBuffers::imageFromHandle(handle);
     }
 
-    void SceneManager::addSceneObject(const GameObjectDesc&& go_desc) { m_go_descs.push_back(go_desc); }
+    void SceneManager::addSceneObject(const GameObjectDesc& go_desc) { m_go_descs.push_back(go_desc); }
 
     void SceneManager::syncSceneObjects()
     {
@@ -675,7 +675,7 @@ namespace Pilot
             if (m_mesh_handles_to_release.empty())
                 break;
 
-            auto mesh_handle = m_mesh_handles_to_release.front();
+            auto& mesh_handle = m_mesh_handles_to_release.front();
 
             RenderMesh mesh;
             mesh.m_vertexBuffer = mesh_handle.m_vertex_handle;
@@ -712,7 +712,7 @@ namespace Pilot
             if (m_material_handles_to_release.empty())
                 break;
 
-            auto material_handle = m_material_handles_to_release.front();
+            auto& material_handle = m_material_handles_to_release.front();
 
             Material material;
             material.m_baseColorTexture         = material_handle.m_image_handle0;
@@ -749,15 +749,15 @@ namespace Pilot
             if (m_skeleton_binding_handles_to_release.empty())
                 break;
 
-            auto handle = m_skeleton_binding_handles_to_release.front();
+            auto& skeleton_binding_handle = m_skeleton_binding_handles_to_release.front();
 
-            auto find_file = m_handle_skeleton_binding_map.find(handle);
+            auto find_file = m_handle_skeleton_binding_map.find(skeleton_binding_handle);
             if (find_file != m_handle_skeleton_binding_map.end())
             {
                 m_skeleton_binding_handle_map.erase(find_file->second);
-                m_handle_skeleton_binding_map.erase(handle);
+                m_handle_skeleton_binding_map.erase(skeleton_binding_handle);
             }
-            SceneBuffers::destroy(handle);
+            SceneBuffers::destroy(skeleton_binding_handle);
 
             m_skeleton_binding_handles_to_release.pop_front();
 
