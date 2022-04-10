@@ -85,10 +85,10 @@ namespace Pilot
 
             if (axis_mode == 0 || axis_mode == 2) // transition axis & scale axis
             {
-                float const DIST_THRESHOLD   = 0.6f;
-                float const EDGE_OF_AXIS_MIN = 0.1f;
-                float const EDGE_OF_AXIS_MAX = 2.0f;
-                float const AXIS_LENGTH      = 2.0f;
+                const float DIST_THRESHOLD   = 0.6f;
+                const float EDGE_OF_AXIS_MIN = 0.1f;
+                const float EDGE_OF_AXIS_MAX = 2.0f;
+                const float AXIS_LENGTH      = 2.0f;
 
                 float max_dist = 0.0f;
                 // whether the ray (camera to mouse point) on any plane
@@ -148,14 +148,13 @@ namespace Pilot
             }
             else if (axis_mode == 1) // rotation axis
             {
-                float const DIST_THRESHOLD = 0.2f;
+                const float DIST_THRESHOLD = 0.2f;
 
                 float min_dist = 1e10f;
                 for (int i = 0; i < 3; ++i)
                 {
-                    float dist = abs(1 - glm::sqrt(intersect_pt[i].x * intersect_pt[i].x +
-                                                   intersect_pt[i].y * intersect_pt[i].y +
-                                                   intersect_pt[i].z * intersect_pt[i].z));
+                    const float dist =
+                        std::fabs(1 - std::hypot(intersect_pt[i].x, intersect_pt[i].y, intersect_pt[i].z));
                     if ((dist < DIST_THRESHOLD) && (dist < min_dist))
                     {
                         min_dist        = dist;

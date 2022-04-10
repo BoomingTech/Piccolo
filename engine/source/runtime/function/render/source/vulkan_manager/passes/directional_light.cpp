@@ -555,18 +555,12 @@ namespace Pilot
                     perframe_dynamic_offset));
             perframe_storage_buffer_object = _mesh_directional_light_shadow_perframe_storage_buffer_object;
 
-            for (auto& pair1 : directional_light_mesh_drawcall_batch)
+            for (auto& [material, mesh_instanced] : directional_light_mesh_drawcall_batch)
             {
-                VulkanPBRMaterial& material       = (*pair1.first);
-                auto&              mesh_instanced = pair1.second;
-
                 // TODO: render from near to far
 
-                for (auto& pair2 : mesh_instanced)
+                for (auto& [mesh, mesh_nodes] : mesh_instanced)
                 {
-                    VulkanMesh& mesh       = (*pair2.first);
-                    auto&       mesh_nodes = pair2.second;
-
                     uint32_t total_instance_count = static_cast<uint32_t>(mesh_nodes.size());
                     if (total_instance_count > 0)
                     {
@@ -576,20 +570,20 @@ namespace Pilot
                                                                      _render_pipelines[0].layout,
                                                                      1,
                                                                      1,
-                                                                     &mesh.mesh_vertex_blending_descriptor_set,
+                                                                     &mesh->mesh_vertex_blending_descriptor_set,
                                                                      0,
                                                                      NULL);
 
-                        VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer};
+                        VkBuffer     vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
                         VkDeviceSize offsets[]        = {0};
                         m_p_vulkan_context->_vkCmdBindVertexBuffers(
                             m_command_info._current_command_buffer, 0, 1, vertex_buffers, offsets);
                         m_p_vulkan_context->_vkCmdBindIndexBuffer(
-                            m_command_info._current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+                            m_command_info._current_command_buffer, mesh->mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         uint32_t drawcall_max_instance_count =
-                            (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::model_matrices) /
-                             sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::model_matrices[0]));
+                            (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
+                             sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
                         uint32_t drawcall_count =
                             roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
@@ -625,9 +619,9 @@ namespace Pilot
                                         perdrawcall_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                perdrawcall_storage_buffer_object.model_matrices[i] =
+                                perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
                                     mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                                perdrawcall_storage_buffer_object.enable_vertex_blendings[i] =
+                                perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
                                     mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
                                             .enable_vertex_blending ?
                                         1.0 :
@@ -704,7 +698,7 @@ namespace Pilot
                                 (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
                                 dynamic_offsets);
                             m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
-                                                                  mesh.mesh_index_count,
+                                                                  mesh->mesh_index_count,
                                                                   current_instance_count,
                                                                   0,
                                                                   0,

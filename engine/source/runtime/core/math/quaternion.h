@@ -125,13 +125,12 @@ namespace Pilot
         // functions of a quaternion
         float dot(const Quaternion& rkQ) const { return w * rkQ.w + x * rkQ.x + y * rkQ.y + z * rkQ.z; }
 
-        float length() const { return sqrt(w * w + x * x + y * y + z * z); }
+        float length() const { return std::sqrt(w * w + x * x + y * y + z * z); }
 
         /// Normalizes this quaternion, and returns the previous length
         void normalise(void)
         {
-            float len    = w * w + x * x + y * y + z * z;
-            float factor = 1.0f / sqrt(len);
+            float factor = 1.0f / this->length();
             *this        = *this * factor;
         }
 

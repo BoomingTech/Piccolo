@@ -1,4 +1,4 @@
 @echo off
 
-cmake -S engine/ -B build -A x64
+cmake -S . -B build
 cmake --build build --config Release

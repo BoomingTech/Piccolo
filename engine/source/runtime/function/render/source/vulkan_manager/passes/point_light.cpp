@@ -597,8 +597,8 @@ namespace Pilot
                             m_command_info._current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         uint32_t drawcall_max_instance_count =
-                            (sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::model_matrices) /
-                             sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::model_matrices[0]));
+                            (sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
+                             sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
                         uint32_t drawcall_count =
                             roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
@@ -632,9 +632,9 @@ namespace Pilot
                                     perdrawcall_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                perdrawcall_storage_buffer_object.model_matrices[i] =
+                                perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
                                     mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                                perdrawcall_storage_buffer_object.enable_vertex_blendings[i] =
+                                perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
                                     mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
                                             .enable_vertex_blending ?
                                         1.0 :
