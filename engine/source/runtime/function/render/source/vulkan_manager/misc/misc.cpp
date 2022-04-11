@@ -207,20 +207,28 @@ namespace Pilot
                           (b.max_bound.y - b.min_bound.y) * 0.5,
                           (b.max_bound.z - b.min_bound.z) * 0.5);
 
-        glm::vec3 min = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
-        glm::vec3 max = glm::vec3(FLT_MIN, FLT_MIN, FLT_MIN);
+        glm::vec3 min;
+        glm::vec3 max;
 
         // Compute and transform the corners and find new min/max bounds.
         for (size_t i = 0; i < CORNER_COUNT; ++i)
         {
-            glm::vec3 corner        = extents * g_BoxOffset[i] + center;
-            glm::vec4 corner_with_w = m * glm::vec4(corner.x, corner.y, corner.z, 1.0);
-            corner                  = glm::vec3(corner_with_w.x / corner_with_w.w,
-                               corner_with_w.y / corner_with_w.w,
-                               corner_with_w.z / corner_with_w.w);
+            glm::vec3 corner_before = extents * g_BoxOffset[i] + center;
+            glm::vec4 corner_with_w = m * glm::vec4(corner_before.x, corner_before.y, corner_before.z, 1.0);
+            glm::vec3 corner        = glm::vec3(corner_with_w.x / corner_with_w.w,
+                                         corner_with_w.y / corner_with_w.w,
+                                         corner_with_w.z / corner_with_w.w);
 
-            min = glm::min(min, corner);
-            max = glm::max(max, corner);
+            if (0 == i)
+            {
+                min = corner;
+                max = corner;
+            }
+            else
+            {
+                min = glm::min(min, corner);
+                max = glm::max(max, corner);
+            }
         }
 
         bounding_box_t b_out;
@@ -313,35 +321,29 @@ namespace Pilot
         glm::mat4 light_view;
         glm::mat4 light_proj;
         {
-            bounding_box_t merged_bound_box;
-            merged_bound_box = frustum_bounding_box;
-
-            // be careful
-            merged_bound_box.min_bound.makeCeil(scene_bounding_box.min_bound);
-            merged_bound_box.max_bound.makeFloor(scene_bounding_box.max_bound);
-
-            // merged_bound_box.min_bound = glm::max(frustum_bounding_box.min_bound, scene_bounding_box.min_bound);
-            // merged_bound_box.max_bound = glm::min(frustum_bounding_box.max_bound, scene_bounding_box.max_bound);
-
-            glm::vec3 box_center((merged_bound_box.max_bound.x + merged_bound_box.min_bound.x) * 0.5,
-                                 (merged_bound_box.max_bound.y + merged_bound_box.min_bound.y) * 0.5,
-                                 (merged_bound_box.max_bound.z + merged_bound_box.min_bound.z));
-            glm::vec3 box_extents((merged_bound_box.max_bound.x - merged_bound_box.min_bound.x) * 0.5,
-                                  (merged_bound_box.max_bound.y - merged_bound_box.min_bound.y) * 0.5,
-                                  (merged_bound_box.max_bound.z - merged_bound_box.min_bound.z) * 0.5);
+            glm::vec3 box_center((frustum_bounding_box.max_bound.x + frustum_bounding_box.min_bound.x) * 0.5,
+                                 (frustum_bounding_box.max_bound.y + frustum_bounding_box.min_bound.y) * 0.5,
+                                 (frustum_bounding_box.max_bound.z + frustum_bounding_box.min_bound.z));
+            glm::vec3 box_extents((frustum_bounding_box.max_bound.x - frustum_bounding_box.min_bound.x) * 0.5,
+                                  (frustum_bounding_box.max_bound.y - frustum_bounding_box.min_bound.y) * 0.5,
+                                  (frustum_bounding_box.max_bound.z - frustum_bounding_box.min_bound.z) * 0.5);
 
             glm::vec3 eye =
                 box_center + GLMUtil::fromVec3(scene.m_directionalLight.m_direction) * glm::length(box_extents);
             glm::vec3 center = box_center;
             light_view       = glm::lookAtRH(eye, center, glm::vec3(0.0, 0.0, 1.0));
 
-            bounding_box_t merged_bound_box_light_view = bounding_box_transform(merged_bound_box, light_view);
-            light_proj                                 = glm::orthoRH(merged_bound_box_light_view.min_bound.x,
-                                      merged_bound_box_light_view.max_bound.x,
-                                      merged_bound_box_light_view.min_bound.y,
-                                      merged_bound_box_light_view.max_bound.y,
-                                      -merged_bound_box_light_view.max_bound.z,
-                                      -merged_bound_box_light_view.min_bound.z);
+            bounding_box_t frustum_bounding_box_light_view = bounding_box_transform(frustum_bounding_box, light_view);
+            bounding_box_t scene_bounding_box_light_view   = bounding_box_transform(scene_bounding_box, light_view);
+
+            light_proj = glm::orthoRH(
+                std::max(frustum_bounding_box_light_view.min_bound.x, scene_bounding_box_light_view.min_bound.x),
+                std::min(frustum_bounding_box_light_view.max_bound.x, scene_bounding_box_light_view.max_bound.x),
+                std::max(frustum_bounding_box_light_view.min_bound.y, scene_bounding_box_light_view.min_bound.y),
+                std::min(frustum_bounding_box_light_view.max_bound.y, scene_bounding_box_light_view.max_bound.y),
+                -scene_bounding_box_light_view.max_bound
+                     .z, // the objects which are nearer than the frustum bounding box may caster shadow as well
+                -std::max(frustum_bounding_box_light_view.min_bound.z, scene_bounding_box_light_view.min_bound.z));
         }
 
         glm::mat4 light_proj_view = (light_proj * light_view);
