@@ -30,7 +30,7 @@ namespace Pilot
         void   tick(float delta_time);
         Level* getCurrentActiveLevel() const { return m_current_active_level; }
 
-	protected:
+    protected:
         WorldManager() = default;
 
     private:

@@ -36,7 +36,7 @@ namespace Pilot
     class InputSystem : public PublicSingleton<InputSystem>
     {
         friend class PublicSingleton<InputSystem>;
-		
+
         static unsigned int k_complement_control_command;
 
     public:
@@ -55,7 +55,7 @@ namespace Pilot
         unsigned int getGameCommand() const { return m_game_command; }
         unsigned int getEditorCommand() const { return m_editor_command; }
 
-	protected:
+    protected:
         InputSystem() = default;
 
     private:
