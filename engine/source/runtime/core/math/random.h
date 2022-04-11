@@ -1,7 +1,7 @@
 #pragma once
 
+#include <algorithm>
 #include <cfloat>
-#include <execution>
 #include <random>
 
 namespace Chaos
@@ -64,12 +64,7 @@ namespace Chaos
             // using ResultType = typename DistributionFunc::result_type;
 
             DistributionFunc dist(std::forward<Params>(params)...);
-#if defined(__linux__)
-            return std::generate(
-                std::execution::seq, std::begin(range), std::end(range), [&] { return dist(m_engine); });
-#else
             return std::generate(std::begin(range), std::end(range), [&] { return dist(m_engine); });
-#endif
         }
     };
 
