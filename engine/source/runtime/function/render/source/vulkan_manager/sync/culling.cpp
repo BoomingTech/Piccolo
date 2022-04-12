@@ -23,7 +23,8 @@ void Pilot::PVulkanManager::culling(class Scene&                scene,
 
         for (RenderMesh const& mesh : scene.getMeshes())
         {
-            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.m_min, mesh.m_bounding_box.m_max};
+            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.getMinCorner(),
+                                                    mesh.m_bounding_box.getMaxCorner()};
 
             // Frustum Culling
             if (tiled_frustum_intersect_box(
@@ -88,7 +89,8 @@ void Pilot::PVulkanManager::culling(class Scene&                scene,
 
         for (RenderMesh const& mesh : scene.getMeshes())
         {
-            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.m_min, mesh.m_bounding_box.m_max};
+            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.getMinCorner(),
+                                                    mesh.m_bounding_box.getMaxCorner()};
 
             // Culling
             bool intersect_with_point_lights = true;
@@ -163,7 +165,8 @@ void Pilot::PVulkanManager::culling(class Scene&                scene,
 
         for (RenderMesh const& mesh : scene.getMeshes())
         {
-            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.m_min, mesh.m_bounding_box.m_max};
+            bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.getMinCorner(),
+                                                    mesh.m_bounding_box.getMaxCorner()};
 
             // Frustum Culling
             if (tiled_frustum_intersect_box(
