@@ -1,5 +1,6 @@
 #include "runtime/function/framework/component/motor/motor_component.h"
 
+#include "runtime/core/base/macro.h"
 #include "runtime/core/base/public_singleton.h"
 
 #include "runtime/engine.h"
@@ -12,8 +13,33 @@
 namespace Pilot
 {
     MotorComponent::MotorComponent(const MotorRes& motor_param, GObject* parent_object) :
-        Component {parent_object}, m_move_speed {motor_param.m_move_speed}, m_cct {motor_param.m_half_extent}
-    {}
+        Component(parent_object), m_move_speed(motor_param.m_move_speed)
+    {
+        m_motor_res.m_move_speed = motor_param.m_move_speed;
+        if (motor_param.m_controller_config.getTypeName() == "PhysicsControllerConfig")
+        {
+            auto controller_config                            = new PhysicsControllerConfig;
+            m_motor_res.m_controller_config.getPtrReference() = controller_config;
+            *controller_config = *static_cast<PhysicsControllerConfig*>(motor_param.m_controller_config.operator->());
+
+            m_motor_res.m_controller_type = ControllerType::physics;
+            m_controller                  = new CharacterController(controller_config->m_capsule_shape);
+        }
+        else if (motor_param.m_controller_config != nullptr)
+        {
+            m_motor_res.m_controller_type = ControllerType::invalid;
+            LOG_ERROR("invalid controller type, not able to move");
+        }
+    }
+
+    MotorComponent::~MotorComponent()
+    {
+        if (m_motor_res.m_controller_type == ControllerType::physics)
+        {
+            delete m_controller;
+            m_controller = nullptr;
+        }
+    }
 
     void MotorComponent::tick(float delta_time)
     {
@@ -25,7 +51,6 @@ namespace Pilot
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
-
         TransformComponent* transform_component =
             m_parent_object->tryGetComponent<TransformComponent>("TransformComponent");
 
@@ -41,7 +66,20 @@ namespace Pilot
             calculatedDesiredMoveDirection(command, transform_component->getRotation());
 
         const Vector3 displacement = desired_move_direction * m_move_speed * m_move_speed_ratio * delta_time;
-        transform_component->setPosition(m_cct.move(transform_component->getPosition(), displacement));
+
+        Vector3 final_position = transform_component->getPosition();
+        switch (m_motor_res.m_controller_type)
+        {
+            case ControllerType::none:
+                final_position += displacement;
+                break;
+            case ControllerType::physics:
+                final_position = m_controller->move(final_position, displacement);
+                break;
+            default:
+                break;
+        }
+        transform_component->setPosition(final_position);
     }
 
     void MotorComponent::calculatedDesiredMoveSpeedRatio(unsigned int command)

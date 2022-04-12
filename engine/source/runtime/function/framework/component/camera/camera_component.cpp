@@ -16,21 +16,21 @@ namespace Pilot
         Component {parent_object}, m_camera_param {camera_param}
     {
         const std::string& camera_type_name = camera_param.m_parameter.getTypeName();
-        if (camera_type_name.compare("FirstPersonCameraParameter") == 0)
+        if (camera_type_name == "FirstPersonCameraParameter")
         {
             m_camera_mode              = CameraMode::first_person;
             m_camera_param.m_parameter = PILOT_REFLECTION_NEW(FirstPersonCameraParameter);
             *static_cast<FirstPersonCameraParameter*>(m_camera_param.m_parameter) =
                 *static_cast<FirstPersonCameraParameter*>(camera_param.m_parameter.operator->());
         }
-        else if (camera_type_name.compare("ThirdPersonCameraParameter") == 0)
+        else if (camera_type_name == "ThirdPersonCameraParameter")
         {
             m_camera_mode              = CameraMode::third_person;
             m_camera_param.m_parameter = PILOT_REFLECTION_NEW(ThirdPersonCameraParameter);
             *static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter) =
                 *static_cast<ThirdPersonCameraParameter*>(camera_param.m_parameter.operator->());
         }
-        else if (camera_type_name.compare("FreeCameraParameter") == 0)
+        else if (camera_type_name == "FreeCameraParameter")
         {
             m_camera_mode              = CameraMode::free;
             m_camera_param.m_parameter = PILOT_REFLECTION_NEW(FreeCameraParameter);
@@ -117,5 +117,4 @@ namespace Pilot
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
         SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
     }
-
 } // namespace Pilot

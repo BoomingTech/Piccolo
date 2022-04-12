@@ -2,9 +2,9 @@
 
 #include "runtime/core/math/matrix4.h"
 #include "runtime/core/math/transform.h"
-#include "runtime/engine.h"
 
 #include "runtime/function/framework/component/component.h"
+#include "runtime/function/framework/object/object.h"
 
 namespace Pilot
 {
@@ -22,11 +22,7 @@ namespace Pilot
 
     public:
         TransformComponent() {}
-        TransformComponent(const Transform& transform, GObject* /*unused*/)
-        {
-            m_transform_buffer[0] = transform;
-            m_transform_buffer[1] = transform;
-        }
+        TransformComponent(const Transform& transform, GObject* parent_gobject);
 
         ~TransformComponent() override {}
 
@@ -34,28 +30,20 @@ namespace Pilot
         Vector3    getScale() const { return m_transform_buffer[m_current_index].m_scale; }
         Quaternion getRotation() const { return m_transform_buffer[m_current_index].m_rotation; }
 
-        void setPosition(const Vector3& new_translation)
-        {
-            m_transform_buffer[m_next_index].m_position = new_translation;
-        }
-        void setScale(const Vector3& new_scale) { m_transform_buffer[m_next_index].m_scale = new_scale; }
-        void setRotation(const Quaternion& new_rotation) { m_transform_buffer[m_next_index].m_rotation = new_rotation; }
+        void setPosition(const Vector3& new_translation);
+
+        void setScale(const Vector3& new_scale);
+
+        void setRotation(const Quaternion& new_rotation);
 
         const Transform& getTransformConst() const { return m_transform_buffer[m_current_index]; }
         Transform&       getTransform() { return m_transform_buffer[m_next_index]; }
 
         Matrix4x4 getMatrix() const { return m_transform_buffer[m_current_index].getMatrix(); }
 
-        void tick(float delta_time) override
-        {
-            std::swap(m_current_index, m_next_index);
-            m_transform = m_transform_buffer[m_current_index];
-
-            if (g_is_editor_mode)
-            {
-                m_transform_buffer[m_next_index] = m_transform;
-            }
-        }
+        void tick(float delta_time) override;
         void destroy() override {}
+
+        void tryUpdateRigidBodyComponent();
     };
 } // namespace Pilot
