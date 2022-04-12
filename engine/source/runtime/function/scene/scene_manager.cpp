@@ -555,7 +555,7 @@ namespace Pilot
     void SceneManager::getOrCreateSkeletonBindingHandle(const std::string&           skeleton_binding_file,
                                                         VertexBufferHandle&          vertex_handle,
                                                         IndexBufferHandle&           index_handle,
-                                                        BoundingBox&                 bounding_box,
+                                                        AxisAlignedBox&              bounding_box,
                                                         SkeletonBindingBufferHandle& skeleton_binding_handle)
     {
         auto find_vertex = m_vertex_handle_map.find(skeleton_binding_file);

@@ -1,119 +1,129 @@
 {
   "shapes": [
     {
-      "$context":{
-        "local_transform": {
-          "position" : {
-            "x": 0,
-            "y": -4,
-            "z": 3.5
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
+      "local_transform": {
+        "position" : {
+          "x": 0,
+          "y": -4,
+          "z": 3.5
         },
-        "half_extents": {
-          "x": 0.15,
+        "rotate": {},
+        "scale": {
+          "x": 1,
           "y": 1,
-          "z": 3.5
+          "z": 1
         }
       },
-      "$typeName": "RigidBodyBoxShape"
-    },
-    {
-      "$context":{
-        "local_transform": {
-          "position" : {
-            "x": 0,
-            "y": -0.5,
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.15,
+            "y": 1,
             "z": 3.5
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
           }
         },
-        "half_extents": {
-          "x": 0.15,
-          "y": 1.5,
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0,
+          "y": -0.5,
           "z": 3.5
-        }
-      },
-      "$typeName": "RigidBodyBoxShape"
-    },
-    {
-      "$context":{
-        "local_transform": {
-          "position" : {
-            "x": 0,
-            "y": 3.5,
-            "z": 3.5
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
         },
-        "half_extents": {
-          "x": 0.15,
-          "y": 1.5,
-          "z": 3.5
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
         }
       },
-      "$typeName": "RigidBodyBoxShape"
-    },
-    {
-      "$context":{
-        "local_transform": {
-          "position" : {
-            "x": 0,
-            "y": -2.5,
-            "z": 0.5
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        },
-        "half_extents": {
-          "x": 0.15,
-          "y": 0.5,
-          "z": 0.5
-        }
-      },
-      "$typeName": "RigidBodyBoxShape"
-    },
-    {
-      "$context":{
-        "local_transform": {
-          "position" : {
-            "x": 0,
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.15,
             "y": 1.5,
-            "z": 0.5
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
+            "z": 3.5
           }
         },
-        "half_extents": {
-          "x": 0.15,
-          "y": 0.5,
-          "z": 0.5
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0,
+          "y": 3.5,
+          "z": 3.5
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
         }
       },
-      "$typeName": "RigidBodyBoxShape"
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.15,
+            "y": 1.5,
+            "z": 3.5
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0,
+          "y": -2.5,
+          "z": 0.5
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.15,
+            "y": 0.5,
+            "z": 0.5
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0,
+          "y": 1.5,
+          "z": 0.5
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.15,
+            "y": 0.5,
+            "z": 0.5
+          }
+        },
+        "$typeName": "Box"
+      }
     }
   ],
   "inverse_mass": 0,

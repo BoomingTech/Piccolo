@@ -12,10 +12,10 @@ namespace Pilot
     {
         REFLECTION_BODY(MotorComponent)
     public:
-        MotorComponent() : m_cct {Vector3()} {}
+        MotorComponent() {}
         MotorComponent(const MotorRes& motor_param, GObject* parent_object);
 
-        ~MotorComponent() override {}
+        ~MotorComponent() override;
 
         Vector3 getDesiredPosition() const { return m_displacement; }
 
@@ -28,12 +28,13 @@ namespace Pilot
         Vector3 calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation);
 
         META(Enable)
-        float m_move_speed {0.f};
-        META(Enable)
+        MotorRes m_motor_res;
+
+        float   m_move_speed {0.f};
         Vector3 m_displacement;
 
-        CharacterController m_cct;
-        Vector3             m_desired_move_direction;
-        float               m_move_speed_ratio {0.f};
+        Controller* m_controller {nullptr};
+        Vector3     m_desired_move_direction;
+        float       m_move_speed_ratio {0.f};
     };
 } // namespace Pilot

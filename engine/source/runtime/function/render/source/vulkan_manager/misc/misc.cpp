@@ -309,7 +309,8 @@ namespace Pilot
 
             for (RenderMesh const& mesh : scene.getMeshes())
             {
-                bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.m_min, mesh.m_bounding_box.m_max};
+                bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.getMinCorner(),
+                                                        mesh.m_bounding_box.getMaxCorner()};
 
                 bounding_box_t mesh_bounding_box_world =
                     bounding_box_transform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(mesh.m_model_matrix));

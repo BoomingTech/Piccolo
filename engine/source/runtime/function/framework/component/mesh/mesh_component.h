@@ -16,7 +16,6 @@ namespace Pilot
     {
         REFLECTION_BODY(MeshComponent)
     private:
-        // StaticMeshData* m_raw_mesh {nullptr};
         META(Enable) std::vector<GameObjectComponentDesc> m_raw_meshes;
 
     public:
