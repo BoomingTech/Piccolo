@@ -168,7 +168,7 @@ namespace Pilot
         fromRotationMatrix(rot);
     }
     //-----------------------------------------------------------------------
-    Vector3 Quaternion::xAxis(void) const
+    Vector3 Quaternion::xAxis() const
     {
         // float tx  = 2.0*x;
         float ty  = 2.0f * y;
@@ -183,7 +183,7 @@ namespace Pilot
         return Vector3(1.0f - (tyy + tzz), txy + twz, txz - twy);
     }
     //-----------------------------------------------------------------------
-    Vector3 Quaternion::yAxis(void) const
+    Vector3 Quaternion::yAxis() const
     {
         float tx  = 2.0f * x;
         float ty  = 2.0f * y;
@@ -198,7 +198,7 @@ namespace Pilot
         return Vector3(txy - twz, 1.0f - (txx + tzz), tyz + twx);
     }
     //-----------------------------------------------------------------------
-    Vector3 Quaternion::zAxis(void) const
+    Vector3 Quaternion::zAxis() const
     {
         float tx  = 2.0f * x;
         float ty  = 2.0f * y;

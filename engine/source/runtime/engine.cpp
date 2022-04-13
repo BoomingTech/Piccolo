@@ -18,7 +18,7 @@ namespace Pilot
 {
     bool g_is_editor_mode {true};
 
-    const FrameBuffer* getFrameBuffer(ThreeFrameBuffers* t, const PilotRenderer* r)
+    const FrameBuffer* getFrameBuffer(ThreeFrameBuffers* t, const PilotRenderer*)
     {
         return (t->consumingBufferShift());
     }

@@ -12,7 +12,7 @@ namespace Pilot
         friend class PublicSingleton<FileService>;
 
     public:
-        const std::vector<std::filesystem::path> getFiles(const std::filesystem::path& directory);
+        std::vector<std::filesystem::path> getFiles(const std::filesystem::path& directory);
 
     protected:
         FileService() = default;
