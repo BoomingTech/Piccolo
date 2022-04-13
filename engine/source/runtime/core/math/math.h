@@ -41,7 +41,7 @@ namespace Pilot
 
     public:
         explicit Radian(float r = 0) : m_rad(r) {}
-        Radian(const Degree& d);
+        explicit Radian(const Degree& d);
         Radian& operator=(float f)
         {
             m_rad = f;
@@ -106,17 +106,13 @@ namespace Pilot
 
     public:
         explicit Degree(float d = 0) : m_deg(d) {}
-        Degree(const Radian& r) : m_deg(r.valueDegrees()) {}
+        explicit Degree(const Radian& r) : m_deg(r.valueDegrees()) {}
         Degree& operator=(float f)
         {
             m_deg = f;
             return *this;
         }
-        Degree& operator=(const Degree& d)
-        {
-            m_deg = d.m_deg;
-            return *this;
-        }
+        Degree& operator=(const Degree& d) = default;
         Degree& operator=(const Radian& r)
         {
             m_deg = r.valueDegrees();
@@ -186,11 +182,11 @@ namespace Pilot
         float m_angle;
 
     public:
-        Angle(float angle) : m_angle(angle) {}
+        explicit Angle(float angle) : m_angle(angle) {}
         Angle() { m_angle = 0; }
 
-        operator Radian() const;
-        operator Degree() const;
+        explicit operator Radian() const;
+        explicit operator Degree() const;
     };
 
     class Math
@@ -260,7 +256,7 @@ namespace Pilot
         }
 
         static Matrix4x4
-        makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix = 0);
+        makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix = nullptr);
 
         static Matrix4x4
         makeLookAtMatrix(const Vector3& eye_position, const Vector3& target_position, const Vector3& up_dir);

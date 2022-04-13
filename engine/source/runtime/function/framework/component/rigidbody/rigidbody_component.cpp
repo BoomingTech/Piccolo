@@ -21,9 +21,14 @@ namespace Pilot
     {
         if (m_physics_actor)
         {
-            delete m_physics_actor;
+            PhysicsSystem::getInstance().removePhyicsActor(m_physics_actor);
             m_physics_actor = nullptr;
         }
+    }
+
+    void RigidBodyComponent::updateGlobalTransform(const Transform& transform)
+    {
+        m_physics_actor->setGlobalTransform(transform);
     }
 
 } // namespace Pilot

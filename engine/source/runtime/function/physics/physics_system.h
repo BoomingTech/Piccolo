@@ -23,9 +23,10 @@ namespace Pilot
         PhysicsActor* createPhysicsActor(GObject*                 gobject,
                                          const Transform&         global_transform,
                                          const RigidBodyActorRes& rigid_body_actor_res);
+        void          removePhyicsActor(PhysicsActor* gobject);
 
         bool raycast(const Vector3& ray_start, const Vector3& ray_direction, Vector3& out_hit_position);
-        bool overlap(const Vector3& actor_position, const Vector3& actor_half_dimensions);
+        bool overlapByCapsule(const Vector3& position, const Capsule& capsule);
 
     protected:
         void collideAndResolve();
@@ -38,6 +39,8 @@ namespace Pilot
         void updateCollisionList();
 
         void impulseResolveCollision(PhysicsActor& object_a, PhysicsActor& object_b, ContactPoint& contact_point) const;
+
+        bool overlap(const AxisAlignedBox& query_bouding);
 
     private:
         std::vector<PhysicsActor*> m_physics_actors;

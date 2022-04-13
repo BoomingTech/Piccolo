@@ -215,9 +215,11 @@ namespace Pilot
         {
             glm::vec3 corner_before = extents * g_BoxOffset[i] + center;
             glm::vec4 corner_with_w = m * glm::vec4(corner_before.x, corner_before.y, corner_before.z, 1.0);
-            glm::vec3 corner = glm::vec3(corner_with_w.x / corner_with_w.w, corner_with_w.y / corner_with_w.w, corner_with_w.z / corner_with_w.w);
+            glm::vec3 corner        = glm::vec3(corner_with_w.x / corner_with_w.w,
+                                         corner_with_w.y / corner_with_w.w,
+                                         corner_with_w.z / corner_with_w.w);
 
-            if(0 == i)
+            if (0 == i)
             {
                 min = corner;
                 max = corner;
@@ -307,7 +309,8 @@ namespace Pilot
 
             for (RenderMesh const& mesh : scene.getMeshes())
             {
-                bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.m_min, mesh.m_bounding_box.m_max};
+                bounding_box_t mesh_asset_bounding_box {mesh.m_bounding_box.getMinCorner(),
+                                                        mesh.m_bounding_box.getMaxCorner()};
 
                 bounding_box_t mesh_bounding_box_world =
                     bounding_box_transform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(mesh.m_model_matrix));
@@ -326,21 +329,22 @@ namespace Pilot
                                   (frustum_bounding_box.max_bound.y - frustum_bounding_box.min_bound.y) * 0.5,
                                   (frustum_bounding_box.max_bound.z - frustum_bounding_box.min_bound.z) * 0.5);
 
-            glm::vec3 eye = box_center + GLMUtil::fromVec3(scene.m_directionalLight.m_direction) * glm::length(box_extents);
+            glm::vec3 eye =
+                box_center + GLMUtil::fromVec3(scene.m_directionalLight.m_direction) * glm::length(box_extents);
             glm::vec3 center = box_center;
-            light_view = glm::lookAtRH(eye, center, glm::vec3(0.0, 0.0, 1.0));
+            light_view       = glm::lookAtRH(eye, center, glm::vec3(0.0, 0.0, 1.0));
 
             bounding_box_t frustum_bounding_box_light_view = bounding_box_transform(frustum_bounding_box, light_view);
-            bounding_box_t scene_bounding_box_light_view = bounding_box_transform(scene_bounding_box, light_view);
+            bounding_box_t scene_bounding_box_light_view   = bounding_box_transform(scene_bounding_box, light_view);
 
             light_proj = glm::orthoRH(
                 std::max(frustum_bounding_box_light_view.min_bound.x, scene_bounding_box_light_view.min_bound.x),
                 std::min(frustum_bounding_box_light_view.max_bound.x, scene_bounding_box_light_view.max_bound.x),
                 std::max(frustum_bounding_box_light_view.min_bound.y, scene_bounding_box_light_view.min_bound.y),
                 std::min(frustum_bounding_box_light_view.max_bound.y, scene_bounding_box_light_view.max_bound.y),
-                -scene_bounding_box_light_view.max_bound.z, // the objects which are nearer than the frustum bounding box may caster shadow as well
-                -std::max(frustum_bounding_box_light_view.min_bound.z, scene_bounding_box_light_view.min_bound.z) 
-                );
+                -scene_bounding_box_light_view.max_bound
+                     .z, // the objects which are nearer than the frustum bounding box may caster shadow as well
+                -std::max(frustum_bounding_box_light_view.min_bound.z, scene_bounding_box_light_view.min_bound.z));
         }
 
         glm::mat4 light_proj_view = (light_proj * light_view);

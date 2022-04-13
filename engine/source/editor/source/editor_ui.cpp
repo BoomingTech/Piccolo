@@ -623,7 +623,7 @@ namespace Pilot
             {
                 ImGui::PushID("Editor Mode");
                 ImGui::Button("Editor Mode");
-                if (ImGui::IsItemClicked(0))
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     m_is_editor_mode = !m_is_editor_mode;
                     drawSelectedEntityAxis();
@@ -635,7 +635,7 @@ namespace Pilot
             else
             {
                 ImGui::Button("Game Mode");
-                if (ImGui::IsItemClicked(0))
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     m_is_editor_mode = !m_is_editor_mode;
                     g_is_editor_mode = true;

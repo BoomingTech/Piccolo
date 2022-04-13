@@ -1,5 +1,6 @@
 #pragma once
 
+#include "runtime/core/math/axis_aligned.h"
 #include "runtime/core/math/transform.h"
 
 #include "runtime/function/physics/physics_actor.h"
@@ -55,10 +56,7 @@ namespace Pilot
         CollisionDetection();
         ~CollisionDetection();
 
-        static bool IsOverlap(const Vector3& position_a,
-                              const Vector3& position_b,
-                              const Vector3& half_dimensions_a,
-                              const Vector3& half_dimensions_b);
+        static bool IsAABBOverlapped(const AxisAlignedBox& bounding_a, const AxisAlignedBox& position_b);
         static bool ObjectIntersection(PhysicsActor&  object_a,
                                        PhysicsActor&  object_b,
                                        unsigned int   id_a,

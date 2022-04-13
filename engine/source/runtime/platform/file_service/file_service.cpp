@@ -4,7 +4,7 @@ using namespace std;
 
 namespace Pilot
 {
-    const vector<filesystem::path> FileService::getFiles(const filesystem::path& directory)
+    vector<filesystem::path> FileService::getFiles(const filesystem::path& directory)
     {
         vector<filesystem::path> files;
         for (auto const& directory_entry : filesystem::recursive_directory_iterator {directory})

@@ -1,8 +1,12 @@
 {
   "move_speed": 5,
-  "half_extent": {
-    "x" : 0.3,
-    "y" : 0.3,
-    "z" : 1
+  "controller_config": {
+    "$context":{
+      "capsule_shape" : {
+        "radius": 0.3,
+        "half_height": 0.7
+      }
+    },
+    "$typeName": "PhysicsControllerConfig"
   }
 }
