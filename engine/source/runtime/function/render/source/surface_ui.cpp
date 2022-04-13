@@ -11,11 +11,32 @@
 
 using namespace Pilot;
 
-void window_content_scale_callback(GLFWwindow* window, float x_scale, float y_scale)
+inline void windowContentScaleUpdate(float scale) {
+#if defined(__MACH__)
+    float font_scale               = fmaxf(1.0f, scale);
+    ImGui::GetIO().FontGlobalScale = 1.0f / font_scale;
+#endif
+// TOOD: Reload fonts if DPI scale is larger than previous font loading DPI scale
+}
+
+inline void windowContentScaleCallback(GLFWwindow* window, float x_scale, float y_scale)
+{
+    windowContentScaleUpdate(fmaxf(x_scale, y_scale));
+}
+
+float SurfaceUI::contentScale()
+{
+    float x_scale, y_scale;
+    glfwGetWindowContentScale(m_io->m_window, &x_scale, &y_scale);
+    return fmaxf(1.0f, fmaxf(x_scale, y_scale));
+}
+
+float SurfaceUI::indentScale()
 {
 #if defined(__MACH__)
-    float font_scale               = fmax(1.0f, fmax(x_scale, y_scale));
-    ImGui::GetIO().FontGlobalScale = 1.0f / font_scale;
+    return 1.0f;
+#else // Not tested on Linux
+    return contentScale();
 #endif
 }
 
@@ -31,12 +52,12 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     
-    float x_scale, y_scale;
-    glfwGetWindowContentScale(pio->m_window, &x_scale, &y_scale);
-    float font_scale = fmax(1.0f, fmax(x_scale, y_scale));
+    float content_scale = contentScale();
+    windowContentScaleUpdate(content_scale);
+    glfwSetWindowContentScaleCallback(pio->m_window, windowContentScaleCallback);
 
     io.Fonts->AddFontFromFileTTF(
-        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), font_scale * 16, nullptr, nullptr);
+        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), content_scale * 16, nullptr, nullptr);
     io.Fonts->Build();
     style.WindowPadding   = ImVec2(1.0, 0);
     style.FramePadding    = ImVec2(14.0, 2.0f);
@@ -61,9 +82,6 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     init_info.MinImageCount = rhi->m_vulkan_manager->m_max_frames_in_flight;
     init_info.ImageCount    = rhi->m_vulkan_manager->m_max_frames_in_flight;
     ImGui_ImplVulkan_Init(&init_info, rhi->m_vulkan_manager->getLightingPass());
-
-    window_content_scale_callback(pio->m_window, x_scale, y_scale);
-    glfwSetWindowContentScaleCallback(pio->m_window, window_content_scale_callback);
     
     // fonts upload
     fontsUpload(rhi);
