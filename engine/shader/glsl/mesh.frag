@@ -126,7 +126,7 @@ highp vec3 BRDF(highp vec3 L, highp vec3 V, highp vec3 N, highp vec3 F0, highp f
 
 	highp float rroughness = max(0.05, roughness);
 	// D = Normal distribution (Distribution of the microfacets)
-	highp float D = D_GGX(dotNH, roughness);
+	highp float D = D_GGX(dotNH, rroughness);
 	// G = Geometric shadowing term (Microfacets shadowing)
 	highp float G = G_SchlicksmithGGX(dotNL, dotNV, rroughness);
 	// F = Fresnel factor (Reflectance depending on angle of incidence)

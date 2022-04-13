@@ -35,7 +35,7 @@ namespace Pilot
 
         std::shared_ptr<Scene> getCurrentScene() const { return m_scene; }
 
-        void        addSceneObject(const GameObjectDesc&& go_desc);
+        void        addSceneObject(const GameObjectDesc& go_desc);
         void        syncSceneObjects();
         void        addReleaseMeshHandle(const MeshHandle& mesh_handle);
         void        addReleaseMaterialHandle(const PMaterialHandle& material_handle);
@@ -97,7 +97,7 @@ namespace Pilot
         void          getOrCreateSkeletonBindingHandle(const std::string&           skeleton_binding_file,
                                                        VertexBufferHandle&          vertex_handle,
                                                        IndexBufferHandle&           index_handle,
-                                                       BoundingBox&                 bounding_box,
+                                                       AxisAlignedBox&              bounding_box,
                                                        SkeletonBindingBufferHandle& skeleton_binding_handle);
 
         void releaseMeshHandles();

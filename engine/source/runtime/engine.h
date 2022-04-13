@@ -51,10 +51,9 @@ namespace Pilot
     {
         friend class PublicSingleton<PilotEngine>;
 
-        PilotEngine(const PilotEngine&) = delete;
-        PilotEngine& operator=(const PilotEngine&) = delete;
-
     protected:
+        PilotEngine();
+
         bool                                  m_is_quit {false};
         std::chrono::steady_clock::time_point m_last_tick_time_point {std::chrono::steady_clock::now()};
 
@@ -65,7 +64,8 @@ namespace Pilot
         bool rendererTick();
 
     public:
-        PilotEngine();
+        PilotEngine(const PilotEngine&) = delete;
+        PilotEngine& operator=(const PilotEngine&) = delete;
 
         void startEngine(const EngineInitParams& param);
         void shutdownEngine();

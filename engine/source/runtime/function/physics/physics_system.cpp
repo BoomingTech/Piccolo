@@ -3,6 +3,9 @@
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/physics/physics_actor.h"
+#include "runtime/function/physics/physics_shape_base.h"
+
+#include <algorithm>
 
 namespace Pilot
 {
@@ -52,13 +55,26 @@ namespace Pilot
     {
         PhysicsActor* actor = new PhysicsActor(gobject, global_transform);
 
-        actor->createShapes(rigid_body_actor_res.m_shapes);
+        actor->createShapes(rigid_body_actor_res.m_shapes, global_transform);
         actor->setInverseMass(rigid_body_actor_res.m_inverse_mass);
         actor->setActorType(rigid_body_actor_res.m_actor_type);
+        Transform actor_transform(global_transform.m_position, global_transform.m_rotation, Vector3::UNIT_SCALE);
+
+        actor->setGlobalTransform(actor_transform);
 
         m_physics_actors.push_back(actor);
 
         return actor;
+    }
+
+    void PhysicsSystem::removePhyicsActor(PhysicsActor* actor)
+    {
+        auto iter = std::find(m_physics_actors.begin(), m_physics_actors.end(), actor);
+        if (iter != m_physics_actors.end())
+        {
+            m_physics_actors.erase(iter);
+            delete actor;
+        }
     }
 
     void PhysicsSystem::collideAndResolve()
@@ -104,21 +120,26 @@ namespace Pilot
         return is_hit;
     }
 
-    bool PhysicsSystem::overlap(const Vector3& actor_position, const Vector3& actor_half_dimensions)
+    bool PhysicsSystem::overlapByCapsule(const Vector3& position, const Capsule& capsule)
+    {
+        // currently only overlap by aabb
+        const float    capsule_height = capsule.m_half_height + capsule.m_radius;
+        Vector3        center         = position + capsule_height * Vector3::UNIT_Z;
+        Vector3        half_extent    = Vector3(capsule.m_radius, capsule.m_radius, capsule_height);
+        AxisAlignedBox bounding(center, half_extent);
+        return overlap(bounding);
+    }
+
+    bool PhysicsSystem::overlap(const AxisAlignedBox& query_bouding)
     {
         for (int i = 0; i < m_physics_actors.size(); i++)
         {
             for (auto& shape : m_physics_actors[i]->getShapes())
             {
-                if (shape == nullptr)
+                if (shape.m_type == RigidBodyShapeType::invalid)
                     continue;
 
-                RigidBodyBoxShape* box_shape = static_cast<RigidBodyBoxShape*>(shape);
-
-                bool is_hit = CollisionDetection::IsOverlap(actor_position,
-                                                            box_shape->m_global_transform.m_position,
-                                                            actor_half_dimensions,
-                                                            box_shape->m_half_extents);
+                bool is_hit = CollisionDetection::IsAABBOverlapped(query_bouding, shape.m_bounding_box);
 
                 if (is_hit)
                     return true;

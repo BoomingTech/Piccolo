@@ -6,10 +6,10 @@ namespace Pilot
 {
     enum class ShapeType
     {
-        AABB    = 1,
-        OBB     = 2,
-        SPHERE  = 3,
-        INVALID = 256
+        aabb    = 1,
+        obb     = 2,
+        sphere  = 3,
+        invalid = 255
     };
 
     class PhysicsShapeBase
@@ -25,7 +25,7 @@ namespace Pilot
         Transform* getLocalTransform() const { return m_local_transform; }
 
     private:
-        ShapeType  m_type {ShapeType::INVALID};
+        ShapeType  m_type {ShapeType::invalid};
         Transform* m_local_transform {nullptr};
     };
 } // namespace Pilot

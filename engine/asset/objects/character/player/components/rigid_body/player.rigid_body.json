@@ -1,27 +1,26 @@
 {
   "shapes": [
     {
-      "$context":{
-        "local_transform": {
-          "translation" : {
-            "x": 0,
-            "y": 0,
-            "z": 1
-          },
-          "rotate": {},
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
+      "local_transform": {
+        "translation" : {
+          "x": 0,
+          "y": 0,
+          "z": 1
         },
-        "half_extents": {
-          "x": 0.3,
-          "y": 0.3,
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
           "z": 1
         }
       },
-      "$typeName": "RigidBodyBoxShape"
+      "geometry": {
+        "$context":{
+          "radius": 0.3,
+          "half_height": 0.7
+        },
+        "$typeName": "Capsule"
+      }
     }
   ],
   "inverse_mass": 0.8
