@@ -14,9 +14,16 @@ using namespace Pilot;
 void window_content_scale_callback(GLFWwindow* window, float x_scale, float y_scale)
 {
 #if defined(__MACH__)
-    float font_scale               = fmax(1.0f, fmax(x_scale, y_scale));
+    float font_scale               = fmaxf(1.0f, fmaxf(x_scale, y_scale));
     ImGui::GetIO().FontGlobalScale = 1.0f / font_scale;
 #endif
+}
+
+float SurfaceUI::contentScale()
+{
+    float x_scale, y_scale;
+    glfwGetWindowContentScale(m_io->m_window, &x_scale, &y_scale);
+    return fmaxf(1.0f, fmaxf(x_scale, y_scale));
 }
 
 int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared_ptr<SurfaceIO> pio)
@@ -31,9 +38,7 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     
-    float x_scale, y_scale;
-    glfwGetWindowContentScale(pio->m_window, &x_scale, &y_scale);
-    float font_scale = fmax(1.0f, fmax(x_scale, y_scale));
+    float font_scale = contentScale();
 
     io.Fonts->AddFontFromFileTTF(
         ConfigManager::getInstance().getEditorFontPath().generic_string().data(), font_scale * 16, nullptr, nullptr);
@@ -62,7 +67,6 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     init_info.ImageCount    = rhi->m_vulkan_manager->m_max_frames_in_flight;
     ImGui_ImplVulkan_Init(&init_info, rhi->m_vulkan_manager->getLightingPass());
 
-    window_content_scale_callback(pio->m_window, x_scale, y_scale);
     glfwSetWindowContentScaleCallback(pio->m_window, window_content_scale_callback);
     
     // fonts upload

@@ -45,6 +45,7 @@ namespace Pilot
         void draw_frame();
         int  clear();
         void setDefaultStyle();
+        float contentScale();
     };
 
     class Surface
