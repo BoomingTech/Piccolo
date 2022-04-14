@@ -845,31 +845,27 @@ namespace Pilot
         unsigned int command = InputSystem::getInstance().getEditorCommand();
         if ((unsigned int)EditorCommand::camera_foward & command)
         {
-            camera_relative_pos = {0, camera_speed, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3{0, camera_speed, 0};
         }
         if ((unsigned int)EditorCommand::camera_back & command)
         {
-            camera_relative_pos = {0, -camera_speed, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {0, -camera_speed, 0};
         }
         if ((unsigned int)EditorCommand::camera_left & command)
         {
-            camera_relative_pos = {-camera_speed, 0, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {-camera_speed, 0, 0};
         }
         if ((unsigned int)EditorCommand::camera_right & command)
         {
-            camera_relative_pos = {camera_speed, 0, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {camera_speed, 0, 0};
         }
         if ((unsigned int)EditorCommand::camera_up & command)
         {
-            camera_relative_pos = {0, 0, camera_speed};
+            camera_relative_pos += Vector3 {0, 0, camera_speed};
         }
         if ((unsigned int)EditorCommand::camera_down & command)
         {
-            camera_relative_pos = {0, 0, -camera_speed};
+            camera_relative_pos += Vector3 {0, 0, -camera_speed};
         }
         if ((unsigned int)EditorCommand::delete_object & command)
         {
