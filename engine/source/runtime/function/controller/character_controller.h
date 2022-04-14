@@ -17,6 +17,8 @@ namespace Pilot
     class Controller
     {
     public:
+        virtual ~Controller();
+
         virtual Vector3 move(const Vector3& current_position, const Vector3& displacement) = 0;
     };
 
