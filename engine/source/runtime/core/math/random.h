@@ -20,7 +20,7 @@ namespace Chaos
 
     public:
         template<typename... Params>
-        RandomNumberGenerator(Params&&... params) : m_engine(std::forward<Params>(params)...)
+        explicit RandomNumberGenerator(Params&&... params) : m_engine(std::forward<Params>(params)...)
         {}
 
         template<typename... Params>
@@ -60,7 +60,6 @@ namespace Chaos
         template<typename DistributionFunc, typename Range, typename... Params>
         void generator(Range&& range, Params&&... params)
         {
-            auto first = std::begin(range);
             // using ResultType = typename DistributionFunc::result_type;
 
             DistributionFunc dist(std::forward<Params>(params)...);
@@ -81,7 +80,7 @@ namespace Chaos
 
     public:
         template<typename... Params>
-        DistRandomNumberGenerator(SeedType&& seeding, Params&&... params) : m_engine(seeding)
+        explicit DistRandomNumberGenerator(SeedType&& seeding, Params&&...  /*params*/) : m_engine(seeding)
         {
             // m_dist = CHAOS_NEW_T(DistributionFunc)(std::forward<Params>(params)...);
         }

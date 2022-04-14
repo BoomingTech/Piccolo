@@ -19,11 +19,11 @@ namespace Pilot
         float w {1.f}, x {0.f}, y {0.f}, z {0.f};
 
     public:
-        Quaternion() {}
+        Quaternion() = default;
         Quaternion(float w_, float x_, float y_, float z_) : w {w_}, x {x_}, y {y_}, z {z_} {}
 
         /// Construct a quaternion from a rotation matrix
-        Quaternion(const Matrix3x3& rot) { this->fromRotationMatrix(rot); }
+        explicit Quaternion(const Matrix3x3& rot) { this->fromRotationMatrix(rot); }
         /// Construct a quaternion from an angle/axis
         Quaternion(const Radian& angle, const Vector3& axis) { this->fromAngleAxis(angle, axis); }
         /// Construct a quaternion from 3 orthonormal local axes
@@ -61,17 +61,17 @@ namespace Pilot
         /** Returns the X orthonormal axis defining the quaternion. Same as doing
             xAxis = Vector3::UNIT_X * this. Also called the local X-axis
         */
-        Vector3 xAxis(void) const;
+        Vector3 xAxis() const;
 
         /** Returns the Y orthonormal axis defining the quaternion. Same as doing
             yAxis = Vector3::UNIT_Y * this. Also called the local Y-axis
         */
-        Vector3 yAxis(void) const;
+        Vector3 yAxis() const;
 
         /** Returns the Z orthonormal axis defining the quaternion. Same as doing
             zAxis = Vector3::UNIT_Z * this. Also called the local Z-axis
         */
-        Vector3 zAxis(void) const;
+        Vector3 zAxis() const;
 
         Quaternion operator+(const Quaternion& rhs) const
         {
