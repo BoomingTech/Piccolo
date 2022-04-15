@@ -70,11 +70,11 @@ namespace Pilot
 
         LOG_INFO("engine shutdown");
 
-        PublicSingleton<SceneManager>::getInstance().clear();
-        PublicSingleton<WorldManager>::getInstance().clear();
-        PublicSingleton<PUIManager>::getInstance().clear();
-        PublicSingleton<AssetManager>::getInstance().clear();
-        PublicSingleton<ConfigManager>::getInstance().clear();
+        SceneManager::getInstance().clear();
+        WorldManager::getInstance().clear();
+        PUIManager::getInstance().clear();
+        AssetManager::getInstance().clear();
+        ConfigManager::getInstance().clear();
 
         Reflection::TypeMetaRegister::Unregister();
 
@@ -108,10 +108,10 @@ namespace Pilot
     void PilotEngine::logicalTick(float delta_time)
     {
         m_tri_frame_buffer.producingBufferShift();
-        PublicSingleton<WorldManager>::getInstance().tick(delta_time);
-        PublicSingleton<SceneManager>::getInstance().tick(m_tri_frame_buffer.getProducingBuffer());
-        PublicSingleton<InputSystem>::getInstance().tick();
-        // PublicSingleton<PhysicsSystem>::getInstance().tick(delta_time);
+        WorldManager::getInstance().tick(delta_time);
+        SceneManager::getInstance().tick(m_tri_frame_buffer.getProducingBuffer());
+        InputSystem::getInstance().tick();
+        // PhysicsSystem::getInstance().tick(delta_time);
     }
 
     bool PilotEngine::rendererTick() { return m_renderer->tick(); }
@@ -125,7 +125,7 @@ namespace Pilot
         three_buffers._struct._C = new FrameBuffer();
 
         // tri frame buffers are designed to use same scene now
-        auto current_scene                = PublicSingleton<SceneManager>::getInstance().getCurrentScene();
+        auto current_scene                = SceneManager::getInstance().getCurrentScene();
         three_buffers._struct._A->m_scene = current_scene;
         three_buffers._struct._B->m_scene = current_scene;
         three_buffers._struct._C->m_scene = current_scene;

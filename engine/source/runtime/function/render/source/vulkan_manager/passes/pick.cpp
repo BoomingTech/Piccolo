@@ -60,7 +60,7 @@ namespace Pilot
         color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
         color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
         VkAttachmentDescription depth_attachment_description {};
@@ -799,27 +799,27 @@ namespace Pilot
                                   inefficient_staging_buffer,
                                   inefficient_staging_buffer_memory);
 
-        //VkImageMemoryBarrier copy_to_buffer_barrier {};
-        //copy_to_buffer_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        //copy_to_buffer_barrier.pNext               = nullptr;
-        //copy_to_buffer_barrier.srcAccessMask       = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        //copy_to_buffer_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_READ_BIT;
-        //copy_to_buffer_barrier.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
-        //copy_to_buffer_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        //copy_to_buffer_barrier.srcQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
-        //copy_to_buffer_barrier.dstQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
-        //copy_to_buffer_barrier.image               = _framebuffer.attachments[0].image;
-        //copy_to_buffer_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-        //vkCmdPipelineBarrier(command_buffer,
-        //                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-        //                     VK_PIPELINE_STAGE_TRANSFER_BIT,
-        //                     0,
-        //                     0,
-        //                     nullptr,
-        //                     0,
-        //                     nullptr,
-        //                     1,
-        //                     &copy_to_buffer_barrier);
+        VkImageMemoryBarrier copy_to_buffer_barrier {};
+        copy_to_buffer_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        copy_to_buffer_barrier.pNext               = nullptr;
+        copy_to_buffer_barrier.srcAccessMask       = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        copy_to_buffer_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_READ_BIT;
+        copy_to_buffer_barrier.oldLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        copy_to_buffer_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        copy_to_buffer_barrier.srcQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
+        copy_to_buffer_barrier.dstQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
+        copy_to_buffer_barrier.image               = _framebuffer.attachments[0].image;
+        copy_to_buffer_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        vkCmdPipelineBarrier(command_buffer,
+                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             1,
+                             &copy_to_buffer_barrier);
 
         vkCmdCopyImageToBuffer(command_buffer,
                                _framebuffer.attachments[0].image,
