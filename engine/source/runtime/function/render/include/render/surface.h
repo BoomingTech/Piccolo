@@ -46,8 +46,8 @@ namespace Pilot
         int  clear();
         void setDefaultStyle();
     protected:
-        float contentScale();
-        float indentScale();
+        float getContentScale() const;
+        float getIndentScale() const;
     };
 
     class Surface

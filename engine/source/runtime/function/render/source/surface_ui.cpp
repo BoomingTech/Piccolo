@@ -24,14 +24,14 @@ inline void windowContentScaleCallback(GLFWwindow* window, float x_scale, float 
     windowContentScaleUpdate(fmaxf(x_scale, y_scale));
 }
 
-float SurfaceUI::contentScale()
+float SurfaceUI::getContentScale() const
 {
     float x_scale, y_scale;
     glfwGetWindowContentScale(m_io->m_window, &x_scale, &y_scale);
     return fmaxf(1.0f, fmaxf(x_scale, y_scale));
 }
 
-float SurfaceUI::indentScale()
+float SurfaceUI::getIndentScale() const
 {
 #if defined(__MACH__)
     return 1.0f;
@@ -52,7 +52,7 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     
-    float content_scale = contentScale();
+    float content_scale = getContentScale();
     windowContentScaleUpdate(content_scale);
     glfwSetWindowContentScaleCallback(pio->m_window, windowContentScaleCallback);
 
