@@ -18,18 +18,17 @@ int main(int argc, char** argv)
     params.m_root_folder      = pilot_root_folder;
     params.m_config_file_path = pilot_root_folder / "PilotEditor.ini";
 
-    Pilot::PublicSingleton<Pilot::PilotEngine>::getInstance().startEngine(params);
-    Pilot::PublicSingleton<Pilot::PilotEngine>::getInstance().initialize();
+    Pilot::PilotEngine::getInstance().startEngine(params);
+    Pilot::PilotEngine::getInstance().initialize();
 
-    Pilot::PublicSingleton<Pilot::PilotEditor>::getInstance().initialize(
-        &(Pilot::PublicSingleton<Pilot::PilotEngine>::getInstance()));
+    Pilot::PilotEditor::getInstance().initialize(&(Pilot::PilotEngine::getInstance()));
 
-    Pilot::PublicSingleton<Pilot::PilotEditor>::getInstance().run();
+    Pilot::PilotEditor::getInstance().run();
 
-    Pilot::PublicSingleton<Pilot::PilotEditor>::getInstance().clear();
+    Pilot::PilotEditor::getInstance().clear();
 
-    Pilot::PublicSingleton<Pilot::PilotEngine>::getInstance().clear();
-    Pilot::PublicSingleton<Pilot::PilotEngine>::getInstance().shutdownEngine();
+    Pilot::PilotEngine::getInstance().clear();
+    Pilot::PilotEngine::getInstance().shutdownEngine();
 
     return 0;
 }
