@@ -617,7 +617,7 @@ namespace Pilot
             ImGui::SameLine();
 
             float indent_val = 0.0f;
-            indent_val       = m_engine_window_size.x - 100.0f * indentScale();
+            indent_val       = m_engine_window_size.x - 100.0f * getIndentScale();
 
             ImGui::Indent(indent_val);
             if (m_is_editor_mode)
