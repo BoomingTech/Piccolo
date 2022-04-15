@@ -36,7 +36,7 @@ float SurfaceUI::getIndentScale() const
 #if defined(__MACH__)
     return 1.0f;
 #else // Not tested on Linux
-    return contentScale();
+    return getContentScale();
 #endif
 }
 
