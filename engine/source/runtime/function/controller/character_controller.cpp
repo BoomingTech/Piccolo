@@ -5,6 +5,8 @@
 
 namespace Pilot
 {
+    Controller::~Controller() = default;
+
     CharacterController::~CharacterController() {}
 
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)

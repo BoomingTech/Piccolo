@@ -60,7 +60,7 @@ namespace Pilot
         color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
         color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
         VkAttachmentDescription depth_attachment_description {};
@@ -804,7 +804,7 @@ namespace Pilot
         copy_to_buffer_barrier.pNext               = nullptr;
         copy_to_buffer_barrier.srcAccessMask       = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         copy_to_buffer_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_READ_BIT;
-        copy_to_buffer_barrier.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
+        copy_to_buffer_barrier.oldLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         copy_to_buffer_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         copy_to_buffer_barrier.srcQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
         copy_to_buffer_barrier.dstQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();

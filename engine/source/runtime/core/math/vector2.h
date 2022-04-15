@@ -17,7 +17,7 @@ namespace Pilot
         float x {0.f}, y {0.f};
 
     public:
-        Vector2() {}
+        Vector2() = default;
 
         Vector2(float x_, float y_) : x(x_), y(y_) {}
 
@@ -253,9 +253,7 @@ namespace Pilot
         */
         bool operator<(const Vector2& rhs) const
         {
-            if (x < rhs.x && y < rhs.y)
-                return true;
-            return false;
+            return x < rhs.x && y < rhs.y;
         }
 
         /** Returns true if the vector's scalar components are all smaller
@@ -263,9 +261,7 @@ namespace Pilot
         */
         bool operator>(const Vector2& rhs) const
         {
-            if (x > rhs.x && y > rhs.y)
-                return true;
-            return false;
+            return x > rhs.x && y > rhs.y;
         }
 
         /** Sets this vector's components to the minimum of its own and the

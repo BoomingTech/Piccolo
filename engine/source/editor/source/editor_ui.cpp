@@ -845,31 +845,27 @@ namespace Pilot
         unsigned int command = InputSystem::getInstance().getEditorCommand();
         if ((unsigned int)EditorCommand::camera_foward & command)
         {
-            camera_relative_pos = {0, camera_speed, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3{0, camera_speed, 0};
         }
         if ((unsigned int)EditorCommand::camera_back & command)
         {
-            camera_relative_pos = {0, -camera_speed, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {0, -camera_speed, 0};
         }
         if ((unsigned int)EditorCommand::camera_left & command)
         {
-            camera_relative_pos = {-camera_speed, 0, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {-camera_speed, 0, 0};
         }
         if ((unsigned int)EditorCommand::camera_right & command)
         {
-            camera_relative_pos = {camera_speed, 0, 0};
-            camera_relative_pos = camera_rotate * camera_relative_pos;
+            camera_relative_pos += camera_rotate * Vector3 {camera_speed, 0, 0};
         }
         if ((unsigned int)EditorCommand::camera_up & command)
         {
-            camera_relative_pos = {0, 0, camera_speed};
+            camera_relative_pos += Vector3 {0, 0, camera_speed};
         }
         if ((unsigned int)EditorCommand::camera_down & command)
         {
-            camera_relative_pos = {0, 0, -camera_speed};
+            camera_relative_pos += Vector3 {0, 0, -camera_speed};
         }
         if ((unsigned int)EditorCommand::delete_object & command)
         {
@@ -904,7 +900,7 @@ namespace Pilot
         {
             if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
             {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 m_tmp_uistate->m_editor_camera->rotate(Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
             }
             else if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
