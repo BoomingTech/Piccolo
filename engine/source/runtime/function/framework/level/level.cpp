@@ -129,6 +129,7 @@ namespace Pilot
             {
                 object->destory();
             }
+            delete object;
         }
 
         m_gobjects.erase(go_id);

@@ -17,7 +17,7 @@ namespace Pilot
         float x {0.f}, y {0.f};
 
     public:
-        Vector2() {}
+        Vector2() = default;
 
         Vector2(float x_, float y_) : x(x_), y(y_) {}
 
@@ -30,6 +30,18 @@ namespace Pilot
         float* ptr() { return &x; }
 
         const float* ptr() const { return &x; }
+
+        float operator[](size_t i) const
+        {
+            assert(i < 2);
+            return (i == 0 ? x : y);
+        }
+
+        float& operator[](size_t i)
+        {
+            assert(i < 2);
+            return (i == 0 ? x : y);
+        }
 
         bool operator==(const Vector2& rhs) const { return (x == rhs.x && y == rhs.y); }
 
@@ -236,24 +248,20 @@ namespace Pilot
         */
         Vector2 midPoint(const Vector2& vec) const { return Vector2((x + vec.x) * 0.5f, (y + vec.y) * 0.5f); }
 
-        /** Returnsk_true if the vector's scalar components are all greater
+        /** Returns true if the vector's scalar components are all greater
         that the ones of the vector it is compared against.
         */
         bool operator<(const Vector2& rhs) const
         {
-            if (x < rhs.x && y < rhs.y)
-                return true;
-            return false;
+            return x < rhs.x && y < rhs.y;
         }
 
-        /** Returnsk_true if the vector's scalar components are all smaller
+        /** Returns true if the vector's scalar components are all smaller
         that the ones of the vector it is compared against.
         */
         bool operator>(const Vector2& rhs) const
         {
-            if (x > rhs.x && y > rhs.y)
-                return true;
-            return false;
+            return x > rhs.x && y > rhs.y;
         }
 
         /** Sets this vector's components to the minimum of its own and the
@@ -301,7 +309,7 @@ namespace Pilot
 
         float crossProduct(const Vector2& rhs) const { return x * rhs.y - y * rhs.x; }
 
-        /** Returnsk_true if this vector is zero length. */
+        /** Returns true if this vector is zero length. */
         bool isZeroLength(void) const
         {
             float sqlen = (x * x) + (y * y);

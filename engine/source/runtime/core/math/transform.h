@@ -16,7 +16,7 @@ namespace Pilot
         Vector3    m_scale {Vector3::UNIT_SCALE};
         Quaternion m_rotation {Quaternion::IDENTITY};
 
-        Transform() {}
+        Transform() = default;
         Transform(const Vector3& position, const Quaternion& rotation, const Vector3& scale) :
             m_position {position}, m_scale {scale}, m_rotation {rotation}
         {}

@@ -43,17 +43,17 @@ namespace Pilot
 
         void TypeMetaRegisterinterface::unregisterAll()
         {
-            for (auto itr : m_field_map)
+            for (const auto& itr : m_field_map)
             {
                 delete itr.second;
             }
             m_field_map.clear();
-            for (auto itr : m_class_map)
+            for (const auto& itr : m_class_map)
             {
                 delete itr.second;
             }
             m_class_map.clear();
-            for (auto itr : m_array_map)
+            for (const auto& itr : m_array_map)
             {
                 delete itr.second;
             }

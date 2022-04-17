@@ -443,31 +443,27 @@ namespace Pilot
          */
         bool operator==(const Matrix4x4& m2) const
         {
-            if (m_mat[0][0] != m2.m_mat[0][0] || m_mat[0][1] != m2.m_mat[0][1] || m_mat[0][2] != m2.m_mat[0][2] ||
+            return !(m_mat[0][0] != m2.m_mat[0][0] || m_mat[0][1] != m2.m_mat[0][1] || m_mat[0][2] != m2.m_mat[0][2] ||
                 m_mat[0][3] != m2.m_mat[0][3] || m_mat[1][0] != m2.m_mat[1][0] || m_mat[1][1] != m2.m_mat[1][1] ||
                 m_mat[1][2] != m2.m_mat[1][2] || m_mat[1][3] != m2.m_mat[1][3] || m_mat[2][0] != m2.m_mat[2][0] ||
                 m_mat[2][1] != m2.m_mat[2][1] || m_mat[2][2] != m2.m_mat[2][2] || m_mat[2][3] != m2.m_mat[2][3] ||
                 m_mat[3][0] != m2.m_mat[3][0] || m_mat[3][1] != m2.m_mat[3][1] || m_mat[3][2] != m2.m_mat[3][2] ||
-                m_mat[3][3] != m2.m_mat[3][3])
-                return false;
-            return true;
+                m_mat[3][3] != m2.m_mat[3][3]);
         }
 
         /** Tests 2 matrices for inequality.
          */
         bool operator!=(const Matrix4x4& m2) const
         {
-            if (m_mat[0][0] != m2.m_mat[0][0] || m_mat[0][1] != m2.m_mat[0][1] || m_mat[0][2] != m2.m_mat[0][2] ||
+            return m_mat[0][0] != m2.m_mat[0][0] || m_mat[0][1] != m2.m_mat[0][1] || m_mat[0][2] != m2.m_mat[0][2] ||
                 m_mat[0][3] != m2.m_mat[0][3] || m_mat[1][0] != m2.m_mat[1][0] || m_mat[1][1] != m2.m_mat[1][1] ||
                 m_mat[1][2] != m2.m_mat[1][2] || m_mat[1][3] != m2.m_mat[1][3] || m_mat[2][0] != m2.m_mat[2][0] ||
                 m_mat[2][1] != m2.m_mat[2][1] || m_mat[2][2] != m2.m_mat[2][2] || m_mat[2][3] != m2.m_mat[2][3] ||
                 m_mat[3][0] != m2.m_mat[3][0] || m_mat[3][1] != m2.m_mat[3][1] || m_mat[3][2] != m2.m_mat[3][2] ||
-                m_mat[3][3] != m2.m_mat[3][3])
-                return true;
-            return false;
+                m_mat[3][3] != m2.m_mat[3][3];
         }
 
-        Matrix4x4 transpose(void) const
+        Matrix4x4 transpose() const
         {
             return Matrix4x4(m_mat[0][0],
                              m_mat[1][0],
@@ -774,10 +770,7 @@ namespace Pilot
             if (!Math::realEqual(t, 1.0, (float)1e-04))
                 return true;
             t = m_mat[0][2] * m_mat[0][2] + m_mat[1][2] * m_mat[1][2] + m_mat[2][2] * m_mat[2][2];
-            if (!Math::realEqual(t, 1.0, (float)1e-04))
-                return true;
-
-            return false;
+            return !Math::realEqual(t, 1.0, (float)1e-04);
         }
 
         /** Determines if this matrix involves a negative scaling. */
@@ -835,7 +828,7 @@ namespace Pilot
         @note
         The matrix must be an affine matrix. @see Matrix4::isAffine.
         */
-        Matrix4x4 inverseAffine(void) const;
+        Matrix4x4 inverseAffine() const;
 
         /** Concatenate two affine matrices.
         @note

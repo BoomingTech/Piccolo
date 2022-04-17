@@ -13,57 +13,22 @@ namespace Pilot
         m_friction = 0.8f;
     }
 
-    PhysicsActor::~PhysicsActor()
+    PhysicsActor::~PhysicsActor() { m_rigidbody_shapes.clear(); }
+
+    void PhysicsActor::createShapes(const std::vector<RigidBodyShape>& shape_defs, const Transform& global_transform)
     {
-        for (RigidBodyShapeBase* shape : m_rigidbody_shapes)
+        m_rigidbody_shapes = shape_defs;
+        for (RigidBodyShape& shape : m_rigidbody_shapes)
         {
-            if (shape)
+            const std::string shape_type = shape.m_geometry.getTypeName();
+            if (shape_type == "Box")
             {
-                delete shape;
-            }
-        }
-        m_rigidbody_shapes.clear();
-    }
+                Box* box_shape_geom = new Box;
 
-    void PhysicsActor::createShapes(const std::vector<Reflection::ReflectionPtr<RigidBodyShapeBase>>& shape_defs)
-    {
-        for (auto& shape_def : shape_defs)
-        {
-            const std::string shape_type = shape_def.getTypeName();
-            if (shape_type.compare("RigidBodyBoxShape") == 0)
-            {
-                RigidBodyBoxShape* box_shape_def = new RigidBodyBoxShape;
+                (*box_shape_geom) = *static_cast<Box*>(shape.m_geometry.operator->());
 
-                (*box_shape_def) = *static_cast<RigidBodyBoxShape*>(shape_def.operator->());
-
-                const TransformComponent* transform_component =
-                    m_parent_object->tryGetComponentConst(TransformComponent);
-
-                // contribute world transform
-                Matrix4x4 global_transform_matrix =
-                    transform_component->getTransformConst().getMatrix() * box_shape_def->m_local_transform.getMatrix();
-                global_transform_matrix.decomposition(box_shape_def->m_global_transform.m_position,
-                                                      box_shape_def->m_global_transform.m_scale,
-                                                      box_shape_def->m_global_transform.m_rotation);
-
-                // contribute local transform
-                Matrix4x4 parent_scale_matrix    = Matrix4x4::getScale(transform_component->getScale());
-                Matrix4x4 local_transform_matrix = parent_scale_matrix * box_shape_def->m_local_transform.getMatrix();
-                local_transform_matrix.decomposition(box_shape_def->m_local_transform.m_position,
-                                                     box_shape_def->m_local_transform.m_scale,
-                                                     box_shape_def->m_local_transform.m_rotation);
-
-                // clear global scale
-                box_shape_def->m_global_transform.m_scale = Vector3::UNIT_SCALE;
-
-                // calculate half extents
-                box_shape_def->m_half_extents =
-                    Matrix4x4::getScale(transform_component->getScale()) * box_shape_def->m_half_extents;
-                box_shape_def->m_half_extents = transform_component->getRotation() * box_shape_def->m_half_extents;
-
-                RigidBodyShapeBase* shape = static_cast<RigidBodyShapeBase*>(box_shape_def);
-                shape->m_type             = RigidBodyShapeType::box;
-                m_rigidbody_shapes.push_back(shape);
+                shape.m_geometry.getPtrReference() = box_shape_geom;
+                shape.m_type                       = RigidBodyShapeType::box;
             }
             else
             {
@@ -137,4 +102,45 @@ namespace Pilot
     }
 
     Matrix3x3 PhysicsActor::getInertiaTensor() const { return m_inverse_inertia_tensor; }
+
+    void PhysicsActor::setGlobalTransform(const Transform& global_transform)
+    {
+        for (RigidBodyShape& shape : m_rigidbody_shapes)
+        {
+            if (shape.m_type == RigidBodyShapeType::box)
+            {
+                Matrix4x4 global_transform_matrix = global_transform.getMatrix() * shape.m_local_transform.getMatrix();
+                global_transform_matrix.decomposition(shape.m_global_transform.m_position,
+                                                      shape.m_global_transform.m_scale,
+                                                      shape.m_global_transform.m_rotation);
+
+                Box* box = static_cast<Box*>(shape.m_geometry);
+
+                AxisAlignedBox bounding;
+                for (unsigned char i = 0; i < 2; ++i)
+                {
+                    for (unsigned char j = 0; j < 2; ++j)
+                    {
+                        for (unsigned char k = 0; k < 2; ++k)
+                        {
+                            Vector3 point = box->m_half_extents;
+                            if (i == 0)
+                                point.x = -point.x;
+                            if (j == 0)
+                                point.y = -point.y;
+                            if (k == 0)
+                                point.z = -point.z;
+
+                            point = shape.m_global_transform.getMatrix() * point;
+
+                            bounding.merge(point);
+                        }
+                    }
+                }
+
+                shape.m_bounding_box.update(bounding.getCenter(), bounding.getHalfExtent());
+            }
+        }
+    }
+
 } // namespace Pilot

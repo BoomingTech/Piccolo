@@ -11,6 +11,35 @@
 
 using namespace Pilot;
 
+inline void windowContentScaleUpdate(float scale) {
+#if defined(__MACH__)
+    float font_scale               = fmaxf(1.0f, scale);
+    ImGui::GetIO().FontGlobalScale = 1.0f / font_scale;
+#endif
+// TOOD: Reload fonts if DPI scale is larger than previous font loading DPI scale
+}
+
+inline void windowContentScaleCallback(GLFWwindow* window, float x_scale, float y_scale)
+{
+    windowContentScaleUpdate(fmaxf(x_scale, y_scale));
+}
+
+float SurfaceUI::getContentScale() const
+{
+    float x_scale, y_scale;
+    glfwGetWindowContentScale(m_io->m_window, &x_scale, &y_scale);
+    return fmaxf(1.0f, fmaxf(x_scale, y_scale));
+}
+
+float SurfaceUI::getIndentScale() const
+{
+#if defined(__MACH__)
+    return 1.0f;
+#else // Not tested on Linux
+    return getContentScale();
+#endif
+}
+
 int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared_ptr<SurfaceIO> pio)
 {
     m_io  = pio;
@@ -22,9 +51,13 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigDockingAlwaysTabBar         = true;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
+    
+    float content_scale = getContentScale();
+    windowContentScaleUpdate(content_scale);
+    glfwSetWindowContentScaleCallback(pio->m_window, windowContentScaleCallback);
 
     io.Fonts->AddFontFromFileTTF(
-        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), 16, nullptr, nullptr);
+        ConfigManager::getInstance().getEditorFontPath().generic_string().data(), content_scale * 16, nullptr, nullptr);
     io.Fonts->Build();
     style.WindowPadding   = ImVec2(1.0, 0);
     style.FramePadding    = ImVec2(14.0, 2.0f);
@@ -49,7 +82,7 @@ int SurfaceUI::initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared
     init_info.MinImageCount = rhi->m_vulkan_manager->m_max_frames_in_flight;
     init_info.ImageCount    = rhi->m_vulkan_manager->m_max_frames_in_flight;
     ImGui_ImplVulkan_Init(&init_info, rhi->m_vulkan_manager->getLightingPass());
-
+    
     // fonts upload
     fontsUpload(rhi);
 

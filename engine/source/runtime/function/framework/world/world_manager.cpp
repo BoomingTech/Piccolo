@@ -86,17 +86,9 @@ namespace Pilot
         if (m_current_active_level == nullptr)
             return;
 
+        m_levels.erase(std::find(m_levels.begin(), m_levels.end(), m_current_active_level));
+
         std::string current_level_url = m_current_active_level->getLevelResUrl();
-
-        auto iter = m_levels.begin();
-        while (iter != m_levels.end())
-        {
-            if (*iter == m_current_active_level)
-                break;
-            ++iter;
-        }
-        m_levels.erase(iter);
-
         m_current_active_level->clear();
         delete m_current_active_level;
         m_current_active_level = nullptr;

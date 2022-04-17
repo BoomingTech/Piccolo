@@ -23,7 +23,7 @@ namespace Pilot
         {
             assert(instance == nullptr);
             std::string type_name = json_context["$typeName"].string_value();
-            assert(type_name.size() > 0);
+            assert(!type_name.empty());
             if ('*' == type_name[0])
             {
                 instance = new T;
@@ -32,7 +32,7 @@ namespace Pilot
             else
             {
                 instance = static_cast<T*>(
-                    Reflection::TypeMeta::newFromNameAndPJson(type_name.c_str(), json_context["$context"]).m_instance);
+                    Reflection::TypeMeta::newFromNameAndPJson(type_name, json_context["$context"]).m_instance);
             }
             return instance;
         }
