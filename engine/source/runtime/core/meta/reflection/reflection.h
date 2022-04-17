@@ -162,7 +162,7 @@ namespace Pilot
              *        false: it's not a reflection type
              */
             bool        getTypeMeta(TypeMeta& field_type);
-            const char* getFieldName();
+            const char* getFieldName() const;
             const char* getFieldTypeName();
             bool        isArrayType();
 
