@@ -1,6 +1,7 @@
 #include "reflection.h"
-#include "string.h"
+#include <cstring>
 #include <map>
+
 namespace Pilot
 {
     namespace Reflection
@@ -147,16 +148,12 @@ namespace Pilot
 
         FieldAccessor TypeMeta::getFieldByName(const char* name)
         {
-            for (auto item : m_fields)
-            {
-                if (strcmp(item.getFieldName(), name) == 0)
-                {
-                    return item;
-                }
-            }
-
-            FieldAccessor f_field(nullptr);
-            return f_field;
+            const auto it = std::find_if(m_fields.begin(), m_fields.end(), [&](const auto& i) {
+                return std::strcmp(i.getFieldName(), name) == 0;
+            });
+            if (it != m_fields.end())
+                return *it;
+            return FieldAccessor(nullptr);
         }
 
         TypeMeta& TypeMeta::operator=(const TypeMeta& dest)
@@ -219,7 +216,7 @@ namespace Pilot
             return f_type.m_is_valid;
         }
 
-        const char* FieldAccessor::getFieldName() { return m_field_name; }
+        const char* FieldAccessor::getFieldName() const { return m_field_name; }
         const char* FieldAccessor::getFieldTypeName() { return m_field_type_name; }
 
         bool FieldAccessor::isArrayType()
