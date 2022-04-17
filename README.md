@@ -52,6 +52,8 @@ sudo apt install mesa-vulkan-drivers
 
 ## Build Pilot
 
+- [Pilot Building Manual](https://cdn.boomingtech.com/games104_static/upload/GAMES104_PA01.pdf)
+
 ### Build on Windows
 You may execute the **build_windows.bat**. This batch file will generate the projects, and build the **Release** config of **Pilot Engine** automatically. After successful build, you can find the PilotEditor.exe at the **bin** directory.
 
