@@ -10,6 +10,7 @@
 #define PILOT_XSTR(s) PILOT_STR(s)
 #define PILOT_STR(s) #s
 
+//Èë¿Ú
 int main(int argc, char** argv)
 {
     std::filesystem::path pilot_root_folder = std::filesystem::path(PILOT_XSTR(PILOT_ROOT_DIR));
