@@ -48,28 +48,28 @@ namespace Pilot
         return degrees;
     }
 
-    Radian Math::acos(float value)
-    {
-        if (-1.0 < value)
-        {
-            if (value < 1.0)
-                return Radian(acos(value));
+	Radian Math::acos(float value)
+	{
+		if (-1.0 < value)
+		{
+			if (value < 1.0)
+				return Radian(::acos(value));
 
-            return Radian(0.0);
-        }
+			return Radian(0.0);
+		}
 
-        return Radian(Math_PI);
-    }
-    //-----------------------------------------------------------------------
-    Radian Math::asin(float value)
-    {
-        if (-1.0 < value)
-        {
-            if (value < 1.0)
-                return Radian(asin(value));
+		return Radian(Math_PI);
+	}
+	//-----------------------------------------------------------------------
+	Radian Math::asin(float value)
+	{
+		if (-1.0 < value)
+		{
+			if (value < 1.0)
+				return Radian(::asin(value));
 
-            return Radian(Math_HALF_PI);
-        }
+			return Radian(Math_HALF_PI);
+		}
 
         return Radian(-Math_HALF_PI);
     }
