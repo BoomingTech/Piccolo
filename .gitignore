@@ -3,6 +3,7 @@ cpm_modules/
 CPM_modules/
 CPM_*.cmake
 .DS_Store
+*.code-workspace
 
 # Visual Studio
 CMakeSettings.json
