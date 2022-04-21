@@ -35,10 +35,13 @@ namespace Pilot
         void destroy() override {}
 
         const Vector3& getTargetPosition() const { return m_target_position; }
-        float          getSpeedRatio() const { return m_move_speed_ratio; }
+
+        float getSpeedRatio() const { return m_move_speed_ratio; }
+        bool  getIsMoving() const { return m_is_moving; }
 
     private:
-        void calculatedDesiredMoveSpeed(unsigned int command, float delta_time);
+        void calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time);
+        void calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time);
         void calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation);
         void calculateDesiredDisplacement(float delta_time);
         void calculateTargetPosition(const Vector3&& current_position);
@@ -46,7 +49,6 @@ namespace Pilot
         META(Enable)
         MotorRes m_motor_res;
 
-        float m_move_speed {0.f};
         float m_move_speed_ratio {0.f};
         float m_vertical_move_speed {0.f};
         float m_jump_horizontal_speed_ratio {0.f};
@@ -60,5 +62,7 @@ namespace Pilot
         JumpState  m_jump_state {JumpState::idle};
 
         Controller* m_controller {nullptr};
+
+        bool m_is_moving {false};
     };
 } // namespace Pilot

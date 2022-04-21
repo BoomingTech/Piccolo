@@ -6,6 +6,7 @@
 #include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/controller/character_controller.h"
+#include "runtime/function/framework/component/animation/animation_component.h"
 #include "runtime/function/framework/component/camera/camera_component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/level/level.h"
@@ -16,9 +17,8 @@
 namespace Pilot
 {
     MotorComponent::MotorComponent(const MotorRes& motor_param, GObject* parent_object) :
-        Component(parent_object), m_move_speed(motor_param.m_move_speed)
+        Component(parent_object), m_motor_res(motor_param)
     {
-        m_motor_res.m_move_speed = motor_param.m_move_speed;
         if (motor_param.m_controller_config.getTypeName() == "PhysicsControllerConfig")
         {
             auto controller_config                            = new PhysicsControllerConfig;
@@ -33,6 +33,10 @@ namespace Pilot
             m_motor_res.m_controller_type = ControllerType::invalid;
             LOG_ERROR("invalid controller type, not able to move");
         }
+
+        const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
+
+        m_target_position = transform_component->getPosition();
     }
 
     MotorComponent::~MotorComponent()
@@ -72,21 +76,52 @@ namespace Pilot
         if (command >= (unsigned int)GameCommand::invalid)
             return;
 
-        calculatedDesiredMoveSpeed(command, delta_time);
+        calculatedDesiredHorizontalMoveSpeed(command, delta_time);
+        calculatedDesiredVerticalMoveSpeed(command, delta_time);
         calculatedDesiredMoveDirection(command, transform_component->getRotation());
         calculateDesiredDisplacement(delta_time);
         calculateTargetPosition(transform_component->getPosition());
 
         transform_component->setPosition(m_target_position);
+
     }
 
-    void MotorComponent::calculatedDesiredMoveSpeed(unsigned int command, float delta_time)
+    void MotorComponent::calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time)
     {
-        m_move_speed_ratio = 1.0f;
-        if ((unsigned int)GameCommand::sprint & command)
+        bool has_move_command = ((unsigned int)GameCommand::forward | (unsigned int)GameCommand::backward |
+                                 (unsigned int)GameCommand::left | (unsigned int)GameCommand::right) &
+                                command;
+        bool has_sprint_command = (unsigned int)GameCommand::sprint & command;
+
+        bool  is_acceleration    = false;
+        float final_acceleration = m_motor_res.m_move_acceleration;
+        float min_speed_ratio    = 0.f;
+        float max_speed_ratio    = 0.f;
+        if (has_move_command)
         {
-            m_move_speed_ratio = 2.f;
+            is_acceleration = true;
+            max_speed_ratio = m_motor_res.m_max_move_speed_ratio;
+            if (m_move_speed_ratio >= m_motor_res.m_max_move_speed_ratio)
+            {
+                final_acceleration = m_motor_res.m_sprint_acceleration;
+                is_acceleration    = has_sprint_command;
+                min_speed_ratio    = m_motor_res.m_max_move_speed_ratio;
+                max_speed_ratio    = m_motor_res.m_max_sprint_speed_ratio;
+            }
         }
+        else
+        {
+            is_acceleration = false;
+            min_speed_ratio = 0.f;
+            max_speed_ratio = m_motor_res.m_max_sprint_speed_ratio;
+        }
+
+        m_move_speed_ratio += (is_acceleration ? 1.0f : -1.0f) * final_acceleration * delta_time;
+        m_move_speed_ratio = std::clamp(m_move_speed_ratio, min_speed_ratio, max_speed_ratio);
+    }
+
+    void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time)
+    {
     }
 
     void MotorComponent::calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation)
@@ -96,7 +131,11 @@ namespace Pilot
             Vector3 forward_dir = object_rotation * Vector3::NEGATIVE_UNIT_Y;
             Vector3 left_dir    = object_rotation * Vector3::UNIT_X;
 
-            m_desired_horizontal_move_direction = Vector3::ZERO;
+            if (command > 0)
+            {
+                m_desired_horizontal_move_direction = Vector3::ZERO;
+            }
+
             if ((unsigned int)GameCommand::forward & command)
             {
                 m_desired_horizontal_move_direction += forward_dir;
@@ -126,7 +165,7 @@ namespace Pilot
         float horizontal_speed_ratio =
             m_jump_state == JumpState::idle ? m_move_speed_ratio : m_jump_horizontal_speed_ratio;
         m_desired_displacement =
-            m_desired_horizontal_move_direction * m_move_speed * horizontal_speed_ratio * delta_time +
+            m_desired_horizontal_move_direction * m_motor_res.m_move_speed * horizontal_speed_ratio * delta_time +
             Vector3::UNIT_Z * m_vertical_move_speed * delta_time;
     }
 
@@ -153,6 +192,7 @@ namespace Pilot
             m_jump_state     = JumpState::idle;
         }
 
+        m_is_moving       = (final_position - current_position).squaredLength() > 0.f;
         m_target_position = final_position;
     }
 
