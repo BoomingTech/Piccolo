@@ -41,7 +41,7 @@ namespace Pilot
 
     void WorldManager::processPendingLoadWorld()
     {
-        if (m_pending_load_world_path.empty())
+        if (m_pending_load_world_url.empty())
             return;
 
         std::string pending_load_world_path = m_pending_load_world_path.generic_string();
@@ -81,19 +81,36 @@ namespace Pilot
         }
     }
 
+    void WorldManager::loadAsCurrentLevel(const std::string& level_url)
+    {
+        if (m_current_active_level != nullptr)
+        {
+            auto iter = m_levels.begin();
+            while (iter != m_levels.end())
+            {
+                if (*iter == m_current_active_level)
+                    break;
+                ++iter;
+            }
+            m_levels.erase(iter);
+
+            m_current_active_level->clear();
+            delete m_current_active_level;
+            m_current_active_level = nullptr;
+        }
+
+        loadLevel(level_url);
+    }
+
+    void WorldManager::loadAsCurrentWorld(const std::string& world_url) { m_pending_load_world_url = world_url; }
+
     void WorldManager::reloadCurrentLevel()
     {
         if (m_current_active_level == nullptr)
             return;
 
-        m_levels.erase(std::find(m_levels.begin(), m_levels.end(), m_current_active_level));
-
         std::string current_level_url = m_current_active_level->getLevelResUrl();
-        m_current_active_level->clear();
-        delete m_current_active_level;
-        m_current_active_level = nullptr;
-
-        loadLevel(current_level_url);
+        loadAsCurrentLevel(current_level_url);
     }
 
     void WorldManager::saveCurrentLevel()
