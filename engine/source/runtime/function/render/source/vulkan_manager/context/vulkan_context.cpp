@@ -93,6 +93,7 @@ void Pilot::PVulkanContext::initialize(GLFWwindow* window)
     // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
     char const* vk_layer_path = PILOT_XSTR(PILOT_VK_LAYER_PATH);
     SetEnvironmentVariableA("VK_LAYER_PATH", vk_layer_path);
+    SetEnvironmentVariableA("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
 #else
 #error Unknown Compiler
 #endif
