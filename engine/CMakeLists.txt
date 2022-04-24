@@ -6,6 +6,7 @@ set(ENGINE_SCHEMA_DIR "/schema")
 
 if(MSVC)
     add_compile_options("/MP")
+    set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PilotEditor)
 endif()
 
 set(vulkan_include ${THIRD_PARTY_DIR}/VulkanSDK/include)
