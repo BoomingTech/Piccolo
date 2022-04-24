@@ -81,6 +81,8 @@ namespace Pilot
         float   m_mouse_x {0.0f};
         float   m_mouse_y {0.0f};
 
+        float m_camera_speed = 0.05f;
+
         bool m_is_editor_mode {true};
         int  m_key_state {0};
 
