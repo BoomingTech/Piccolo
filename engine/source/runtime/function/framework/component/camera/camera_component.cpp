@@ -80,6 +80,8 @@ namespace Pilot
     {
         Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
         Character* current_character = current_level->getCurrentActiveCharacter();
+        if (current_character == nullptr)
+            return;
 
         Quaternion q_yaw, q_pitch;
 
@@ -107,6 +109,8 @@ namespace Pilot
     {
         Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
         Character* current_character = current_level->getCurrentActiveCharacter();
+        if (current_character == nullptr)
+            return;
 
         ThirdPersonCameraParameter* param = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
 
