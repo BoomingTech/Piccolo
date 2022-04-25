@@ -7,6 +7,19 @@
 
 namespace Pilot
 {
+    enum class MotorState : unsigned char
+    {
+        moving,
+        jumping
+    };
+
+    enum class JumpState : unsigned char
+    {
+        idle,
+        rising,
+        falling
+    };
+
     REFLECTION_TYPE(MotorComponent)
     CLASS(MotorComponent : public Component, WhiteListFields)
     {
@@ -17,14 +30,12 @@ namespace Pilot
 
         ~MotorComponent() override;
 
-        Vector3 getDesiredPosition() const { return m_displacement; }
-
         void tick(float delta_time) override;
         void tickPlayerMotor(float delta_time);
         void destroy() override {}
 
         const Vector3& getTargetPosition() const { return m_target_position; }
-        float getSpeedRatio() const { return m_move_speed_ratio; }
+        float          getSpeedRatio() const { return m_move_speed_ratio; }
 
     private:
         void calculatedDesiredMoveSpeed(unsigned int command, float delta_time);
@@ -35,11 +46,19 @@ namespace Pilot
         META(Enable)
         MotorRes m_motor_res;
 
-        float   m_move_speed {0.f};
-        Vector3 m_displacement;
+        float m_move_speed {0.f};
+        float m_move_speed_ratio {0.f};
+        float m_vertical_move_speed {0.f};
+        float m_jump_horizontal_speed_ratio {0.f};
+
+        Vector3 m_desired_displacement;
+        Vector3 m_desired_horizontal_move_direction;
+        Vector3 m_jump_initial_velocity;
+        Vector3 m_target_position;
+
+        MotorState m_motor_state {MotorState::moving};
+        JumpState  m_jump_state {JumpState::idle};
 
         Controller* m_controller {nullptr};
-        Vector3     m_desired_move_direction;
-        float       m_move_speed_ratio {0.f};
     };
 } // namespace Pilot

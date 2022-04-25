@@ -28,7 +28,7 @@ namespace Pilot
                 }
                 else if (name.compare("DefaultWorld") == 0)
                 {
-                    m_default_world_path = m_asset_folder / value;
+                    m_default_world_path = value;
                 }
                 else if (name.compare("BigIconFile") == 0)
                 {
@@ -60,7 +60,7 @@ namespace Pilot
 
     const std::filesystem::path& ConfigManager::getSchemaFolder() const { return m_schema_folder; }
 
-    const std::filesystem::path& ConfigManager::getDefaultWorldPath() const { return m_default_world_path; }
+    const std::filesystem::path& ConfigManager::getDefaultWorldUrl() const { return m_default_world_path; }
 
     const std::filesystem::path& ConfigManager::getEditorBigIconPath() const { return m_editor_big_icon_path; }
 
