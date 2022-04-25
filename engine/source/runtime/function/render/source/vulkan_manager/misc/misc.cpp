@@ -330,7 +330,7 @@ namespace Pilot
                                   (frustum_bounding_box.max_bound.z - frustum_bounding_box.min_bound.z) * 0.5);
 
             glm::vec3 eye =
-                box_center + GLMUtil::fromVec3(scene.m_directionalLight.m_direction) * glm::length(box_extents);
+                box_center + GLMUtil::fromVec3(scene.m_directional_light.m_direction) * glm::length(box_extents);
             glm::vec3 center = box_center;
             light_view       = glm::lookAtRH(eye, center, glm::vec3(0.0, 0.0, 1.0));
 

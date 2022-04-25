@@ -10,6 +10,7 @@ CMakeSettings.json
 
 # Visual Studio Code
 .vscode/
+*.code-workspace
 
 # CLion
 .idea/
