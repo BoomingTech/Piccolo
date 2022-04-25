@@ -159,6 +159,10 @@ namespace Pilot
         TextureHandle m_brdfLUT_texture_handle;
         TextureHandle m_irradiance_texture_handle[6];
         TextureHandle m_specular_texture_handle[6];
+        
+        // these are not populated by load
+        // global textures for color grading
+        TextureHandle m_color_grading_LUT_texture_handle;
 
         Vector3           m_sky_color;
         PAmbientLight     m_ambient_light;
