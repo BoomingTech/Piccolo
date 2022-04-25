@@ -160,9 +160,9 @@ namespace Pilot
         TextureHandle m_irradiance_texture_handle[6];
         TextureHandle m_specular_texture_handle[6];
 
-        Vector3           m_skyColor;
-        PAmbientLight     m_ambientLight;
-        PDirectionalLight m_directionalLight;
+        Vector3           m_sky_color;
+        PAmbientLight     m_ambient_light;
+        PDirectionalLight m_directional_light;
         PPointLightList   m_pointLights;
 
         void                           lock() { m_scene_mutex.lock(); }

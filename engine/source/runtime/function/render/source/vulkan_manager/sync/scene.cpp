@@ -16,7 +16,7 @@ void Pilot::PVulkanManager::syncScene(class Scene&                scene,
         proj_view_matrix          = GLMUtil::fromMat4x4(proj_matrix * view_matrix);
 
         // ambient light
-        Vector3  ambient_light   = scene.m_ambientLight.m_irradiance;
+        Vector3  ambient_light   = scene.m_ambient_light.m_irradiance;
         uint32_t point_light_num = static_cast<uint32_t>(scene.m_pointLights.m_lights.size());
 
         // set ubo data
@@ -45,8 +45,8 @@ void Pilot::PVulkanManager::syncScene(class Scene&                scene,
 
         // directional light
         m_mesh_perframe_storage_buffer_object.scene_directional_light.direction =
-            scene.m_directionalLight.m_direction.normalisedCopy();
-        m_mesh_perframe_storage_buffer_object.scene_directional_light.color = scene.m_directionalLight.m_color;
+            scene.m_directional_light.m_direction.normalisedCopy();
+        m_mesh_perframe_storage_buffer_object.scene_directional_light.color = scene.m_directional_light.m_color;
 
         m_mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_mesh_inefficient_pick_perframe_storage_buffer_object.rt_width  = m_vulkan_context._swapchain_extent.width;

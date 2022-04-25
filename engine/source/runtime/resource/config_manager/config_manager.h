@@ -24,6 +24,7 @@ namespace Pilot
         std::filesystem::path m_editor_big_icon_path;
         std::filesystem::path m_editor_small_icon_path;
         std::filesystem::path m_editor_font_path;
+        std::filesystem::path m_global_rendering_res_path;
 
     public:
         void initialize(const EngineInitParams& init_param);
@@ -37,5 +38,6 @@ namespace Pilot
         const std::filesystem::path& getEditorBigIconPath() const;
         const std::filesystem::path& getEditorSmallIconPath() const;
         const std::filesystem::path& getEditorFontPath() const;
+        const std::filesystem::path& getGlobalRenderingResPath() const;
     };
 } // namespace Pilot
