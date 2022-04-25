@@ -438,6 +438,7 @@ void Pilot::PVulkanContext::createLogicalDevice()
     _vkCmdBindIndexBuffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(_device, "vkCmdBindIndexBuffer");
     _vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(_device, "vkCmdBindDescriptorSets");
     _vkCmdDrawIndexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
+    _vkCmdClearAttachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(_device, "vkCmdClearAttachments");
 
     _depth_image_format = findDepthFormat();
 }

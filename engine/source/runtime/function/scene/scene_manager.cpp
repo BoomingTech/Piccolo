@@ -853,11 +853,13 @@ namespace Pilot
                                                  .generic_string()
                                                  .c_str());
 
+            
             m_scene->m_color_grading_LUT_texture_handle =
                 SceneBuilder::loadTexture(AssetManager::getInstance()
-                                              .getFullPath("asset/texture/default/color_grading_LUT.jpg")
+                                              .getFullPath(global_res.m_color_grading_map)
                                               .generic_string()
                                               .c_str());
+
             m_scene->m_sky_color     = global_res.m_sky_color.toVector3();
             m_scene->m_ambient_light = {global_res.m_ambient_light.toVector3()};
 

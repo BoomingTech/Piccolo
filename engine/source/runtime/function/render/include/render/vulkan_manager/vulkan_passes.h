@@ -54,6 +54,20 @@ namespace Pilot
         void* m_surface_ui;
     };
 
+    class PCombineUIPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView scene_input_attachment, VkImageView ui_input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView scene_input_attachment, VkImageView ui_input_attachment);
+
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
     extern void  surface_ui_register_input(void* m_surface_ui);
     extern void  surface_ui_on_tick(void* surface_ui, void* ui_state);
     extern float surface_ui_content_scale(void* surface_ui);
@@ -78,7 +92,8 @@ namespace Pilot
         _main_camera_subpass_forward_lighting,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
-        _main_camera_subpass_ui = _main_camera_subpass_color_grading,
+        _main_camera_subpass_ui,
+        _main_camera_subpass_combine_ui,
         _main_camera_subpass_count
     };
 
@@ -124,6 +139,7 @@ namespace Pilot
         void draw(PColorGradingPass& color_grading_pass,
                   PToneMappingPass&  tone_mapping_pass,
                   PUIPass&           ui_pass,
+                  PCombineUIPass&    combine_ui_pass,
                   uint32_t           current_swapchain_image_index,
                   void*              ui_state);
 
@@ -131,6 +147,7 @@ namespace Pilot
         void drawForward(PColorGradingPass& color_grading_pass,
                          PToneMappingPass&  tone_mapping_pass,
                          PUIPass&           ui_pass,
+                         PCombineUIPass&    combine_ui_pass,
                          uint32_t           current_swapchain_image_index,
                          void*              ui_state);
 

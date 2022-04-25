@@ -120,6 +120,7 @@ namespace Pilot
         PColorGradingPass           m_color_grading_pass;
         PToneMappingPass            m_tone_mapping_pass;
         PUIPass                     m_ui_pass;
+        PCombineUIPass              m_combine_ui_pass;
         PPickPass                   m_mouse_pick_pass;
 
         static uint32_t const m_max_frames_in_flight = 3;

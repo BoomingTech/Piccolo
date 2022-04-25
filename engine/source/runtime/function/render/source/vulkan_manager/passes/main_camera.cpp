@@ -43,10 +43,10 @@ namespace Pilot
     {
         _framebuffer.attachments.resize(_main_camera_pass_custom_attachment_count);
 
-        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format = VK_FORMAT_R8G8B8A8_SRGB;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format          = VK_FORMAT_R8G8B8A8_UNORM;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format          = VK_FORMAT_R8G8B8A8_UNORM;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format          = VK_FORMAT_R8G8B8A8_SRGB;
+        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
         _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
@@ -116,7 +116,8 @@ namespace Pilot
 
         VkAttachmentDescription& backup_odd_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_odd];
-        backup_odd_color_attachment_description.format         = _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format;
+        backup_odd_color_attachment_description.format =
+            _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format;
         backup_odd_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         backup_odd_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         backup_odd_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -127,7 +128,8 @@ namespace Pilot
 
         VkAttachmentDescription& backup_even_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_even];
-        backup_even_color_attachment_description.format         = _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format;
+        backup_even_color_attachment_description.format =
+            _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format;
         backup_even_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         backup_even_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         backup_even_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -239,7 +241,7 @@ namespace Pilot
         VkAttachmentReference tone_mapping_pass_color_attachment_reference {};
         tone_mapping_pass_color_attachment_reference.attachment =
             &backup_even_color_attachment_description - attachments;
-        tone_mapping_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        tone_mapping_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription& tone_mapping_pass   = subpasses[_main_camera_subpass_tone_mapping];
         tone_mapping_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -258,7 +260,7 @@ namespace Pilot
 
         VkAttachmentReference color_grading_pass_color_attachment_reference {};
         color_grading_pass_color_attachment_reference.attachment =
-            &swapchain_image_attachment_description - attachments;
+            &backup_odd_color_attachment_description - attachments;
         color_grading_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription& color_grading_pass   = subpasses[_main_camera_subpass_color_grading];
@@ -271,8 +273,46 @@ namespace Pilot
         color_grading_pass.preserveAttachmentCount = 0;
         color_grading_pass.pPreserveAttachments    = NULL;
 
+        VkAttachmentReference ui_pass_color_attachment_reference {};
+        ui_pass_color_attachment_reference.attachment = &backup_even_color_attachment_description - attachments;
+        ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDependency dependencies[5] = {};
+        uint32_t ui_pass_preserve_attachment = &backup_odd_color_attachment_description - attachments;
+
+        VkSubpassDescription& ui_pass   = subpasses[_main_camera_subpass_ui];
+        ui_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        ui_pass.inputAttachmentCount    = 0;
+        ui_pass.pInputAttachments       = NULL;
+        ui_pass.colorAttachmentCount    = 1;
+        ui_pass.pColorAttachments       = &ui_pass_color_attachment_reference;
+        ui_pass.pDepthStencilAttachment = NULL;
+        ui_pass.preserveAttachmentCount = 1;
+        ui_pass.pPreserveAttachments    = &ui_pass_preserve_attachment;
+
+        VkAttachmentReference combine_ui_pass_input_attachments_reference[2] = {};
+        combine_ui_pass_input_attachments_reference[0].attachment =
+            &backup_odd_color_attachment_description - attachments;
+        combine_ui_pass_input_attachments_reference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        combine_ui_pass_input_attachments_reference[1].attachment =
+            &backup_even_color_attachment_description - attachments;
+        combine_ui_pass_input_attachments_reference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference combine_ui_pass_color_attachment_reference {};
+        combine_ui_pass_color_attachment_reference.attachment = &swapchain_image_attachment_description - attachments;
+        combine_ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription& combine_ui_pass = subpasses[_main_camera_subpass_combine_ui];
+        combine_ui_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        combine_ui_pass.inputAttachmentCount  = sizeof(combine_ui_pass_input_attachments_reference) /
+                                               sizeof(combine_ui_pass_input_attachments_reference[0]);
+        combine_ui_pass.pInputAttachments       = combine_ui_pass_input_attachments_reference;
+        combine_ui_pass.colorAttachmentCount    = 1;
+        combine_ui_pass.pColorAttachments       = &combine_ui_pass_color_attachment_reference;
+        combine_ui_pass.pDepthStencilAttachment = NULL;
+        combine_ui_pass.preserveAttachmentCount = 0;
+        combine_ui_pass.pPreserveAttachments    = NULL;
+
+        VkSubpassDependency dependencies[7] = {};
 
         VkSubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = VK_SUBPASS_EXTERNAL;
@@ -313,14 +353,32 @@ namespace Pilot
         tone_mapping_pass_depend_on_lighting_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
         tone_mapping_pass_depend_on_lighting_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& color_grading_pass_depend_on_lighting_pass = dependencies[4];
-        color_grading_pass_depend_on_lighting_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
-        color_grading_pass_depend_on_lighting_pass.dstSubpass           = _main_camera_subpass_color_grading;
-        color_grading_pass_depend_on_lighting_pass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        color_grading_pass_depend_on_lighting_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        color_grading_pass_depend_on_lighting_pass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        color_grading_pass_depend_on_lighting_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
-        color_grading_pass_depend_on_lighting_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+        VkSubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[4];
+        color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
+        color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
+        color_grading_pass_depend_on_tone_mapping_pass.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkSubpassDependency& ui_pass_depend_on_color_grading_pass = dependencies[5];
+        ui_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
+        ui_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_ui;
+        ui_pass_depend_on_color_grading_pass.srcStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        ui_pass_depend_on_color_grading_pass.dstStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        ui_pass_depend_on_color_grading_pass.srcAccessMask        = 0;
+        ui_pass_depend_on_color_grading_pass.dstAccessMask        = 0;
+        ui_pass_depend_on_color_grading_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkSubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[6];
+        combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
+        combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
+        combine_ui_pass_depend_on_ui_pass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        combine_ui_pass_depend_on_ui_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        combine_ui_pass_depend_on_ui_pass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        combine_ui_pass_depend_on_ui_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
+        combine_ui_pass_depend_on_ui_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -2009,6 +2067,7 @@ namespace Pilot
     void PMainCameraPass::draw(PColorGradingPass& color_grading_pass,
                                PToneMappingPass&  tone_mapping_pass,
                                PUIPass&           ui_pass,
+                               PCombineUIPass&    combine_ui_pass,
                                uint32_t           current_swapchain_image_index,
                                void*              ui_state)
     {
@@ -2089,18 +2148,43 @@ namespace Pilot
 
         color_grading_pass.draw();
 
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkClearAttachment clear_attachments[1];
+        clear_attachments[0].aspectMask                  = VK_IMAGE_ASPECT_COLOR_BIT;
+        clear_attachments[0].colorAttachment             = 0;
+        clear_attachments[0].clearValue.color.float32[0] = 0.0;
+        clear_attachments[0].clearValue.color.float32[1] = 0.0;
+        clear_attachments[0].clearValue.color.float32[2] = 0.0;
+        clear_attachments[0].clearValue.color.float32[3] = 0.0;
+        VkClearRect clear_rects[1];
+        clear_rects[0].baseArrayLayer     = 0;
+        clear_rects[0].layerCount         = 1;
+        clear_rects[0].rect.offset.x      = 0;
+        clear_rects[0].rect.offset.y      = 0;
+        clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
+        clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
+        m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
+                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                   clear_attachments,
+                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                   clear_rects);
+
         drawAxis();
 
         ui_pass.draw(ui_state);
 
-        {
-            m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
-        }
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        combine_ui_pass.draw();
+
+        m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
     }
 
     void PMainCameraPass::drawForward(PColorGradingPass& color_grading_pass,
                                       PToneMappingPass&  tone_mapping_pass,
                                       PUIPass&           ui_pass,
+                                      PCombineUIPass&    combine_ui_pass,
                                       uint32_t           current_swapchain_image_index,
                                       void*              ui_state)
     {
@@ -2155,13 +2239,37 @@ namespace Pilot
 
         color_grading_pass.draw();
 
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkClearAttachment clear_attachments[1];
+        clear_attachments[0].aspectMask                  = VK_IMAGE_ASPECT_COLOR_BIT;
+        clear_attachments[0].colorAttachment             = 0;
+        clear_attachments[0].clearValue.color.float32[0] = 0.0;
+        clear_attachments[0].clearValue.color.float32[1] = 0.0;
+        clear_attachments[0].clearValue.color.float32[2] = 0.0;
+        clear_attachments[0].clearValue.color.float32[3] = 0.0;
+        VkClearRect clear_rects[1];
+        clear_rects[0].baseArrayLayer     = 0;
+        clear_rects[0].layerCount         = 1;
+        clear_rects[0].rect.offset.x      = 0;
+        clear_rects[0].rect.offset.y      = 0;
+        clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
+        clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
+        m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
+                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                   clear_attachments,
+                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                   clear_rects);
+
         drawAxis();
 
         ui_pass.draw(ui_state);
 
-        {
-            m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
-        }
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        combine_ui_pass.draw();
+
+        m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
     }
 
     void PMainCameraPass::drawMeshGbuffer()
