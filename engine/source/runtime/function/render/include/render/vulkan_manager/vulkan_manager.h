@@ -40,55 +40,29 @@ namespace Pilot
     class PVulkanManager
     {
     public:
-        PVulkanManager(GLFWwindow* window, class Scene& scene, class PilotRenderer* pilot_renderer);
+        PVulkanManager();
+
         // clear module resource
         void clear();
-        // frame start
-        void beginFrame();
-        // frame end
-        void endFrame();
-        // per frame synchronization
-        void
-        syncScene(class Scene& scene, class PilotRenderer* pilot_renderer, struct SceneReleaseHandles& release_handles);
-        // get visiable objects
-        void
-        culling(class Scene& scene, class PilotRenderer* pilot_renderer, struct SceneReleaseHandles& release_handles);
 
-    private:
-        // initialization
+        // render frame
+        void renderFrame(class Scene&                scene,
+                         class PilotRenderer*        pilot_renderer,
+                         struct SceneReleaseHandles& release_handles,
+                         void*                       ui_state);
+
+        // legacy
+        void renderFrameForward(class Scene&                scene,
+                               class PilotRenderer*        pilot_renderer,
+                               struct SceneReleaseHandles& release_handles,
+                               void*                       ui_state);
+
+        // initialize vulkan from io->window
         int initialize(GLFWwindow* window, class Scene& scene, class PilotRenderer* pilot_renderer);
-        // initialize render passes
-        bool initializeRenderPass();
-        // initialize command pool
-        bool initializeCommandPool();
-        // initialize swapchain frame buffers
-        bool initializeSwapchainFramebuffers();
-        // description pool for uniform buffer and image sampler
-        bool initializeDescriptorPool();
-        // semaphore : signal an image is ready for rendering / presentation
-        bool createSyncPrimitives();
-        // allocate command buffer: for drawing commands
-        bool initializeCommandBuffers();
-        // swapchain clear or recreate
-        void clearSwapChain();
-        // recreate swapchain
-        bool recreateSwapChain();
 
-    public:
-        // vulkan context include device creation, default command buffer, etc
-        PVulkanContext m_vulkan_context;
+        // initialize ui
+        void initializeUI(void* surface_ui);
 
-    private:
-        // global rendering resource, include IBL data, global storage buffer
-        PGlobalRenderResource m_global_render_resource;
-        // include lighting, shadow, post process, mouse picking pass
-        PDirectionalLightPass m_directional_light_pass;
-        PPointLightPass       m_point_light_pass;
-        PLightingPass         m_mesh_lighting_pass;
-        PPostprocessPass      m_postprocess_pass;
-        PPickPass             m_mouse_pick_pass;
-
-    public:
         // for editor use
         void     updateUIRenderSceneViewport(VkViewport render_scene_viewport);
         uint32_t getGuidOfPickedMesh(Vector2 picked_uv);
@@ -101,22 +75,60 @@ namespace Pilot
                                     Vector3 camera_right,
                                     Vector3 camera_position);
 
-        VkCommandBuffer getCurrentCommandBuffer();
-        VkRenderPass    getLightingPass();
-
         // rendering config
         static bool m_enable_validation_Layers;
         static bool m_enable_debug_untils_label;
         static bool m_enable_point_light_shadow;
 
+    private:
+        // initialize render passes
+        bool initializeRenderPass();
+        // initialize command pool
+        bool initializeCommandPool();
+        // description pool for uniform buffer and image sampler
+        bool initializeDescriptorPool();
+        // semaphore : signal an image is ready for rendering / presentation
+        bool createSyncPrimitives();
+        // allocate command buffer: for drawing commands
+        bool initializeCommandBuffers();
+        // swapchain clear or recreate
+        void clearSwapChain();
+        // recreate swapchain
+        bool recreateSwapChain();
+
+        // per frame synchronization
+        void cullingAndSyncScene(class Scene&                scene,
+                                 class PilotRenderer*        pilot_renderer,
+                                 struct SceneReleaseHandles& release_handles);
+
+        // prepare context
+        void prepareContext();
+
+        // get visiable objects
+        void
+        culling(class Scene& scene, class PilotRenderer* pilot_renderer, struct SceneReleaseHandles& release_handles);
+
+        // vulkan context include device creation, default command buffer, etc
+        PVulkanContext m_vulkan_context;
+
+        // global rendering resource, include IBL data, global storage buffer
+        PGlobalRenderResource m_global_render_resource;
+        // include lighting, shadow, post process, mouse picking pass
+        PDirectionalLightShadowPass m_directional_light_shadow_pass;
+        PPointLightShadowPass       m_point_light_shadow_pass;
+        PMainCameraPass             m_main_camera_pass;
+        PColorGradingPass           m_color_grading_pass;
+        PToneMappingPass            m_tone_mapping_pass;
+        PUIPass                     m_ui_pass;
+        PCombineUIPass              m_combine_ui_pass;
+        PPickPass                   m_mouse_pick_pass;
+
         static uint32_t const m_max_frames_in_flight = 3;
         uint32_t              m_current_frame_index  = 0;
-        bool                  m_frame_swapchain_image_acquired[m_max_frames_in_flight];
 
         // global descriptor pool
         VkDescriptorPool m_descriptor_pool;
 
-    private:
         bool   m_is_show_axis = true;
         size_t m_selected_axis;
 
@@ -133,9 +145,6 @@ namespace Pilot
         static uint32_t m_max_vertex_blending_mesh_count;
         static uint32_t m_max_material_count;
 
-        uint32_t                   m_current_swapchain_image_index = 0;
-        std::vector<VkFramebuffer> m_swapchain_framebuffers;
-
         // viewport info
         VkViewport m_viewport = {0, 0, 1280, 720, 0, 1};
         VkRect2D   m_scissor  = {{0, 0}, {1280, 720}};
@@ -148,6 +157,10 @@ namespace Pilot
 
         // load IBL
         void updateGlobalTexturesForIBL(PIBLResourceData& ibl_resource_data);
+
+        // load color grading
+        void updateGlobalTexturesForColorGrading(PColorGradingResourceData& color_grading_resource_data);
+
         void initializeCubeMap(VkImage&             image,
                                VkImageView&         image_view,
                                VmaAllocation&       image_allocation,
@@ -156,6 +169,7 @@ namespace Pilot
                                std::array<void*, 6> texture_image_pixels,
                                PILOT_PIXEL_FORMAT   texture_image_format,
                                uint32_t             miplevels);
+
         void generateTextureMipMaps(VkImage  image,
                                     VkFormat image_format,
                                     uint32_t texture_width,
@@ -202,7 +216,8 @@ namespace Pilot
                                                   uint32_t           texture_image_width,
                                                   uint32_t           texture_image_height,
                                                   void*              texture_image_pixels,
-                                                  PILOT_PIXEL_FORMAT texture_image_format);
+                                                  PILOT_PIXEL_FORMAT texture_image_format,
+                                                  uint32_t           miplevels = 0);
     };
 
 } // namespace Pilot

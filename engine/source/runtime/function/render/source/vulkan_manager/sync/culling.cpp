@@ -265,27 +265,6 @@ void Pilot::PVulkanManager::culling(class Scene&                scene,
             m_main_camera_visible_particlebillboard_nodes[now_particlenum].positions = particle_billboard.m_positions;
         }
     }
-
-    {
-        m_mesh_lighting_pass.m_is_show_axis                        = m_is_show_axis;
-        m_mesh_lighting_pass.m_selected_axis                       = m_selected_axis;
-        m_mesh_lighting_pass.m_mesh_perframe_storage_buffer_object = m_mesh_perframe_storage_buffer_object;
-        m_mesh_lighting_pass.m_axis_storage_buffer_object          = m_axis_storage_buffer_object;
-        m_mesh_lighting_pass.m_particlebillboard_perframe_storage_buffer_object =
-            m_particlebillboard_perframe_storage_buffer_object;
-
-        m_directional_light_pass._mesh_directional_light_shadow_perframe_storage_buffer_object =
-            m_mesh_directional_light_shadow_perframe_storage_buffer_object;
-
-        m_point_light_pass._mesh_point_light_shadow_perframe_storage_buffer_object =
-            m_mesh_point_light_shadow_perframe_storage_buffer_object;
-
-        m_postprocess_pass._mesh_point_light_shadow_perframe_storage_buffer_object =
-            m_mesh_point_light_shadow_perframe_storage_buffer_object;
-
-        m_mouse_pick_pass._mesh_inefficient_pick_perframe_storage_buffer_object =
-            m_mesh_inefficient_pick_perframe_storage_buffer_object;
-    }
-
+    
     scene.unlock();
 }

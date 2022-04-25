@@ -186,7 +186,7 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
         material_descriptor_set_alloc_info.descriptorPool     = m_descriptor_pool;
         material_descriptor_set_alloc_info.descriptorSetCount = 1;
         material_descriptor_set_alloc_info.pSetLayouts =
-            &m_mesh_lighting_pass._descriptor_infos[PLightingPass::LayoutType::_material].layout;
+            &m_main_camera_pass._descriptor_infos[PMainCameraPass::LayoutType::_mesh_per_material].layout;
 
         if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_context._device,
                                                    &material_descriptor_set_alloc_info,

@@ -17,8 +17,12 @@ int Pilot::PVulkanManager::initialize(GLFWwindow* window, class Scene& scene, Pi
     PIBLResourceData ibl_resource_data = m_global_render_resource.getIBLTextureData(&scene, pilot_renderer);
     updateGlobalTexturesForIBL(ibl_resource_data);
 
+    // global textures for color grading
+    PColorGradingResourceData color_grading_resource_data = m_global_render_resource.getColorGradingTextureData(&scene, pilot_renderer);
+    updateGlobalTexturesForColorGrading(color_grading_resource_data);
+
     if (initializeCommandPool() && initializeDescriptorPool() && createSyncPrimitives() && initializeCommandBuffers() &&
-        initializeRenderPass() && initializeSwapchainFramebuffers())
+        initializeRenderPass())
         return 1;
     else
         return 0;

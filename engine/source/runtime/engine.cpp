@@ -100,6 +100,8 @@ namespace Pilot
             }
 
             logicalTick(delta_time);
+            fps(delta_time);
+
             if (!rendererTick())
                 return;
         }
@@ -115,6 +117,23 @@ namespace Pilot
     }
 
     bool PilotEngine::rendererTick() { return m_renderer->tick(); }
+
+    const float PilotEngine::k_fps_alpha = 1.f / 100;
+    void        PilotEngine::fps(float delta_time)
+    {
+        m_frame_count++;
+
+        if (m_frame_count == 1)
+        {
+            m_average_duration = delta_time;
+        }
+        else
+        {
+            m_average_duration = m_average_duration * (1 - k_fps_alpha) + delta_time * k_fps_alpha;
+        }
+
+        m_fps = static_cast<int>(1.f / m_average_duration);
+    }
 
     std::shared_ptr<SurfaceIO> PilotEngine::getSurfaceIO() { return m_renderer->getPSurface()->getSurfaceIO(); }
 

@@ -6,6 +6,7 @@
 
 std::unordered_map<uint32_t, VkSampler> Pilot::PVulkanUtil::m_mipmap_sampler_map;
 VkSampler                               Pilot::PVulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
+VkSampler                               Pilot::PVulkanUtil::m_linear_sampler = VK_NULL_HANDLE;
 
 uint32_t Pilot::PVulkanUtil::findMemoryType(VkPhysicalDevice      physical_device,
                                             uint32_t              type_filter,
@@ -300,15 +301,15 @@ void Pilot::PVulkanUtil::genMipmappedImage(PVulkanContext* context,
         imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imageBlit.srcSubresource.layerCount = 1;
         imageBlit.srcSubresource.mipLevel   = i - 1;
-        imageBlit.srcOffsets[1].x           = (int32_t)(width >> (i - 1));
-        imageBlit.srcOffsets[1].y           = (int32_t)(height >> (i - 1));
+        imageBlit.srcOffsets[1].x           = std::max((int32_t)(width >> (i - 1)), 1);
+        imageBlit.srcOffsets[1].y           = std::max((int32_t)(height >> (i - 1)), 1);
         imageBlit.srcOffsets[1].z           = 1;
 
         imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imageBlit.dstSubresource.layerCount = 1;
         imageBlit.dstSubresource.mipLevel   = i;
-        imageBlit.dstOffsets[1].x           = (int32_t)(width >> i);
-        imageBlit.dstOffsets[1].y           = (int32_t)(height >> i);
+        imageBlit.dstOffsets[1].x           = std::max((int32_t)(width >> i), 1);
+        imageBlit.dstOffsets[1].y           = std::max((int32_t)(height >> i), 1);
         imageBlit.dstOffsets[1].z           = 1;
 
         VkImageSubresourceRange mipSubRange {};
@@ -489,8 +490,49 @@ VkSampler Pilot::PVulkanUtil::getOrCreateNearestSampler(VkPhysicalDevice physica
     return m_nearest_sampler;
 }
 
+VkSampler Pilot::PVulkanUtil::getOrCreateLinearSampler(VkPhysicalDevice physical_device, VkDevice device) 
+{
+    if (m_linear_sampler == VK_NULL_HANDLE)
+    {
+        VkPhysicalDeviceProperties physical_device_properties {};
+        vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+        VkSamplerCreateInfo samplerInfo {};
+
+        samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter               = VK_FILTER_LINEAR;
+        samplerInfo.minFilter               = VK_FILTER_LINEAR;
+        samplerInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerInfo.addressModeU            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeV            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeW            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.mipLodBias              = 0.0f;
+        samplerInfo.anisotropyEnable        = VK_FALSE;
+        samplerInfo.maxAnisotropy           = physical_device_properties.limits.maxSamplerAnisotropy; // close :1.0f
+        samplerInfo.compareEnable           = VK_FALSE;
+        samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.minLod                  = 0.0f;
+        samplerInfo.maxLod                  = 8.0f; // todo: m_irradiance_texture_miplevels
+        samplerInfo.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+        if (vkCreateSampler(device, &samplerInfo, nullptr, &m_linear_sampler) != VK_SUCCESS)
+        {
+            throw std::runtime_error("vk create sampler");
+        }
+    }
+
+    return m_linear_sampler;
+}
+
 void Pilot::PVulkanUtil::destroyNearestSampler(VkDevice device)
 {
     vkDestroySampler(device, m_nearest_sampler, nullptr);
     m_nearest_sampler = VK_NULL_HANDLE;
+}
+
+void Pilot::PVulkanUtil::destroyLinearSampler(VkDevice device)
+{
+    vkDestroySampler(device, m_linear_sampler, nullptr);
+    m_linear_sampler = VK_NULL_HANDLE;
 }

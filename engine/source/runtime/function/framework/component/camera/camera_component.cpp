@@ -4,8 +4,11 @@
 #include "runtime/core/math/math_headers.h"
 
 #include "runtime/engine.h"
+#include "runtime/function/character/character.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
+#include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/object/object.h"
+#include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
 #include "runtime/function/render/include/render/glm_wrapper.h"
 #include "runtime/function/scene/scene_manager.h"
@@ -50,6 +53,14 @@ namespace Pilot
         if (g_is_editor_mode)
             return;
 
+        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
+        Character* current_character = current_level->getCurrentActiveCharacter();
+        if (current_character == nullptr)
+            return;
+
+        if (current_character->getObject() != m_parent_object)
+            return;
+
         switch (m_camera_mode)
         {
             case CameraMode::first_person:
@@ -67,14 +78,18 @@ namespace Pilot
 
     void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
+        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
+        Character* current_character = current_level->getCurrentActiveCharacter();
+        if (current_character == nullptr)
+            return;
+
         Quaternion q_yaw, q_pitch;
 
         q_yaw.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_yaw, Vector3::UNIT_Z);
         q_pitch.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_pitch, m_left);
 
-        TransformComponent* parent_transform = m_parent_object->tryGetComponent(TransformComponent);
         const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_param.m_parameter)->m_vertical_offset;
-        Vector3     eye_pos = parent_transform->getPosition() + offset * Vector3::UNIT_Z;
+        Vector3     eye_pos = current_character->getPosition() + offset * Vector3::UNIT_Z;
 
         m_foward = q_yaw * q_pitch * m_foward;
         m_left   = q_yaw * q_pitch * m_left;
@@ -87,32 +102,36 @@ namespace Pilot
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
         Quaternion object_rotation;
         object_rotation.fromAxes(object_left, -object_facing, Vector3::UNIT_Z);
-        parent_transform->setRotation(object_rotation);
+        current_character->setRotation(object_rotation);
     }
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
+        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
+        Character* current_character = current_level->getCurrentActiveCharacter();
+        if (current_character == nullptr)
+            return;
+
         ThirdPersonCameraParameter* param = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
 
         Quaternion q_yaw, q_pitch;
 
         q_yaw.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_yaw, Vector3::UNIT_Z);
-        q_pitch.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_pitch, m_left);
+        q_pitch.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_pitch, Vector3::UNIT_X);
 
-        param->m_cursor_pitch = param->m_cursor_pitch * q_pitch;
+        param->m_cursor_pitch = q_pitch * param->m_cursor_pitch;
 
-        TransformComponent* parent_transform  = m_parent_object->tryGetComponent(TransformComponent);
-        const float         vertical_offset   = param->m_vertical_offset;
-        const float         horizontal_offset = param->m_horizontal_offset;
-        Vector3             offset            = Vector3(0, horizontal_offset, vertical_offset);
+        const float vertical_offset   = param->m_vertical_offset;
+        const float horizontal_offset = param->m_horizontal_offset;
+        Vector3     offset            = Vector3(0, horizontal_offset, vertical_offset);
 
-        parent_transform->setRotation(q_yaw * parent_transform->getRotation());
-
-        Vector3 center_pos = parent_transform->getPosition() + Vector3::UNIT_Z * vertical_offset;
+        Vector3 center_pos = current_character->getPosition() + Vector3::UNIT_Z * vertical_offset;
         Vector3 camera_pos =
-            parent_transform->getRotation() * param->m_cursor_pitch * offset + parent_transform->getPosition();
+            current_character->getRotation() * param->m_cursor_pitch * offset + current_character->getPosition();
         Vector3 camera_forward = center_pos - camera_pos;
-        Vector3 camera_up      = parent_transform->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
+        Vector3 camera_up      = current_character->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
+
+        current_character->setRotation(q_yaw * current_character->getRotation());
 
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
         SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
