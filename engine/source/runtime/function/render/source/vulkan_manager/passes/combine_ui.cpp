@@ -272,8 +272,8 @@ namespace Pilot
 
         VkViewport viewport = {0.0,
                                0.0,
-                               m_p_vulkan_context->_swapchain_extent.width,
-                               m_p_vulkan_context->_swapchain_extent.height,
+                               static_cast<float>(m_p_vulkan_context->_swapchain_extent.width),
+                               static_cast<float>(m_p_vulkan_context->_swapchain_extent.height),
                                0.0,
                                1.0};
         VkRect2D   scissor  = {
