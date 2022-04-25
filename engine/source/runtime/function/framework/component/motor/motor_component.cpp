@@ -8,7 +8,9 @@
 #include "runtime/function/controller/character_controller.h"
 #include "runtime/function/framework/component/camera/camera_component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
+#include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/object/object.h"
+#include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
 
 namespace Pilot
@@ -78,7 +80,7 @@ namespace Pilot
         transform_component->setPosition(m_target_position);
     }
 
-    void MotorComponent::calculatedDesiredMoveSpeedRatio(unsigned int command)
+    void MotorComponent::calculatedDesiredMoveSpeed(unsigned int command, float delta_time)
     {
         m_move_speed_ratio = 1.0f;
         if ((unsigned int)GameCommand::sprint & command)

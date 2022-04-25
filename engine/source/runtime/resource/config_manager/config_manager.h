@@ -33,7 +33,7 @@ namespace Pilot
         const std::filesystem::path& getRootFolder() const;
         const std::filesystem::path& getAssetFolder() const;
         const std::filesystem::path& getSchemaFolder() const;
-        const std::filesystem::path& getDefaultWorldPath() const;
+        const std::filesystem::path& getDefaultWorldUrl() const;
         const std::filesystem::path& getEditorBigIconPath() const;
         const std::filesystem::path& getEditorSmallIconPath() const;
         const std::filesystem::path& getEditorFontPath() const;

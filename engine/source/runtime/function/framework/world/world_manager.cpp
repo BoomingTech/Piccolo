@@ -13,12 +13,13 @@ namespace Pilot
 {
     WorldManager::~WorldManager() { clear(); }
 
-    void WorldManager::initialize() { m_pending_load_world_path = ConfigManager::getInstance().getDefaultWorldPath(); }
+    void WorldManager::initialize() { m_pending_load_world_url = ConfigManager::getInstance().getDefaultWorldUrl(); }
 
     void WorldManager::clear()
     {
-        m_pending_load_world_path.clear();
-        m_current_world_name.clear();
+        m_pending_load_world_url.clear();
+        m_current_world_url.clear();
+        m_current_level_url.clear();
 
         m_current_active_level = nullptr;
         for (Level* level : m_levels)
@@ -44,26 +45,24 @@ namespace Pilot
         if (m_pending_load_world_url.empty())
             return;
 
-        std::string pending_load_world_path = m_pending_load_world_path.generic_string();
-
-        WorldRes world_res;
-        AssetManager::getInstance().loadAsset(m_pending_load_world_path, world_res);
-        m_pending_load_world_path.clear();
-        if (world_res.m_name == m_current_world_name)
-            return;
-
+        std::filesystem::path pending_load_world_url = m_pending_load_world_url;
         clear();
 
-        loadWorld(world_res);
+        loadWorld(pending_load_world_url);
     }
 
-    void WorldManager::loadWorld(const WorldRes& pending_load_world)
+    void WorldManager::loadWorld(const std::filesystem::path& world_url)
     {
+        std::filesystem::path pending_load_world_path = ConfigManager::getInstance().getAssetFolder() / world_url;
+
+        WorldRes world_res;
+        AssetManager::getInstance().loadAsset(pending_load_world_path.generic_string(), world_res);
+
         // m_world = pending_load_world;
-        m_current_world_name = pending_load_world.m_name;
+        m_current_world_url = world_url;
 
         typedef std::unordered_set<size_t> TypeIDSet;
-        for (const std::string& level_url : pending_load_world.m_levels)
+        for (const std::string& level_url : world_res.m_levels)
         {
             loadLevel(level_url);
         }
@@ -78,6 +77,7 @@ namespace Pilot
         if (m_current_active_level == nullptr)
         {
             m_current_active_level = level;
+            m_current_level_url    = level_url;
         }
     }
 
