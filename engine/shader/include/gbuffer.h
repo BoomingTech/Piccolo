@@ -44,7 +44,7 @@ void EncodeGBufferData(PGBufferData   InGBuffer,
 
     OutGBufferB.r = InGBuffer.metallic;
     OutGBufferB.g = InGBuffer.specular;
-    OutGBufferB.b = InGBuffer.metallic;
+    OutGBufferB.b = InGBuffer.roughness;
     OutGBufferB.a = EncodeShadingModelId(InGBuffer.shadingModelID);
 
     OutGBufferC.rgb = EncodeBaseColor(InGBuffer.baseColor);

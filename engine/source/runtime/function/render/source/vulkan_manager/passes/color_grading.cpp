@@ -223,7 +223,7 @@ namespace Pilot
 
         VkDescriptorImageInfo color_grading_LUT_image_info = {};
         color_grading_LUT_image_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
+            PVulkanUtil::getOrCreateLinearSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
         color_grading_LUT_image_info.imageView =
             m_p_global_render_resource->_color_grading_resource._color_grading_LUT_texture_image_view;
         color_grading_LUT_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
