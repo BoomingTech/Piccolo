@@ -29,8 +29,14 @@ namespace Pilot
 {
     std::vector<std::pair<std::string, bool>> g_editor_node_state_array;
     int                                       g_node_depth = -1;
-    void DrawVecControl(const std::string &label, Pilot::Vector3 &values, float resetValue = 0.0f, float columnWidth = 100.0f);
-    void DrawVecControl(const std::string &label, Pilot::Quaternion &values, float resetValue = 0.0f, float columnWidth = 100.0f);
+    void                                      DrawVecControl(const std::string& label,
+                                                             Pilot::Vector3&    values,
+                                                             float              resetValue  = 0.0f,
+                                                             float              columnWidth = 100.0f);
+    void                                      DrawVecControl(const std::string& label,
+                                                             Pilot::Quaternion& values,
+                                                             float              resetValue  = 0.0f,
+                                                             float              columnWidth = 100.0f);
     EditorUI::EditorUI(PilotEditor* editor) : m_editor(editor)
     {
         Path&       path_service            = Path::getInstance();
@@ -70,24 +76,40 @@ namespace Pilot
             {
                 Transform* trans_ptr = static_cast<Transform*>(value_ptr);
 
-				Vector3 degrees_val;
+                Vector3 degrees_val;
 
-				degrees_val.x = trans_ptr->m_rotation.getRoll(false).valueDegrees();
-				degrees_val.y = trans_ptr->m_rotation.getPitch(false).valueDegrees();
-				degrees_val.z = trans_ptr->m_rotation.getYaw(false).valueDegrees();
+                degrees_val.x = trans_ptr->m_rotation.getRoll(false).valueDegrees();
+                degrees_val.y = trans_ptr->m_rotation.getPitch(false).valueDegrees();
+                degrees_val.z = trans_ptr->m_rotation.getYaw(false).valueDegrees();
 
-				DrawVecControl("Position", trans_ptr->m_position);
-				DrawVecControl("Rotation", degrees_val);
-				DrawVecControl("Scale", trans_ptr->m_scale);
+                DrawVecControl("Position", trans_ptr->m_position);
+                DrawVecControl("Rotation", degrees_val);
+                DrawVecControl("Scale", trans_ptr->m_scale);
 
-                trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) * Math::cos(Math::degreesToRadians(degrees_val.z / 2)) * Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-					Math::sin(Math::degreesToRadians(degrees_val.y / 2)) * Math::sin(Math::degreesToRadians(degrees_val.z / 2)) * Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.y / 2)) * Math::cos(Math::degreesToRadians(degrees_val.z / 2)) * Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
-					Math::cos(Math::degreesToRadians(degrees_val.y / 2)) * Math::sin(Math::degreesToRadians(degrees_val.z / 2)) * Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) * Math::sin(Math::degreesToRadians(degrees_val.z / 2)) * Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-					Math::sin(Math::degreesToRadians(degrees_val.y / 2)) * Math::cos(Math::degreesToRadians(degrees_val.z / 2)) * Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) * Math::cos(Math::degreesToRadians(degrees_val.z / 2)) * Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
-					Math::sin(Math::degreesToRadians(degrees_val.y / 2)) * Math::sin(Math::degreesToRadians(degrees_val.z / 2)) * Math::cos(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2));
                 trans_ptr->m_rotation.normalise();
 
                 drawSelectedEntityAxis();
@@ -862,7 +884,7 @@ namespace Pilot
         unsigned int command = InputSystem::getInstance().getEditorCommand();
         if ((unsigned int)EditorCommand::camera_foward & command)
         {
-            camera_relative_pos += camera_rotate * Vector3{0, camera_speed, 0};
+            camera_relative_pos += camera_rotate * Vector3 {0, camera_speed, 0};
         }
         if ((unsigned int)EditorCommand::camera_back & command)
         {
@@ -1222,7 +1244,7 @@ namespace Pilot
         }
         m_selected_object_matrix = new_model_matrix;
     }
-    void DrawVecControl(const std::string &label, Pilot::Vector3 &values, float resetValue, float columnWidth)
+    void DrawVecControl(const std::string& label, Pilot::Vector3& values, float resetValue, float columnWidth)
     {
         ImGui::PushID(label.c_str());
 
@@ -1232,14 +1254,14 @@ namespace Pilot
         ImGui::NextColumn();
 
         ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
-        float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+        float  lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
         ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
         if (ImGui::Button("X", buttonSize))
             values.x = resetValue;
         ImGui::PopStyleColor(3);
@@ -1249,9 +1271,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.2f, 0.45f, 0.2f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.3f, 0.55f, 0.3f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.2f, 0.45f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.55f, 0.3f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
         if (ImGui::Button("Y", buttonSize))
             values.y = resetValue;
         ImGui::PopStyleColor(3);
@@ -1261,9 +1283,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
         if (ImGui::Button("Z", buttonSize))
             values.z = resetValue;
         ImGui::PopStyleColor(3);
