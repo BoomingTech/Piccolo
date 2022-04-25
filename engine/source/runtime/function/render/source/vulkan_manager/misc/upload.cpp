@@ -214,7 +214,7 @@ bool Pilot::PVulkanManager::updateVertexBuffer(bool                             
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool     = m_descriptor_pool;
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-            &m_mesh_lighting_pass._descriptor_infos[PLightingPass::LayoutType::_per_mesh].layout;
+            &m_main_camera_pass._descriptor_infos[PMainCameraPass::LayoutType::_per_mesh].layout;
 
         if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_context._device,
                                                    &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
@@ -384,7 +384,7 @@ bool Pilot::PVulkanManager::updateVertexBuffer(bool                             
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool     = m_descriptor_pool;
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-            &m_mesh_lighting_pass._descriptor_infos[PLightingPass::LayoutType::_per_mesh].layout;
+            &m_main_camera_pass._descriptor_infos[PMainCameraPass::LayoutType::_per_mesh].layout;
         if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_context._device,
                                                    &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
                                                    &now_mesh.mesh_vertex_blending_descriptor_set))
@@ -559,6 +559,19 @@ void Pilot::PVulkanManager::updateGlobalTexturesForIBL(PIBLResourceData& ibl_res
                       specular_cubemap_miplevels);
 }
 
+void Pilot::PVulkanManager::updateGlobalTexturesForColorGrading(PColorGradingResourceData& color_grading_resource_data)
+{
+    // color grading texture (x1)
+    initializeTextureImage(m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image,
+                           m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_view,
+                           m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_allocation,
+                           color_grading_resource_data._color_grading_LUT_texture_image_width,
+                           color_grading_resource_data._color_grading_LUT_texture_image_height,
+                           color_grading_resource_data._color_grading_LUT_texture_image_pixels,
+                           color_grading_resource_data._color_grading_LUT_texture_image_format,
+                           1);
+}
+
 void Pilot::PVulkanManager::initializeCubeMap(VkImage&             image,
                                               VkImageView&         image_view,
                                               VmaAllocation&       image_allocation,
@@ -690,7 +703,8 @@ bool Pilot::PVulkanManager::initializeTextureImage(VkImage&           image,
                                                    uint32_t           texture_image_width,
                                                    uint32_t           texture_image_height,
                                                    void*              texture_image_pixels,
-                                                   PILOT_PIXEL_FORMAT texture_image_format)
+                                                   PILOT_PIXEL_FORMAT texture_image_format,
+                                                   uint32_t           miplevels)
 {
     if (!texture_image_pixels)
     {
@@ -751,7 +765,8 @@ bool Pilot::PVulkanManager::initializeTextureImage(VkImage&           image,
     vkUnmapMemory(m_vulkan_context._device, inefficient_staging_buffer_memory);
 
     // generate mipmapped image
-    uint32_t mip_levels = floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
+    uint32_t mip_levels =
+        (miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
 
     // use the vmaAllocator to allocate asset texture image
     VkImageCreateInfo image_create_info {};

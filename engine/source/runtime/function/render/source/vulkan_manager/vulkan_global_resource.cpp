@@ -5,7 +5,7 @@
 
 void Pilot::PGlobalRenderResource::initialize(PVulkanContext& context, int frames_in_flight)
 {
-    initializeIBLResource(context);
+    initializeIBLSamplers(context);
     initializeStorageBuffer(context, frames_in_flight);
     mapStorageBuffer(context);
 }
@@ -90,7 +90,59 @@ Pilot::PIBLResourceData Pilot::PGlobalRenderResource::getIBLTextureData(Scene* s
     return ibl_resource_data;
 }
 
-void Pilot::PGlobalRenderResource::initializeIBLResource(PVulkanContext& context) { initializeIBLSamplers(context); }
+Pilot::PColorGradingResourceData Pilot::PGlobalRenderResource::getColorGradingTextureData(Scene*               scene,
+                                                                                          class PilotRenderer* renderer)
+{
+    if (!scene || !renderer)
+    {
+        throw std::runtime_error("create color grading textures");
+    }
+
+    float empty_image[] = {0.5f, 0.5f, 0.5f, 0.5f};
+
+    TextureHandle      color_grading_LUT_texture_handle       = scene->m_color_grading_LUT_texture_handle;
+    const SceneImage*  color_grading_LUT_texture_image        = renderer->f_get_image(color_grading_LUT_texture_handle);
+    void*              color_grading_LUT_texture_image_pixels = empty_image;
+    uint32_t           color_grading_LUT_texture_image_width  = 1;
+    uint32_t           color_grading_LUT_texture_image_height = 1;
+    PILOT_PIXEL_FORMAT color_grading_LUT_texture_image_format = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R32G32B32_FLOAT;
+    if (color_grading_LUT_texture_image != NULL)
+    {
+        color_grading_LUT_texture_image_pixels = color_grading_LUT_texture_image->m_pixels;
+        color_grading_LUT_texture_image_width  = static_cast<uint32_t>(color_grading_LUT_texture_image->m_width);
+        color_grading_LUT_texture_image_height = static_cast<uint32_t>(color_grading_LUT_texture_image->m_height);
+        color_grading_LUT_texture_image_format = color_grading_LUT_texture_image->m_format;
+    }
+
+    Pilot::PColorGradingResourceData color_grading_resource_data;
+
+    color_grading_resource_data._color_grading_LUT_texture_image_pixels = color_grading_LUT_texture_image_pixels;
+    color_grading_resource_data._color_grading_LUT_texture_image_width  = color_grading_LUT_texture_image_width;
+    color_grading_resource_data._color_grading_LUT_texture_image_height = color_grading_LUT_texture_image_height;
+    color_grading_resource_data._color_grading_LUT_texture_image_format = color_grading_LUT_texture_image_format;
+
+    return color_grading_resource_data;
+}
+
+void Pilot::PGlobalRenderResource::clear(PVulkanContext& context)
+{
+    vmaDestroyImage(context._assets_allocator,
+                    _ibl_resource._brdfLUT_texture_image,
+                    _ibl_resource._brdfLUT_texture_image_allocation);
+    vmaDestroyImage(context._assets_allocator,
+                    _ibl_resource._irradiance_texture_image,
+                    _ibl_resource._irradiance_texture_image_allocation);
+    vmaDestroyImage(context._assets_allocator,
+                    _ibl_resource._specular_texture_image,
+                    _ibl_resource._specular_texture_image_allocation);
+    vkDestroySampler(context._device, _ibl_resource._brdfLUT_texture_sampler, NULL);
+    vkDestroySampler(context._device, _ibl_resource._irradiance_texture_sampler, NULL);
+    vkDestroySampler(context._device, _ibl_resource._specular_texture_sampler, NULL);
+
+    vmaDestroyImage(context._assets_allocator,
+                    _color_grading_resource._color_grading_LUT_texture_image,
+                    _color_grading_resource._color_grading_LUT_texture_image_allocation);
+}
 
 void Pilot::PGlobalRenderResource::initializeIBLSamplers(PVulkanContext& context)
 {

@@ -2,9 +2,9 @@
 #include "runtime/function/render/include/render/render.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_manager.h"
 
-void Pilot::PVulkanManager::syncScene(class Scene&                scene,
-                                      class PilotRenderer*        pilot_renderer,
-                                      struct SceneReleaseHandles& release_handles)
+void Pilot::PVulkanManager::cullingAndSyncScene(class Scene&                scene,
+                                                class PilotRenderer*        pilot_renderer,
+                                                struct SceneReleaseHandles& release_handles)
 {
     // set perframe ubo data
     glm::mat4 proj_view_matrix;
@@ -58,4 +58,23 @@ void Pilot::PVulkanManager::syncScene(class Scene&                scene,
     }
 
     culling(scene, pilot_renderer, release_handles);
+
+    // set perframe ubo data
+    {
+        m_main_camera_pass.m_is_show_axis                        = m_is_show_axis;
+        m_main_camera_pass.m_selected_axis                       = m_selected_axis;
+        m_main_camera_pass.m_mesh_perframe_storage_buffer_object = m_mesh_perframe_storage_buffer_object;
+        m_main_camera_pass.m_axis_storage_buffer_object          = m_axis_storage_buffer_object;
+        m_main_camera_pass.m_particlebillboard_perframe_storage_buffer_object =
+            m_particlebillboard_perframe_storage_buffer_object;
+
+        m_directional_light_shadow_pass._mesh_directional_light_shadow_perframe_storage_buffer_object =
+            m_mesh_directional_light_shadow_perframe_storage_buffer_object;
+
+        m_point_light_shadow_pass._mesh_point_light_shadow_perframe_storage_buffer_object =
+            m_mesh_point_light_shadow_perframe_storage_buffer_object;
+
+        m_mouse_pick_pass._mesh_inefficient_pick_perframe_storage_buffer_object =
+            m_mesh_inefficient_pick_perframe_storage_buffer_object;
+    }
 }

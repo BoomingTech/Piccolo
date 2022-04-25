@@ -1,8 +1,10 @@
-#version 460 core
+#version 310 es
 
-layout(location = 0) out vec4 out_color;
+#extension GL_GOOGLE_include_directive : enable
 
-void main()
-{
-    out_color = vec4(1.0f, 0.0f, 1.0f, 1.0f);
-}
+#include "constants.h"
+#include "gbuffer.h"
+
+layout(location = 0) out highp vec4 out_scene_color;
+
+void main() { out_scene_color = vec4(1.0, 0.0, 1.0, 1.0); }

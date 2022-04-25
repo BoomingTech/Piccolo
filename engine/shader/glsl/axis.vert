@@ -26,7 +26,7 @@ layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
     PointLight scene_point_lights[m_max_point_light_count];
 };
 
-layout(set = 0, binding = 1) buffer _unused_name_axis
+layout(set = 0, binding = 1) readonly buffer _unused_name_axis
 {
     mat4 model_matrix;
     uint selected_axis;
