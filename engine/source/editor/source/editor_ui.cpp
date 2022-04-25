@@ -843,8 +843,6 @@ namespace Pilot
 
     void EditorUI::processEditorCommand()
     {
-        //use adjustable camera speed.
-        //float      camera_speed  = 0.05f;
         float      camera_speed  =  m_camera_speed;
         Quaternion camera_rotate = m_tmp_uistate->m_editor_camera->rotation().inverse();
         Vector3    camera_relative_pos(0, 0, 0);
@@ -951,9 +949,9 @@ namespace Pilot
             if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
             {
                 if (yoffset > 0)
-                    m_camera_speed *= 1.2;
+                    m_camera_speed *= 1.2f;
                 else
-                    m_camera_speed *= 0.8;
+                    m_camera_speed *= 0.8f;
             }
             else
                 m_tmp_uistate->m_editor_camera->zoom((float)yoffset * 2.0f);// wheel scrolled up = zoom in by 2 extra degrees
