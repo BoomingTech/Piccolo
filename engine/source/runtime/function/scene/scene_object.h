@@ -100,7 +100,6 @@ namespace Pilot
         size_t                               m_go_id;
         std::vector<GameObjectComponentDesc> m_components;
     };
-
 } // namespace Pilot
 
 template<>

@@ -5,6 +5,7 @@
 
 namespace Pilot
 {
+    class Character;
     class GObject;
     class ObjectInstanceRes;
 
@@ -14,6 +15,8 @@ namespace Pilot
         size_t                               m_next_gobject_id {0};
         std::string                          m_level_res_url;
         std::unordered_map<size_t, GObject*> m_gobjects;
+
+        Character* m_current_active_character;
 
     public:
         ~Level();
@@ -27,7 +30,9 @@ namespace Pilot
         const std::string& getLevelResUrl() const { return m_level_res_url; }
 
         const std::unordered_map<size_t, GObject*>& getAllGObjects() const { return m_gobjects; }
-        GObject*                                    getGObjectByID(size_t go_id) const;
+
+        GObject*   getGObjectByID(size_t go_id) const;
+        Character* getCurrentActiveCharacter() const { return m_current_active_character; }
 
         const size_t createObject(const ObjectInstanceRes& object_instance_res);
         void         deleteGObjectByID(size_t go_id);
