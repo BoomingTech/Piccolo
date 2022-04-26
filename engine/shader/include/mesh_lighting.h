@@ -23,10 +23,19 @@ highp float G_SchlicksmithGGX(highp float dotNL, highp float dotNV, highp float 
 }
 
 // Fresnel function ----------------------------------------------------
-highp vec3 F_Schlick(highp float cosTheta, highp vec3 F0) { return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0); }
+highp float Pow5(highp float x)
+{
+    return (x * x * x * x * x);
+}
+
+highp vec3 F_Schlick(highp float cosTheta, highp vec3 F0) 
+{ 
+    return F0 + (1.0 - F0) * Pow5(1.0 - cosTheta); 
+    }
+
 highp vec3 F_SchlickR(highp float cosTheta, highp vec3 F0, highp float roughness)
 {
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + (max(vec3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * Pow5(1.0 - cosTheta);
 }
 
 // Specular and diffuse BRDF composition --------------------------------------------

@@ -317,20 +317,24 @@ namespace Pilot
         VkSubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = VK_SUBPASS_EXTERNAL;
         deferred_lighting_pass_depend_on_shadow_map_pass.dstSubpass           = _main_camera_subpass_deferred_lighting;
-        deferred_lighting_pass_depend_on_shadow_map_pass.srcStageMask         = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        deferred_lighting_pass_depend_on_shadow_map_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        deferred_lighting_pass_depend_on_shadow_map_pass.srcAccessMask        = 0;
-        deferred_lighting_pass_depend_on_shadow_map_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
-        deferred_lighting_pass_depend_on_shadow_map_pass.dependencyFlags      = 0; // NOT BY REGION
+        deferred_lighting_pass_depend_on_shadow_map_pass.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        deferred_lighting_pass_depend_on_shadow_map_pass.dstStageMask  = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        deferred_lighting_pass_depend_on_shadow_map_pass.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        deferred_lighting_pass_depend_on_shadow_map_pass.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        deferred_lighting_pass_depend_on_shadow_map_pass.dependencyFlags = 0; // NOT BY REGION
 
         VkSubpassDependency& deferred_lighting_pass_depend_on_base_pass = dependencies[1];
         deferred_lighting_pass_depend_on_base_pass.srcSubpass           = _main_camera_subpass_basepass;
         deferred_lighting_pass_depend_on_base_pass.dstSubpass           = _main_camera_subpass_deferred_lighting;
-        deferred_lighting_pass_depend_on_base_pass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        deferred_lighting_pass_depend_on_base_pass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+        deferred_lighting_pass_depend_on_base_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        deferred_lighting_pass_depend_on_base_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        deferred_lighting_pass_depend_on_base_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        deferred_lighting_pass_depend_on_base_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        deferred_lighting_pass_depend_on_base_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& forward_lighting_pass_depend_on_deferred_lighting_pass = dependencies[2];
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcSubpass = _main_camera_subpass_deferred_lighting;
@@ -338,47 +342,64 @@ namespace Pilot
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcStageMask =
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dstStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcAccessMask =
             VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        forward_lighting_pass_depend_on_deferred_lighting_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& tone_mapping_pass_depend_on_lighting_pass = dependencies[3];
         tone_mapping_pass_depend_on_lighting_pass.srcSubpass           = _main_camera_subpass_forward_lighting;
         tone_mapping_pass_depend_on_lighting_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
-        tone_mapping_pass_depend_on_lighting_pass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+        tone_mapping_pass_depend_on_lighting_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_lighting_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_lighting_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        tone_mapping_pass_depend_on_lighting_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        tone_mapping_pass_depend_on_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[4];
         color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
         color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
-        color_grading_pass_depend_on_tone_mapping_pass.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        color_grading_pass_depend_on_tone_mapping_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& ui_pass_depend_on_color_grading_pass = dependencies[5];
         ui_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
         ui_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_ui;
-        ui_pass_depend_on_color_grading_pass.srcStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        ui_pass_depend_on_color_grading_pass.dstStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        ui_pass_depend_on_color_grading_pass.srcAccessMask        = 0;
-        ui_pass_depend_on_color_grading_pass.dstAccessMask        = 0;
-        ui_pass_depend_on_color_grading_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+        ui_pass_depend_on_color_grading_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        ui_pass_depend_on_color_grading_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        ui_pass_depend_on_color_grading_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        ui_pass_depend_on_color_grading_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        ui_pass_depend_on_color_grading_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[6];
         combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
         combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
-        combine_ui_pass_depend_on_ui_pass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        combine_ui_pass_depend_on_ui_pass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        combine_ui_pass_depend_on_ui_pass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        combine_ui_pass_depend_on_ui_pass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
-        combine_ui_pass_depend_on_ui_pass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+        combine_ui_pass_depend_on_ui_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        combine_ui_pass_depend_on_ui_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        combine_ui_pass_depend_on_ui_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        combine_ui_pass_depend_on_ui_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        combine_ui_pass_depend_on_ui_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
