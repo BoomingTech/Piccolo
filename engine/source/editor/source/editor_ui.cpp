@@ -37,6 +37,7 @@ namespace Pilot
                                                              Pilot::Quaternion& values,
                                                              float              resetValue  = 0.0f,
                                                              float              columnWidth = 100.0f);
+
     EditorUI::EditorUI(PilotEditor* editor) : m_editor(editor)
     {
         Path&       path_service            = Path::getInstance();
@@ -690,6 +691,11 @@ namespace Pilot
         {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Press Left Alt key to display the mouse cursor!");
         }
+        else
+        {
+            ImGui::TextColored(
+                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", m_camera_speed);
+        }
 
         auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
 
@@ -877,7 +883,7 @@ namespace Pilot
 
     void EditorUI::processEditorCommand()
     {
-        float      camera_speed  = 0.05f;
+        float      camera_speed  = m_camera_speed;
         Quaternion camera_rotate = m_tmp_uistate->m_editor_camera->rotation().inverse();
         Vector3    camera_relative_pos(0, 0, 0);
 
@@ -977,10 +983,25 @@ namespace Pilot
         {
             return;
         }
-        // wheel scrolled up = zoom in by 2 extra degrees
+
         if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
         {
-            m_tmp_uistate->m_editor_camera->zoom((float)yoffset * 2.0f);
+            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+            {
+                if (yoffset > 0)
+                {
+                    m_camera_speed *= 1.2f;
+                }
+                else
+                {
+                    m_camera_speed *= 0.8f;
+                }
+            }
+            else
+            {
+                m_tmp_uistate->m_editor_camera->zoom((float)yoffset *
+                                                     2.0f); // wheel scrolled up = zoom in by 2 extra degrees
+            }
         }
     }
 
