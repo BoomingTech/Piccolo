@@ -10,6 +10,8 @@ namespace Pilot
 {
     class PilotRenderer;
     class PVulkanManager;
+    class SurfaceUI;
+
     class SurfaceRHI
     {
         PilotRenderer* m_pilot_renderer;
@@ -21,32 +23,26 @@ namespace Pilot
 
         SurfaceRHI(PilotRenderer* prenderer) : m_pilot_renderer(prenderer) {}
         ~SurfaceRHI() { delete m_vulkan_manager; }
-        int  initialize(SurfaceIO* io, const FrameBuffer* framebuffer);
-        void tick_pre(const FrameBuffer* framebuffer, SceneReleaseHandles& release_handles);
-        void tick_post(const FrameBuffer* framebuffer);
-        int  clear();
+        void initialize(SurfaceIO* io, const FrameBuffer* framebuffer);
+        void initializeUI(SurfaceUI* ui);
+        void tick(const FrameBuffer* framebuffer, SceneReleaseHandles& release_handles, UIState* uistate);
+        void clear();
     };
+
     class SurfaceUI
     {
     public:
-        UIState*                   m_tmp_uistate {nullptr};
-        SurfaceRHI*                m_rhi;
         std::shared_ptr<SurfaceIO> m_io;
+        void                       initialize(std::shared_ptr<SurfaceIO> pio);
 
     public:
-        SurfaceUI() {}
-        int          initialize(SurfaceRHI* rhi, PilotRenderer* prenderer, std::shared_ptr<SurfaceIO> pio);
-        void         fontsUpload(SurfaceRHI* rhi);
-        void         tick_pre(UIState* uistate);
+        inline SurfaceUI() : m_tmp_uistate(NULL) {}
+        UIState*     m_tmp_uistate;
         virtual void onTick(UIState* uistate) = 0;
-        void         tick_post(UIState* uistate);
-        virtual void registerInput() {};
+        virtual void registerInput()          = 0;
+        float        getContentScale() const;
 
-        void draw_frame();
-        int  clear();
-        void setDefaultStyle();
     protected:
-        float getContentScale() const;
         float getIndentScale() const;
     };
 
@@ -66,14 +62,14 @@ namespace Pilot
         bool setSurfaceUI(std::shared_ptr<SurfaceUI> pui)
         {
             m_ui = pui;
-            m_ui->initialize(m_rhi.get(), m_render, m_io);
+            m_ui->initialize(m_io);
+            m_rhi->initializeUI(m_ui.get());
             return true;
         }
         bool tick(const FrameBuffer* framebuffer, UIState* uistate, SceneReleaseHandles& release_handles);
         int  clear()
         {
             int ret = onClear();
-            // m_ui->clear();
             m_rhi->clear();
             m_io->clear();
             return ret;

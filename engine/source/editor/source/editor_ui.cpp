@@ -77,9 +77,41 @@ namespace Pilot
             {
                 Transform* trans_ptr = static_cast<Transform*>(value_ptr);
 
+                Vector3 degrees_val;
+
+                degrees_val.x = trans_ptr->m_rotation.getRoll(false).valueDegrees();
+                degrees_val.y = trans_ptr->m_rotation.getPitch(false).valueDegrees();
+                degrees_val.z = trans_ptr->m_rotation.getYaw(false).valueDegrees();
+
                 DrawVecControl("Position", trans_ptr->m_position);
-                DrawVecControl("Rotation", trans_ptr->m_rotation);
+                DrawVecControl("Rotation", degrees_val);
                 DrawVecControl("Scale", trans_ptr->m_scale);
+
+                trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.normalise();
 
                 drawSelectedEntityAxis();
             }
@@ -645,6 +677,7 @@ namespace Pilot
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     m_is_editor_mode = !m_is_editor_mode;
+                    drawSelectedEntityAxis();
                     g_is_editor_mode = true;
                     SceneManager::getInstance().setMainViewMatrix(m_tmp_uistate->m_editor_camera->getViewMatrix());
                 }

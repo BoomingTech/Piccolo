@@ -46,6 +46,16 @@ namespace Pilot
         META(Enable)
         float m_move_speed;
         META(Enable)
+        float m_jump_height;
+        META(Enable)
+        float m_max_move_speed_ratio;
+        META(Enable)
+        float m_max_sprint_speed_ratio;
+        META(Enable)
+        float m_move_acceleration;
+        META(Enable)
+        float m_sprint_acceleration;
+        META(Enable)
         Reflection::ReflectionPtr<ControllerConfig> m_controller_config;
     };
 } // namespace Pilot

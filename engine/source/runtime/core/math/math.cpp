@@ -53,7 +53,7 @@ namespace Pilot
         if (-1.0 < value)
         {
             if (value < 1.0)
-                return Radian(acos(value));
+                return Radian(::acos(value));
 
             return Radian(0.0);
         }
@@ -66,7 +66,7 @@ namespace Pilot
         if (-1.0 < value)
         {
             if (value < 1.0)
-                return Radian(asin(value));
+                return Radian(::asin(value));
 
             return Radian(Math_HALF_PI);
         }

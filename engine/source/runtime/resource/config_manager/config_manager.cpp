@@ -18,29 +18,33 @@ namespace Pilot
             {
                 std::string name  = config_line.substr(0, seperate_pos);
                 std::string value = config_line.substr(seperate_pos + 1, config_line.length() - seperate_pos - 1);
-                if (name.compare("AssetFolder") == 0)
+                if (name == "AssetFolder")
                 {
                     m_asset_folder = m_root_folder / value;
                 }
-                else if (name.compare("SchemaFolder") == 0)
+                else if (name == "SchemaFolder")
                 {
                     m_schema_folder = m_root_folder / value;
                 }
-                else if (name.compare("DefaultWorld") == 0)
+                else if (name == "DefaultWorld")
                 {
                     m_default_world_path = m_asset_folder / value;
                 }
-                else if (name.compare("BigIconFile") == 0)
+                else if (name == "BigIconFile")
                 {
                     m_editor_big_icon_path = m_root_folder / value;
                 }
-                else if (name.compare("SmallIconFile") == 0)
+                else if (name == "SmallIconFile")
                 {
                     m_editor_small_icon_path = m_root_folder / value;
                 }
-                else if (name.compare("FontFile") == 0)
+                else if (name == "FontFile")
                 {
                     m_editor_font_path = m_root_folder / value;
+                }
+                else if (name == "GlobalRenderingRes")
+                {
+                    m_global_rendering_res_path = m_asset_folder / value;
                 }
             }
         }
@@ -60,11 +64,16 @@ namespace Pilot
 
     const std::filesystem::path& ConfigManager::getSchemaFolder() const { return m_schema_folder; }
 
-    const std::filesystem::path& ConfigManager::getDefaultWorldPath() const { return m_default_world_path; }
+    const std::filesystem::path& ConfigManager::getDefaultWorldUrl() const { return m_default_world_path; }
 
     const std::filesystem::path& ConfigManager::getEditorBigIconPath() const { return m_editor_big_icon_path; }
 
     const std::filesystem::path& ConfigManager::getEditorSmallIconPath() const { return m_editor_small_icon_path; }
 
     const std::filesystem::path& ConfigManager::getEditorFontPath() const { return m_editor_font_path; }
+
+    const std::filesystem::path& ConfigManager::getGlobalRenderingResPath() const
+    {
+        return m_global_rendering_res_path;
+    }
 } // namespace Pilot
