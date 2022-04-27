@@ -72,9 +72,6 @@ namespace Pilot
         void fps(float delta_time);
 
     public:
-        PilotEngine(const PilotEngine&) = delete;
-        PilotEngine& operator=(const PilotEngine&) = delete;
-
         void startEngine(const EngineInitParams& param);
         void shutdownEngine();
 
