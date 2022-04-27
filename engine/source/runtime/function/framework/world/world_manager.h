@@ -18,9 +18,6 @@ namespace Pilot
     public:
         virtual ~WorldManager();
 
-        WorldManager(const WorldManager&) = delete;
-        WorldManager& operator=(const WorldManager&) = delete;
-
         void initialize();
         void clear();
 
