@@ -44,6 +44,21 @@ namespace Pilot
         PILOT_PIXEL_FORMAT   _specular_texture_image_format;
     };
 
+    struct PColorGradingResource
+    {
+        VkImage       _color_grading_LUT_texture_image      = VK_NULL_HANDLE;
+        VkImageView   _color_grading_LUT_texture_image_view = VK_NULL_HANDLE;
+        VmaAllocation _color_grading_LUT_texture_image_allocation;
+    };
+
+    struct PColorGradingResourceData
+    {
+        void*              _color_grading_LUT_texture_image_pixels;
+        uint32_t           _color_grading_LUT_texture_image_width;
+        uint32_t           _color_grading_LUT_texture_image_height;
+        PILOT_PIXEL_FORMAT _color_grading_LUT_texture_image_format;
+    };
+
     struct PStorageBuffer
     {
         // limits
@@ -71,22 +86,19 @@ namespace Pilot
     class PGlobalRenderResource
     {
     public:
-        PIBLResource   _ibl_resource;
-        PStorageBuffer _storage_buffer;
+        PIBLResource          _ibl_resource;
+        PColorGradingResource _color_grading_resource;
+        PStorageBuffer        _storage_buffer;
 
-        void initialize(PVulkanContext& context, int frames_in_flight = 3);
-
-        PIBLResourceData getIBLTextureData(Scene* scene, class PilotRenderer* renderer);
-        bool             isIBLDataLoaded() const { return m_is_ibl_data_loaded; }
-        void             setIBLDataLoadState(bool is_loaded) { m_is_ibl_data_loaded = is_loaded; }
+        void                      initialize(PVulkanContext& context, int frames_in_flight = 3);
+        PIBLResourceData          getIBLTextureData(Scene* scene, class PilotRenderer* renderer);
+        PColorGradingResourceData getColorGradingTextureData(Scene* scene, class PilotRenderer* renderer);
+        void                      clear(PVulkanContext& context);
 
     private:
-        void initializeIBLResource(PVulkanContext& context);
         void initializeIBLSamplers(PVulkanContext& context);
         void initializeStorageBuffer(PVulkanContext& context, int frames_in_flight);
         void mapStorageBuffer(PVulkanContext& context);
         void unmapStorageBuffer(PVulkanContext& context);
-
-        bool m_is_ibl_data_loaded = false;
     };
 } // namespace Pilot

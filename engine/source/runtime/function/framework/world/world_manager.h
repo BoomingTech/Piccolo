@@ -26,6 +26,8 @@ namespace Pilot
 
         void reloadCurrentLevel();
         void saveCurrentLevel();
+        void loadAsCurrentWorld(const std::string& world_url);
+        void loadAsCurrentLevel(const std::string& level_url);
 
         void   tick(float delta_time);
         Level* getCurrentActiveLevel() const { return m_current_active_level; }
@@ -35,11 +37,13 @@ namespace Pilot
 
     private:
         void processPendingLoadWorld();
-        void loadWorld(const WorldRes& pending_load_world);
+        void loadWorld(const std::filesystem::path& world_url);
         void loadLevel(const std::string& level_url);
 
-        std::filesystem::path m_pending_load_world_path;
-        std::string           m_current_world_name;
+        std::filesystem::path m_pending_load_world_url;
+        std::filesystem::path m_pending_load_level_url;
+        std::filesystem::path m_current_world_url;
+        std::string           m_current_level_url;
 
         std::vector<Level*> m_levels;
         Level*              m_current_active_level {nullptr};
