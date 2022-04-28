@@ -21,14 +21,13 @@ namespace Pilot
     {
         REFLECTION_BODY(CameraComponent)
     protected:
+        META(Enable)
         CameraComponentRes m_camera_param;
 
         CameraMode m_camera_mode {CameraMode::invalid};
-        META(Enable)
+
         Vector3 m_foward {Vector3::NEGATIVE_UNIT_Y};
-        META(Enable)
         Vector3 m_up {Vector3::UNIT_Z};
-        META(Enable)
         Vector3 m_left {Vector3::UNIT_X};
 
     public:
