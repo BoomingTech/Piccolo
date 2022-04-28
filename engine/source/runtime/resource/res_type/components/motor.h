@@ -34,28 +34,23 @@ namespace Pilot
     };
 
     REFLECTION_TYPE(MotorComponentRes)
-    CLASS(MotorComponentRes, WhiteListFields)
+    CLASS(MotorComponentRes, Fields)
     {
         REFLECTION_BODY(MotorComponentRes);
 
     public:
         ~MotorComponentRes() { PILOT_REFLECTION_DELETE(m_controller_config); }
 
+        META(Disable)
         ControllerType m_controller_type {ControllerType::none};
 
-        META(Enable)
         float m_move_speed;
-        META(Enable)
         float m_jump_height;
-        META(Enable)
         float m_max_move_speed_ratio;
-        META(Enable)
         float m_max_sprint_speed_ratio;
-        META(Enable)
         float m_move_acceleration;
-        META(Enable)
         float m_sprint_acceleration;
-        META(Enable)
+
         Reflection::ReflectionPtr<ControllerConfig> m_controller_config;
     };
 } // namespace Pilot
