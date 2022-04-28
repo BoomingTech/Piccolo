@@ -41,14 +41,4 @@ namespace Pilot
         AnimationResult animation_result;
     };
 
-    REFLECTION_TYPE(AnimationComponents)
-    CLASS(AnimationComponents, Fields)
-    {
-        REFLECTION_BODY(AnimationComponents);
-
-    public:
-        std::string                        schemaFile;
-        std::vector<AnimationComponentRes> components;
-    };
-
 } // namespace Pilot

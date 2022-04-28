@@ -20,9 +20,9 @@ namespace Pilot
         REGISTER_COMPONENT(AnimationComponent, AnimationComponentRes, false);
         REGISTER_COMPONENT(TransformComponent, Transform, false);
         REGISTER_COMPONENT(MeshComponent, MeshComponentRes, true);
-        REGISTER_COMPONENT(RigidBodyComponent, RigidBodyActorRes, false);
+        REGISTER_COMPONENT(RigidBodyComponent, RigidBodyComponentRes, false);
         REGISTER_COMPONENT(CameraComponent, CameraComponentRes, false);
-        REGISTER_COMPONENT(MotorComponent, MotorRes, false);
+        REGISTER_COMPONENT(MotorComponent, MotorComponentRes, false);
     }
 
     std::filesystem::path AssetManager::getFullPath(const std::string& relative_path) const

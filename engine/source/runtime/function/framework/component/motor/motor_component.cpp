@@ -16,7 +16,7 @@
 
 namespace Pilot
 {
-    MotorComponent::MotorComponent(const MotorRes& motor_param, GObject* parent_object) :
+    MotorComponent::MotorComponent(const MotorComponentRes& motor_param, GObject* parent_object) :
         Component(parent_object), m_motor_res(motor_param)
     {
         if (motor_param.m_controller_config.getTypeName() == "PhysicsControllerConfig")
