@@ -33,13 +33,13 @@ namespace Pilot
         Capsule m_capsule_shape;
     };
 
-    REFLECTION_TYPE(MotorRes)
-    CLASS(MotorRes, WhiteListFields)
+    REFLECTION_TYPE(MotorComponentRes)
+    CLASS(MotorComponentRes, WhiteListFields)
     {
-        REFLECTION_BODY(MotorRes);
+        REFLECTION_BODY(MotorComponentRes);
 
     public:
-        ~MotorRes() { PILOT_REFLECTION_DELETE(m_controller_config); }
+        ~MotorComponentRes() { PILOT_REFLECTION_DELETE(m_controller_config); }
 
         ControllerType m_controller_type {ControllerType::none};
 

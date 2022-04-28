@@ -26,7 +26,7 @@ namespace Pilot
         REFLECTION_BODY(MotorComponent)
     public:
         MotorComponent() {}
-        MotorComponent(const MotorRes& motor_param, GObject* parent_object);
+        MotorComponent(const MotorComponentRes& motor_param, GObject* parent_object);
 
         ~MotorComponent() override;
 
@@ -47,7 +47,7 @@ namespace Pilot
         void calculateTargetPosition(const Vector3&& current_position);
 
         META(Enable)
-        MotorRes m_motor_res;
+        MotorComponentRes m_motor_res;
 
         float m_move_speed_ratio {0.f};
         float m_vertical_move_speed {0.f};
