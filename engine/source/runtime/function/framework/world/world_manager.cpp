@@ -45,18 +45,16 @@ namespace Pilot
         if (m_pending_load_world_url.empty())
             return;
 
-        std::filesystem::path pending_load_world_url = m_pending_load_world_url;
+        std::string pending_load_world_url = m_pending_load_world_url;
         clear();
 
         loadWorld(pending_load_world_url);
     }
 
-    void WorldManager::loadWorld(const std::filesystem::path& world_url)
+    void WorldManager::loadWorld(const std::string& world_url)
     {
-        std::filesystem::path pending_load_world_path = ConfigManager::getInstance().getAssetFolder() / world_url;
-
         WorldRes world_res;
-        AssetManager::getInstance().loadAsset(pending_load_world_path.generic_string(), world_res);
+        AssetManager::getInstance().loadAsset(world_url, world_res);
 
         // m_world = pending_load_world;
         m_current_world_url = world_url;
