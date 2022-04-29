@@ -42,5 +42,3 @@ bool Pilot::PVulkanManager::initializeCommandBuffers()
 
     return true;
 }
-
-VkCommandBuffer Pilot::PVulkanManager::getCurrentCommandBuffer() { return m_command_buffers[m_current_frame_index]; }

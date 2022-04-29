@@ -34,10 +34,10 @@ namespace Pilot
         ~RigidBodyShape() { PILOT_REFLECTION_DELETE(m_geometry); }
     };
 
-    REFLECTION_TYPE(RigidBodyActorRes)
-    CLASS(RigidBodyActorRes, Fields)
+    REFLECTION_TYPE(RigidBodyComponentRes)
+    CLASS(RigidBodyComponentRes, Fields)
     {
-        REFLECTION_BODY(RigidBodyActorRes);
+        REFLECTION_BODY(RigidBodyComponentRes);
 
     public:
         std::vector<RigidBodyShape> m_shapes;

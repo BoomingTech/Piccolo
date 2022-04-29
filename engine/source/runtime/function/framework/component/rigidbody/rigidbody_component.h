@@ -15,7 +15,7 @@ namespace Pilot
         PhysicsActor* m_physics_actor {nullptr};
 
         RigidBodyComponent() {}
-        RigidBodyComponent(const RigidBodyActorRes& rigidbody_ast, GObject* parent_object);
+        RigidBodyComponent(const RigidBodyComponentRes& rigidbody_ast, GObject* parent_object);
         ~RigidBodyComponent() override;
 
         void tick(float delta_time) override {}

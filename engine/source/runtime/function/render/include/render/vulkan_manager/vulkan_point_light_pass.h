@@ -4,7 +4,7 @@
 
 namespace Pilot
 {
-    class PPointLightPass : public PRenderPassBase
+    class PPointLightShadowPass : public PRenderPassBase
     {
     public:
         void initialize();
