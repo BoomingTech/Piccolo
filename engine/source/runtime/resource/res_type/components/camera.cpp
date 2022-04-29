@@ -19,8 +19,8 @@ namespace Pilot
         }
         else if (camera_type_name == "FreeCameraParameter")
         {
-			m_parameter = PILOT_REFLECTION_NEW(FreeCameraParameter);
-			PILOT_REFLECTION_DEEP_COPY(FreeCameraParameter, m_parameter, res.m_parameter);
+            m_parameter = PILOT_REFLECTION_NEW(FreeCameraParameter);
+            PILOT_REFLECTION_DEEP_COPY(FreeCameraParameter, m_parameter, res.m_parameter);
         }
         else
         {
