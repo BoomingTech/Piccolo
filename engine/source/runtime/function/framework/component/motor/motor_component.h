@@ -26,7 +26,7 @@ namespace Pilot
         REFLECTION_BODY(MotorComponent)
     public:
         MotorComponent() {}
-        MotorComponent(const MotorComponentRes& motor_param, GObject* parent_object);
+        MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
 
         ~MotorComponent() override;
 

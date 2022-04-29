@@ -15,25 +15,25 @@
 namespace Pilot
 {
     CameraComponent::CameraComponent(const CameraComponentRes& camera_res, GObject* parent_object) :
-        Component {parent_object}, m_camera_res {camera_res}
+        Component(parent_object), m_camera_res(camera_res)
     {
-		const std::string& camera_type_name = camera_res.m_parameter.getTypeName();
-		if (camera_type_name == "FirstPersonCameraParameter")
-		{
-			m_camera_mode = CameraMode::first_person;
-		}
-		else if (camera_type_name == "ThirdPersonCameraParameter")
-		{
-			m_camera_mode = CameraMode::third_person;
-		}
-		else if (camera_type_name == "FreeCameraParameter")
-		{
-			m_camera_mode = CameraMode::free;
-		}
-		else
-		{
-			LOG_ERROR("invalid camera type");
-		}
+        const std::string& camera_type_name = camera_res.m_parameter.getTypeName();
+        if (camera_type_name == "FirstPersonCameraParameter")
+        {
+            m_camera_mode = CameraMode::first_person;
+        }
+        else if (camera_type_name == "ThirdPersonCameraParameter")
+        {
+            m_camera_mode = CameraMode::third_person;
+        }
+        else if (camera_type_name == "FreeCameraParameter")
+        {
+            m_camera_mode = CameraMode::free;
+        }
+        else
+        {
+            LOG_ERROR("invalid camera type");
+        }
 
         SceneManager::getInstance().setFOV(camera_res.m_parameter->m_fov);
     }
