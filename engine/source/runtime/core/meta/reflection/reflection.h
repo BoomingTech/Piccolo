@@ -323,6 +323,10 @@ namespace Pilot
 
             T& operator*() { return *(m_instance); }
 
+            T* getPtr() { return m_instance; }
+
+            T* getPtr() const { return m_instance; }
+
             const T& operator*() const { return *(static_cast<const T*>(m_instance)); }
 
             T*& getPtrReference() { return m_instance; }

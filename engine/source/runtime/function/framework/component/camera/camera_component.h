@@ -22,7 +22,7 @@ namespace Pilot
         REFLECTION_BODY(CameraComponent)
     protected:
         META(Enable)
-        CameraComponentRes m_camera_param;
+        CameraComponentRes m_camera_res;
 
         CameraMode m_camera_mode {CameraMode::invalid};
 
@@ -35,7 +35,6 @@ namespace Pilot
         CameraComponent(const CameraComponentRes& camera_param, GObject* parent_object);
 
         void tick(float delta_time) override;
-        void destroy() override {}
 
     private:
         void tickFirstPersonCamera(float delta_time);

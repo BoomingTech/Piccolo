@@ -55,6 +55,9 @@ namespace Pilot
     public:
         Reflection::ReflectionPtr<CameraParameter> m_parameter;
 
+        CameraComponentRes() = default;
+        CameraComponentRes(const CameraComponentRes& res);
+
         ~CameraComponentRes() { PILOT_REFLECTION_DELETE(m_parameter); }
     };
 } // namespace Pilot

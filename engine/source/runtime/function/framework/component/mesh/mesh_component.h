@@ -17,6 +17,8 @@ namespace Pilot
         REFLECTION_BODY(MeshComponent)
     private:
         META(Enable)
+        MeshComponentRes m_mesh_res;
+        
         std::vector<GameObjectComponentDesc> m_raw_meshes;
 
     public:
@@ -26,6 +28,5 @@ namespace Pilot
         const std::vector<GameObjectComponentDesc>& getRawMeshes() const { return m_raw_meshes; }
 
         void tick(float delta_time) override;
-        void destroy() override {}
     };
 } // namespace Pilot
