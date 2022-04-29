@@ -5,6 +5,7 @@
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/res_type/common/level.h"
 
+#include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/scene/scene_manager.h"
@@ -114,7 +115,7 @@ namespace Pilot
                 id_object_pair.second->tick(delta_time);
             }
         }
-        if (m_current_active_character)
+        if (m_current_active_character && g_is_editor_mode == false)
         {
             m_current_active_character->tick();
         }
@@ -145,7 +146,6 @@ namespace Pilot
                 {
                     m_current_active_character->setObject(nullptr);
                 }
-                object->destory();
             }
             delete object;
         }

@@ -3,7 +3,6 @@
 #include "runtime/core/base/macro.h"
 #include "runtime/core/base/public_singleton.h"
 
-#include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/controller/character_controller.h"
 #include "runtime/function/framework/component/animation/animation_component.h"
@@ -50,9 +49,6 @@ namespace Pilot
 
     void MotorComponent::tick(float delta_time)
     {
-        if ((m_tick_in_editor_mode == false) && g_is_editor_mode)
-            return;
-
         tickPlayerMotor(delta_time);
     }
 

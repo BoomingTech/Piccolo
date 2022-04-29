@@ -32,7 +32,6 @@ namespace Pilot
 
         void tick(float delta_time) override;
         void tickPlayerMotor(float delta_time);
-        void destroy() override {}
 
         const Vector3& getTargetPosition() const { return m_target_position; }
 
