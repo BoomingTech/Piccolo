@@ -48,6 +48,8 @@ namespace Pilot
         delete value.operator->(); \
         value.getPtrReference() = nullptr; \
     }
+#define PILOT_REFLECTION_DEEP_COPY(type, dst_ptr, src_ptr) \
+    *static_cast<type*>(dst_ptr) = *static_cast<type*>(src_ptr.getPtr());
 
 #define TypeMetaDef(class_name, ptr) \
     Pilot::Reflection::ReflectionInstance(Pilot::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)

@@ -31,7 +31,10 @@ namespace Pilot
         META(Enable)
         Reflection::ReflectionPtr<Geometry> m_geometry;
 
-        ~RigidBodyShape() { PILOT_REFLECTION_DELETE(m_geometry); }
+        RigidBodyShape() = default;
+        RigidBodyShape(const RigidBodyShape& res);
+
+        ~RigidBodyShape();
     };
 
     REFLECTION_TYPE(RigidBodyComponentRes)
