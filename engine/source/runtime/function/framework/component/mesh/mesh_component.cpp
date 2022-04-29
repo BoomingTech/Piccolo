@@ -28,10 +28,8 @@ namespace Pilot
 
             if (meshComponent.material_desc.with_texture)
             {
-                std::string material_path = asset_manager.getFullPath(sub_mesh.m_material).generic_string();
-
                 MaterialRes material_res;
-                asset_manager.loadAsset(material_path, material_res);
+                asset_manager.loadAsset(sub_mesh.m_material, material_res);
 
                 meshComponent.material_desc.baseColorTextureFile =
                     asset_manager.getFullPath(material_res.m_base_colour_texture_file).generic_string();

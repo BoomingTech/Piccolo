@@ -67,10 +67,8 @@ namespace Pilot
     {
         m_level_res_url = level_res_url;
 
-        AssetManager& asset_manager = AssetManager::getInstance();
-
         LevelRes level_res;
-        asset_manager.loadAsset(asset_manager.getFullPath(level_res_url), level_res);
+        AssetManager::getInstance().loadAsset(level_res_url, level_res);
 
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
@@ -103,8 +101,7 @@ namespace Pilot
             }
         }
 
-        AssetManager& asset_manager = AssetManager::getInstance();
-        asset_manager.saveAsset(output_level_res, asset_manager.getFullPath(m_level_res_url));
+        AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
     }
 
     void Level::tickAll(float delta_time)

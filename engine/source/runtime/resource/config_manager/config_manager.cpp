@@ -28,7 +28,7 @@ namespace Pilot
                 }
                 else if (name == "DefaultWorld")
                 {
-                    m_default_world_path = m_asset_folder / value;
+                    m_default_world_url = value;
                 }
                 else if (name == "BigIconFile")
                 {
@@ -44,7 +44,7 @@ namespace Pilot
                 }
                 else if (name == "GlobalRenderingRes")
                 {
-                    m_global_rendering_res_path = m_asset_folder / value;
+                    m_global_rendering_res_url = value;
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace Pilot
         m_root_folder.clear();
         m_asset_folder.clear();
         m_schema_folder.clear();
-        m_default_world_path.clear();
+        m_default_world_url.clear();
     }
 
     const std::filesystem::path& ConfigManager::getRootFolder() const { return m_root_folder; }
@@ -64,16 +64,13 @@ namespace Pilot
 
     const std::filesystem::path& ConfigManager::getSchemaFolder() const { return m_schema_folder; }
 
-    const std::filesystem::path& ConfigManager::getDefaultWorldUrl() const { return m_default_world_path; }
-
     const std::filesystem::path& ConfigManager::getEditorBigIconPath() const { return m_editor_big_icon_path; }
 
     const std::filesystem::path& ConfigManager::getEditorSmallIconPath() const { return m_editor_small_icon_path; }
 
     const std::filesystem::path& ConfigManager::getEditorFontPath() const { return m_editor_font_path; }
 
-    const std::filesystem::path& ConfigManager::getGlobalRenderingResPath() const
-    {
-        return m_global_rendering_res_path;
-    }
+    const std::string& ConfigManager::getDefaultWorldUrl() const { return m_default_world_url; }
+
+    const std::string& ConfigManager::getGlobalRenderingResUrl() const { return m_global_rendering_res_url; }
 } // namespace Pilot
