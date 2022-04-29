@@ -1,4 +1,4 @@
-#version 460 core
+#version 310 es
 
 layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
 {
@@ -7,15 +7,12 @@ layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
     vec3 up_direction;
 };
 
-layout(set = 0, binding = 1) readonly buffer _unused_name_perdrawcall
-{
-    vec4 positions[4096];
-};
+layout(set = 0, binding = 1) readonly buffer _unused_name_perdrawcall { vec4 positions[4096]; };
 
 void main()
 {
-    const vec2 vertex_buffer[4] = {{-1.0, 1.0}, {1.0, 1.0}, {-1.0, -1.0}, {1.0, -1.0}};
-    vec2 model_position = vertex_buffer[gl_VertexIndex];
+    const vec2 vertex_buffer[4] = vec2[4](vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, -1.0));
+    vec2       model_position   = vertex_buffer[gl_VertexIndex];
 
     // Real-Time Rendering Fourth Edition
     // 13.6 Billboarding
@@ -28,7 +25,7 @@ void main()
 
     // keep FrontDirection fixed and deduce UpDirection
     vec3 right_diection = normalize(cross(up_direction, front_direction));
-    vec3 up_direction = normalize(cross(front_direction, right_diection));
+    vec3 up_direction   = normalize(cross(front_direction, right_diection));
 
     // model to World
     vec3 world_position = right_diection * model_position.x + up_direction * model_position.y + anchor_location;

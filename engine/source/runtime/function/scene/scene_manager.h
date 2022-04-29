@@ -3,6 +3,8 @@
 #include "runtime/core/base/public_singleton.h"
 #include "runtime/core/math/math_headers.h"
 
+#include "runtime/resource/res_type/global/global_rendering.h"
+
 #include "runtime/function/render/include/render/framebuffer.h"
 #include "runtime/function/scene/scene_allocator.h"
 #include "runtime/function/scene/scene_object.h"
@@ -14,10 +16,6 @@ namespace Pilot
     class SceneManager final : public PublicSingleton<SceneManager>
     {
         friend class PublicSingleton<SceneManager>;
-
-    public:
-        SceneManager(const SceneManager&) = delete;
-        SceneManager& operator=(const SceneManager&) = delete;
 
     protected:
         SceneManager()                             = default;
@@ -105,6 +103,6 @@ namespace Pilot
         void releaseSkeletonBindingHandles();
         void releaseImageHandle(TextureHandle& image_handle);
 
-        void setSceneOnce();
+        void setSceneOnce(const GlobalRenderingRes& global_res);
     };
 } // namespace Pilot
