@@ -9,7 +9,7 @@
 namespace Pilot
 {
     RigidBodyComponent::RigidBodyComponent(const RigidBodyComponentRes& rigidbody_res, GObject* parent_object) :
-        Component(parent_object)
+        Component(parent_object), m_rigidbody_res(rigidbody_res)
     {
         const TransformComponent* parent_transform = m_parent_object->tryGetComponentConst(TransformComponent);
 

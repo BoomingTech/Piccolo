@@ -39,7 +39,9 @@ namespace Pilot
         REFLECTION_BODY(MotorComponentRes);
 
     public:
-        ~MotorComponentRes() { PILOT_REFLECTION_DELETE(m_controller_config); }
+        MotorComponentRes() = default;
+        MotorComponentRes(const MotorComponentRes& res);
+        ~MotorComponentRes();
 
         META(Disable)
         ControllerType m_controller_type {ControllerType::none};

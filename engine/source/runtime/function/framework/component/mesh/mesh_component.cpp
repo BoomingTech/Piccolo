@@ -10,7 +10,8 @@
 
 namespace Pilot
 {
-    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* /*unused*/)
+    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* parent_object) :
+        Component(parent_object), m_mesh_res(mesh_res)
     {
         AssetManager& asset_manager = AssetManager::getInstance();
 

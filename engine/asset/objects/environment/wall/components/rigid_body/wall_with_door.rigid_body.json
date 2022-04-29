@@ -2,7 +2,7 @@
   "shapes": [
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0,
           "y": -3,
           "z": 3.5
@@ -15,7 +15,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.15,
             "y": 1.7,
@@ -27,7 +27,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0,
           "y": 3.3,
           "z": 3.5
@@ -40,7 +40,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.15,
             "y": 2.65,

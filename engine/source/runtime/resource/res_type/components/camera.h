@@ -58,6 +58,6 @@ namespace Pilot
         CameraComponentRes() = default;
         CameraComponentRes(const CameraComponentRes& res);
 
-        ~CameraComponentRes() { PILOT_REFLECTION_DELETE(m_parameter); }
+        ~CameraComponentRes();
     };
 } // namespace Pilot

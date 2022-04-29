@@ -20,8 +20,8 @@ namespace Pilot
         void setGravity(const Vector3& g) { m_gravity = g; }
         void setGlobalDamping(float damping) { m_global_damping = damping; }
 
-        PhysicsActor* createPhysicsActor(GObject*                 gobject,
-                                         const Transform&         global_transform,
+        PhysicsActor* createPhysicsActor(GObject*                     gobject,
+                                         const Transform&             global_transform,
                                          const RigidBodyComponentRes& rigid_body_actor_res);
         void          removePhyicsActor(PhysicsActor* gobject);
 

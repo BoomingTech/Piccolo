@@ -102,7 +102,6 @@ namespace Pilot
             {
                 m_components.push_back(component);
                 m_component_type_names.push_back(component_definition_res.m_type_name);
-                component->setParentObject(this);
                 out_instance_component_type_set.insert(component_definition_res.m_type_name);
             }
             else
