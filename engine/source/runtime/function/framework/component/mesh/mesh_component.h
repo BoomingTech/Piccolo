@@ -16,15 +16,17 @@ namespace Pilot
     {
         REFLECTION_BODY(MeshComponent)
     private:
-        META(Enable) std::vector<GameObjectComponentDesc> m_raw_meshes;
+        META(Enable)
+        MeshComponentRes m_mesh_res;
+
+        std::vector<GameObjectComponentDesc> m_raw_meshes;
 
     public:
         MeshComponent() {};
-        MeshComponent(const MeshComponentRes& mesh_ast, GObject* /*unused*/);
+        MeshComponent(const MeshComponentRes& mesh_ast, GObject* parent_object);
 
         const std::vector<GameObjectComponentDesc>& getRawMeshes() const { return m_raw_meshes; }
 
         void tick(float delta_time) override;
-        void destroy() override {}
     };
 } // namespace Pilot

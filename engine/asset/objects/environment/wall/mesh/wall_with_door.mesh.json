@@ -1,8 +1,0 @@
-{
-  "sub_meshes": [
-    {
-      "obj_file_ref": "asset/objects/environment/wall/mesh/wall_with_door.obj",
-      "material": "asset/objects/environment/_material/gold.material.json"
-    }
-  ]
-}

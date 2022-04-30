@@ -5,6 +5,8 @@
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/res_type/common/level.h"
 
+#include "runtime/engine.h"
+#include "runtime/function/character/character.h"
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/scene/scene_manager.h"
 
@@ -16,6 +18,12 @@ namespace Pilot
 
     void Level::clear()
     {
+        if (m_current_active_character)
+        {
+            delete m_current_active_character;
+            m_current_active_character = nullptr;
+        }
+
         for (auto& id_gobject_pair : m_gobjects)
         {
             GObject* gobject = id_gobject_pair.second;
@@ -60,14 +68,18 @@ namespace Pilot
     {
         m_level_res_url = level_res_url;
 
-        AssetManager& asset_manager = AssetManager::getInstance();
-
         LevelRes level_res;
-        asset_manager.loadAsset(asset_manager.getFullPath(level_res_url), level_res);
+        AssetManager::getInstance().loadAsset(level_res_url, level_res);
 
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
             createObject(object_instance_res);
+        }
+
+        if (level_res.m_character_index >= 0 && level_res.m_character_index < m_gobjects.size())
+        {
+            GObject* character_object  = m_gobjects[level_res.m_character_index];
+            m_current_active_character = new Character(character_object);
         }
     }
 
@@ -90,8 +102,7 @@ namespace Pilot
             }
         }
 
-        AssetManager& asset_manager = AssetManager::getInstance();
-        asset_manager.saveAsset(output_level_res, asset_manager.getFullPath(m_level_res_url));
+        AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
     }
 
     void Level::tickAll(float delta_time)
@@ -103,6 +114,10 @@ namespace Pilot
             {
                 id_object_pair.second->tick(delta_time);
             }
+        }
+        if (m_current_active_character && g_is_editor_mode == false)
+        {
+            m_current_active_character->tick();
         }
         SceneManager::getInstance().syncSceneObjects();
     }
@@ -127,7 +142,10 @@ namespace Pilot
             assert(object);
             if (object)
             {
-                object->destory();
+                if (m_current_active_character && m_current_active_character->getObject() == object)
+                {
+                    m_current_active_character->setObject(nullptr);
+                }
             }
             delete object;
         }

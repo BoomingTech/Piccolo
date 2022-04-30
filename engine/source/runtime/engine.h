@@ -51,6 +51,8 @@ namespace Pilot
     {
         friend class PublicSingleton<PilotEngine>;
 
+        static const float k_fps_alpha;
+
     protected:
         PilotEngine();
 
@@ -60,13 +62,16 @@ namespace Pilot
         ThreeFrameBuffers              m_tri_frame_buffer;
         std::shared_ptr<PilotRenderer> m_renderer;
 
+        float m_average_duration {0.f};
+        int   m_frame_count {0};
+        int   m_fps {0};
+
         void logicalTick(float delta_time);
         bool rendererTick();
 
-    public:
-        PilotEngine(const PilotEngine&) = delete;
-        PilotEngine& operator=(const PilotEngine&) = delete;
+        void fps(float delta_time);
 
+    public:
         void startEngine(const EngineInitParams& param);
         void shutdownEngine();
 
@@ -75,6 +80,8 @@ namespace Pilot
 
         bool isQuit() const { return m_is_quit; }
         void run();
+
+        int getFPS() const { return m_fps; }
 
         std::shared_ptr<SurfaceIO>     getSurfaceIO();
         std::shared_ptr<PilotRenderer> getRender() const { return m_renderer; }

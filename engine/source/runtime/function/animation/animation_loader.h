@@ -13,9 +13,9 @@ namespace Pilot
     class AnimationLoader
     {
     public:
-        std::shared_ptr<AnimationClip> loadAnimationClipData(std::string animation_clip_path);
-        std::shared_ptr<SkeletonData>  loadSkeletonData(std::string skeleton_data_path);
-        std::shared_ptr<AnimSkelMap>   loadAnimSkelMap(std::string anim_skel_map_path);
-        std::shared_ptr<BoneBlendMask> loadSkeletonMask(std::string skeleton_mask_file_path);
+        std::shared_ptr<AnimationClip> loadAnimationClipData(std::string animation_clip_url);
+        std::shared_ptr<SkeletonData>  loadSkeletonData(std::string skeleton_data_url);
+        std::shared_ptr<AnimSkelMap>   loadAnimSkelMap(std::string anim_skel_map_url);
+        std::shared_ptr<BoneBlendMask> loadSkeletonMask(std::string skeleton_mask_file_url);
     };
 } // namespace Pilot

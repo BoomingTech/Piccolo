@@ -169,6 +169,4 @@ namespace Pilot
         }
         return m_selected_axis;
     }
-
-    VkRenderPass PVulkanManager::getLightingPass() { return m_mesh_lighting_pass._framebuffer.render_pass; }
 } // namespace Pilot

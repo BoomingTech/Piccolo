@@ -8,33 +8,35 @@ namespace Pilot
 {
     class ConfigManager final : public PublicSingleton<ConfigManager>
     {
-
-    public:
-        ConfigManager(const ConfigManager&) = delete;
-        ConfigManager& operator=(const ConfigManager&) = delete;
-        //
-        ConfigManager() = default;
+        friend class PublicSingleton<ConfigManager>;
 
     private:
         std::filesystem::path m_root_folder;
         std::filesystem::path m_asset_folder;
         std::filesystem::path m_schema_folder;
-        std::filesystem::path m_default_world_path;
         std::filesystem::path m_editor_big_icon_path;
         std::filesystem::path m_editor_small_icon_path;
         std::filesystem::path m_editor_font_path;
+
+        std::string m_default_world_url;
+        std::string m_global_rendering_res_url;
+
+    protected:
+        ConfigManager() = default;
 
     public:
         void initialize(const EngineInitParams& init_param);
 
         void clear();
 
-		const std::filesystem::path& getRootFolder() const { return m_root_folder; };
-		const std::filesystem::path& getAssetFolder() const { return m_asset_folder; };
-		const std::filesystem::path& getSchemaFolder() const { return m_schema_folder; };
-		const std::filesystem::path& getDefaultWorldPath() const { return m_default_world_path; };
-		const std::filesystem::path& getEditorBigIconPath() const { return m_editor_big_icon_path; };
-		const std::filesystem::path& getEditorSmallIconPath() const { return m_editor_small_icon_path; };
-		const std::filesystem::path& getEditorFontPath() const { return m_editor_font_path; };
+        const std::filesystem::path& getRootFolder() const;
+        const std::filesystem::path& getAssetFolder() const;
+        const std::filesystem::path& getSchemaFolder() const;
+        const std::filesystem::path& getEditorBigIconPath() const;
+        const std::filesystem::path& getEditorSmallIconPath() const;
+        const std::filesystem::path& getEditorFontPath() const;
+
+        const std::string& getDefaultWorldUrl() const;
+        const std::string& getGlobalRenderingResUrl() const;
     };
 } // namespace Pilot

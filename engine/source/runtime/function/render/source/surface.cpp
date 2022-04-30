@@ -8,11 +8,7 @@ namespace Pilot
         {
             if (framebuffer && framebuffer->m_scene && framebuffer->m_scene->m_loaded)
             {
-                m_rhi->tick_pre(framebuffer, release_handles);
-                m_ui->tick_pre(uistate);
-
-                m_ui->tick_post(uistate);
-                m_rhi->tick_post(framebuffer);
+                m_rhi->tick(framebuffer, release_handles, uistate);
             }
             if (m_io->m_is_editor_mode == false)
             {

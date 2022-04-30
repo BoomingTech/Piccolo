@@ -4,7 +4,7 @@
 
 namespace Pilot
 {
-    class PDirectionalLightPass : public PRenderPassBase
+    class PDirectionalLightShadowPass : public PRenderPassBase
     {
     public:
         void initialize();
