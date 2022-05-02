@@ -4,6 +4,7 @@
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_pick_pass.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_point_light_pass.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_render_pass.h"
+#include "vulkan/vulkan_core.h"
 
 namespace Pilot
 {
@@ -12,6 +13,19 @@ namespace Pilot
         VkImageView point_light_shadow_color_image_view;
         VkImageView directional_light_shadow_color_image_view;
     };
+
+    class PBrightnessPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
 
     class PColorGradingPass : public PRenderPassBase
     {

@@ -16,7 +16,7 @@
     "positive_z_map": "asset/texture/sky/skybox_specular_Z+.hdr"
   },
   "brdf_map": "asset/texture/global/brdf_schilk.hdr",
-  "color_grading_map": "asset/texture/lut/color_grading_lut_01.png",
+  "color_grading_map": "asset/texture/lut/color_grading_lut_06.png",
   "sky_color": {
     "r": 0.53,
     "g": 0.81,
@@ -63,5 +63,6 @@
       "g": 1.0,
       "b": 1.0
     }
-  }
+  },
+  "brightness": 0.5
 }
