@@ -12,6 +12,8 @@
 
 #include <vk_mem_alloc.h>
 
+#include <unordered_map>
+
 namespace Pilot
 {
     struct QueueFamilyIndices
@@ -27,6 +29,21 @@ namespace Pilot
         VkSurfaceCapabilitiesKHR        capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR>   presentModes;
+    };
+
+    struct RenderImageCacheVk
+    {
+        VkImage        image;
+        VkImageView    imageView;
+        VkDeviceMemory deviceMemory;
+        VkFormat       format;
+        uint32_t       width;
+        uint32_t       height;
+        uint32_t       arrayLayouts;
+        uint32_t       mipLevels;
+
+        VkImageUsageFlags  usageFlags;
+        VkImageAspectFlags aspectFlags;
     };
 
     class PVulkanContext
@@ -48,10 +65,6 @@ namespace Pilot
         VkExtent2D               _swapchain_extent;
         std::vector<VkImage>     _swapchain_images;
         std::vector<VkImageView> _swapchain_imageviews;
-
-        VkImage        _depth_image        = VK_NULL_HANDLE;
-        VkDeviceMemory _depth_image_memory = VK_NULL_HANDLE;
-        VkImageView    _depth_image_view   = VK_NULL_HANDLE;
 
         std::vector<VkFramebuffer> _swapchain_framebuffers;
 
@@ -91,6 +104,19 @@ namespace Pilot
 
         void createSwapchainImageViews();
         void createFramebufferImageAndView();
+
+        VkImageView GetImageView(size_t imageUniqueId);
+        VkImage GetImage(size_t imageUniqueId);
+
+        void     CreateRenderImage2D(size_t             imageUniqueId,
+                                     VkFormat           format,
+                                     uint32_t           width,
+                                     uint32_t           height,
+                                     VkImageUsageFlags  usageFlags,
+                                     VkImageAspectFlags aspectFlags,
+                                     uint32_t           arrayLayouts,
+                                     uint32_t           mipLevels);
+        VkFormat GetImageFormat(size_t imageUniqueId);
 
     private:
         const std::vector<char const*> m_validation_layers  = {"VK_LAYER_KHRONOS_validation"};
@@ -136,5 +162,7 @@ namespace Pilot
         VkPresentModeKHR
                    chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes);
         VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
+
+        std::unordered_map<size_t, RenderImageCacheVk> _image_cache;
     };
 } // namespace Pilot

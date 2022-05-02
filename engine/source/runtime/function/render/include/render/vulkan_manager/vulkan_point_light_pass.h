@@ -15,7 +15,7 @@ namespace Pilot
         MeshPointLightShadowPerframeStorageBufferObject _mesh_point_light_shadow_perframe_storage_buffer_object;
 
     private:
-        void setupAttachments();
+        void createImage();
         void setupRenderPass();
         void setupFramebuffer();
         void setupDescriptorSetLayout();

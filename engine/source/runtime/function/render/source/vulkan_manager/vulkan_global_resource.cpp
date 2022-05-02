@@ -126,6 +126,7 @@ Pilot::PColorGradingResourceData Pilot::PGlobalRenderResource::getColorGradingTe
 
 void Pilot::PGlobalRenderResource::clear(PVulkanContext& context)
 {
+    auto& _device = context._device;
     vmaDestroyImage(context._assets_allocator,
                     _ibl_resource._brdfLUT_texture_image,
                     _ibl_resource._brdfLUT_texture_image_allocation);
@@ -135,9 +136,9 @@ void Pilot::PGlobalRenderResource::clear(PVulkanContext& context)
     vmaDestroyImage(context._assets_allocator,
                     _ibl_resource._specular_texture_image,
                     _ibl_resource._specular_texture_image_allocation);
-    vkDestroySampler(context._device, _ibl_resource._brdfLUT_texture_sampler, NULL);
-    vkDestroySampler(context._device, _ibl_resource._irradiance_texture_sampler, NULL);
-    vkDestroySampler(context._device, _ibl_resource._specular_texture_sampler, NULL);
+    vkDestroySampler(_device, _ibl_resource._brdfLUT_texture_sampler, NULL);
+    vkDestroySampler(_device, _ibl_resource._irradiance_texture_sampler, NULL);
+    vkDestroySampler(_device, _ibl_resource._specular_texture_sampler, NULL);
 
     vmaDestroyImage(context._assets_allocator,
                     _color_grading_resource._color_grading_LUT_texture_image,
@@ -146,8 +147,10 @@ void Pilot::PGlobalRenderResource::clear(PVulkanContext& context)
 
 void Pilot::PGlobalRenderResource::initializeIBLSamplers(PVulkanContext& context)
 {
+    auto&                      _device          = context._device;
+    auto&                      _physical_device = context._physical_device;
     VkPhysicalDeviceProperties physical_device_properties {};
-    vkGetPhysicalDeviceProperties(context._physical_device, &physical_device_properties);
+    vkGetPhysicalDeviceProperties(_physical_device, &physical_device_properties);
 
     VkSamplerCreateInfo samplerInfo {};
     samplerInfo.sType        = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -168,7 +171,7 @@ void Pilot::PGlobalRenderResource::initializeIBLSamplers(PVulkanContext& context
 
     // global textures for IBL
     samplerInfo.maxLod = 0.0f;
-    if (vkCreateSampler(context._device, &samplerInfo, nullptr, &_ibl_resource._brdfLUT_texture_sampler) != VK_SUCCESS)
+    if (vkCreateSampler(_device, &samplerInfo, nullptr, &_ibl_resource._brdfLUT_texture_sampler) != VK_SUCCESS)
     {
         throw std::runtime_error("vk create sampler");
     }
@@ -176,12 +179,12 @@ void Pilot::PGlobalRenderResource::initializeIBLSamplers(PVulkanContext& context
     samplerInfo.minLod     = 0.0f;
     samplerInfo.maxLod     = 8.0f; // todo: m_irradiance_texture_miplevels
     samplerInfo.mipLodBias = 0.0f;
-    if (vkCreateSampler(context._device, &samplerInfo, nullptr, &_ibl_resource._irradiance_texture_sampler) !=
+    if (vkCreateSampler(_device, &samplerInfo, nullptr, &_ibl_resource._irradiance_texture_sampler) !=
         VK_SUCCESS)
     {
         throw std::runtime_error("vk create sampler");
     }
-    if (vkCreateSampler(context._device, &samplerInfo, nullptr, &_ibl_resource._specular_texture_sampler) != VK_SUCCESS)
+    if (vkCreateSampler(_device, &samplerInfo, nullptr, &_ibl_resource._specular_texture_sampler) != VK_SUCCESS)
     {
         throw std::runtime_error("vk create sampler");
     }
@@ -189,8 +192,10 @@ void Pilot::PGlobalRenderResource::initializeIBLSamplers(PVulkanContext& context
 
 void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& context, int frames_in_flight)
 {
+    auto&                      _device          = context._device;
+    auto&                      _physical_device = context._physical_device;
     VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(context._physical_device, &properties);
+    vkGetPhysicalDeviceProperties(_physical_device, &properties);
 
     _storage_buffer._min_uniform_buffer_offset_alignment =
         static_cast<uint32_t>(properties.limits.minUniformBufferOffsetAlignment);
@@ -203,8 +208,8 @@ void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& conte
     // The size is 128MB in NVIDIA D3D11
     // driver(https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0).
     uint32_t global_storage_buffer_size = 1024 * 1024 * 128;
-    PVulkanUtil::createBuffer(context._physical_device,
-                              context._device,
+    PVulkanUtil::createBuffer(_physical_device,
+                              _device,
                               global_storage_buffer_size,
                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -222,8 +227,8 @@ void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& conte
     }
 
     // axis
-    PVulkanUtil::createBuffer(context._physical_device,
-                              context._device,
+    PVulkanUtil::createBuffer(_physical_device,
+                              _device,
                               sizeof(AxisStorageBufferObject),
                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -231,8 +236,8 @@ void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& conte
                               _storage_buffer._axis_inefficient_storage_buffer_memory);
 
     // null descriptor
-    PVulkanUtil::createBuffer(context._physical_device,
-                              context._device,
+    PVulkanUtil::createBuffer(_physical_device,
+                              _device,
                               64,
                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                               0,
@@ -243,15 +248,16 @@ void Pilot::PGlobalRenderResource::initializeStorageBuffer(PVulkanContext& conte
 
 void Pilot::PGlobalRenderResource::mapStorageBuffer(PVulkanContext& context)
 {
+    auto& _device = context._device;
     // TODO: Unmap when program terminates
-    vkMapMemory(context._device,
+    vkMapMemory(_device,
                 _storage_buffer._global_upload_ringbuffer_memory,
                 0,
                 VK_WHOLE_SIZE,
                 0,
                 &_storage_buffer._global_upload_ringbuffer_memory_pointer);
 
-    vkMapMemory(context._device,
+    vkMapMemory(_device,
                 _storage_buffer._axis_inefficient_storage_buffer_memory,
                 0,
                 VK_WHOLE_SIZE,

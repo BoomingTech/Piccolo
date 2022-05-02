@@ -22,6 +22,7 @@ namespace Pilot
 
     void PCombineUIPass::setupDescriptorSetLayout()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _descriptor_infos.resize(1);
 
         VkDescriptorSetLayoutBinding post_process_global_layout_bindings[2] = {};
@@ -41,17 +42,14 @@ namespace Pilot
         global_layout_normal_input_attachment_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkDescriptorSetLayoutCreateInfo post_process_global_layout_create_info;
-        post_process_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        post_process_global_layout_create_info.pNext = NULL;
-        post_process_global_layout_create_info.flags = 0;
-        post_process_global_layout_create_info.bindingCount =
-            sizeof(post_process_global_layout_bindings) / sizeof(post_process_global_layout_bindings[0]);
-        post_process_global_layout_create_info.pBindings = post_process_global_layout_bindings;
+        post_process_global_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        post_process_global_layout_create_info.pNext        = NULL;
+        post_process_global_layout_create_info.flags        = 0;
+        post_process_global_layout_create_info.bindingCount = std::size(post_process_global_layout_bindings);
+        post_process_global_layout_create_info.pBindings    = post_process_global_layout_bindings;
 
-        if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
-                                                      &post_process_global_layout_create_info,
-                                                      NULL,
-                                                      &_descriptor_infos[0].layout))
+        if (VK_SUCCESS != vkCreateDescriptorSetLayout(
+                              _device, &post_process_global_layout_create_info, NULL, &_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create combine ui global layout");
         }
@@ -59,6 +57,7 @@ namespace Pilot
 
     void PCombineUIPass::setupPipelines()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _render_pipelines.resize(1);
 
         VkDescriptorSetLayout      descriptorset_layouts[1] = {_descriptor_infos[0].layout};
@@ -67,32 +66,14 @@ namespace Pilot
         pipeline_layout_create_info.setLayoutCount = 1;
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-        if (vkCreatePipelineLayout(
-                m_p_vulkan_context->_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) !=
+        if (vkCreatePipelineLayout(_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create combine ui pipeline layout");
         }
 
-        VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, POST_PROCESS_VERT);
-        VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, COMBINE_UI_FRAG);
-
-        VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-        vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-        vert_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-        frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-        frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+        FillShaderStageCreateInfo(shader_stages, _device, POST_PROCESS_VERT, COMBINE_UI_FRAG);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -109,9 +90,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_command_info._viewport;
+        viewport_state_create_info.pViewports    = NULL;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_command_info._scissor;
+        viewport_state_create_info.pScissors     = NULL;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -135,12 +116,6 @@ namespace Pilot
         color_blend_attachment_state.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         color_blend_attachment_state.blendEnable         = VK_FALSE;
-        color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-        color_blend_attachment_state.colorBlendOp        = VK_BLEND_OP_ADD;
-        color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        color_blend_attachment_state.alphaBlendOp        = VK_BLEND_OP_ADD;
 
         VkPipelineColorBlendStateCreateInfo color_blend_state_create_info {};
         color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -165,12 +140,12 @@ namespace Pilot
 
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_state_create_info.dynamicStateCount = 2;
+        dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
         dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount          = 2;
+        pipelineInfo.stageCount          = std::size(shader_stages);
         pipelineInfo.pStages             = shader_stages;
         pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
         pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -185,22 +160,18 @@ namespace Pilot
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-        if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
-                                      VK_NULL_HANDLE,
-                                      1,
-                                      &pipelineInfo,
-                                      nullptr,
-                                      &_render_pipelines[0].pipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(
+                _device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_render_pipelines[0].pipeline) != VK_SUCCESS)
         {
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
+        ModuleGC();
     }
 
     void PCombineUIPass::setupDescriptorSet()
     {
+        auto&                       _device = m_p_vulkan_context->_device;
         VkDescriptorSetAllocateInfo post_process_global_descriptor_set_alloc_info;
         post_process_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         post_process_global_descriptor_set_alloc_info.pNext          = NULL;
@@ -208,7 +179,7 @@ namespace Pilot
         post_process_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         post_process_global_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(_device,
                                                    &post_process_global_descriptor_set_alloc_info,
                                                    &_descriptor_infos[0].descriptor_set))
         {
@@ -219,15 +190,16 @@ namespace Pilot
     void PCombineUIPass::updateAfterFramebufferRecreate(VkImageView scene_input_attachment,
                                                         VkImageView ui_input_attachment)
     {
+        auto&                 _device                               = m_p_vulkan_context->_device;
+        auto&                 _physical_device                      = m_p_vulkan_context->_physical_device;
         VkDescriptorImageInfo per_frame_scene_input_attachment_info = {};
         per_frame_scene_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
         per_frame_scene_input_attachment_info.imageView   = scene_input_attachment;
         per_frame_scene_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo per_frame_ui_input_attachment_info = {};
-        per_frame_ui_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
+        per_frame_ui_input_attachment_info.sampler = PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
         per_frame_ui_input_attachment_info.imageView   = ui_input_attachment;
         per_frame_ui_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -253,21 +225,18 @@ namespace Pilot
         per_frame_ui_input_attachment_write_info.descriptorCount       = 1;
         per_frame_ui_input_attachment_write_info.pImageInfo            = &per_frame_ui_input_attachment_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(post_process_descriptor_writes_info) /
-                                   sizeof(post_process_descriptor_writes_info[0]),
-                               post_process_descriptor_writes_info,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(
+            _device, std::size(post_process_descriptor_writes_info), post_process_descriptor_writes_info, 0, NULL);
     }
 
     void PCombineUIPass::draw()
     {
+        auto& command_buffer = m_command_info._current_command_buffer;
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Combine UI", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
         VkViewport viewport = {0.0,
@@ -280,10 +249,10 @@ namespace Pilot
             0, 0, m_p_vulkan_context->_swapchain_extent.width, m_p_vulkan_context->_swapchain_extent.height};
 
         m_p_vulkan_context->_vkCmdBindPipeline(
-            m_command_info._current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
-        m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &viewport);
-        m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &scissor);
-        m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+            command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
+        m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+        m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+        m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
                                                      VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                      _render_pipelines[0].layout,
                                                      0,
@@ -292,11 +261,11 @@ namespace Pilot
                                                      0,
                                                      NULL);
 
-        vkCmdDraw(m_command_info._current_command_buffer, 3, 1, 0, 0);
+        vkCmdDraw(command_buffer, 3, 1, 0, 0);
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
     }
 

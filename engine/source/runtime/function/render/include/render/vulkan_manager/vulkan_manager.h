@@ -209,7 +209,7 @@ namespace Pilot
                                               VulkanMesh&                                   now_mesh);
         bool               updateIndexBuffer(uint32_t index_buffer_size, void* index_buffer_data, VulkanMesh& now_mesh);
         VulkanPBRMaterial& syncMaterial(struct Material const& material, class PilotRenderer* pilot_renderer);
-        void               updateTextureImageData(const PTextureDataToUpdate& texture_data);
+        void updateTextureImageData(const PTextureDataToUpdate& texture_data, VulkanPBRMaterial* now_material);
         bool               initializeTextureImage(VkImage&           image,
                                                   VkImageView&       image_view,
                                                   VmaAllocation&     image_allocation,

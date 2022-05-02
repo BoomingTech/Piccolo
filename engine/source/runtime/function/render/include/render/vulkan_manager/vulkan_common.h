@@ -260,6 +260,5 @@ namespace Pilot
         uint32_t           emissive_image_width;
         uint32_t           emissive_image_height;
         PILOT_PIXEL_FORMAT emissive_image_format;
-        VulkanPBRMaterial* now_material;
     };
 } // namespace Pilot

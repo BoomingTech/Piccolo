@@ -7,19 +7,14 @@
 
 namespace Pilot
 {
-    struct PLightPassHelperInfo
-    {
-        VkImageView point_light_shadow_color_image_view;
-        VkImageView directional_light_shadow_color_image_view;
-    };
 
     class PColorGradingPass : public PRenderPassBase
     {
     public:
-        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void initialize(VkRenderPass render_pass);
         void draw();
 
-        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+        void updateAfterFramebufferRecreate();
 
     private:
         void setupDescriptorSetLayout();
@@ -30,10 +25,10 @@ namespace Pilot
     class PToneMappingPass : public PRenderPassBase
     {
     public:
-        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void initialize(VkRenderPass render_pass);
         void draw();
 
-        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+        void updateAfterFramebufferRecreate();
 
     private:
         void setupDescriptorSetLayout();
@@ -72,7 +67,7 @@ namespace Pilot
     extern void  surface_ui_on_tick(void* surface_ui, void* ui_state);
     extern float surface_ui_content_scale(void* surface_ui);
 
-    enum
+    enum _main_camera_pass_buffer
     {
         _main_camera_pass_gbuffer_a               = 0,
         _main_camera_pass_gbuffer_b               = 1,
@@ -151,8 +146,6 @@ namespace Pilot
                          uint32_t           current_swapchain_image_index,
                          void*              ui_state);
 
-        void setHelperInfo(const PLightPassHelperInfo& helper_info);
-
         bool                                         m_is_show_axis;
         size_t                                       m_selected_axis;
         MeshPerframeStorageBufferObject              m_mesh_perframe_storage_buffer_object;
@@ -161,8 +154,10 @@ namespace Pilot
 
         void updateAfterFramebufferRecreate();
 
+        std::vector<VkFramebuffer> m_swapchain_framebuffers;
+
     private:
-        void setupAttachments();
+        void createImage();
         void setupRenderPass();
         void setupDescriptorSetLayout();
         void setupPipelines();
@@ -182,11 +177,15 @@ namespace Pilot
         void drawSkybox();
         void drawBillboardParticle();
         void drawAxis();
-
-    private:
-        VkImageView                m_point_light_shadow_color_image_view;
-        VkImageView                m_directional_light_shadow_color_image_view;
-        std::vector<VkFramebuffer> m_swapchain_framebuffers;
     };
 
 } // namespace Pilot
+
+template<>
+struct std::hash<Pilot::_main_camera_pass_buffer>
+{
+    size_t operator()(const Pilot::_main_camera_pass_buffer& rhs) const noexcept
+    {
+        return (size_t)rhs + 10000;
+    }
+};

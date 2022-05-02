@@ -17,7 +17,7 @@ namespace Pilot
         MeshInefficientPickPerframeStorageBufferObject _mesh_inefficient_pick_perframe_storage_buffer_object;
 
     private:
-        void setupAttachments();
+        void createImage();
         void setupRenderPass();
         void setupFramebuffer();
         void setupDescriptorSetLayout();

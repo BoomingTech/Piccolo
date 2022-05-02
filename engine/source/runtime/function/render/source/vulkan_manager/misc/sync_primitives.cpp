@@ -4,6 +4,7 @@
 // (m_vulkan_context._swapchain_images --> semaphores, fences)
 bool Pilot::PVulkanManager::createSyncPrimitives()
 {
+        auto& _device = m_vulkan_context._device;
     VkSemaphoreCreateInfo semaphore_create_info {};
     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -13,15 +14,15 @@ bool Pilot::PVulkanManager::createSyncPrimitives()
 
     for (uint32_t i = 0; i < m_max_frames_in_flight; i++)
     {
-        if (vkCreateSemaphore(m_vulkan_context._device,
+        if (vkCreateSemaphore(_device,
                               &semaphore_create_info,
                               nullptr,
                               &m_image_available_for_render_semaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(m_vulkan_context._device,
+            vkCreateSemaphore(_device,
                               &semaphore_create_info,
                               nullptr,
                               &m_image_finished_for_presentation_semaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(m_vulkan_context._device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) !=
+            vkCreateFence(_device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) !=
                 VK_SUCCESS)
         {
             throw std::runtime_error("vk create semaphore & fence");

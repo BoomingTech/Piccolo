@@ -24,7 +24,7 @@ namespace Pilot
     void PMainCameraPass::initialize()
     {
         PRenderPassBase::initialize();
-        setupAttachments();
+        createImage();
         setupRenderPass();
         setupDescriptorSetLayout();
         setupPipelines();
@@ -33,131 +33,94 @@ namespace Pilot
         setupSwapchainFramebuffers();
     }
 
-    void PMainCameraPass::setHelperInfo(const PLightPassHelperInfo& helper_info)
+    void PMainCameraPass::createImage()
     {
-        m_point_light_shadow_color_image_view       = helper_info.point_light_shadow_color_image_view;
-        m_directional_light_shadow_color_image_view = helper_info.directional_light_shadow_color_image_view;
-    }
-
-    void PMainCameraPass::setupAttachments()
-    {
-        _framebuffer.attachments.resize(_main_camera_pass_custom_attachment_count);
-
-        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format          = VK_FORMAT_R8G8B8A8_SRGB;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-
+        VkFormat formats[] = {
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+        };
         for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
         {
-            PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                     m_p_vulkan_context->_device,
-                                     m_p_vulkan_context->_swapchain_extent.width,
-                                     m_p_vulkan_context->_swapchain_extent.height,
-                                     _framebuffer.attachments[i].format,
-                                     VK_IMAGE_TILING_OPTIMAL,
-                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
-                                         VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                     _framebuffer.attachments[i].image,
-                                     _framebuffer.attachments[i].mem,
-                                     0,
-                                     1,
-                                     1);
-
-            _framebuffer.attachments[i].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                            _framebuffer.attachments[i].image,
-                                                                            _framebuffer.attachments[i].format,
-                                                                            VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                            VK_IMAGE_VIEW_TYPE_2D,
-                                                                            1,
-                                                                            1);
+            m_p_vulkan_context->CreateRenderImage2D(std::hash<_main_camera_pass_buffer>()((_main_camera_pass_buffer)i),
+                                                    formats[i],
+                                                    m_p_vulkan_context->_swapchain_extent.width,
+                                                    m_p_vulkan_context->_swapchain_extent.height,
+                                                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                                        VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+                                                        VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                                    VK_IMAGE_ASPECT_COLOR_BIT,
+                                                    1,
+                                                    1);
         }
     }
 
     void PMainCameraPass::setupRenderPass()
     {
+        auto&                   _device                                         = m_p_vulkan_context->_device;
         VkAttachmentDescription attachments[_main_camera_pass_attachment_count] = {};
 
         VkAttachmentDescription& gbuffer_normal_attachment_description = attachments[_main_camera_pass_gbuffer_a];
-        gbuffer_normal_attachment_description.format  = _framebuffer.attachments[_main_camera_pass_gbuffer_a].format;
-        gbuffer_normal_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-        gbuffer_normal_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        gbuffer_normal_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_normal_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        gbuffer_normal_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_normal_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        gbuffer_normal_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        gbuffer_normal_attachment_description.format =
+            m_p_vulkan_context->GetImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a));
+        gbuffer_normal_attachment_description.samples     = VK_SAMPLE_COUNT_1_BIT;
+        gbuffer_normal_attachment_description.storeOp     = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_normal_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& gbuffer_metallic_roughness_shadingmodeid_attachment_description =
             attachments[_main_camera_pass_gbuffer_b];
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_gbuffer_b].format;
+            m_p_vulkan_context->GetImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b));
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-        gbuffer_metallic_roughness_shadingmodeid_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_metallic_roughness_shadingmodeid_attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        gbuffer_metallic_roughness_shadingmodeid_attachment_description.stencilStoreOp =
-            VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_metallic_roughness_shadingmodeid_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.finalLayout =
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& gbuffer_albedo_attachment_description = attachments[_main_camera_pass_gbuffer_c];
-        gbuffer_albedo_attachment_description.format  = _framebuffer.attachments[_main_camera_pass_gbuffer_c].format;
-        gbuffer_albedo_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-        gbuffer_albedo_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        gbuffer_albedo_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_albedo_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        gbuffer_albedo_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        gbuffer_albedo_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        gbuffer_albedo_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        gbuffer_albedo_attachment_description.format =
+            m_p_vulkan_context->GetImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c));
+        gbuffer_albedo_attachment_description.samples     = VK_SAMPLE_COUNT_1_BIT;
+        gbuffer_albedo_attachment_description.storeOp     = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_albedo_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& backup_odd_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_odd];
-        backup_odd_color_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format;
-        backup_odd_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
-        backup_odd_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        backup_odd_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        backup_odd_color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        backup_odd_color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        backup_odd_color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        backup_odd_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        backup_odd_color_attachment_description.format = m_p_vulkan_context->GetImageFormat(
+            std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd));
+        backup_odd_color_attachment_description.samples     = VK_SAMPLE_COUNT_1_BIT;
+        backup_odd_color_attachment_description.storeOp     = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        backup_odd_color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& backup_even_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_even];
-        backup_even_color_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format;
-        backup_even_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
-        backup_even_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        backup_even_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        backup_even_color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        backup_even_color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        backup_even_color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        backup_even_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        backup_even_color_attachment_description.format = m_p_vulkan_context->GetImageFormat(
+            std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even));
+        backup_even_color_attachment_description.samples     = VK_SAMPLE_COUNT_1_BIT;
+        backup_even_color_attachment_description.storeOp     = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        backup_even_color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& depth_attachment_description = attachments[_main_camera_pass_depth];
         depth_attachment_description.format                   = m_p_vulkan_context->_depth_image_format;
         depth_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
-        depth_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depth_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depth_attachment_description.stencilLoadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depth_attachment_description.stencilStoreOp           = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depth_attachment_description.initialLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
         depth_attachment_description.finalLayout              = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkAttachmentDescription& swapchain_image_attachment_description =
             attachments[_main_camera_pass_swap_chain_image];
-        swapchain_image_attachment_description.format         = m_p_vulkan_context->_swapchain_image_format;
-        swapchain_image_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
-        swapchain_image_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        swapchain_image_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-        swapchain_image_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        swapchain_image_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        swapchain_image_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-        swapchain_image_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        swapchain_image_attachment_description.format      = m_p_vulkan_context->_swapchain_image_format;
+        swapchain_image_attachment_description.samples     = VK_SAMPLE_COUNT_1_BIT;
+        swapchain_image_attachment_description.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
+        swapchain_image_attachment_description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        for (size_t i = 0; i < 7; i++)
+        {
+            attachments[i].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachments[i].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachments[i].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        }
 
         VkSubpassDescription subpasses[_main_camera_subpass_count] = {};
 
@@ -174,10 +137,9 @@ namespace Pilot
         base_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         base_pass_depth_attachment_reference.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& base_pass = subpasses[_main_camera_subpass_basepass];
-        base_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        base_pass.colorAttachmentCount =
-            sizeof(base_pass_color_attachments_reference) / sizeof(base_pass_color_attachments_reference[0]);
+        VkSubpassDescription& base_pass   = subpasses[_main_camera_subpass_basepass];
+        base_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        base_pass.colorAttachmentCount    = std::size(base_pass_color_attachments_reference);
         base_pass.pColorAttachments       = &base_pass_color_attachments_reference[0];
         base_pass.pDepthStencilAttachment = &base_pass_depth_attachment_reference;
         base_pass.preserveAttachmentCount = 0;
@@ -201,13 +163,11 @@ namespace Pilot
             &backup_odd_color_attachment_description - attachments;
         deferred_lighting_pass_color_attachment_reference[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& deferred_lighting_pass = subpasses[_main_camera_subpass_deferred_lighting];
-        deferred_lighting_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        deferred_lighting_pass.inputAttachmentCount  = sizeof(deferred_lighting_pass_input_attachments_reference) /
-                                                      sizeof(deferred_lighting_pass_input_attachments_reference[0]);
-        deferred_lighting_pass.pInputAttachments    = &deferred_lighting_pass_input_attachments_reference[0];
-        deferred_lighting_pass.colorAttachmentCount = sizeof(deferred_lighting_pass_color_attachment_reference) /
-                                                      sizeof(deferred_lighting_pass_color_attachment_reference[0]);
+        VkSubpassDescription& deferred_lighting_pass   = subpasses[_main_camera_subpass_deferred_lighting];
+        deferred_lighting_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        deferred_lighting_pass.inputAttachmentCount    = std::size(deferred_lighting_pass_input_attachments_reference);
+        deferred_lighting_pass.pInputAttachments       = &deferred_lighting_pass_input_attachments_reference[0];
+        deferred_lighting_pass.colorAttachmentCount    = std::size(deferred_lighting_pass_color_attachment_reference);
         deferred_lighting_pass.pColorAttachments       = &deferred_lighting_pass_color_attachment_reference[0];
         deferred_lighting_pass.pDepthStencilAttachment = NULL;
         deferred_lighting_pass.preserveAttachmentCount = 0;
@@ -222,12 +182,11 @@ namespace Pilot
         forward_lighting_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         forward_lighting_pass_depth_attachment_reference.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& forward_lighting_pass = subpasses[_main_camera_subpass_forward_lighting];
-        forward_lighting_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        forward_lighting_pass.inputAttachmentCount  = 0U;
-        forward_lighting_pass.pInputAttachments     = NULL;
-        forward_lighting_pass.colorAttachmentCount  = sizeof(forward_lighting_pass_color_attachments_reference) /
-                                                     sizeof(forward_lighting_pass_color_attachments_reference[0]);
+        VkSubpassDescription& forward_lighting_pass   = subpasses[_main_camera_subpass_forward_lighting];
+        forward_lighting_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        forward_lighting_pass.inputAttachmentCount    = 0U;
+        forward_lighting_pass.pInputAttachments       = NULL;
+        forward_lighting_pass.colorAttachmentCount    = std::size(forward_lighting_pass_color_attachments_reference);
         forward_lighting_pass.pColorAttachments       = &forward_lighting_pass_color_attachments_reference[0];
         forward_lighting_pass.pDepthStencilAttachment = &forward_lighting_pass_depth_attachment_reference;
         forward_lighting_pass.preserveAttachmentCount = 0;
@@ -301,10 +260,9 @@ namespace Pilot
         combine_ui_pass_color_attachment_reference.attachment = &swapchain_image_attachment_description - attachments;
         combine_ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& combine_ui_pass = subpasses[_main_camera_subpass_combine_ui];
-        combine_ui_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        combine_ui_pass.inputAttachmentCount  = sizeof(combine_ui_pass_input_attachments_reference) /
-                                               sizeof(combine_ui_pass_input_attachments_reference[0]);
+        VkSubpassDescription& combine_ui_pass   = subpasses[_main_camera_subpass_combine_ui];
+        combine_ui_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        combine_ui_pass.inputAttachmentCount    = std::size(combine_ui_pass_input_attachments_reference);
         combine_ui_pass.pInputAttachments       = combine_ui_pass_input_attachments_reference;
         combine_ui_pass.colorAttachmentCount    = 1;
         combine_ui_pass.pColorAttachments       = &combine_ui_pass_color_attachment_reference;
@@ -326,92 +284,48 @@ namespace Pilot
         VkSubpassDependency& deferred_lighting_pass_depend_on_base_pass = dependencies[1];
         deferred_lighting_pass_depend_on_base_pass.srcSubpass           = _main_camera_subpass_basepass;
         deferred_lighting_pass_depend_on_base_pass.dstSubpass           = _main_camera_subpass_deferred_lighting;
-        deferred_lighting_pass_depend_on_base_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        deferred_lighting_pass_depend_on_base_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        deferred_lighting_pass_depend_on_base_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& forward_lighting_pass_depend_on_deferred_lighting_pass = dependencies[2];
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcSubpass = _main_camera_subpass_deferred_lighting;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dstSubpass = _main_camera_subpass_forward_lighting;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        forward_lighting_pass_depend_on_deferred_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& tone_mapping_pass_depend_on_lighting_pass = dependencies[3];
         tone_mapping_pass_depend_on_lighting_pass.srcSubpass           = _main_camera_subpass_forward_lighting;
         tone_mapping_pass_depend_on_lighting_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
-        tone_mapping_pass_depend_on_lighting_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[4];
         color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
         color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
-        color_grading_pass_depend_on_tone_mapping_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& ui_pass_depend_on_color_grading_pass = dependencies[5];
         ui_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
         ui_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_ui;
-        ui_pass_depend_on_color_grading_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        ui_pass_depend_on_color_grading_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        ui_pass_depend_on_color_grading_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        ui_pass_depend_on_color_grading_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        ui_pass_depend_on_color_grading_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
         VkSubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[6];
         combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
         combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
-        combine_ui_pass_depend_on_ui_pass.srcStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        combine_ui_pass_depend_on_ui_pass.dstStageMask =
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        combine_ui_pass_depend_on_ui_pass.srcAccessMask =
-            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        combine_ui_pass_depend_on_ui_pass.dstAccessMask =
-            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        combine_ui_pass_depend_on_ui_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        for (size_t i = 1; i < 7; i++)
+        {
+            dependencies[i].srcStageMask =
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependencies[i].dstStageMask =
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependencies[i].srcAccessMask   = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            dependencies[i].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+            dependencies[i].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        }
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderpass_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        renderpass_create_info.attachmentCount = std::size(attachments);
         renderpass_create_info.pAttachments    = attachments;
-        renderpass_create_info.subpassCount    = (sizeof(subpasses) / sizeof(subpasses[0]));
+        renderpass_create_info.subpassCount    = std::size(subpasses);
         renderpass_create_info.pSubpasses      = subpasses;
-        renderpass_create_info.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));
+        renderpass_create_info.dependencyCount = std::size(dependencies);
         renderpass_create_info.pDependencies   = dependencies;
 
-        if (vkCreateRenderPass(
-                m_p_vulkan_context->_device, &renderpass_create_info, nullptr, &_framebuffer.render_pass) != VK_SUCCESS)
+        if (vkCreateRenderPass(_device, &renderpass_create_info, nullptr, &_framebuffer.render_pass) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create render pass");
         }
@@ -419,6 +333,7 @@ namespace Pilot
 
     void PMainCameraPass::setupDescriptorSetLayout()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _descriptor_infos.resize(_layout_type_count);
 
         {
@@ -436,10 +351,8 @@ namespace Pilot
             mesh_mesh_layout_create_info.bindingCount = 1;
             mesh_mesh_layout_create_info.pBindings    = mesh_mesh_layout_bindings;
 
-            if (vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
-                                            &mesh_mesh_layout_create_info,
-                                            NULL,
-                                            &_descriptor_infos[_per_mesh].layout) != VK_SUCCESS)
+            if (vkCreateDescriptorSetLayout(
+                    _device, &mesh_mesh_layout_create_info, NULL, &_descriptor_infos[_per_mesh].layout) != VK_SUCCESS)
             {
                 throw std::runtime_error("create mesh mesh layout");
             }
@@ -504,17 +417,15 @@ namespace Pilot
             mesh_global_layout_directional_light_shadow_texture_binding.binding = 7;
 
             VkDescriptorSetLayoutCreateInfo mesh_global_layout_create_info;
-            mesh_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            mesh_global_layout_create_info.pNext = NULL;
-            mesh_global_layout_create_info.flags = 0;
-            mesh_global_layout_create_info.bindingCount =
-                (sizeof(mesh_global_layout_bindings) / sizeof(mesh_global_layout_bindings[0]));
-            mesh_global_layout_create_info.pBindings = mesh_global_layout_bindings;
+            mesh_global_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            mesh_global_layout_create_info.pNext        = NULL;
+            mesh_global_layout_create_info.flags        = 0;
+            mesh_global_layout_create_info.bindingCount = std::size(mesh_global_layout_bindings);
+            mesh_global_layout_create_info.pBindings    = mesh_global_layout_bindings;
 
-            if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
-                                                          &mesh_global_layout_create_info,
-                                                          NULL,
-                                                          &_descriptor_infos[_mesh_global].layout))
+            if (VK_SUCCESS !=
+                vkCreateDescriptorSetLayout(
+                    _device, &mesh_global_layout_create_info, NULL, &_descriptor_infos[_mesh_global].layout))
             {
                 throw std::runtime_error("create mesh global layout");
             }
@@ -572,7 +483,7 @@ namespace Pilot
             mesh_material_layout_create_info.bindingCount = 6;
             mesh_material_layout_create_info.pBindings    = mesh_material_layout_bindings;
 
-            if (vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
+            if (vkCreateDescriptorSetLayout(_device,
                                             &mesh_material_layout_create_info,
                                             nullptr,
                                             &_descriptor_infos[_mesh_per_material].layout) != VK_SUCCESS)
@@ -604,9 +515,8 @@ namespace Pilot
             skybox_layout_create_info.bindingCount = 2;
             skybox_layout_create_info.pBindings    = skybox_layout_bindings;
 
-            if (VK_SUCCESS !=
-                vkCreateDescriptorSetLayout(
-                    m_p_vulkan_context->_device, &skybox_layout_create_info, NULL, &_descriptor_infos[_skybox].layout))
+            if (VK_SUCCESS != vkCreateDescriptorSetLayout(
+                                  _device, &skybox_layout_create_info, NULL, &_descriptor_infos[_skybox].layout))
             {
                 throw std::runtime_error("create skybox layout");
             }
@@ -635,8 +545,7 @@ namespace Pilot
             axis_layout_create_info.pBindings    = axis_layout_bindings;
 
             if (VK_SUCCESS !=
-                vkCreateDescriptorSetLayout(
-                    m_p_vulkan_context->_device, &axis_layout_create_info, NULL, &_descriptor_infos[_axis].layout))
+                vkCreateDescriptorSetLayout(_device, &axis_layout_create_info, NULL, &_descriptor_infos[_axis].layout))
             {
                 throw std::runtime_error("create axis layout");
             }
@@ -670,10 +579,9 @@ namespace Pilot
             particlebillboard_global_layout_create_info.bindingCount = 2;
             particlebillboard_global_layout_create_info.pBindings    = particlebillboard_global_layout_bindings;
 
-            if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
-                                                          &particlebillboard_global_layout_create_info,
-                                                          NULL,
-                                                          &_descriptor_infos[_particle].layout))
+            if (VK_SUCCESS !=
+                vkCreateDescriptorSetLayout(
+                    _device, &particlebillboard_global_layout_create_info, NULL, &_descriptor_infos[_particle].layout))
             {
                 throw std::runtime_error("create particle billboard global layout");
             }
@@ -718,10 +626,10 @@ namespace Pilot
             gbuffer_lighting_global_layout_create_info.pNext = NULL;
             gbuffer_lighting_global_layout_create_info.flags = 0;
             gbuffer_lighting_global_layout_create_info.bindingCount =
-                sizeof(gbuffer_lighting_global_layout_bindings) / sizeof(gbuffer_lighting_global_layout_bindings[0]);
+                std::size(gbuffer_lighting_global_layout_bindings);
             gbuffer_lighting_global_layout_create_info.pBindings = gbuffer_lighting_global_layout_bindings;
 
-            if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
+            if (VK_SUCCESS != vkCreateDescriptorSetLayout(_device,
                                                           &gbuffer_lighting_global_layout_create_info,
                                                           NULL,
                                                           &_descriptor_infos[_deferred_lighting].layout))
@@ -733,6 +641,7 @@ namespace Pilot
 
     void PMainCameraPass::setupPipelines()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _render_pipelines.resize(_render_pipeline_type_count);
 
         // mesh gbuffer
@@ -745,7 +654,7 @@ namespace Pilot
             pipeline_layout_create_info.setLayoutCount = 3;
             pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_mesh_gbuffer].layout) != VK_SUCCESS)
@@ -753,24 +662,8 @@ namespace Pilot
                 throw std::runtime_error("create mesh gbuffer pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_GBUFFER_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, MESH_VERT, MESH_GBUFFER_FRAG);
 
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -789,9 +682,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -815,37 +708,18 @@ namespace Pilot
             color_blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = VK_FALSE;
-            color_blend_attachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
             color_blend_attachments[1].colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[1].blendEnable         = VK_FALSE;
-            color_blend_attachments[1].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[1].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[1].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[1].alphaBlendOp        = VK_BLEND_OP_ADD;
             color_blend_attachments[2].colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[2].blendEnable         = VK_FALSE;
-            color_blend_attachments[2].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[2].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[2].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[2].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[2].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[2].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -863,7 +737,7 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -883,7 +757,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -893,9 +767,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create mesh gbuffer graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // deferred lighting
@@ -904,12 +775,11 @@ namespace Pilot
                                                               _descriptor_infos[_deferred_lighting].layout,
                                                               _descriptor_infos[_skybox].layout};
             VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
-            pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_create_info.setLayoutCount =
-                sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
-            pipeline_layout_create_info.pSetLayouts = descriptorset_layouts;
+            pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipeline_layout_create_info.setLayoutCount = std::size(descriptorset_layouts);
+            pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_deferred_lighting].layout) !=
@@ -918,29 +788,8 @@ namespace Pilot
                 throw std::runtime_error("create deferred lighting pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, DEFERRED_LIGHTING_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, DEFERRED_LIGHTING_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
-            auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
-            auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, DEFERRED_LIGHTING_VERT, DEFERRED_LIGHTING_FRAG);
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount = 0;
@@ -956,9 +805,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -982,19 +831,12 @@ namespace Pilot
             color_blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = VK_FALSE;
-            color_blend_attachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1012,7 +854,7 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -1032,7 +874,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -1042,9 +884,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create deferred lighting graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // mesh lighting
@@ -1057,7 +896,7 @@ namespace Pilot
             pipeline_layout_create_info.setLayoutCount = 3;
             pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_mesh_lighting].layout) != VK_SUCCESS)
@@ -1065,24 +904,8 @@ namespace Pilot
                 throw std::runtime_error("create mesh lighting pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_VERT);
-            VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, MESH_VERT, MESH_FRAG);
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
@@ -1100,9 +923,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1126,19 +949,12 @@ namespace Pilot
             color_blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = VK_FALSE;
-            color_blend_attachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1156,7 +972,7 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -1176,7 +992,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -1186,9 +1002,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create mesh lighting graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // skybox
@@ -1199,7 +1012,7 @@ namespace Pilot
             pipeline_layout_create_info.setLayoutCount = 1;
             pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_skybox].layout) != VK_SUCCESS)
@@ -1207,29 +1020,9 @@ namespace Pilot
                 throw std::runtime_error("create skybox pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, SKYBOX_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, SKYBOX_FRAG);
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, SKYBOX_VERT, SKYBOX_FRAG);
 
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
-            auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
-            auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount   = 0;
@@ -1245,9 +1038,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1271,19 +1064,12 @@ namespace Pilot
             color_blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = VK_FALSE;
-            color_blend_attachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1301,7 +1087,7 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -1321,7 +1107,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -1330,9 +1116,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create skybox graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // particle billboard
@@ -1343,7 +1126,7 @@ namespace Pilot
             pipeline_layout_create_info.setLayoutCount = 1;
             pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_particle].layout) != VK_SUCCESS)
@@ -1351,25 +1134,8 @@ namespace Pilot
                 throw std::runtime_error("create particle billboard pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, PARTICLEBILLBOARD_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, PARTICLEBILLBOARD_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, PARTICLEBILLBOARD_VERT, PARTICLEBILLBOARD_FRAG);
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1386,9 +1152,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1420,11 +1186,10 @@ namespace Pilot
             color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1443,7 +1208,7 @@ namespace Pilot
 
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -1463,7 +1228,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -1472,9 +1237,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create particle billboard graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // draw axis
@@ -1485,7 +1247,7 @@ namespace Pilot
             pipeline_layout_create_info.setLayoutCount = 1;
             pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-            if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
+            if (vkCreatePipelineLayout(_device,
                                        &pipeline_layout_create_info,
                                        nullptr,
                                        &_render_pipelines[_render_pipeline_type_axis].layout) != VK_SUCCESS)
@@ -1493,24 +1255,8 @@ namespace Pilot
                 throw std::runtime_error("create axis pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, AXIS_VERT);
-            VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, AXIS_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, _device, AXIS_VERT, AXIS_FRAG);
 
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -1529,9 +1275,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1555,12 +1301,6 @@ namespace Pilot
             color_blend_attachment_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachment_state.blendEnable         = VK_FALSE;
-            color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachment_state.colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            color_blend_attachment_state.alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info {};
             color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1584,7 +1324,7 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
@@ -1604,7 +1344,7 @@ namespace Pilot
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
+            if (vkCreateGraphicsPipelines(_device,
                                           VK_NULL_HANDLE,
                                           1,
                                           &pipelineInfo,
@@ -1613,10 +1353,8 @@ namespace Pilot
             {
                 throw std::runtime_error("create axis graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
+        ModuleGC();
     }
 
     void PMainCameraPass::setupDescriptorSet()
@@ -1630,6 +1368,10 @@ namespace Pilot
 
     void PMainCameraPass::setupModelGlobalDescriptorSet()
     {
+        auto& _device          = m_p_vulkan_context->_device;
+        auto& _physical_device = m_p_vulkan_context->_physical_device;
+        auto& _storage_buffer  = m_p_global_render_resource->_storage_buffer;
+
         // update common model's global descriptor set
         VkDescriptorSetAllocateInfo mesh_global_descriptor_set_alloc_info;
         mesh_global_descriptor_set_alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -1638,7 +1380,7 @@ namespace Pilot
         mesh_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_global_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[_mesh_global].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(_device,
                                                    &mesh_global_descriptor_set_alloc_info,
                                                    &_descriptor_infos[_mesh_global].descriptor_set))
         {
@@ -1649,28 +1391,22 @@ namespace Pilot
         // this offset plus dynamic_offset should not be greater than the size of the buffer
         mesh_perframe_storage_buffer_info.offset = 0;
         // the range means the size actually used by the shader per draw call
-        mesh_perframe_storage_buffer_info.range = sizeof(MeshPerframeStorageBufferObject);
-        mesh_perframe_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_perframe_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_perframe_storage_buffer_info.range  = sizeof(MeshPerframeStorageBufferObject);
+        mesh_perframe_storage_buffer_info.buffer = _storage_buffer._global_upload_ringbuffer;
+        assert(mesh_perframe_storage_buffer_info.range < _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo mesh_perdrawcall_storage_buffer_info = {};
         mesh_perdrawcall_storage_buffer_info.offset                 = 0;
         mesh_perdrawcall_storage_buffer_info.range                  = sizeof(MeshPerdrawcallStorageBufferObject);
-        mesh_perdrawcall_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_perdrawcall_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_perdrawcall_storage_buffer_info.buffer                 = _storage_buffer._global_upload_ringbuffer;
+        assert(mesh_perdrawcall_storage_buffer_info.range < _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo mesh_per_drawcall_vertex_blending_storage_buffer_info = {};
         mesh_per_drawcall_vertex_blending_storage_buffer_info.offset                 = 0;
         mesh_per_drawcall_vertex_blending_storage_buffer_info.range =
             sizeof(MeshPerdrawcallVertexBlendingStorageBufferObject);
-        mesh_per_drawcall_vertex_blending_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_per_drawcall_vertex_blending_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_per_drawcall_vertex_blending_storage_buffer_info.buffer = _storage_buffer._global_upload_ringbuffer;
+        assert(mesh_per_drawcall_vertex_blending_storage_buffer_info.range < _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorImageInfo brdf_texture_image_info = {};
         brdf_texture_image_info.sampler     = m_p_global_render_resource->_ibl_resource._brdfLUT_texture_sampler;
@@ -1690,14 +1426,16 @@ namespace Pilot
 
         VkDescriptorImageInfo point_light_shadow_texture_image_info {};
         point_light_shadow_texture_image_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        point_light_shadow_texture_image_info.imageView   = m_point_light_shadow_color_image_view;
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
+        point_light_shadow_texture_image_info.imageView =
+            m_p_vulkan_context->GetImageView(std::hash<std::string>()("point shadow color"));
         point_light_shadow_texture_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo directional_light_shadow_texture_image_info {};
         directional_light_shadow_texture_image_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        directional_light_shadow_texture_image_info.imageView   = m_directional_light_shadow_color_image_view;
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
+        directional_light_shadow_texture_image_info.imageView =
+            m_p_vulkan_context->GetImageView(std::hash<std::string>()("shadow color"));
         directional_light_shadow_texture_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet mesh_descriptor_writes_info[8];
@@ -1754,15 +1492,13 @@ namespace Pilot
         mesh_descriptor_writes_info[7].dstBinding = 7;
         mesh_descriptor_writes_info[7].pImageInfo = &directional_light_shadow_texture_image_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]),
-                               mesh_descriptor_writes_info,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(_device, std::size(mesh_descriptor_writes_info), mesh_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupSkyboxDescriptorSet()
     {
+        auto&                       _device         = m_p_vulkan_context->_device;
+        auto&                       _storage_buffer = m_p_global_render_resource->_storage_buffer;
         VkDescriptorSetAllocateInfo skybox_descriptor_set_alloc_info;
         skybox_descriptor_set_alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         skybox_descriptor_set_alloc_info.pNext              = NULL;
@@ -1770,9 +1506,8 @@ namespace Pilot
         skybox_descriptor_set_alloc_info.descriptorSetCount = 1;
         skybox_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[_skybox].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
-                                                   &skybox_descriptor_set_alloc_info,
-                                                   &_descriptor_infos[_skybox].descriptor_set))
+        if (VK_SUCCESS != vkAllocateDescriptorSets(
+                              _device, &skybox_descriptor_set_alloc_info, &_descriptor_infos[_skybox].descriptor_set))
         {
             throw std::runtime_error("allocate skybox descriptor set");
         }
@@ -1780,10 +1515,8 @@ namespace Pilot
         VkDescriptorBufferInfo mesh_perframe_storage_buffer_info = {};
         mesh_perframe_storage_buffer_info.offset                 = 0;
         mesh_perframe_storage_buffer_info.range                  = sizeof(MeshPerframeStorageBufferObject);
-        mesh_perframe_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_perframe_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_perframe_storage_buffer_info.buffer                 = _storage_buffer._global_upload_ringbuffer;
+        assert(mesh_perframe_storage_buffer_info.range < _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorImageInfo specular_texture_image_info = {};
         specular_texture_image_info.sampler   = m_p_global_render_resource->_ibl_resource._specular_texture_sampler;
@@ -1810,11 +1543,13 @@ namespace Pilot
         skybox_descriptor_writes_info[1].descriptorCount = 1;
         skybox_descriptor_writes_info[1].pImageInfo      = &specular_texture_image_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device, 2, skybox_descriptor_writes_info, 0, NULL);
+        vkUpdateDescriptorSets(_device, 2, skybox_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupAxisDescriptorSet()
     {
+        auto&                       _device         = m_p_vulkan_context->_device;
+        auto&                       _storage_buffer = m_p_global_render_resource->_storage_buffer;
         VkDescriptorSetAllocateInfo axis_descriptor_set_alloc_info;
         axis_descriptor_set_alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         axis_descriptor_set_alloc_info.pNext              = NULL;
@@ -1822,9 +1557,8 @@ namespace Pilot
         axis_descriptor_set_alloc_info.descriptorSetCount = 1;
         axis_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[_axis].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
-                                                   &axis_descriptor_set_alloc_info,
-                                                   &_descriptor_infos[_axis].descriptor_set))
+        if (VK_SUCCESS != vkAllocateDescriptorSets(
+                              _device, &axis_descriptor_set_alloc_info, &_descriptor_infos[_axis].descriptor_set))
         {
             throw std::runtime_error("allocate axis descriptor set");
         }
@@ -1832,15 +1566,13 @@ namespace Pilot
         VkDescriptorBufferInfo mesh_perframe_storage_buffer_info = {};
         mesh_perframe_storage_buffer_info.offset                 = 0;
         mesh_perframe_storage_buffer_info.range                  = sizeof(MeshPerframeStorageBufferObject);
-        mesh_perframe_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_perframe_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_perframe_storage_buffer_info.buffer                 = _storage_buffer._global_upload_ringbuffer;
+        assert(mesh_perframe_storage_buffer_info.range < _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo axis_storage_buffer_info = {};
         axis_storage_buffer_info.offset                 = 0;
         axis_storage_buffer_info.range                  = sizeof(AxisStorageBufferObject);
-        axis_storage_buffer_info.buffer = m_p_global_render_resource->_storage_buffer._axis_inefficient_storage_buffer;
+        axis_storage_buffer_info.buffer                 = _storage_buffer._axis_inefficient_storage_buffer;
 
         VkWriteDescriptorSet axis_descriptor_writes_info[2];
 
@@ -1862,15 +1594,12 @@ namespace Pilot
         axis_descriptor_writes_info[1].descriptorCount = 1;
         axis_descriptor_writes_info[1].pBufferInfo     = &axis_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               (uint32_t)(sizeof(axis_descriptor_writes_info) / sizeof(axis_descriptor_writes_info[0])),
-                               axis_descriptor_writes_info,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(_device, std::size(axis_descriptor_writes_info), axis_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupParticleDescriptorSet()
     {
+        auto&                       _device = m_p_vulkan_context->_device;
         VkDescriptorSetAllocateInfo particlebillboard_global_descriptor_set_alloc_info;
         particlebillboard_global_descriptor_set_alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         particlebillboard_global_descriptor_set_alloc_info.pNext = NULL;
@@ -1878,7 +1607,7 @@ namespace Pilot
         particlebillboard_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         particlebillboard_global_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[_particle].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(_device,
                                                    &particlebillboard_global_descriptor_set_alloc_info,
                                                    &_descriptor_infos[_particle].descriptor_set))
         {
@@ -1920,11 +1649,12 @@ namespace Pilot
         particlebillboard_descriptor_writes_info[1].descriptorCount = 1;
         particlebillboard_descriptor_writes_info[1].pBufferInfo = &particlebillboard_perdrawcall_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device, 2, particlebillboard_descriptor_writes_info, 0, NULL);
+        vkUpdateDescriptorSets(_device, 2, particlebillboard_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupGbufferLightingDescriptorSet()
     {
+        auto&                       _device = m_p_vulkan_context->_device;
         VkDescriptorSetAllocateInfo gbuffer_light_global_descriptor_set_alloc_info;
         gbuffer_light_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         gbuffer_light_global_descriptor_set_alloc_info.pNext          = NULL;
@@ -1932,7 +1662,7 @@ namespace Pilot
         gbuffer_light_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         gbuffer_light_global_descriptor_set_alloc_info.pSetLayouts = &_descriptor_infos[_deferred_lighting].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(_device,
                                                    &gbuffer_light_global_descriptor_set_alloc_info,
                                                    &_descriptor_infos[_deferred_lighting].descriptor_set))
         {
@@ -1942,30 +1672,34 @@ namespace Pilot
 
     void PMainCameraPass::setupFramebufferDescriptorSet()
     {
+        auto&                 _device                              = m_p_vulkan_context->_device;
+        auto&                 _physical_device                     = m_p_vulkan_context->_physical_device;
         VkDescriptorImageInfo gbuffer_normal_input_attachment_info = {};
         gbuffer_normal_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        gbuffer_normal_input_attachment_info.imageView   = _framebuffer.attachments[_main_camera_pass_gbuffer_a].view;
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
+        gbuffer_normal_input_attachment_info.imageView =
+            m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a));
         gbuffer_normal_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo gbuffer_metallic_roughness_shadingmodeid_input_attachment_info = {};
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.imageView =
-            _framebuffer.attachments[_main_camera_pass_gbuffer_b].view;
+            m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b));
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.imageLayout =
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo gbuffer_albedo_input_attachment_info = {};
         gbuffer_albedo_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        gbuffer_albedo_input_attachment_info.imageView   = _framebuffer.attachments[_main_camera_pass_gbuffer_c].view;
+            PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
+        gbuffer_albedo_input_attachment_info.imageView =
+            m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c));
         gbuffer_albedo_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo depth_input_attachment_info = {};
-        depth_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        depth_input_attachment_info.imageView   = m_p_vulkan_context->_depth_image_view;
+        depth_input_attachment_info.sampler = PVulkanUtil::getOrCreateNearestSampler(_physical_device, _device);
+        depth_input_attachment_info.imageView =
+            m_p_vulkan_context->GetImageView(std::hash<std::string>()("view depth"));
         depth_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet deferred_lighting_descriptor_writes_info[4];
@@ -2020,9 +1754,8 @@ namespace Pilot
         depth_descriptor_input_attachment_write_info.descriptorCount = 1;
         depth_descriptor_input_attachment_write_info.pImageInfo      = &depth_input_attachment_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(deferred_lighting_descriptor_writes_info) /
-                                   sizeof(deferred_lighting_descriptor_writes_info[0]),
+        vkUpdateDescriptorSets(_device,
+                               std::size(deferred_lighting_descriptor_writes_info),
                                deferred_lighting_descriptor_writes_info,
                                0,
                                NULL);
@@ -2030,33 +1763,34 @@ namespace Pilot
 
     void PMainCameraPass::setupSwapchainFramebuffers()
     {
+        auto& _device = m_p_vulkan_context->_device;
         m_swapchain_framebuffers.resize(m_p_vulkan_context->_swapchain_imageviews.size());
 
         // create frame buffer for every imageview
         for (size_t i = 0; i < m_p_vulkan_context->_swapchain_imageviews.size(); i++)
         {
             VkImageView framebuffer_attachments_for_image_view[_main_camera_pass_attachment_count] = {
-                _framebuffer.attachments[_main_camera_pass_gbuffer_a].view,
-                _framebuffer.attachments[_main_camera_pass_gbuffer_b].view,
-                _framebuffer.attachments[_main_camera_pass_gbuffer_c].view,
-                _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].view,
-                _framebuffer.attachments[_main_camera_pass_backup_buffer_even].view,
-                m_p_vulkan_context->_depth_image_view,
+                m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a)),
+                m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b)),
+                m_p_vulkan_context->GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c)),
+                m_p_vulkan_context->GetImageView(
+                    std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd)),
+                m_p_vulkan_context->GetImageView(
+                    std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even)),
+                m_p_vulkan_context->GetImageView(std::hash<std::string>()("view depth")),
                 m_p_vulkan_context->_swapchain_imageviews[i]};
 
             VkFramebufferCreateInfo framebuffer_create_info {};
-            framebuffer_create_info.sType      = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebuffer_create_info.flags      = 0U;
-            framebuffer_create_info.renderPass = _framebuffer.render_pass;
-            framebuffer_create_info.attachmentCount =
-                (sizeof(framebuffer_attachments_for_image_view) / sizeof(framebuffer_attachments_for_image_view[0]));
-            framebuffer_create_info.pAttachments = framebuffer_attachments_for_image_view;
-            framebuffer_create_info.width        = m_p_vulkan_context->_swapchain_extent.width;
-            framebuffer_create_info.height       = m_p_vulkan_context->_swapchain_extent.height;
-            framebuffer_create_info.layers       = 1;
+            framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.flags           = 0U;
+            framebuffer_create_info.renderPass      = _framebuffer.render_pass;
+            framebuffer_create_info.attachmentCount = std::size(framebuffer_attachments_for_image_view);
+            framebuffer_create_info.pAttachments    = framebuffer_attachments_for_image_view;
+            framebuffer_create_info.width           = m_p_vulkan_context->_swapchain_extent.width;
+            framebuffer_create_info.height          = m_p_vulkan_context->_swapchain_extent.height;
+            framebuffer_create_info.layers          = 1;
 
-            if (vkCreateFramebuffer(
-                    m_p_vulkan_context->_device, &framebuffer_create_info, nullptr, &m_swapchain_framebuffers[i]) !=
+            if (vkCreateFramebuffer(_device, &framebuffer_create_info, nullptr, &m_swapchain_framebuffers[i]) !=
                 VK_SUCCESS)
             {
                 throw std::runtime_error("create main camera framebuffer");
@@ -2066,19 +1800,14 @@ namespace Pilot
 
     void PMainCameraPass::updateAfterFramebufferRecreate()
     {
-        for (size_t i = 0; i < _framebuffer.attachments.size(); i++)
-        {
-            vkDestroyImage(m_p_vulkan_context->_device, _framebuffer.attachments[i].image, nullptr);
-            vkDestroyImageView(m_p_vulkan_context->_device, _framebuffer.attachments[i].view, nullptr);
-            vkFreeMemory(m_p_vulkan_context->_device, _framebuffer.attachments[i].mem, nullptr);
-        }
+        auto& _device = m_p_vulkan_context->_device;
 
         for (auto framebuffer : m_swapchain_framebuffers)
         {
-            vkDestroyFramebuffer(m_p_vulkan_context->_device, framebuffer, NULL);
+            vkDestroyFramebuffer(_device, framebuffer, NULL);
         }
 
-        setupAttachments();
+        createImage();
 
         setupFramebufferDescriptorSet();
 
@@ -2092,6 +1821,7 @@ namespace Pilot
                                uint32_t           current_swapchain_image_index,
                                void*              ui_state)
     {
+        auto& command_buffer = m_command_info._current_command_buffer;
         {
             VkRenderPassBeginInfo renderpass_begin_info {};
             renderpass_begin_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -2108,68 +1838,68 @@ namespace Pilot
             clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
             clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.clearValueCount                    = std::size(clear_values);
             renderpass_begin_info.pClearValues                       = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
-                m_command_info._current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+                command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
         }
 
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "BasePass", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
         drawMeshGbuffer();
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Deferred Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
         drawDeferredLighting();
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Forward Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
         drawBillboardParticle();
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         tone_mapping_pass.draw();
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         color_grading_pass.draw();
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         VkClearAttachment clear_attachments[1];
         clear_attachments[0].aspectMask                  = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2185,21 +1915,18 @@ namespace Pilot
         clear_rects[0].rect.offset.y      = 0;
         clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
-        m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
-                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
-                                                   clear_attachments,
-                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
-                                                   clear_rects);
+        m_p_vulkan_context->_vkCmdClearAttachments(
+            command_buffer, std::size(clear_attachments), clear_attachments, std::size(clear_rects), clear_rects);
 
         drawAxis();
 
         ui_pass.draw(ui_state);
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         combine_ui_pass.draw();
 
-        m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
+        m_p_vulkan_context->_vkCmdEndRenderPass(command_buffer);
     }
 
     void PMainCameraPass::drawForward(PColorGradingPass& color_grading_pass,
@@ -2209,6 +1936,7 @@ namespace Pilot
                                       uint32_t           current_swapchain_image_index,
                                       void*              ui_state)
     {
+        auto& command_buffer = m_command_info._current_command_buffer;
         {
             VkRenderPassBeginInfo renderpass_begin_info {};
             renderpass_begin_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -2225,22 +1953,22 @@ namespace Pilot
             clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
             clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.clearValueCount                    = std::size(clear_values);
             renderpass_begin_info.pClearValues                       = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
-                m_command_info._current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+                command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
         }
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Forward Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
         drawMeshLighting();
@@ -2249,18 +1977,18 @@ namespace Pilot
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         tone_mapping_pass.draw();
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         color_grading_pass.draw();
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         VkClearAttachment clear_attachments[1];
         clear_attachments[0].aspectMask                  = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2276,25 +2004,24 @@ namespace Pilot
         clear_rects[0].rect.offset.y      = 0;
         clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
-        m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
-                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
-                                                   clear_attachments,
-                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
-                                                   clear_rects);
+        m_p_vulkan_context->_vkCmdClearAttachments(
+            command_buffer, std::size(clear_attachments), clear_attachments, std::size(clear_rects), clear_rects);
 
         drawAxis();
 
         ui_pass.draw(ui_state);
 
-        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+        m_p_vulkan_context->_vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         combine_ui_pass.draw();
 
-        m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
+        m_p_vulkan_context->_vkCmdEndRenderPass(command_buffer);
     }
 
     void PMainCameraPass::drawMeshGbuffer()
     {
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
         struct PMeshNode
         {
             glm::mat4 model_matrix;
@@ -2328,34 +2055,28 @@ namespace Pilot
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Mesh GBuffer", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
+        m_p_vulkan_context->_vkCmdBindPipeline(command_buffer,
                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                _render_pipelines[_render_pipeline_type_mesh_gbuffer].pipeline);
-        m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &m_command_info._viewport);
-        m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &m_command_info._scissor);
+        m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &m_command_info._viewport);
+        m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &m_command_info._scissor);
 
         // perframe storage buffer
         uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
 
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
         (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
 
         for (auto& pair1 : main_camera_mesh_drawcall_batch)
@@ -2364,7 +2085,7 @@ namespace Pilot
             auto&              mesh_instanced = pair1.second;
 
             // bind per material
-            m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+            m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
                                                          VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                          _render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
                                                          2,
@@ -2381,193 +2102,169 @@ namespace Pilot
                 auto&       mesh_nodes = pair2.second;
 
                 uint32_t total_instance_count = static_cast<uint32_t>(mesh_nodes.size());
-                if (total_instance_count > 0)
+                if (total_instance_count == 0)
                 {
-                    // bind per mesh
-                    m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                        m_command_info._current_command_buffer,
-                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        _render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
-                        1,
-                        1,
-                        &mesh.mesh_vertex_blending_descriptor_set,
-                        0,
-                        NULL);
+                    continue;
+                }
+                // bind per mesh
+                m_p_vulkan_context->_vkCmdBindDescriptorSets(
+                    command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    _render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
+                    1,
+                    1,
+                    &mesh.mesh_vertex_blending_descriptor_set,
+                    0,
+                    NULL);
 
-                    VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer,
-                                                 mesh.mesh_vertex_varying_enable_blending_buffer,
-                                                 mesh.mesh_vertex_varying_buffer};
-                    VkDeviceSize offsets[]        = {0, 0, 0};
-                    m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
-                                                                0,
-                                                                (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                                                vertex_buffers,
-                                                                offsets);
-                    m_p_vulkan_context->_vkCmdBindIndexBuffer(
-                        m_command_info._current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+                VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer,
+                                             mesh.mesh_vertex_varying_enable_blending_buffer,
+                                             mesh.mesh_vertex_varying_buffer};
+                VkDeviceSize offsets[]        = {0, 0, 0};
+                m_p_vulkan_context->_vkCmdBindVertexBuffers(
+                    command_buffer, 0, std::size(vertex_buffers), vertex_buffers, offsets);
+                m_p_vulkan_context->_vkCmdBindIndexBuffer(
+                    command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
-                    uint32_t drawcall_max_instance_count =
-                        (sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances) /
-                         sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances[0]));
-                    uint32_t drawcall_count =
-                        roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
+                uint32_t drawcall_max_instance_count = (sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances) /
+                                                        sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances[0]));
+                uint32_t drawcall_count =
+                    roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
-                    for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
+                for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
+                {
+                    uint32_t current_instance_count =
+                        ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
+                         drawcall_max_instance_count) ?
+                            (total_instance_count - drawcall_max_instance_count * drawcall_index) :
+                            drawcall_max_instance_count;
+
+                    // per drawcall storage buffer
+                    uint32_t perdrawcall_dynamic_offset =
+                        roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                _storage_buffer._min_storage_buffer_offset_alignment);
+                    _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                        perdrawcall_dynamic_offset + sizeof(MeshPerdrawcallStorageBufferObject);
+                    assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                           (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                            _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+                    MeshPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
+                        (*reinterpret_cast<MeshPerdrawcallStorageBufferObject*>(
+                            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                            perdrawcall_dynamic_offset));
+                    for (uint32_t i = 0; i < current_instance_count; ++i)
                     {
-                        uint32_t current_instance_count =
-                            ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                             drawcall_max_instance_count) ?
-                                (total_instance_count - drawcall_max_instance_count * drawcall_index) :
-                                drawcall_max_instance_count;
+                        perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
+                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
+                        perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
+                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending ? 1.0 :
+                                                                                                                  -1.0;
+                    }
 
-                        // per drawcall storage buffer
-                        uint32_t perdrawcall_dynamic_offset =
-                            roundUp(m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                        m_p_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                            perdrawcall_dynamic_offset + sizeof(MeshPerdrawcallStorageBufferObject);
-                        assert(m_p_global_render_resource->_storage_buffer
-                                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                               (m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+                    // per drawcall vertex blending storage buffer
+                    uint32_t per_drawcall_vertex_blending_dynamic_offset;
+                    bool     least_one_enable_vertex_blending = true;
+                    for (uint32_t i = 0; i < current_instance_count; ++i)
+                    {
+                        if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                        {
+                            least_one_enable_vertex_blending = false;
+                            break;
+                        }
+                    }
+                    if (least_one_enable_vertex_blending)
+                    {
+                        per_drawcall_vertex_blending_dynamic_offset =
+                            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                    _storage_buffer._min_storage_buffer_offset_alignment);
+                        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                            per_drawcall_vertex_blending_dynamic_offset +
+                            sizeof(MeshPerdrawcallVertexBlendingStorageBufferObject);
+                        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
-                        MeshPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
-                            (*reinterpret_cast<MeshPerdrawcallStorageBufferObject*>(
-                                reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                ._global_upload_ringbuffer_memory_pointer) +
-                                perdrawcall_dynamic_offset));
+                        MeshPerdrawcallVertexBlendingStorageBufferObject&
+                            per_drawcall_vertex_blending_storage_buffer_object =
+                                (*reinterpret_cast<MeshPerdrawcallVertexBlendingStorageBufferObject*>(
+                                    reinterpret_cast<uintptr_t>(
+                                        _storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                    per_drawcall_vertex_blending_dynamic_offset));
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
-                            perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                            perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending ?
-                                    1.0 :
-                                    -1.0;
-                        }
-
-                        // per drawcall vertex blending storage buffer
-                        uint32_t per_drawcall_vertex_blending_dynamic_offset;
-                        bool     least_one_enable_vertex_blending = true;
-                        for (uint32_t i = 0; i < current_instance_count; ++i)
-                        {
-                            if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                            if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
                             {
-                                least_one_enable_vertex_blending = false;
-                                break;
-                            }
-                        }
-                        if (least_one_enable_vertex_blending)
-                        {
-                            per_drawcall_vertex_blending_dynamic_offset = roundUp(
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            m_p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                                per_drawcall_vertex_blending_dynamic_offset +
-                                sizeof(MeshPerdrawcallVertexBlendingStorageBufferObject);
-                            assert(m_p_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                                   (m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                    m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-                            MeshPerdrawcallVertexBlendingStorageBufferObject&
-                                per_drawcall_vertex_blending_storage_buffer_object =
-                                    (*reinterpret_cast<MeshPerdrawcallVertexBlendingStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                        ._global_upload_ringbuffer_memory_pointer) +
-                                        per_drawcall_vertex_blending_dynamic_offset));
-                            for (uint32_t i = 0; i < current_instance_count; ++i)
-                            {
-                                if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                                for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
                                 {
-                                    for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
-                                    {
-                                        per_drawcall_vertex_blending_storage_buffer_object
-                                            .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                .joint_matrices[j];
-                                    }
+                                    per_drawcall_vertex_blending_storage_buffer_object
+                                        .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
+                                        mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
                                 }
                             }
                         }
-                        else
-                        {
-                            per_drawcall_vertex_blending_dynamic_offset = 0;
-                        }
-
-                        // bind perdrawcall
-                        uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
-                                                       perdrawcall_dynamic_offset,
-                                                       per_drawcall_vertex_blending_dynamic_offset};
-                        m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                            m_command_info._current_command_buffer,
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            _render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
-                            0,
-                            1,
-                            &_descriptor_infos[_mesh_global].descriptor_set,
-                            3,
-                            dynamic_offsets);
-
-                        m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
-                                                              mesh.mesh_index_count,
-                                                              current_instance_count,
-                                                              0,
-                                                              0,
-                                                              0);
                     }
+                    else
+                    {
+                        per_drawcall_vertex_blending_dynamic_offset = 0;
+                    }
+
+                    // bind perdrawcall
+                    uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
+                                                   perdrawcall_dynamic_offset,
+                                                   per_drawcall_vertex_blending_dynamic_offset};
+                    m_p_vulkan_context->_vkCmdBindDescriptorSets(
+                        command_buffer,
+                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        _render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
+                        0,
+                        1,
+                        &_descriptor_infos[_mesh_global].descriptor_set,
+                        3,
+                        dynamic_offsets);
+
+                    m_p_vulkan_context->_vkCmdDrawIndexed(
+                        command_buffer, mesh.mesh_index_count, current_instance_count, 0, 0, 0);
                 }
             }
         }
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
     }
 
     void PMainCameraPass::drawDeferredLighting()
     {
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
+        m_p_vulkan_context->_vkCmdBindPipeline(command_buffer,
                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                _render_pipelines[_render_pipeline_type_deferred_lighting].pipeline);
 
-        m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &m_command_info._viewport);
-        m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &m_command_info._scissor);
+        m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &m_command_info._viewport);
+        m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &m_command_info._scissor);
 
         uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
 
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
         (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
 
         VkDescriptorSet descriptor_sets[3] = {_descriptor_infos[_mesh_global].descriptor_set,
                                               _descriptor_infos[_deferred_lighting].descriptor_set,
                                               _descriptor_infos[_skybox].descriptor_set};
         uint32_t        dynamic_offsets[4] = {perframe_dynamic_offset, perframe_dynamic_offset, 0, 0};
-        m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+        m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
                                                      VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                      _render_pipelines[_render_pipeline_type_deferred_lighting].layout,
                                                      0,
@@ -2576,11 +2273,13 @@ namespace Pilot
                                                      4,
                                                      dynamic_offsets);
 
-        vkCmdDraw(m_command_info._current_command_buffer, 3, 1, 0, 0);
+        vkCmdDraw(command_buffer, 3, 1, 0, 0);
     }
 
     void PMainCameraPass::drawMeshLighting()
     {
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
         struct PMeshNode
         {
             glm::mat4 model_matrix;
@@ -2614,34 +2313,28 @@ namespace Pilot
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Model", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
+        m_p_vulkan_context->_vkCmdBindPipeline(command_buffer,
                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                _render_pipelines[_render_pipeline_type_mesh_lighting].pipeline);
-        m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &m_command_info._viewport);
-        m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &m_command_info._scissor);
+        m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &m_command_info._viewport);
+        m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &m_command_info._scissor);
 
         // perframe storage buffer
         uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
 
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
         (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
 
         for (auto& pair1 : main_camera_mesh_drawcall_batch)
@@ -2650,7 +2343,7 @@ namespace Pilot
             auto&              mesh_instanced = pair1.second;
 
             // bind per material
-            m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+            m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
                                                          VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                          _render_pipelines[_render_pipeline_type_mesh_lighting].layout,
                                                          2,
@@ -2667,252 +2360,32 @@ namespace Pilot
                 auto&       mesh_nodes = pair2.second;
 
                 uint32_t total_instance_count = static_cast<uint32_t>(mesh_nodes.size());
-                if (total_instance_count > 0)
+                if (total_instance_count == 0)
                 {
-                    // bind per mesh
-                    m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                        m_command_info._current_command_buffer,
-                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        _render_pipelines[_render_pipeline_type_mesh_lighting].layout,
-                        1,
-                        1,
-                        &mesh.mesh_vertex_blending_descriptor_set,
-                        0,
-                        NULL);
-
-                    VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer,
-                                                 mesh.mesh_vertex_varying_enable_blending_buffer,
-                                                 mesh.mesh_vertex_varying_buffer};
-                    VkDeviceSize offsets[]        = {0, 0, 0};
-                    m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
-                                                                0,
-                                                                (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                                                vertex_buffers,
-                                                                offsets);
-                    m_p_vulkan_context->_vkCmdBindIndexBuffer(
-                        m_command_info._current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
-
-                    uint32_t drawcall_max_instance_count =
-                        (sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances) /
-                         sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances[0]));
-                    uint32_t drawcall_count =
-                        roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
-
-                    for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
-                    {
-                        uint32_t current_instance_count =
-                            ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                             drawcall_max_instance_count) ?
-                                (total_instance_count - drawcall_max_instance_count * drawcall_index) :
-                                drawcall_max_instance_count;
-
-                        // per drawcall storage buffer
-                        uint32_t perdrawcall_dynamic_offset =
-                            roundUp(m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                        m_p_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                            perdrawcall_dynamic_offset + sizeof(MeshPerdrawcallStorageBufferObject);
-                        assert(m_p_global_render_resource->_storage_buffer
-                                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                               (m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-                        MeshPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
-                            (*reinterpret_cast<MeshPerdrawcallStorageBufferObject*>(
-                                reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                ._global_upload_ringbuffer_memory_pointer) +
-                                perdrawcall_dynamic_offset));
-                        for (uint32_t i = 0; i < current_instance_count; ++i)
-                        {
-                            perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                            perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending ?
-                                    1.0 :
-                                    -1.0;
-                        }
-
-                        // per drawcall vertex blending storage buffer
-                        uint32_t per_drawcall_vertex_blending_dynamic_offset;
-                        bool     least_one_enable_vertex_blending = true;
-                        for (uint32_t i = 0; i < current_instance_count; ++i)
-                        {
-                            if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
-                            {
-                                least_one_enable_vertex_blending = false;
-                                break;
-                            }
-                        }
-                        if (least_one_enable_vertex_blending)
-                        {
-                            per_drawcall_vertex_blending_dynamic_offset = roundUp(
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            m_p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                                per_drawcall_vertex_blending_dynamic_offset +
-                                sizeof(MeshPerdrawcallVertexBlendingStorageBufferObject);
-                            assert(m_p_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                                   (m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                    m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-                            MeshPerdrawcallVertexBlendingStorageBufferObject&
-                                per_drawcall_vertex_blending_storage_buffer_object =
-                                    (*reinterpret_cast<MeshPerdrawcallVertexBlendingStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                        ._global_upload_ringbuffer_memory_pointer) +
-                                        per_drawcall_vertex_blending_dynamic_offset));
-                            for (uint32_t i = 0; i < current_instance_count; ++i)
-                            {
-                                if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
-                                {
-                                    for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
-                                    {
-                                        per_drawcall_vertex_blending_storage_buffer_object
-                                            .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                .joint_matrices[j];
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            per_drawcall_vertex_blending_dynamic_offset = 0;
-                        }
-
-                        // bind perdrawcall
-                        uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
-                                                       perdrawcall_dynamic_offset,
-                                                       per_drawcall_vertex_blending_dynamic_offset};
-                        m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                            m_command_info._current_command_buffer,
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            _render_pipelines[_render_pipeline_type_mesh_lighting].layout,
-                            0,
-                            1,
-                            &_descriptor_infos[_mesh_global].descriptor_set,
-                            3,
-                            dynamic_offsets);
-
-                        m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
-                                                              mesh.mesh_index_count,
-                                                              current_instance_count,
-                                                              0,
-                                                              0,
-                                                              0);
-                    }
+                    continue;
                 }
-            }
-        }
+                // bind per mesh
+                m_p_vulkan_context->_vkCmdBindDescriptorSets(
+                    command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    _render_pipelines[_render_pipeline_type_mesh_lighting].layout,
+                    1,
+                    1,
+                    &mesh.mesh_vertex_blending_descriptor_set,
+                    0,
+                    NULL);
 
-        if (m_render_config._enable_debug_untils_label)
-        {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
-        }
-    }
+                VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer,
+                                             mesh.mesh_vertex_varying_enable_blending_buffer,
+                                             mesh.mesh_vertex_varying_buffer};
+                VkDeviceSize offsets[]        = {0, 0, 0};
+                m_p_vulkan_context->_vkCmdBindVertexBuffers(
+                    command_buffer, 0, std::size(vertex_buffers), vertex_buffers, offsets);
+                m_p_vulkan_context->_vkCmdBindIndexBuffer(
+                    command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
-    void PMainCameraPass::drawSkybox()
-    {
-        uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-            perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-        (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-            perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
-
-        if (m_render_config._enable_debug_untils_label)
-        {
-            VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Skybox", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
-        }
-
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               _render_pipelines[_render_pipeline_type_skybox].pipeline);
-        m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
-                                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                     _render_pipelines[_render_pipeline_type_skybox].layout,
-                                                     0,
-                                                     1,
-                                                     &_descriptor_infos[_skybox].descriptor_set,
-                                                     1,
-                                                     &perframe_dynamic_offset);
-        vkCmdDraw(m_command_info._current_command_buffer, 36, 1, 0,
-                  0); // 2 triangles(6 vertex) each face, 6 faces
-
-        if (m_render_config._enable_debug_untils_label)
-        {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
-        }
-    }
-
-    void PMainCameraPass::drawBillboardParticle()
-    {
-        if (m_render_config._enable_debug_untils_label)
-        {
-            VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "ParticleBillboard", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
-        }
-
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               _render_pipelines[_render_pipeline_type_particle].pipeline);
-        m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &m_command_info._viewport);
-        m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &m_command_info._scissor);
-
-        // perframe storage buffer
-        uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-            perframe_dynamic_offset + sizeof(ParticleBillboardPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-        (*reinterpret_cast<ParticleBillboardPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-            perframe_dynamic_offset)) = m_particlebillboard_perframe_storage_buffer_object;
-
-        for (PVulkanParticleBillboardNode& node : *(m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes))
-        {
-            uint32_t total_instance_count = static_cast<uint32_t>(node.positions.size());
-
-            if (total_instance_count > 0)
-            {
-                uint32_t drawcall_max_instance_count =
-                    (sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions) /
-                     sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions[0]));
+                uint32_t drawcall_max_instance_count = (sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances) /
+                                                        sizeof(MeshPerdrawcallStorageBufferObject::mesh_instances[0]));
                 uint32_t drawcall_count =
                     roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
@@ -2924,52 +2397,236 @@ namespace Pilot
                             (total_instance_count - drawcall_max_instance_count * drawcall_index) :
                             drawcall_max_instance_count;
 
-                    // perdrawcall storage buffer
+                    // per drawcall storage buffer
                     uint32_t perdrawcall_dynamic_offset =
-                        roundUp(m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                    m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                        perdrawcall_dynamic_offset + sizeof(ParticleBillboardPerdrawcallStorageBufferObject);
-                    assert(m_p_global_render_resource->_storage_buffer
-                               ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                           (m_p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                            m_p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+                        roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                _storage_buffer._min_storage_buffer_offset_alignment);
+                    _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                        perdrawcall_dynamic_offset + sizeof(MeshPerdrawcallStorageBufferObject);
+                    assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                           (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                            _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
-                    ParticleBillboardPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
-                        (*reinterpret_cast<ParticleBillboardPerdrawcallStorageBufferObject*>(
-                            reinterpret_cast<uintptr_t>(
-                                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                    MeshPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
+                        (*reinterpret_cast<MeshPerdrawcallStorageBufferObject*>(
+                            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
                             perdrawcall_dynamic_offset));
                     for (uint32_t i = 0; i < current_instance_count; ++i)
                     {
-                        perdrawcall_storage_buffer_object.positions[i] =
-                            node.positions[drawcall_max_instance_count * drawcall_index + i];
+                        perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
+                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
+                        perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
+                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending ? 1.0 :
+                                                                                                                  -1.0;
+                    }
+
+                    // per drawcall vertex blending storage buffer
+                    uint32_t per_drawcall_vertex_blending_dynamic_offset;
+                    bool     least_one_enable_vertex_blending = true;
+                    for (uint32_t i = 0; i < current_instance_count; ++i)
+                    {
+                        if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                        {
+                            least_one_enable_vertex_blending = false;
+                            break;
+                        }
+                    }
+                    if (least_one_enable_vertex_blending)
+                    {
+                        per_drawcall_vertex_blending_dynamic_offset =
+                            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                    _storage_buffer._min_storage_buffer_offset_alignment);
+                        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                            per_drawcall_vertex_blending_dynamic_offset +
+                            sizeof(MeshPerdrawcallVertexBlendingStorageBufferObject);
+                        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+                        MeshPerdrawcallVertexBlendingStorageBufferObject&
+                            per_drawcall_vertex_blending_storage_buffer_object =
+                                (*reinterpret_cast<MeshPerdrawcallVertexBlendingStorageBufferObject*>(
+                                    reinterpret_cast<uintptr_t>(
+                                        _storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                    per_drawcall_vertex_blending_dynamic_offset));
+                        for (uint32_t i = 0; i < current_instance_count; ++i)
+                        {
+                            if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                            {
+                                for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
+                                {
+                                    per_drawcall_vertex_blending_storage_buffer_object
+                                        .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
+                                        mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        per_drawcall_vertex_blending_dynamic_offset = 0;
                     }
 
                     // bind perdrawcall
-                    uint32_t dynamic_offsets[2] = {perframe_dynamic_offset, perdrawcall_dynamic_offset};
+                    uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
+                                                   perdrawcall_dynamic_offset,
+                                                   per_drawcall_vertex_blending_dynamic_offset};
                     m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                        m_command_info._current_command_buffer,
+                        command_buffer,
                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        _render_pipelines[_render_pipeline_type_particle].layout,
+                        _render_pipelines[_render_pipeline_type_mesh_lighting].layout,
                         0,
                         1,
-                        &_descriptor_infos[_particle].descriptor_set,
-                        2,
+                        &_descriptor_infos[_mesh_global].descriptor_set,
+                        3,
                         dynamic_offsets);
 
-                    vkCmdDraw(m_command_info._current_command_buffer, 4, current_instance_count, 0, 0);
+                    m_p_vulkan_context->_vkCmdDrawIndexed(
+                        command_buffer, mesh.mesh_index_count, current_instance_count, 0, 0, 0);
                 }
             }
         }
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
+        }
+    }
+
+    void PMainCameraPass::drawSkybox()
+    {
+        auto&    _storage_buffer = m_p_global_render_resource->_storage_buffer;
+        uint32_t perframe_dynamic_offset =
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
+
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+            perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+        (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
+        auto& command_buffer          = m_command_info._current_command_buffer;
+        if (m_render_config._enable_debug_untils_label)
+        {
+            VkDebugUtilsLabelEXT label_info = {
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Skybox", {1.0f, 1.0f, 1.0f, 1.0f}};
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
+        }
+
+        m_p_vulkan_context->_vkCmdBindPipeline(
+            command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[_render_pipeline_type_skybox].pipeline);
+        m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
+                                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                     _render_pipelines[_render_pipeline_type_skybox].layout,
+                                                     0,
+                                                     1,
+                                                     &_descriptor_infos[_skybox].descriptor_set,
+                                                     1,
+                                                     &perframe_dynamic_offset);
+        vkCmdDraw(command_buffer, 36, 1, 0,
+                  0); // 2 triangles(6 vertex) each face, 6 faces
+
+        if (m_render_config._enable_debug_untils_label)
+        {
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
+        }
+    }
+
+    void PMainCameraPass::drawBillboardParticle()
+    {
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
+        if (m_render_config._enable_debug_untils_label)
+        {
+            VkDebugUtilsLabelEXT label_info = {
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "ParticleBillboard", {1.0f, 1.0f, 1.0f, 1.0f}};
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
+        }
+
+        m_p_vulkan_context->_vkCmdBindPipeline(command_buffer,
+                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                               _render_pipelines[_render_pipeline_type_particle].pipeline);
+        m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &m_command_info._viewport);
+        m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &m_command_info._scissor);
+
+        // perframe storage buffer
+        uint32_t perframe_dynamic_offset =
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+            perframe_dynamic_offset + sizeof(ParticleBillboardPerframeStorageBufferObject);
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+        (*reinterpret_cast<ParticleBillboardPerframeStorageBufferObject*>(
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            perframe_dynamic_offset)) = m_particlebillboard_perframe_storage_buffer_object;
+
+        for (PVulkanParticleBillboardNode& node : *(m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes))
+        {
+            uint32_t total_instance_count = static_cast<uint32_t>(node.positions.size());
+
+            if (total_instance_count == 0)
+            {
+                continue;
+            }
+            uint32_t drawcall_max_instance_count =
+                (sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions) /
+                 sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions[0]));
+            uint32_t drawcall_count =
+                roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
+
+            for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
+            {
+                uint32_t current_instance_count =
+                    ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
+                     drawcall_max_instance_count) ?
+                        (total_instance_count - drawcall_max_instance_count * drawcall_index) :
+                        drawcall_max_instance_count;
+
+                // perdrawcall storage buffer
+                uint32_t perdrawcall_dynamic_offset =
+                    roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                            _storage_buffer._min_storage_buffer_offset_alignment);
+                _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                    perdrawcall_dynamic_offset + sizeof(ParticleBillboardPerdrawcallStorageBufferObject);
+                assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                       (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                        _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+                ParticleBillboardPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
+                    (*reinterpret_cast<ParticleBillboardPerdrawcallStorageBufferObject*>(
+                        reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                        perdrawcall_dynamic_offset));
+                for (uint32_t i = 0; i < current_instance_count; ++i)
+                {
+                    perdrawcall_storage_buffer_object.positions[i] =
+                        node.positions[drawcall_max_instance_count * drawcall_index + i];
+                }
+
+                // bind perdrawcall
+                uint32_t dynamic_offsets[2] = {perframe_dynamic_offset, perdrawcall_dynamic_offset};
+                m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
+                                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                             _render_pipelines[_render_pipeline_type_particle].layout,
+                                                             0,
+                                                             1,
+                                                             &_descriptor_infos[_particle].descriptor_set,
+                                                             2,
+                                                             dynamic_offsets);
+
+                vkCmdDraw(command_buffer, 4, current_instance_count, 0, 0);
+            }
+        }
+
+        if (m_render_config._enable_debug_untils_label)
+        {
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
     }
 
@@ -2977,38 +2634,33 @@ namespace Pilot
     {
         if (!m_is_show_axis)
             return;
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
 
         uint32_t perframe_dynamic_offset =
-            roundUp(m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                    _storage_buffer._min_storage_buffer_offset_alignment);
 
-        m_p_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-        assert(m_p_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-               (m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                m_p_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
         (*reinterpret_cast<MeshPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+            reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = m_mesh_perframe_storage_buffer_object;
 
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Axis", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+            m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
         }
 
-        m_p_vulkan_context->_vkCmdBindPipeline(m_command_info._current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               _render_pipelines[_render_pipeline_type_axis].pipeline);
-        m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+        m_p_vulkan_context->_vkCmdBindPipeline(
+            command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[_render_pipeline_type_axis].pipeline);
+        m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
                                                      VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                      _render_pipelines[_render_pipeline_type_axis].layout,
                                                      0,
@@ -3024,29 +2676,19 @@ namespace Pilot
                                      m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_enable_blending_buffer,
                                      m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_buffer};
         VkDeviceSize offsets[]        = {0, 0, 0};
-        m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
-                                                    0,
-                                                    (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                                    vertex_buffers,
-                                                    offsets);
-        m_p_vulkan_context->_vkCmdBindIndexBuffer(m_command_info._current_command_buffer,
-                                                  m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_buffer,
-                                                  0,
-                                                  VK_INDEX_TYPE_UINT16);
+        m_p_vulkan_context->_vkCmdBindVertexBuffers(
+            command_buffer, 0, std::size(vertex_buffers), vertex_buffers, offsets);
+        m_p_vulkan_context->_vkCmdBindIndexBuffer(
+            command_buffer, m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
         (*reinterpret_cast<AxisStorageBufferObject*>(reinterpret_cast<uintptr_t>(
-            m_p_global_render_resource->_storage_buffer._axis_inefficient_storage_buffer_memory_pointer))) =
-            m_axis_storage_buffer_object;
+            _storage_buffer._axis_inefficient_storage_buffer_memory_pointer))) = m_axis_storage_buffer_object;
 
-        m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
-                                              m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_count,
-                                              1,
-                                              0,
-                                              0,
-                                              0);
+        m_p_vulkan_context->_vkCmdDrawIndexed(
+            command_buffer, m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_count, 1, 0, 0, 0);
 
         if (m_render_config._enable_debug_untils_label)
         {
-            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
         }
     }
 } // namespace Pilot

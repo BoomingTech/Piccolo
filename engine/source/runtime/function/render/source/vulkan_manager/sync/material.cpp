@@ -4,7 +4,9 @@
 Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Material& material,
                                                               class PilotRenderer*   pilot_renderer)
 {
-    size_t assetid = material.m_guid;
+    auto&  _device          = m_vulkan_context._device;
+    auto&  _physical_device = m_vulkan_context._physical_device;
+    size_t assetid          = material.m_guid;
 
     auto iter = m_vulkan_pbr_materials.find(assetid);
     if (iter != m_vulkan_pbr_materials.end())
@@ -103,8 +105,8 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
 
             VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
             VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-            PVulkanUtil::createBuffer(m_vulkan_context._physical_device,
-                                      m_vulkan_context._device,
+            PVulkanUtil::createBuffer(_physical_device,
+                                      _device,
                                       buffer_size,
                                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -114,8 +116,7 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
             // memory transfer operation
 
             void* staging_buffer_data = nullptr;
-            vkMapMemory(
-                m_vulkan_context._device, inefficient_staging_buffer_memory, 0, buffer_size, 0, &staging_buffer_data);
+            vkMapMemory(_device, inefficient_staging_buffer_memory, 0, buffer_size, 0, &staging_buffer_data);
 
             MeshPerMaterialUniformBufferObject& material_uniform_buffer_info =
                 (*static_cast<MeshPerMaterialUniformBufferObject*>(staging_buffer_data));
@@ -128,7 +129,7 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
             material_uniform_buffer_info.occlusionStrength = material.m_occlusionStrength;
             material_uniform_buffer_info.emissiveFactor    = material.m_emissiveFactor;
 
-            vkUnmapMemory(m_vulkan_context._device, inefficient_staging_buffer_memory);
+            vkUnmapMemory(_device, inefficient_staging_buffer_memory);
 
             // use the vmaAllocator to allocate asset uniform buffer
             VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -151,8 +152,8 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
                 &m_vulkan_context, inefficient_staging_buffer, now_material.material_uniform_buffer, 0, 0, buffer_size);
 
             // release staging buffer
-            vkDestroyBuffer(m_vulkan_context._device, inefficient_staging_buffer, nullptr);
-            vkFreeMemory(m_vulkan_context._device, inefficient_staging_buffer_memory, nullptr);
+            vkDestroyBuffer(_device, inefficient_staging_buffer, nullptr);
+            vkFreeMemory(_device, inefficient_staging_buffer_memory, nullptr);
         }
 
         PTextureDataToUpdate update_texture_data;
@@ -176,9 +177,8 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
         update_texture_data.emissive_image_width            = emissive_image_width;
         update_texture_data.emissive_image_height           = emissive_image_height;
         update_texture_data.emissive_image_format           = emissive_image_format;
-        update_texture_data.now_material                    = &now_material;
 
-        updateTextureImageData(update_texture_data);
+        updateTextureImageData(update_texture_data, &now_material);
 
         VkDescriptorSetAllocateInfo material_descriptor_set_alloc_info;
         material_descriptor_set_alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -188,9 +188,8 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
         material_descriptor_set_alloc_info.pSetLayouts =
             &m_main_camera_pass._descriptor_infos[PMainCameraPass::LayoutType::_mesh_per_material].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_context._device,
-                                                   &material_descriptor_set_alloc_info,
-                                                   &now_material.material_descriptor_set))
+        if (VK_SUCCESS != vkAllocateDescriptorSets(
+                              _device, &material_descriptor_set_alloc_info, &now_material.material_descriptor_set))
         {
             throw std::runtime_error("allocate material descriptor set");
         }
@@ -203,38 +202,32 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
         VkDescriptorImageInfo base_color_image_info = {};
         base_color_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         base_color_image_info.imageView             = now_material.base_color_image_view;
-        base_color_image_info.sampler = PVulkanUtil::getOrCreateMipmapSampler(m_vulkan_context._physical_device,
-                                                                              m_vulkan_context._device,
-                                                                              base_color_image_width,
-                                                                              base_color_image_height);
+        base_color_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
+            _physical_device, _device, base_color_image_width, base_color_image_height);
 
         VkDescriptorImageInfo metallic_roughness_image_info = {};
         metallic_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         metallic_roughness_image_info.imageView             = now_material.metallic_roughness_image_view;
-        metallic_roughness_image_info.sampler = PVulkanUtil::getOrCreateMipmapSampler(m_vulkan_context._physical_device,
-                                                                                      m_vulkan_context._device,
-                                                                                      metallic_roughness_width,
-                                                                                      metallic_roughness_height);
+        metallic_roughness_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
+            _physical_device, _device, metallic_roughness_width, metallic_roughness_height);
 
         VkDescriptorImageInfo normal_roughness_image_info = {};
         normal_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         normal_roughness_image_info.imageView             = now_material.normal_image_view;
-        normal_roughness_image_info.sampler = PVulkanUtil::getOrCreateMipmapSampler(m_vulkan_context._physical_device,
-                                                                                    m_vulkan_context._device,
-                                                                                    normal_roughness_width,
-                                                                                    normal_roughness_height);
+        normal_roughness_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
+            _physical_device, _device, normal_roughness_width, normal_roughness_height);
 
         VkDescriptorImageInfo occlusion_image_info = {};
         occlusion_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         occlusion_image_info.imageView             = now_material.occlusion_image_view;
         occlusion_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
-            m_vulkan_context._physical_device, m_vulkan_context._device, occlusion_image_width, occlusion_image_height);
+            _physical_device, _device, occlusion_image_width, occlusion_image_height);
 
         VkDescriptorImageInfo emissive_image_info = {};
         emissive_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         emissive_image_info.imageView             = now_material.emissive_image_view;
         emissive_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
-            m_vulkan_context._physical_device, m_vulkan_context._device, emissive_image_width, emissive_image_height);
+            _physical_device, _device, emissive_image_width, emissive_image_height);
 
         VkWriteDescriptorSet mesh_descriptor_writes_info[6];
 
@@ -272,7 +265,7 @@ Pilot::VulkanPBRMaterial& Pilot::PVulkanManager::syncMaterial(const struct Mater
         mesh_descriptor_writes_info[5].dstBinding = 5;
         mesh_descriptor_writes_info[5].pImageInfo = &emissive_image_info;
 
-        vkUpdateDescriptorSets(m_vulkan_context._device, 6, mesh_descriptor_writes_info, 0, nullptr);
+        vkUpdateDescriptorSets(_device, 6, mesh_descriptor_writes_info, 0, nullptr);
 
         return now_material;
     }

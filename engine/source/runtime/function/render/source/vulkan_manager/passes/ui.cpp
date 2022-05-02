@@ -204,6 +204,7 @@ namespace Pilot
 
     void PUIPass::draw(void* ui_state)
     {
+        auto& command_buffer = m_command_info._current_command_buffer;
         if (NULL != m_surface_ui)
         {
             ImGui_ImplVulkan_NewFrame();
@@ -216,16 +217,16 @@ namespace Pilot
             {
                 VkDebugUtilsLabelEXT label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "ImGUI", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
             }
 
             ImGui::Render();
 
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_command_info._current_command_buffer);
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
             if (m_render_config._enable_debug_untils_label)
             {
-                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
             }
         }
     }

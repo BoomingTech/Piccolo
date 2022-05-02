@@ -65,10 +65,10 @@
 #error Unknown Compiler
 #endif
 
+#include <cstring>
 #include <iostream>
 #include <set>
 #include <stdexcept>
-#include <cstring>
 #include <string>
 
 void Pilot::PVulkanContext::initialize(GLFWwindow* window)
@@ -121,6 +121,18 @@ void Pilot::PVulkanContext::initialize(GLFWwindow* window)
 
 void Pilot::PVulkanContext::clear()
 {
+    for (auto& iter : _image_cache)
+    {
+        auto& cache = iter.second;
+
+        if (cache.image != VK_NULL_HANDLE)
+            vkDestroyImage(_device, cache.image, nullptr);
+        if (cache.imageView != VK_NULL_HANDLE)
+            vkDestroyImageView(_device, cache.imageView, nullptr);
+        if (cache.deviceMemory != VK_NULL_HANDLE)
+            vkFreeMemory(_device, cache.deviceMemory, nullptr);
+    }
+    _image_cache.clear();
     if (Pilot::PVulkanManager::m_enable_validation_Layers)
     {
         destroyDebugUtilsMessengerEXT(_instance, m_debug_messenger, nullptr);
@@ -317,31 +329,29 @@ void Pilot::PVulkanContext::initializePhysicalDevice()
     {
         throw std::runtime_error("enumerate physical devices");
     }
-    else
+
+    // find one device that matches our requirement
+    // or find which is the best
+    std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
+    vkEnumeratePhysicalDevices(_instance, &physical_device_count, physical_devices.data());
+
+    std::vector<std::pair<int, VkPhysicalDevice>> ranked_physical_devices;
+    for (const auto& device : physical_devices)
     {
-        // find one device that matches our requirement
-        // or find which is the best
-        std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
-        vkEnumeratePhysicalDevices(_instance, &physical_device_count, physical_devices.data());
+        VkPhysicalDeviceProperties physical_device_properties;
+        vkGetPhysicalDeviceProperties(device, &physical_device_properties);
+        int score = 0;
 
-        std::vector<std::pair<int, VkPhysicalDevice>> ranked_physical_devices;
-        for (const auto& device : physical_devices)
+        if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
         {
-            VkPhysicalDeviceProperties physical_device_properties;
-            vkGetPhysicalDeviceProperties(device, &physical_device_properties);
-            int score = 0;
-
-            if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-            {
-                score += 1000;
-            }
-            else if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-            {
-                score += 100;
-            }
-
-            ranked_physical_devices.push_back({score, device});
+            score += 1000;
         }
+        else if (physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+        {
+            score += 100;
+        }
+
+        ranked_physical_devices.push_back({score, device});
 
         std::sort(ranked_physical_devices.begin(),
                   ranked_physical_devices.end(),
@@ -388,7 +398,7 @@ void Pilot::PVulkanContext::createLogicalDevice()
 
     // physical device features
     VkPhysicalDeviceFeatures physical_device_features = {};
-    
+
     physical_device_features.samplerAnisotropy = VK_TRUE;
 
     // support inefficient readback storage buffer
@@ -460,22 +470,113 @@ void Pilot::PVulkanContext::createCommandPool()
 
 void Pilot::PVulkanContext::createFramebufferImageAndView()
 {
-    PVulkanUtil::createImage(_physical_device,
-                             _device,
-                             _swapchain_extent.width,
-                             _swapchain_extent.height,
-                             _depth_image_format,
-                             VK_IMAGE_TILING_OPTIMAL,
-                             VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                             _depth_image,
-                             _depth_image_memory,
-                             0,
-                             1,
-                             1);
-                             
-    _depth_image_view = PVulkanUtil::createImageView(
-        _device, _depth_image, _depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+    CreateRenderImage2D(std::hash<std::string>()("view depth"),
+                        _depth_image_format,
+                        _swapchain_extent.width,
+                        _swapchain_extent.height,
+                        VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                            VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                        VK_IMAGE_ASPECT_DEPTH_BIT,
+                        1,
+                        1);
+}
+
+VkImageView Pilot::PVulkanContext::GetImageView(size_t imageUniqueId)
+{
+    auto iter = _image_cache.find(imageUniqueId);
+    if (iter == _image_cache.end())
+    {
+        throw std::runtime_error("Image has not been created." + imageUniqueId);
+    }
+    auto& cache = iter->second;
+    if (cache.imageView == VK_NULL_HANDLE)
+    {
+        cache.imageView =
+            PVulkanUtil::createImageView(_device,
+                                         cache.image,
+                                         cache.format,
+                                         cache.aspectFlags,
+                                         (cache.arrayLayouts > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D,
+                                         cache.arrayLayouts,
+                                         cache.mipLevels);
+    }
+    return cache.imageView;
+}
+
+VkImage Pilot::PVulkanContext::GetImage(size_t imageUniqueId)
+{
+    auto iter = _image_cache.find(imageUniqueId);
+    if (iter == _image_cache.end())
+    {
+        throw std::runtime_error("Image has not been created." + imageUniqueId);
+    }
+    auto& cache = iter->second;
+    return cache.image;
+}
+
+void Pilot::PVulkanContext::CreateRenderImage2D(size_t             imageUniqueId,
+                                                VkFormat           format,
+                                                uint32_t           width,
+                                                uint32_t           height,
+                                                VkImageUsageFlags  usageFlags,
+                                                VkImageAspectFlags aspectFlags,
+                                                uint32_t           arrayLayouts,
+                                                uint32_t           mipLevels)
+{
+    auto iter = _image_cache.find(imageUniqueId);
+
+    if (iter == _image_cache.end())
+    {
+        _image_cache.insert(std::make_pair(imageUniqueId, RenderImageCacheVk {}));
+        iter = _image_cache.find(imageUniqueId);
+    }
+    auto& cache = iter->second;
+
+    if (cache.image == VK_NULL_HANDLE || width != cache.width || height != cache.height || format != cache.format ||
+        cache.usageFlags || usageFlags != cache.usageFlags || aspectFlags != cache.aspectFlags ||
+        arrayLayouts != cache.arrayLayouts || mipLevels != cache.mipLevels)
+    {
+        if (cache.image != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(_device, cache.image, nullptr);
+            cache.image = VK_NULL_HANDLE;
+        }
+        if (cache.imageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(_device, cache.imageView, nullptr);
+            cache.imageView = VK_NULL_HANDLE;
+        }
+        PVulkanUtil::createImage(_physical_device,
+                                 _device,
+                                 width,
+                                 height,
+                                 format,
+                                 VK_IMAGE_TILING_OPTIMAL,
+                                 usageFlags,
+                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                 iter->second.image,
+                                 iter->second.deviceMemory,
+                                 0,
+                                 arrayLayouts,
+                                 mipLevels);
+        cache.width        = width;
+        cache.height       = height;
+        cache.format       = format;
+        cache.usageFlags   = usageFlags;
+        cache.aspectFlags  = aspectFlags;
+        cache.arrayLayouts = arrayLayouts;
+        cache.mipLevels    = mipLevels;
+    }
+}
+
+VkFormat Pilot::PVulkanContext::GetImageFormat(size_t imageUniqueId)
+{
+    auto iter = _image_cache.find(imageUniqueId);
+    if (iter == _image_cache.end())
+    {
+        throw std::runtime_error("Image has not been created." + imageUniqueId);
+    }
+    return iter->second.format;
 }
 
 void Pilot::PVulkanContext::createSwapchainImageViews()

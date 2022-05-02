@@ -7,6 +7,9 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include <tuple>
+using std::tuple;
+
 namespace Pilot
 {
     struct PRenderPassHelperInfo
@@ -50,13 +53,6 @@ namespace Pilot
     class PRenderPassBase
     {
     public:
-        struct FrameBufferAttachment
-        {
-            VkImage        image;
-            VkDeviceMemory mem;
-            VkImageView    view;
-            VkFormat       format;
-        };
 
         struct Framebuffer
         {
@@ -64,8 +60,6 @@ namespace Pilot
             int           height;
             VkFramebuffer framebuffer;
             VkRenderPass  render_pass;
-
-            std::vector<FrameBufferAttachment> attachments;
         };
 
         struct Descriptor
@@ -91,7 +85,6 @@ namespace Pilot
         virtual void postInitialize();
 
         virtual VkRenderPass                       getRenderPass();
-        virtual std::vector<VkImageView>           getFramebufferImageViews();
         virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
 
         static PVisiableNodes     m_visiable_nodes;
@@ -99,6 +92,18 @@ namespace Pilot
         static PRenderCommandInfo m_command_info;
 
     protected:
+        void                                         FillShaderStageCreateInfo(VkPipelineShaderStageCreateInfo*  fill,
+                                                          VkDevice                          _device,
+                                                          const std::vector<unsigned char>& vert,
+                                                          const std::vector<unsigned char>& frag);
+        void                                         FillShaderStageCreateInfo(VkPipelineShaderStageCreateInfo*  fill,
+                                                          VkDevice                          _device,
+                                                          const std::vector<unsigned char>& vert,
+                                                          const std::vector<unsigned char>& geom,
+                                                          const std::vector<unsigned char>& frag);
+        void                                         ModuleGC();
+        std::vector<tuple<VkDevice, VkShaderModule>> module_reference;
+
         static PVulkanContext*        m_p_vulkan_context;
         static VkDescriptorPool       m_descriptor_pool;
         static PGlobalRenderResource* m_p_global_render_resource;

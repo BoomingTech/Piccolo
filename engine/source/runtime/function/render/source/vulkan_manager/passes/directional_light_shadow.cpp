@@ -12,7 +12,7 @@ namespace Pilot
 {
     void PDirectionalLightShadowPass::initialize()
     {
-        setupAttachments();
+        createImage();
         setupRenderPass();
         setupFramebuffer();
         setupDescriptorSetLayout();
@@ -23,63 +23,35 @@ namespace Pilot
         setupDescriptorSet();
     }
     void PDirectionalLightShadowPass::draw() { drawModel(); }
-    void PDirectionalLightShadowPass::setupAttachments()
+    void PDirectionalLightShadowPass::createImage()
     {
-        // color and depth
-        _framebuffer.attachments.resize(2);
+        m_p_vulkan_context->CreateRenderImage2D(std::hash<std::string>()("shadow color"),
+                                                VK_FORMAT_R32_SFLOAT,
+                                                m_directional_light_shadow_map_dimension,
+                                                m_directional_light_shadow_map_dimension,
+                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                VK_IMAGE_ASPECT_COLOR_BIT,
+                                                1,
+                                                1);
 
-        // color
-        _framebuffer.attachments[0].format = VK_FORMAT_R32_SFLOAT;
-        PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                 m_p_vulkan_context->_device,
-                                 m_directional_light_shadow_map_dimension,
-                                 m_directional_light_shadow_map_dimension,
-                                 _framebuffer.attachments[0].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[0].image,
-                                 _framebuffer.attachments[0].mem,
-                                 0,
-                                 1,
-                                 1);
-        _framebuffer.attachments[0].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                        _framebuffer.attachments[0].image,
-                                                                        _framebuffer.attachments[0].format,
-                                                                        VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D,
-                                                                        1,
-                                                                        1);
-
-        // depth
-        _framebuffer.attachments[1].format = m_p_vulkan_context->_depth_image_format;
-        PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                 m_p_vulkan_context->_device,
-                                 m_directional_light_shadow_map_dimension,
-                                 m_directional_light_shadow_map_dimension,
-                                 _framebuffer.attachments[1].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[1].image,
-                                 _framebuffer.attachments[1].mem,
-                                 0,
-                                 1,
-                                 1);
-        _framebuffer.attachments[1].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                        _framebuffer.attachments[1].image,
-                                                                        _framebuffer.attachments[1].format,
-                                                                        VK_IMAGE_ASPECT_DEPTH_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D,
-                                                                        1,
-                                                                        1);
+        m_p_vulkan_context->CreateRenderImage2D(std::hash<std::string>()("shadow depth"),
+                                                m_p_vulkan_context->_depth_image_format,
+                                                m_directional_light_shadow_map_dimension,
+                                                m_directional_light_shadow_map_dimension,
+                                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                                    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                                VK_IMAGE_ASPECT_DEPTH_BIT,
+                                                1,
+                                                1);
     }
     void PDirectionalLightShadowPass::setupRenderPass()
     {
+        auto&                   _device        = m_p_vulkan_context->_device;
         VkAttachmentDescription attachments[2] = {};
 
         VkAttachmentDescription& directional_light_shadow_color_attachment_description = attachments[0];
-        directional_light_shadow_color_attachment_description.format         = _framebuffer.attachments[0].format;
+        directional_light_shadow_color_attachment_description.format =
+            m_p_vulkan_context->GetImageFormat(std::hash<std::string>()("shadow color"));
         directional_light_shadow_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         directional_light_shadow_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         directional_light_shadow_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
@@ -89,7 +61,8 @@ namespace Pilot
         directional_light_shadow_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& directional_light_shadow_depth_attachment_description = attachments[1];
-        directional_light_shadow_depth_attachment_description.format         = _framebuffer.attachments[1].format;
+        directional_light_shadow_depth_attachment_description.format =
+            m_p_vulkan_context->GetImageFormat(std::hash<std::string>()("shadow depth"));
         directional_light_shadow_depth_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         directional_light_shadow_depth_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         directional_light_shadow_depth_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -130,42 +103,42 @@ namespace Pilot
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderpass_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        renderpass_create_info.attachmentCount = std::size(attachments);
         renderpass_create_info.pAttachments    = attachments;
-        renderpass_create_info.subpassCount    = (sizeof(subpasses) / sizeof(subpasses[0]));
+        renderpass_create_info.subpassCount    = std::size(subpasses);
         renderpass_create_info.pSubpasses      = subpasses;
-        renderpass_create_info.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));
+        renderpass_create_info.dependencyCount = std::size(dependencies);
         renderpass_create_info.pDependencies   = dependencies;
 
-        if (vkCreateRenderPass(
-                m_p_vulkan_context->_device, &renderpass_create_info, nullptr, &_framebuffer.render_pass) != VK_SUCCESS)
+        if (vkCreateRenderPass(_device, &renderpass_create_info, nullptr, &_framebuffer.render_pass) != VK_SUCCESS)
         {
             throw std::runtime_error("create directional light shadow render pass");
         }
     }
     void PDirectionalLightShadowPass::setupFramebuffer()
     {
-        VkImageView attachments[2] = {_framebuffer.attachments[0].view, _framebuffer.attachments[1].view};
+        auto&       _device        = m_p_vulkan_context->_device;
+        VkImageView attachments[2] = {m_p_vulkan_context->GetImageView(std::hash<std::string>()("shadow color")),
+                                      m_p_vulkan_context->GetImageView(std::hash<std::string>()("shadow depth"))};
 
         VkFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.flags           = 0U;
         framebuffer_create_info.renderPass      = _framebuffer.render_pass;
-        framebuffer_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        framebuffer_create_info.attachmentCount = std::size(attachments);
         framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.width           = m_directional_light_shadow_map_dimension;
         framebuffer_create_info.height          = m_directional_light_shadow_map_dimension;
         framebuffer_create_info.layers          = 1;
 
-        if (vkCreateFramebuffer(
-                m_p_vulkan_context->_device, &framebuffer_create_info, nullptr, &_framebuffer.framebuffer) !=
-            VK_SUCCESS)
+        if (vkCreateFramebuffer(_device, &framebuffer_create_info, nullptr, &_framebuffer.framebuffer) != VK_SUCCESS)
         {
             throw std::runtime_error("create directional light shadow framebuffer");
         }
     }
     void PDirectionalLightShadowPass::setupDescriptorSetLayout()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _descriptor_infos.resize(1);
 
         VkDescriptorSetLayoutBinding mesh_directional_light_shadow_global_layout_bindings[3];
@@ -204,55 +177,37 @@ namespace Pilot
         mesh_point_light_shadow_global_layout_create_info.pNext = NULL;
         mesh_point_light_shadow_global_layout_create_info.flags = 0;
         mesh_point_light_shadow_global_layout_create_info.bindingCount =
-            (sizeof(mesh_directional_light_shadow_global_layout_bindings) /
-             sizeof(mesh_directional_light_shadow_global_layout_bindings[0]));
+            std::size(mesh_directional_light_shadow_global_layout_bindings);
         mesh_point_light_shadow_global_layout_create_info.pBindings =
             mesh_directional_light_shadow_global_layout_bindings;
 
-        if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
-                                                      &mesh_point_light_shadow_global_layout_create_info,
-                                                      NULL,
-                                                      &_descriptor_infos[0].layout))
+        if (VK_SUCCESS !=
+            vkCreateDescriptorSetLayout(
+                _device, &mesh_point_light_shadow_global_layout_create_info, NULL, &_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create mesh directional light shadow global layout");
         }
     }
     void PDirectionalLightShadowPass::setupPipelines()
     {
+        auto& _device = m_p_vulkan_context->_device;
         _render_pipelines.resize(1);
 
         VkDescriptorSetLayout      descriptorset_layouts[] = {_descriptor_infos[0].layout, _per_mesh_layout};
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = (sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]));
+        pipeline_layout_create_info.setLayoutCount = std::size(descriptorset_layouts);
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
-        if (vkCreatePipelineLayout(
-                m_p_vulkan_context->_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) !=
+        if (vkCreatePipelineLayout(_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create mesh directional light shadow pipeline layout");
         }
 
-        VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_DIRECTIONAL_LIGHT_SHADOW_VERT);
-        VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_DIRECTIONAL_LIGHT_SHADOW_FRAG);
-
-        VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-        vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-        vert_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-        frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-        frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+        FillShaderStageCreateInfo(
+            shader_stages, _device, MESH_DIRECTIONAL_LIGHT_SHADOW_VERT, MESH_DIRECTIONAL_LIGHT_SHADOW_FRAG);
 
         auto                                 vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
         auto                                 vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -268,17 +223,12 @@ namespace Pilot
         input_assembly_create_info.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
 
-        VkViewport viewport = {
-            0, 0, m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension, 0.0, 1.0};
-        VkRect2D scissor = {{0, 0},
-                            {m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension}};
-
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &viewport;
+        viewport_state_create_info.pViewports    = NULL;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &scissor;
+        viewport_state_create_info.pScissors     = NULL;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -302,12 +252,6 @@ namespace Pilot
         color_blend_attachment_state.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         color_blend_attachment_state.blendEnable         = VK_FALSE;
-        color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-        color_blend_attachment_state.colorBlendOp        = VK_BLEND_OP_ADD;
-        color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        color_blend_attachment_state.alphaBlendOp        = VK_BLEND_OP_ADD;
 
         VkPipelineColorBlendStateCreateInfo color_blend_state_create_info {};
         color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -328,14 +272,15 @@ namespace Pilot
         depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
         depth_stencil_create_info.stencilTestEnable     = VK_FALSE;
 
+        VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_state_create_info.dynamicStateCount = 0;
-        dynamic_state_create_info.pDynamicStates    = NULL;
+        dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
+        dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount          = (sizeof(shader_stages) / sizeof(shader_stages[0]));
+        pipelineInfo.stageCount          = std::size(shader_stages);
         pipelineInfo.pStages             = shader_stages;
         pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
         pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -350,20 +295,18 @@ namespace Pilot
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-        if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
-                                      VK_NULL_HANDLE,
-                                      1,
-                                      &pipelineInfo,
-                                      nullptr,
-                                      &_render_pipelines[0].pipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(
+                _device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_render_pipelines[0].pipeline) != VK_SUCCESS)
         {
             throw std::runtime_error("create mesh directional light shadow graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
+        ModuleGC();
     }
     void PDirectionalLightShadowPass::setupDescriptorSet()
     {
+        auto&                       _device         = m_p_vulkan_context->_device;
+        auto&                       _storage_buffer = m_p_global_render_resource->_storage_buffer;
         VkDescriptorSetAllocateInfo mesh_directional_light_shadow_global_descriptor_set_alloc_info;
         mesh_directional_light_shadow_global_descriptor_set_alloc_info.sType =
             VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -372,7 +315,7 @@ namespace Pilot
         mesh_directional_light_shadow_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_directional_light_shadow_global_descriptor_set_alloc_info.pSetLayouts = &_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_p_vulkan_context->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(_device,
                                                    &mesh_directional_light_shadow_global_descriptor_set_alloc_info,
                                                    &_descriptor_infos[0].descriptor_set))
         {
@@ -385,28 +328,27 @@ namespace Pilot
         // the range means the size actually used by the shader per draw call
         mesh_directional_light_shadow_perframe_storage_buffer_info.range =
             sizeof(MeshDirectionalLightShadowPerframeStorageBufferObject);
-        mesh_directional_light_shadow_perframe_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        mesh_directional_light_shadow_perframe_storage_buffer_info.buffer = _storage_buffer._global_upload_ringbuffer;
         assert(mesh_directional_light_shadow_perframe_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+               _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo mesh_directional_light_shadow_perdrawcall_storage_buffer_info = {};
         mesh_directional_light_shadow_perdrawcall_storage_buffer_info.offset                 = 0;
         mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range =
             sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
         mesh_directional_light_shadow_perdrawcall_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+            _storage_buffer._global_upload_ringbuffer;
         assert(mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+               _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info = {};
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.offset                 = 0;
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.range =
             sizeof(MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject);
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.buffer =
-            m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+            _storage_buffer._global_upload_ringbuffer;
         assert(mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.range <
-               m_p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+               _storage_buffer._max_storage_buffer_range);
 
         VkDescriptorSet descriptor_set_to_write = _descriptor_infos[0].descriptor_set;
 
@@ -453,14 +395,12 @@ namespace Pilot
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pBufferInfo =
             &mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
-                               descriptor_writes,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(_device, std::size(descriptor_writes), descriptor_writes, 0, NULL);
     }
     void PDirectionalLightShadowPass::drawModel()
     {
+        auto& command_buffer  = m_command_info._current_command_buffer;
+        auto& _storage_buffer = m_p_global_render_resource->_storage_buffer;
         struct PMeshNode
         {
             glm::mat4 model_matrix;
@@ -504,11 +444,11 @@ namespace Pilot
             VkClearValue clear_values[2];
             clear_values[0].color                 = {1.0f};
             clear_values[1].depthStencil          = {1.0f, 0};
-            renderpass_begin_info.clearValueCount = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.clearValueCount = std::size(clear_values);
             renderpass_begin_info.pClearValues    = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
-                m_command_info._current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+                command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
             if (m_render_config._enable_debug_untils_label)
             {
@@ -516,7 +456,7 @@ namespace Pilot
                                                    NULL,
                                                    "Directional Light Shadow",
                                                    {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
             }
         }
 
@@ -527,31 +467,32 @@ namespace Pilot
             {
                 VkDebugUtilsLabelEXT label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Mesh", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
+                m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &label_info);
             }
 
             m_p_vulkan_context->_vkCmdBindPipeline(
-                m_command_info._current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
+                command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
+
+            VkViewport viewport = {
+                0, 0, m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension, 0.0, 1.0};
+            VkRect2D scissor = {{0, 0},
+                                {m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension}};
+            m_p_vulkan_context->_vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+            m_p_vulkan_context->_vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
             // perframe storage buffer
             uint32_t perframe_dynamic_offset =
-                roundUp(m_p_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                        m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-            m_p_global_render_resource->_storage_buffer
-                ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                        _storage_buffer._min_storage_buffer_offset_alignment);
+            _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
                 perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-            assert(m_p_global_render_resource->_storage_buffer
-                       ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                   (m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                    m_p_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+            assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                   (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                    _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
             MeshDirectionalLightShadowPerframeStorageBufferObject& perframe_storage_buffer_object =
                 (*reinterpret_cast<MeshDirectionalLightShadowPerframeStorageBufferObject*>(
-                    reinterpret_cast<uintptr_t>(
-                        m_p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                    reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
                     perframe_dynamic_offset));
             perframe_storage_buffer_object = _mesh_directional_light_shadow_perframe_storage_buffer_object;
 
@@ -562,155 +503,136 @@ namespace Pilot
                 for (auto& [mesh, mesh_nodes] : mesh_instanced)
                 {
                     uint32_t total_instance_count = static_cast<uint32_t>(mesh_nodes.size());
-                    if (total_instance_count > 0)
+                    if (total_instance_count == 0)
                     {
-                        // bind per mesh
-                        m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
-                                                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                                     _render_pipelines[0].layout,
-                                                                     1,
-                                                                     1,
-                                                                     &mesh->mesh_vertex_blending_descriptor_set,
-                                                                     0,
-                                                                     NULL);
+                        continue;
+                    }
+                    // bind per mesh
+                    m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
+                                                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                                 _render_pipelines[0].layout,
+                                                                 1,
+                                                                 1,
+                                                                 &mesh->mesh_vertex_blending_descriptor_set,
+                                                                 0,
+                                                                 NULL);
 
-                        VkBuffer     vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
-                        VkDeviceSize offsets[]        = {0};
-                        m_p_vulkan_context->_vkCmdBindVertexBuffers(
-                            m_command_info._current_command_buffer, 0, 1, vertex_buffers, offsets);
-                        m_p_vulkan_context->_vkCmdBindIndexBuffer(
-                            m_command_info._current_command_buffer, mesh->mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+                    VkBuffer     vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
+                    VkDeviceSize offsets[]        = {0};
+                    m_p_vulkan_context->_vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+                    m_p_vulkan_context->_vkCmdBindIndexBuffer(
+                        command_buffer, mesh->mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
-                        uint32_t drawcall_max_instance_count =
-                            (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
-                             sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
-                        uint32_t drawcall_count =
-                            roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
+                    uint32_t drawcall_max_instance_count =
+                        (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
+                         sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
+                    uint32_t drawcall_count =
+                        roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
-                        for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
+                    for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
+                    {
+                        uint32_t current_instance_count =
+                            ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
+                             drawcall_max_instance_count) ?
+                                (total_instance_count - drawcall_max_instance_count * drawcall_index) :
+                                drawcall_max_instance_count;
+
+                        // perdrawcall storage buffer
+                        uint32_t perdrawcall_dynamic_offset =
+                            roundUp(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                    _storage_buffer._min_storage_buffer_offset_alignment);
+                        _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                            perdrawcall_dynamic_offset +
+                            sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
+                        assert(_storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                               (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                                _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+
+                        MeshDirectionalLightShadowPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
+                            (*reinterpret_cast<MeshDirectionalLightShadowPerdrawcallStorageBufferObject*>(
+                                reinterpret_cast<uintptr_t>(_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                perdrawcall_dynamic_offset));
+                        for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
-                            uint32_t current_instance_count =
-                                ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                                 drawcall_max_instance_count) ?
-                                    (total_instance_count - drawcall_max_instance_count * drawcall_index) :
-                                    drawcall_max_instance_count;
+                            perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
+                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
+                            perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
+                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending ?
+                                    1.0 :
+                                    -1.0;
+                        }
 
-                            // perdrawcall storage buffer
-                            uint32_t perdrawcall_dynamic_offset = roundUp(
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            m_p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                                perdrawcall_dynamic_offset +
-                                sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
-                            assert(m_p_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                                   (m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                    m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
+                        // per drawcall vertex blending storage buffer
+                        uint32_t per_drawcall_vertex_blending_dynamic_offset;
+                        bool     least_one_enable_vertex_blending = true;
+                        for (uint32_t i = 0; i < current_instance_count; ++i)
+                        {
+                            if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
+                            {
+                                least_one_enable_vertex_blending = false;
+                                break;
+                            }
+                        }
+                        if (least_one_enable_vertex_blending)
+                        {
+                            per_drawcall_vertex_blending_dynamic_offset = roundUp(
+                                _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index],
+                                _storage_buffer._min_storage_buffer_offset_alignment);
+                            _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
+                                per_drawcall_vertex_blending_dynamic_offset +
+                                sizeof(MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject);
+                            assert(
+                                _storage_buffer._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
+                                (_storage_buffer._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
+                                 _storage_buffer._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
 
-                            MeshDirectionalLightShadowPerdrawcallStorageBufferObject&
-                                perdrawcall_storage_buffer_object =
-                                    (*reinterpret_cast<MeshDirectionalLightShadowPerdrawcallStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                        ._global_upload_ringbuffer_memory_pointer) +
-                                        perdrawcall_dynamic_offset));
+                            MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject&
+                                per_drawcall_vertex_blending_storage_buffer_object =
+                                    (*reinterpret_cast<
+                                        MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject*>(
+                                        reinterpret_cast<uintptr_t>(
+                                            _storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                        per_drawcall_vertex_blending_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                                perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                            .enable_vertex_blending ?
-                                        1.0 :
-                                        -1.0;
-                            }
-
-                            // per drawcall vertex blending storage buffer
-                            uint32_t per_drawcall_vertex_blending_dynamic_offset;
-                            bool     least_one_enable_vertex_blending = true;
-                            for (uint32_t i = 0; i < current_instance_count; ++i)
-                            {
-                                if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                         .enable_vertex_blending)
+                                if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].enable_vertex_blending)
                                 {
-                                    least_one_enable_vertex_blending = false;
-                                    break;
-                                }
-                            }
-                            if (least_one_enable_vertex_blending)
-                            {
-                                per_drawcall_vertex_blending_dynamic_offset = roundUp(
-                                    m_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_command_info._current_frame_index],
-                                    m_p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                                m_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_command_info._current_frame_index] =
-                                    per_drawcall_vertex_blending_dynamic_offset +
-                                    sizeof(MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject);
-                                assert(m_p_global_render_resource->_storage_buffer
-                                           ._global_upload_ringbuffers_end[m_command_info._current_frame_index] <=
-                                       (m_p_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_begin[m_command_info._current_frame_index] +
-                                        m_p_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_size[m_command_info._current_frame_index]));
-
-                                MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject&
-                                    per_drawcall_vertex_blending_storage_buffer_object =
-                                        (*reinterpret_cast<
-                                            MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject*>(
-                                            reinterpret_cast<uintptr_t>(m_p_global_render_resource->_storage_buffer
-                                                                            ._global_upload_ringbuffer_memory_pointer) +
-                                            per_drawcall_vertex_blending_dynamic_offset));
-                                for (uint32_t i = 0; i < current_instance_count; ++i)
-                                {
-                                    if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                            .enable_vertex_blending)
+                                    for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
                                     {
-                                        for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
-                                        {
-                                            per_drawcall_vertex_blending_storage_buffer_object
-                                                .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                    .joint_matrices[j];
-                                        }
+                                        per_drawcall_vertex_blending_storage_buffer_object
+                                            .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
+                                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
+                                                .joint_matrices[j];
                                     }
                                 }
                             }
-                            else
-                            {
-                                per_drawcall_vertex_blending_dynamic_offset = 0;
-                            }
-
-                            // bind perdrawcall
-                            uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
-                                                           perdrawcall_dynamic_offset,
-                                                           per_drawcall_vertex_blending_dynamic_offset};
-                            m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                                m_command_info._current_command_buffer,
-                                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                _render_pipelines[0].layout,
-                                0,
-                                1,
-                                &_descriptor_infos[0].descriptor_set,
-                                (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
-                                dynamic_offsets);
-                            m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
-                                                                  mesh->mesh_index_count,
-                                                                  current_instance_count,
-                                                                  0,
-                                                                  0,
-                                                                  0);
                         }
+                        else
+                        {
+                            per_drawcall_vertex_blending_dynamic_offset = 0;
+                        }
+
+                        // bind perdrawcall
+                        uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
+                                                       perdrawcall_dynamic_offset,
+                                                       per_drawcall_vertex_blending_dynamic_offset};
+                        m_p_vulkan_context->_vkCmdBindDescriptorSets(command_buffer,
+                                                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                                     _render_pipelines[0].layout,
+                                                                     0,
+                                                                     1,
+                                                                     &_descriptor_infos[0].descriptor_set,
+                                                                     std::size(dynamic_offsets),
+                                                                     dynamic_offsets);
+                        m_p_vulkan_context->_vkCmdDrawIndexed(
+                            command_buffer, mesh->mesh_index_count, current_instance_count, 0, 0, 0);
                     }
                 }
             }
 
             if (m_render_config._enable_debug_untils_label)
             {
-                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
             }
         }
 
@@ -718,10 +640,10 @@ namespace Pilot
         {
             if (m_render_config._enable_debug_untils_label)
             {
-                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
+                m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(command_buffer);
             }
 
-            m_p_vulkan_context->_vkCmdEndRenderPass(m_command_info._current_command_buffer);
+            m_p_vulkan_context->_vkCmdEndRenderPass(command_buffer);
         }
     }
 } // namespace Pilot

@@ -14,11 +14,6 @@ bool Pilot::PVulkanManager::initializeRenderPass()
     m_point_light_shadow_pass.initialize();
     m_directional_light_shadow_pass.initialize();
 
-    PLightPassHelperInfo light_pass_helper_info {};
-    light_pass_helper_info.point_light_shadow_color_image_view = m_point_light_shadow_pass.getFramebufferImageViews()[0];
-    light_pass_helper_info.directional_light_shadow_color_image_view =
-        m_directional_light_shadow_pass._framebuffer.attachments[0].view;
-    m_main_camera_pass.setHelperInfo(light_pass_helper_info);
     m_main_camera_pass.initialize();
 
     auto descriptor_layouts = m_main_camera_pass.getDescriptorSetLayouts();
@@ -29,13 +24,17 @@ bool Pilot::PVulkanManager::initializeRenderPass()
     m_point_light_shadow_pass.postInitialize();
     m_directional_light_shadow_pass.postInitialize();
 
-    m_tone_mapping_pass.initialize(m_main_camera_pass.getRenderPass(), m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd]);
-
-    m_color_grading_pass.initialize(m_main_camera_pass.getRenderPass(), m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
+    //m_tone_mapping_pass.initialize(m_main_camera_pass.getRenderPass(), m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd]);
+    //m_color_grading_pass.initialize(m_main_camera_pass.getRenderPass(), m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
+    m_tone_mapping_pass.initialize(m_main_camera_pass.getRenderPass());
+    m_color_grading_pass.initialize(m_main_camera_pass.getRenderPass());
 
     m_ui_pass.initialize(m_main_camera_pass.getRenderPass());
 
-    m_combine_ui_pass.initialize(m_main_camera_pass.getRenderPass(), m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd], m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
+    m_combine_ui_pass.initialize(
+        m_main_camera_pass.getRenderPass(),
+        m_vulkan_context.GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd)),
+        m_vulkan_context.GetImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even)));
 
     m_mouse_pick_pass._per_mesh_layout = descriptor_layouts[PMainCameraPass::LayoutType::_per_mesh];
     m_mouse_pick_pass.initialize();

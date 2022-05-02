@@ -16,7 +16,7 @@ namespace Pilot
             _mesh_directional_light_shadow_perframe_storage_buffer_object;
 
     private:
-        void setupAttachments();
+        void createImage();
         void setupRenderPass();
         void setupFramebuffer();
         void setupDescriptorSetLayout();
