@@ -70,39 +70,39 @@ namespace Pilot
         }
     } // namespace
 
-    std::shared_ptr<Pilot::AnimationClip> AnimationLoader::loadAnimationClipData(std::string animation_clip_path)
+    std::shared_ptr<Pilot::AnimationClip> AnimationLoader::loadAnimationClipData(std::string animation_clip_url)
     {
         AssetManager& asset_manager = AssetManager::getInstance();
 
         AnimationAsset animation_clip;
-        asset_manager.loadAsset(asset_manager.getFullPath(animation_clip_path), animation_clip);
+        asset_manager.loadAsset(animation_clip_url, animation_clip);
         return std::make_shared<Pilot::AnimationClip>(animation_clip.clip_data);
     }
 
-    std::shared_ptr<Pilot::SkeletonData> AnimationLoader::loadSkeletonData(std::string skeleton_data_path)
+    std::shared_ptr<Pilot::SkeletonData> AnimationLoader::loadSkeletonData(std::string skeleton_data_url)
     {
         AssetManager& asset_manager = AssetManager::getInstance();
 
         SkeletonData data;
-        asset_manager.loadAsset(asset_manager.getFullPath(skeleton_data_path), data);
+        asset_manager.loadAsset(skeleton_data_url, data);
         return std::make_shared<Pilot::SkeletonData>(data);
     }
 
-    std::shared_ptr<Pilot::AnimSkelMap> AnimationLoader::loadAnimSkelMap(std::string anim_skel_map_path)
+    std::shared_ptr<Pilot::AnimSkelMap> AnimationLoader::loadAnimSkelMap(std::string anim_skel_map_url)
     {
         AssetManager& asset_manager = AssetManager::getInstance();
 
         AnimSkelMap data;
-        asset_manager.loadAsset(asset_manager.getFullPath(anim_skel_map_path), data);
+        asset_manager.loadAsset(anim_skel_map_url, data);
         return std::make_shared<Pilot::AnimSkelMap>(data);
     }
 
-    std::shared_ptr<Pilot::BoneBlendMask> AnimationLoader::loadSkeletonMask(std::string skeleton_mask_file_path)
+    std::shared_ptr<Pilot::BoneBlendMask> AnimationLoader::loadSkeletonMask(std::string skeleton_mask_file_url)
     {
         AssetManager& asset_manager = AssetManager::getInstance();
 
         BoneBlendMask data;
-        asset_manager.loadAsset(asset_manager.getFullPath(skeleton_mask_file_path), data);
+        asset_manager.loadAsset(skeleton_mask_file_url, data);
         return std::make_shared<Pilot::BoneBlendMask>(data);
     }
 

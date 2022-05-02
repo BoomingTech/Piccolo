@@ -85,13 +85,6 @@ namespace Pilot
         GameObjectDesc(size_t go_id, const std::vector<GameObjectComponentDesc>& components) :
             m_go_id(go_id), m_components(components)
         {}
-        GameObjectDesc(const GameObjectDesc& t) { *this = t; }
-        GameObjectDesc& operator=(const GameObjectDesc& t)
-        {
-            m_go_id      = t.m_go_id;
-            m_components = t.m_components;
-            return *this;
-        }
 
         size_t                                      getId() const { return m_go_id; }
         const std::vector<GameObjectComponentDesc>& getComponents() const { return m_components; }

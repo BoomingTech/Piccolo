@@ -49,9 +49,9 @@ namespace Pilot
         clearForces();
     }
 
-    PhysicsActor* PhysicsSystem::createPhysicsActor(GObject*                 gobject,
-                                                    const Transform&         global_transform,
-                                                    const RigidBodyActorRes& rigid_body_actor_res)
+    PhysicsActor* PhysicsSystem::createPhysicsActor(GObject*                     gobject,
+                                                    const Transform&             global_transform,
+                                                    const RigidBodyComponentRes& rigid_body_actor_res)
     {
         PhysicsActor* actor = new PhysicsActor(gobject, global_transform);
 

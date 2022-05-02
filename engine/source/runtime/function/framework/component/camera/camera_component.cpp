@@ -3,7 +3,6 @@
 #include "runtime/core/base/macro.h"
 #include "runtime/core/math/math_headers.h"
 
-#include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/level/level.h"
@@ -15,44 +14,32 @@
 
 namespace Pilot
 {
-    CameraComponent::CameraComponent(const CameraComponentRes& camera_param, GObject* parent_object) :
-        Component {parent_object}, m_camera_param {camera_param}
+    CameraComponent::CameraComponent(const CameraComponentRes& camera_res, GObject* parent_object) :
+        Component(parent_object), m_camera_res(camera_res)
     {
-        const std::string& camera_type_name = camera_param.m_parameter.getTypeName();
+        const std::string& camera_type_name = camera_res.m_parameter.getTypeName();
         if (camera_type_name == "FirstPersonCameraParameter")
         {
-            m_camera_mode              = CameraMode::first_person;
-            m_camera_param.m_parameter = PILOT_REFLECTION_NEW(FirstPersonCameraParameter);
-            *static_cast<FirstPersonCameraParameter*>(m_camera_param.m_parameter) =
-                *static_cast<FirstPersonCameraParameter*>(camera_param.m_parameter.operator->());
+            m_camera_mode = CameraMode::first_person;
         }
         else if (camera_type_name == "ThirdPersonCameraParameter")
         {
-            m_camera_mode              = CameraMode::third_person;
-            m_camera_param.m_parameter = PILOT_REFLECTION_NEW(ThirdPersonCameraParameter);
-            *static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter) =
-                *static_cast<ThirdPersonCameraParameter*>(camera_param.m_parameter.operator->());
+            m_camera_mode = CameraMode::third_person;
         }
         else if (camera_type_name == "FreeCameraParameter")
         {
-            m_camera_mode              = CameraMode::free;
-            m_camera_param.m_parameter = PILOT_REFLECTION_NEW(FreeCameraParameter);
-            *static_cast<FreeCameraParameter*>(m_camera_param.m_parameter) =
-                *static_cast<FreeCameraParameter*>(camera_param.m_parameter.operator->());
+            m_camera_mode = CameraMode::free;
         }
         else
         {
             LOG_ERROR("invalid camera type");
         }
 
-        SceneManager::getInstance().setFOV(camera_param.m_parameter->m_fov);
+        SceneManager::getInstance().setFOV(camera_res.m_parameter->m_fov);
     }
 
     void CameraComponent::tick(float delta_time)
     {
-        if (g_is_editor_mode)
-            return;
-
         Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
         Character* current_character = current_level->getCurrentActiveCharacter();
         if (current_character == nullptr)
@@ -88,7 +75,7 @@ namespace Pilot
         q_yaw.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_yaw, Vector3::UNIT_Z);
         q_pitch.fromAngleAxis(InputSystem::getInstance().m_cursor_delta_pitch, m_left);
 
-        const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_param.m_parameter)->m_vertical_offset;
+        const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
         Vector3     eye_pos = current_character->getPosition() + offset * Vector3::UNIT_Z;
 
         m_foward = q_yaw * q_pitch * m_foward;
@@ -112,7 +99,7 @@ namespace Pilot
         if (current_character == nullptr)
             return;
 
-        ThirdPersonCameraParameter* param = static_cast<ThirdPersonCameraParameter*>(m_camera_param.m_parameter);
+        ThirdPersonCameraParameter* param = static_cast<ThirdPersonCameraParameter*>(m_camera_res.m_parameter);
 
         Quaternion q_yaw, q_pitch;
 
