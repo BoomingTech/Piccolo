@@ -61,5 +61,10 @@ namespace Pilot
         Color            m_ambient_light;
         CameraConfig     m_camera_config;
         DirectionalLight m_directional_light;
+
+        float m_image_block_glitch_speed;
+        float m_image_block_glitch_size;
+    
+    
     };
 } // namespace Pilot

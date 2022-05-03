@@ -64,5 +64,6 @@
       "b": 1.0
     }
   },
-  "brightness": 0.5
+  "image_block_glitch_speed": 10.0,
+  "image_block_glitch_size": 8.0
 }
