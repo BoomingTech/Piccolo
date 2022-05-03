@@ -8,24 +8,27 @@
 #include <chrono>
 
 #include <post_process_vert.h>
-#include <analog_glitch_frag.h>
+#include <brightness_frag.h>
+
 
 namespace Pilot
 {
-    void PAnalogGlitchPass::initialize(VkRenderPass render_pass, VkImageView input_attachment) 
+    void PBrightnessPass::initialize(VkRenderPass render_pass, VkImageView input_attachment) 
     {
+        auto now = std::chrono::system_clock::now().time_since_epoch();
+        m_starttime = now.count();
         _framebuffer.render_pass = render_pass;
         setupDescriptorSetLayout();
         setupPipelines();
         setupDescriptorSet();
         updateAfterFramebufferRecreate(input_attachment);
     }
-    void PAnalogGlitchPass::draw() 
+    void PBrightnessPass::draw() 
     {
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Color Grading", {1.0f, 1.0f, 1.0f, 1.0f}};
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Analog Glitch", {1.0f, 1.0f, 1.0f, 1.0f}};
             m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
         }
         m_p_vulkan_context->_vkCmdBindPipeline(
@@ -41,12 +44,9 @@ namespace Pilot
                                                      0,
                                                      NULL);
 
-        auto  now               = std::chrono::system_clock::now().time_since_epoch();
-        float push_constants[4] = {now.count(),
-                                   m_p_global_render_resource->_glitch_constant.speed,
-                                   m_p_global_render_resource->_glitch_constant.fading,
-                                   m_p_global_render_resource->_glitch_constant.jitter_threshold};
-        vkCmdPushConstants(m_command_info._current_command_buffer, _render_pipelines[0].layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(push_constants), push_constants);
+        float push_constant = m_p_global_render_resource->_brightness_constant.brightness;
+        vkCmdPushConstants(m_command_info._current_command_buffer, _render_pipelines[0].layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(push_constant), &push_constant);
+
         vkCmdDraw(m_command_info._current_command_buffer, 3, 1, 0, 0);
 
         if (m_render_config._enable_debug_untils_label)
@@ -54,7 +54,7 @@ namespace Pilot
             m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
         }
     }
-    void PAnalogGlitchPass::updateAfterFramebufferRecreate(VkImageView input_attachment) 
+    void PBrightnessPass::updateAfterFramebufferRecreate(VkImageView input_attachment) 
     {
         VkDescriptorImageInfo post_process_per_frame_input_attachment_info = {};
         post_process_per_frame_input_attachment_info.sampler =
@@ -79,7 +79,7 @@ namespace Pilot
                                0,
                                NULL);
     }
-    void PAnalogGlitchPass::setupDescriptorSetLayout() 
+    void PBrightnessPass::setupDescriptorSetLayout() 
     {
         _descriptor_infos.resize(1);
         VkDescriptorSetLayoutBinding post_process_global_layout_bindings[1] = {};
@@ -105,12 +105,12 @@ namespace Pilot
         }
     }
 
-    void PAnalogGlitchPass::setupPipelines() 
+    void PBrightnessPass::setupPipelines() 
     {
         VkPushConstantRange range;
         range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         range.offset     = 0;
-        range.size       = sizeof(float) * 4;
+        range.size       = sizeof(float);
 
         _render_pipelines.resize(1);
 
@@ -130,7 +130,7 @@ namespace Pilot
         VkShaderModule vert_shader_module =
             PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, POST_PROCESS_VERT);
         VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, ANALOG_GLITCH_FRAG);
+            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, BRIGHTNESS_FRAG);
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
@@ -220,7 +220,7 @@ namespace Pilot
         pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
         pipelineInfo.layout              = _render_pipelines[0].layout;
         pipelineInfo.renderPass          = _framebuffer.render_pass;
-        pipelineInfo.subpass             = _main_camera_subpass_analog_glitch;
+        pipelineInfo.subpass             = _main_camera_subpass_brightness;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
         if (vkCreateGraphicsPipelines(m_p_vulkan_context->_device,
@@ -235,7 +235,7 @@ namespace Pilot
         vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
         vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
     }
-    void PAnalogGlitchPass::setupDescriptorSet() 
+    void PBrightnessPass::setupDescriptorSet() 
     {
         VkDescriptorSetAllocateInfo post_process_global_descriptor_set_alloc_info;
         post_process_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

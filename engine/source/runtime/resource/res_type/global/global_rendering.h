@@ -62,9 +62,7 @@ namespace Pilot
         CameraConfig     m_camera_config;
         DirectionalLight m_directional_light;
 
-        float m_analog_glitch_speed;
-        float m_analog_glitch_fading;
-        float m_analog_glitch_jitter_threshold;
+        float m_brightnes;
     
     };
 } // namespace Pilot
