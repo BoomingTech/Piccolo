@@ -6,8 +6,9 @@ int Pilot::PVulkanManager::initialize(GLFWwindow* window, class Scene& scene, Pi
 
     m_global_render_resource.initialize(m_vulkan_context, m_max_frames_in_flight);
 
-    m_global_render_resource._glitch_constant.speed = scene.m_image_block_glitch_speed;
-    m_global_render_resource._glitch_constant.size  = scene.m_image_block_glitch_size;
+    m_global_render_resource._glitch_constant.speed  = scene.m_analog_glitch_speed;
+    m_global_render_resource._glitch_constant.fading = scene.m_analog_glitch_fading;
+    m_global_render_resource._glitch_constant.jitter_threshold = scene.m_analog_glitch_jitter_threshold;
 
 
     PRenderPassBase::m_render_config._enable_debug_untils_label = m_enable_debug_utils_label;

@@ -64,6 +64,7 @@
       "b": 1.0
     }
   },
-  "image_block_glitch_speed": 10.0,
-  "image_block_glitch_size": 8.0
+  "analog_glitch_speed": 0.102,
+  "analog_glitch_fading": 1,
+  "analog_glitch_jitter_threshold": 0.595
 }

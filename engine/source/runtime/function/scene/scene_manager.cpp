@@ -871,8 +871,9 @@ namespace Pilot
             m_scene->m_directional_light.m_color     = global_res.m_directional_light.m_color.toVector3();
 
 
-            m_scene->m_image_block_glitch_speed = global_res.m_image_block_glitch_speed;
-            m_scene->m_image_block_glitch_size  = global_res.m_image_block_glitch_size;
+            m_scene->m_analog_glitch_speed = global_res.m_analog_glitch_speed;
+            m_scene->m_analog_glitch_fading = global_res.m_analog_glitch_fading;
+            m_scene->m_analog_glitch_jitter_threshold = global_res.m_analog_glitch_jitter_threshold;
             m_scene->m_loaded = true;
         }
     }

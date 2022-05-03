@@ -55,7 +55,7 @@ namespace Pilot
         void setupDescriptorSet();
     };
 
-    class PImageBlockGlitchPass : public PRenderPassBase
+    class PAnalogGlitchPass : public PRenderPassBase
     {
     public:
         void initialize(VkRenderPass render_pass, VkImageView input_attachment);
@@ -119,7 +119,7 @@ namespace Pilot
         _main_camera_subpass_forward_lighting,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
-        _main_camera_subpass_image_block_glitch,
+        _main_camera_subpass_analog_glitch,
         _main_camera_subpass_ui,
         _main_camera_subpass_combine_ui,
         _main_camera_subpass_count
@@ -166,7 +166,7 @@ namespace Pilot
 
         void draw(PColorGradingPass& color_grading_pass,
                   PToneMappingPass&  tone_mapping_pass,
-                  PImageBlockGlitchPass& image_block_glitch_pass,
+                  PAnalogGlitchPass& image_block_glitch_pass,
                   PUIPass&           ui_pass,
                   PCombineUIPass&    combine_ui_pass,
                   uint32_t           current_swapchain_image_index,

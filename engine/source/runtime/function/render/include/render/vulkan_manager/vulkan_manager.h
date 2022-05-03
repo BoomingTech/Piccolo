@@ -119,7 +119,7 @@ namespace Pilot
         PMainCameraPass             m_main_camera_pass;
         PColorGradingPass           m_color_grading_pass;
         PToneMappingPass            m_tone_mapping_pass;
-        PImageBlockGlitchPass       m_image_block_glitch_pass;
+        PAnalogGlitchPass       m_analog_glitch_pass;
         PUIPass                     m_ui_pass;
         PCombineUIPass              m_combine_ui_pass;
         PPickPass                   m_mouse_pick_pass;
