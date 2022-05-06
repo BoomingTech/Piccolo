@@ -14,7 +14,7 @@ namespace Pilot
 {
     void PPointLightShadowPass::initialize()
     {
-        setupAttachments();
+        createImage();
         setupRenderPass();
         setupFramebuffer();
         setupDescriptorSetLayout();
@@ -40,63 +40,34 @@ namespace Pilot
             m_p_vulkan_context->_vkCmdEndDebugUtilsLabelEXT(m_command_info._current_command_buffer);
         }
     }
-    void PPointLightShadowPass::setupAttachments()
+    void PPointLightShadowPass::createImage()
     {
-        // color and depth
-        _framebuffer.attachments.resize(2);
+        m_p_vulkan_context->createRenderImage2D(std::hash<std::string>()("point shadow color"),
+                                                VK_FORMAT_R32_SFLOAT,
+                                                m_point_light_shadow_map_dimension,
+                                                m_point_light_shadow_map_dimension,
+                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                VK_IMAGE_ASPECT_COLOR_BIT,
+                                                2 * m_max_point_light_count,
+                                                1);
 
-        // color
-        _framebuffer.attachments[0].format = VK_FORMAT_R32_SFLOAT;
-        PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                 m_p_vulkan_context->_device,
-                                 m_point_light_shadow_map_dimension,
-                                 m_point_light_shadow_map_dimension,
-                                 _framebuffer.attachments[0].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[0].image,
-                                 _framebuffer.attachments[0].mem,
-                                 0,
-                                 2 * m_max_point_light_count,
-                                 1);
-        _framebuffer.attachments[0].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                        _framebuffer.attachments[0].image,
-                                                                        _framebuffer.attachments[0].format,
-                                                                        VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-                                                                        2 * m_max_point_light_count,
-                                                                        1);
-
-        // depth
-        _framebuffer.attachments[1].format = m_p_vulkan_context->_depth_image_format;
-        PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                 m_p_vulkan_context->_device,
-                                 m_point_light_shadow_map_dimension,
-                                 m_point_light_shadow_map_dimension,
-                                 _framebuffer.attachments[1].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[1].image,
-                                 _framebuffer.attachments[1].mem,
-                                 0,
-                                 2 * m_max_point_light_count,
-                                 1);
-        _framebuffer.attachments[1].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                        _framebuffer.attachments[1].image,
-                                                                        _framebuffer.attachments[1].format,
-                                                                        VK_IMAGE_ASPECT_DEPTH_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-                                                                        2 * m_max_point_light_count,
-                                                                        1);
+        m_p_vulkan_context->createRenderImage2D(std::hash<std::string>()("point shadow depth"),
+                                                m_p_vulkan_context->_depth_image_format,
+                                                m_point_light_shadow_map_dimension,
+                                                m_point_light_shadow_map_dimension,
+                                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                                    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                                VK_IMAGE_ASPECT_DEPTH_BIT,
+                                                2 * m_max_point_light_count,
+                                                1);
     }
     void PPointLightShadowPass::setupRenderPass()
     {
         VkAttachmentDescription attachments[2] = {};
 
         VkAttachmentDescription& point_light_shadow_color_attachment_description = attachments[0];
-        point_light_shadow_color_attachment_description.format                   = _framebuffer.attachments[0].format;
+        point_light_shadow_color_attachment_description.format =
+            m_p_vulkan_context->getImageFormat(std::hash<std::string>()("point shadow color"));
         point_light_shadow_color_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
         point_light_shadow_color_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
         point_light_shadow_color_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_STORE;
@@ -106,7 +77,8 @@ namespace Pilot
         point_light_shadow_color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& point_light_shadow_depth_attachment_description = attachments[1];
-        point_light_shadow_depth_attachment_description.format                   = _framebuffer.attachments[1].format;
+        point_light_shadow_depth_attachment_description.format =
+            m_p_vulkan_context->getImageFormat(std::hash<std::string>()("point shadow depth"));
         point_light_shadow_depth_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
         point_light_shadow_depth_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
         point_light_shadow_depth_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -161,7 +133,8 @@ namespace Pilot
     }
     void PPointLightShadowPass::setupFramebuffer()
     {
-        VkImageView attachments[2] = {_framebuffer.attachments[0].view, _framebuffer.attachments[1].view};
+        VkImageView attachments[2] = {m_p_vulkan_context->getImageView(std::hash<std::string>()("point shadow color")),
+                                      m_p_vulkan_context->getImageView(std::hash<std::string>()("point shadow depth"))};
 
         VkFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -251,34 +224,12 @@ namespace Pilot
             throw std::runtime_error("create mesh point light shadow pipeline layout");
         }
 
-        VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_POINT_LIGHT_SHADOW_VERT);
-        VkShaderModule geom_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_POINT_LIGHT_SHADOW_GEOM);
-        VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_POINT_LIGHT_SHADOW_FRAG);
-
-        VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-        vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-        vert_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo geom_pipeline_shader_stage_create_info {};
-        geom_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        geom_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_GEOMETRY_BIT;
-        geom_pipeline_shader_stage_create_info.module = geom_shader_module;
-        geom_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-        frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-        frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           geom_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        VkPipelineShaderStageCreateInfo shader_stages[3] = {};
+        FillShaderStageCreateInfo(shader_stages,
+                                  m_p_vulkan_context->_device,
+                                  MESH_POINT_LIGHT_SHADOW_VERT,
+                                  MESH_POINT_LIGHT_SHADOW_GEOM,
+                                  MESH_POINT_LIGHT_SHADOW_FRAG);
 
         auto                                 vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
         auto                                 vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -294,15 +245,12 @@ namespace Pilot
         input_assembly_create_info.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
 
-        VkViewport viewport = {0, 0, m_point_light_shadow_map_dimension, m_point_light_shadow_map_dimension, 0.0, 1.0};
-        VkRect2D   scissor  = {{0, 0}, {m_point_light_shadow_map_dimension, m_point_light_shadow_map_dimension}};
-
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_command_info._viewport;
+        viewport_state_create_info.pViewports    = NULL;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_command_info._scissor;
+        viewport_state_create_info.pScissors     = NULL;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -353,10 +301,11 @@ namespace Pilot
         depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
         depth_stencil_create_info.stencilTestEnable     = VK_FALSE;
 
+        VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_state_create_info.dynamicStateCount = 0;
-        dynamic_state_create_info.pDynamicStates    = NULL;
+        dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
+        dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -385,9 +334,7 @@ namespace Pilot
             throw std::runtime_error("create mesh point light shadow graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_p_vulkan_context->_device, geom_shader_module, nullptr);
-        vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
+        ModuleGC();
     }
     void PPointLightShadowPass::setupDescriptorSet()
     {
@@ -541,6 +488,12 @@ namespace Pilot
 
             m_p_vulkan_context->_vkCmdBindPipeline(
                 m_command_info._current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
+
+            VkViewport viewport = {
+                0, 0, m_point_light_shadow_map_dimension, m_point_light_shadow_map_dimension, 0.0, 1.0};
+            VkRect2D scissor = {{0, 0}, {m_point_light_shadow_map_dimension, m_point_light_shadow_map_dimension}};
+            m_p_vulkan_context->_vkCmdSetViewport(m_command_info._current_command_buffer, 0, 1, &viewport);
+            m_p_vulkan_context->_vkCmdSetScissor(m_command_info._current_command_buffer, 0, 1, &scissor);
 
             // perframe storage buffer
             uint32_t perframe_dynamic_offset =

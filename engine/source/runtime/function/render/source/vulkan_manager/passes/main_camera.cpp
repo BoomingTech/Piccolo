@@ -24,7 +24,7 @@ namespace Pilot
     void PMainCameraPass::initialize()
     {
         PRenderPassBase::initialize();
-        setupAttachments();
+        createImage();
         setupRenderPass();
         setupDescriptorSetLayout();
         setupPipelines();
@@ -33,46 +33,27 @@ namespace Pilot
         setupSwapchainFramebuffers();
     }
 
-    void PMainCameraPass::setHelperInfo(const PLightPassHelperInfo& helper_info)
+    void PMainCameraPass::createImage()
     {
-        m_point_light_shadow_color_image_view       = helper_info.point_light_shadow_color_image_view;
-        m_directional_light_shadow_color_image_view = helper_info.directional_light_shadow_color_image_view;
-    }
-
-    void PMainCameraPass::setupAttachments()
-    {
-        _framebuffer.attachments.resize(_main_camera_pass_custom_attachment_count);
-
-        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format          = VK_FORMAT_R8G8B8A8_SRGB;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-
+        VkFormat formats[] = {
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+        };
         for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
         {
-            PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                     m_p_vulkan_context->_device,
-                                     m_p_vulkan_context->_swapchain_extent.width,
-                                     m_p_vulkan_context->_swapchain_extent.height,
-                                     _framebuffer.attachments[i].format,
-                                     VK_IMAGE_TILING_OPTIMAL,
-                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
-                                         VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                     _framebuffer.attachments[i].image,
-                                     _framebuffer.attachments[i].mem,
-                                     0,
-                                     1,
-                                     1);
-
-            _framebuffer.attachments[i].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                            _framebuffer.attachments[i].image,
-                                                                            _framebuffer.attachments[i].format,
-                                                                            VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                            VK_IMAGE_VIEW_TYPE_2D,
-                                                                            1,
-                                                                            1);
+            m_p_vulkan_context->createRenderImage2D(std::hash<_main_camera_pass_buffer>()((_main_camera_pass_buffer)i),
+                                                    formats[i],
+                                                    m_p_vulkan_context->_swapchain_extent.width,
+                                                    m_p_vulkan_context->_swapchain_extent.height,
+                                                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                                        VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+                                                        VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                                    VK_IMAGE_ASPECT_COLOR_BIT,
+                                                    1,
+                                                    1);
         }
     }
 
@@ -81,19 +62,19 @@ namespace Pilot
         VkAttachmentDescription attachments[_main_camera_pass_attachment_count] = {};
 
         VkAttachmentDescription& gbuffer_normal_attachment_description = attachments[_main_camera_pass_gbuffer_a];
-        gbuffer_normal_attachment_description.format  = _framebuffer.attachments[_main_camera_pass_gbuffer_a].format;
-        gbuffer_normal_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+        gbuffer_normal_attachment_description.format =
+            m_p_vulkan_context->getImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a));
+         gbuffer_normal_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
         gbuffer_normal_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gbuffer_normal_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_normal_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         gbuffer_normal_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_normal_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
         gbuffer_normal_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
         VkAttachmentDescription& gbuffer_metallic_roughness_shadingmodeid_attachment_description =
             attachments[_main_camera_pass_gbuffer_b];
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_gbuffer_b].format;
+            m_p_vulkan_context->getImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b));
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gbuffer_metallic_roughness_shadingmodeid_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -105,7 +86,8 @@ namespace Pilot
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& gbuffer_albedo_attachment_description = attachments[_main_camera_pass_gbuffer_c];
-        gbuffer_albedo_attachment_description.format  = _framebuffer.attachments[_main_camera_pass_gbuffer_c].format;
+        gbuffer_albedo_attachment_description.format =
+            m_p_vulkan_context->getImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c));
         gbuffer_albedo_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
         gbuffer_albedo_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
         gbuffer_albedo_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -116,8 +98,8 @@ namespace Pilot
 
         VkAttachmentDescription& backup_odd_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_odd];
-        backup_odd_color_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format;
+        backup_odd_color_attachment_description.format = m_p_vulkan_context->getImageFormat(
+            std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd));
         backup_odd_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         backup_odd_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         backup_odd_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -128,8 +110,8 @@ namespace Pilot
 
         VkAttachmentDescription& backup_even_color_attachment_description =
             attachments[_main_camera_pass_backup_buffer_even];
-        backup_even_color_attachment_description.format =
-            _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format;
+        backup_even_color_attachment_description.format = m_p_vulkan_context->getImageFormat(
+            std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even));
         backup_even_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         backup_even_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         backup_even_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -300,7 +282,7 @@ namespace Pilot
         VkAttachmentReference combine_ui_pass_color_attachment_reference {};
         combine_ui_pass_color_attachment_reference.attachment = &swapchain_image_attachment_description - attachments;
         combine_ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
+        
         VkSubpassDescription& combine_ui_pass = subpasses[_main_camera_subpass_combine_ui];
         combine_ui_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
         combine_ui_pass.inputAttachmentCount  = sizeof(combine_ui_pass_input_attachments_reference) /
@@ -400,7 +382,7 @@ namespace Pilot
         combine_ui_pass_depend_on_ui_pass.dstAccessMask =
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         combine_ui_pass_depend_on_ui_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
+        
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderpass_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
@@ -753,24 +735,8 @@ namespace Pilot
                 throw std::runtime_error("create mesh gbuffer pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_GBUFFER_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, MESH_VERT, MESH_GBUFFER_FRAG);
 
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -789,9 +755,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -865,7 +831,6 @@ namespace Pilot
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
             dynamic_state_create_info.dynamicStateCount = 2;
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
-
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pipelineInfo.stageCount          = 2;
@@ -893,9 +858,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create mesh gbuffer graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // deferred lighting
@@ -918,29 +880,8 @@ namespace Pilot
                 throw std::runtime_error("create deferred lighting pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, DEFERRED_LIGHTING_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, DEFERRED_LIGHTING_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
-            auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
-            auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, DEFERRED_LIGHTING_VERT, DEFERRED_LIGHTING_FRAG);
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount = 0;
@@ -956,9 +897,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1042,9 +983,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create deferred lighting graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // mesh lighting
@@ -1065,24 +1003,8 @@ namespace Pilot
                 throw std::runtime_error("create mesh lighting pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_VERT);
-            VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, MESH_VERT, MESH_FRAG);
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
@@ -1100,9 +1022,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1186,9 +1108,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create mesh lighting graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // skybox
@@ -1207,29 +1126,9 @@ namespace Pilot
                 throw std::runtime_error("create skybox pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, SKYBOX_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, SKYBOX_FRAG);
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, SKYBOX_VERT, SKYBOX_FRAG);
 
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
-            auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
-            auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount   = 0;
@@ -1245,9 +1144,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1330,9 +1229,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create skybox graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // particle billboard
@@ -1351,25 +1247,8 @@ namespace Pilot
                 throw std::runtime_error("create particle billboard pipeline layout");
             }
 
-            VkShaderModule vert_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, PARTICLEBILLBOARD_VERT);
-            VkShaderModule frag_shader_module =
-                PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, PARTICLEBILLBOARD_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, PARTICLEBILLBOARD_VERT, PARTICLEBILLBOARD_FRAG);
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1386,9 +1265,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1472,9 +1351,6 @@ namespace Pilot
             {
                 throw std::runtime_error("create particle billboard graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
 
         // draw axis
@@ -1493,24 +1369,8 @@ namespace Pilot
                 throw std::runtime_error("create axis pipeline layout");
             }
 
-            VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, AXIS_VERT);
-            VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, AXIS_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-            // vert_pipeline_shader_stage_create_info.pSpecializationInfo
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
+            VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, AXIS_VERT, AXIS_FRAG);
 
             auto vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
             auto vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -1529,9 +1389,9 @@ namespace Pilot
             VkPipelineViewportStateCreateInfo viewport_state_create_info {};
             viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_command_info._viewport;
+            viewport_state_create_info.pViewports    = NULL;
             viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_command_info._scissor;
+            viewport_state_create_info.pScissors     = NULL;
 
             VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
             rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1613,10 +1473,8 @@ namespace Pilot
             {
                 throw std::runtime_error("create axis graphics pipeline");
             }
-
-            vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
         }
+            ModuleGC();
     }
 
     void PMainCameraPass::setupDescriptorSet()
@@ -1691,13 +1549,15 @@ namespace Pilot
         VkDescriptorImageInfo point_light_shadow_texture_image_info {};
         point_light_shadow_texture_image_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        point_light_shadow_texture_image_info.imageView   = m_point_light_shadow_color_image_view;
+        point_light_shadow_texture_image_info.imageView =
+            m_p_vulkan_context->getImageView(std::hash<std::string>()("point shadow color"));
         point_light_shadow_texture_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo directional_light_shadow_texture_image_info {};
         directional_light_shadow_texture_image_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        directional_light_shadow_texture_image_info.imageView   = m_directional_light_shadow_color_image_view;
+        directional_light_shadow_texture_image_info.imageView =
+            m_p_vulkan_context->getImageView(std::hash<std::string>()("shadow color"));
         directional_light_shadow_texture_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet mesh_descriptor_writes_info[8];
@@ -1945,27 +1805,30 @@ namespace Pilot
         VkDescriptorImageInfo gbuffer_normal_input_attachment_info = {};
         gbuffer_normal_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        gbuffer_normal_input_attachment_info.imageView   = _framebuffer.attachments[_main_camera_pass_gbuffer_a].view;
+        gbuffer_normal_input_attachment_info.imageView =
+            m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a));
         gbuffer_normal_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo gbuffer_metallic_roughness_shadingmodeid_input_attachment_info = {};
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.imageView =
-            _framebuffer.attachments[_main_camera_pass_gbuffer_b].view;
+            m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b));
         gbuffer_metallic_roughness_shadingmodeid_input_attachment_info.imageLayout =
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo gbuffer_albedo_input_attachment_info = {};
         gbuffer_albedo_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        gbuffer_albedo_input_attachment_info.imageView   = _framebuffer.attachments[_main_camera_pass_gbuffer_c].view;
+        gbuffer_albedo_input_attachment_info.imageView =
+            m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c));
         gbuffer_albedo_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo depth_input_attachment_info = {};
         depth_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        depth_input_attachment_info.imageView   = m_p_vulkan_context->_depth_image_view;
+        depth_input_attachment_info.imageView =
+            m_p_vulkan_context->getImageView(std::hash<std::string>()("view depth"));
         depth_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet deferred_lighting_descriptor_writes_info[4];
@@ -2036,12 +1899,14 @@ namespace Pilot
         for (size_t i = 0; i < m_p_vulkan_context->_swapchain_imageviews.size(); i++)
         {
             VkImageView framebuffer_attachments_for_image_view[_main_camera_pass_attachment_count] = {
-                _framebuffer.attachments[_main_camera_pass_gbuffer_a].view,
-                _framebuffer.attachments[_main_camera_pass_gbuffer_b].view,
-                _framebuffer.attachments[_main_camera_pass_gbuffer_c].view,
-                _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].view,
-                _framebuffer.attachments[_main_camera_pass_backup_buffer_even].view,
-                m_p_vulkan_context->_depth_image_view,
+                m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a)),
+                m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_b)),
+                m_p_vulkan_context->getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c)),
+                m_p_vulkan_context->getImageView(
+                    std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd)),
+                m_p_vulkan_context->getImageView(
+                    std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even)),
+                m_p_vulkan_context->getImageView(std::hash<std::string>()("view depth")),
                 m_p_vulkan_context->_swapchain_imageviews[i]};
 
             VkFramebufferCreateInfo framebuffer_create_info {};
@@ -2066,19 +1931,13 @@ namespace Pilot
 
     void PMainCameraPass::updateAfterFramebufferRecreate()
     {
-        for (size_t i = 0; i < _framebuffer.attachments.size(); i++)
-        {
-            vkDestroyImage(m_p_vulkan_context->_device, _framebuffer.attachments[i].image, nullptr);
-            vkDestroyImageView(m_p_vulkan_context->_device, _framebuffer.attachments[i].view, nullptr);
-            vkFreeMemory(m_p_vulkan_context->_device, _framebuffer.attachments[i].mem, nullptr);
-        }
 
         for (auto framebuffer : m_swapchain_framebuffers)
         {
             vkDestroyFramebuffer(m_p_vulkan_context->_device, framebuffer, NULL);
         }
 
-        setupAttachments();
+        createImage();
 
         setupFramebufferDescriptorSet();
 

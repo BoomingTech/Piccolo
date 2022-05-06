@@ -16,7 +16,7 @@ namespace Pilot
 {
     void PPickPass::initialize()
     {
-        setupAttachments();
+        createImage();
         setupRenderPass();
         setupFramebuffer();
         setupDescriptorSetLayout();
@@ -25,36 +25,21 @@ namespace Pilot
     }
     void PPickPass::postInitialize() {}
     void PPickPass::draw() {}
-    void PPickPass::setupAttachments()
+    void PPickPass::createImage()
     {
-        _framebuffer.attachments.resize(1);
-        _framebuffer.attachments[0].format = VK_FORMAT_R32_UINT;
-
-        PVulkanUtil::createImage(m_p_vulkan_context->_physical_device,
-                                 m_p_vulkan_context->_device,
-                                 m_p_vulkan_context->_swapchain_extent.width,
-                                 m_p_vulkan_context->_swapchain_extent.height,
-                                 _framebuffer.attachments[0].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[0].image,
-                                 _framebuffer.attachments[0].mem,
-                                 0,
-                                 1,
-                                 1);
-        _framebuffer.attachments[0].view = PVulkanUtil::createImageView(m_p_vulkan_context->_device,
-                                                                        _framebuffer.attachments[0].image,
-                                                                        _framebuffer.attachments[0].format,
-                                                                        VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D,
-                                                                        1,
-                                                                        1);
+        m_p_vulkan_context->createRenderImage2D(std::hash<std::string>()("pick"),
+                                                VK_FORMAT_R32_UINT,
+                                                m_p_vulkan_context->_swapchain_extent.width,
+                                                m_p_vulkan_context->_swapchain_extent.height,
+                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                                                VK_IMAGE_ASPECT_COLOR_BIT,
+                                                1,
+                                                1);
     }
     void PPickPass::setupRenderPass()
     {
         VkAttachmentDescription color_attachment_description {};
-        color_attachment_description.format         = _framebuffer.attachments[0].format;
+        color_attachment_description.format  = m_p_vulkan_context->getImageFormat(std::hash<std::string>()("pick"));
         color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
@@ -106,7 +91,8 @@ namespace Pilot
     }
     void PPickPass::setupFramebuffer()
     {
-        VkImageView attachments[2] = {_framebuffer.attachments[0].view, m_p_vulkan_context->_depth_image_view};
+        VkImageView attachments[2] = {m_p_vulkan_context->getImageView(std::hash<std::string>()("pick")),
+                                      m_p_vulkan_context->getImageView(std::hash<std::string>()("view depth"))};
 
         VkFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -195,25 +181,8 @@ namespace Pilot
             throw std::runtime_error("create mesh inefficient pick pipeline layout");
         }
 
-        VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_INEFFICIENT_PICK_VERT);
-        VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, MESH_INEFFICIENT_PICK_FRAG);
-
-        VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-        vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-        vert_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-        frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-        frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+        FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, MESH_INEFFICIENT_PICK_VERT, MESH_INEFFICIENT_PICK_FRAG);
 
         auto                                 vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
         auto                                 vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
@@ -232,9 +201,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_command_info._viewport;
+        viewport_state_create_info.pViewports    = NULL;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_command_info._scissor;
+        viewport_state_create_info.pScissors     = NULL;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -316,8 +285,7 @@ namespace Pilot
             throw std::runtime_error("create mesh inefficient pick graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
+        ModuleGC();
     }
     void PPickPass::setupDescriptorSet()
     {
@@ -401,15 +369,9 @@ namespace Pilot
     }
     void PPickPass::recreateFramebuffer()
     {
-        for (size_t i = 0; i < _framebuffer.attachments.size(); i++)
-        {
-            vkDestroyImage(m_p_vulkan_context->_device, _framebuffer.attachments[i].image, nullptr);
-            vkDestroyImageView(m_p_vulkan_context->_device, _framebuffer.attachments[i].view, nullptr);
-            vkFreeMemory(m_p_vulkan_context->_device, _framebuffer.attachments[i].mem, nullptr);
-        }
         vkDestroyFramebuffer(m_p_vulkan_context->_device, _framebuffer.framebuffer, nullptr);
 
-        setupAttachments();
+        createImage();
         setupFramebuffer();
     }
     uint32_t PPickPass::pick(glm::vec2 click_uv)
@@ -490,7 +452,7 @@ namespace Pilot
             transfer_to_render_barrier.newLayout           = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             transfer_to_render_barrier.srcQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
             transfer_to_render_barrier.dstQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
-            transfer_to_render_barrier.image               = _framebuffer.attachments[0].image;
+            transfer_to_render_barrier.image = m_p_vulkan_context->getImage(std::hash<std::string>()("pick"));
             transfer_to_render_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
             vkCmdPipelineBarrier(m_command_info._p_current_command_buffer[*m_command_info._p_current_frame_index],
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -808,7 +770,7 @@ namespace Pilot
         copy_to_buffer_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         copy_to_buffer_barrier.srcQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
         copy_to_buffer_barrier.dstQueueFamilyIndex = m_p_vulkan_context->_queue_indices.graphicsFamily.value();
-        copy_to_buffer_barrier.image               = _framebuffer.attachments[0].image;
+        copy_to_buffer_barrier.image               = m_p_vulkan_context->getImage(std::hash<std::string>()("pick"));
         copy_to_buffer_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         vkCmdPipelineBarrier(command_buffer,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -822,7 +784,7 @@ namespace Pilot
                              &copy_to_buffer_barrier);
 
         vkCmdCopyImageToBuffer(command_buffer,
-                               _framebuffer.attachments[0].image,
+                               m_p_vulkan_context->getImage(std::hash<std::string>()("pick")),
                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                inefficient_staging_buffer,
                                1,

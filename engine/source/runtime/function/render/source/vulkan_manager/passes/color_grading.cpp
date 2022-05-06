@@ -9,13 +9,13 @@
 
 namespace Pilot
 {
-    void PColorGradingPass::initialize(VkRenderPass render_pass, VkImageView input_attachment)
+    void PColorGradingPass::initialize(VkRenderPass render_pass)
     {
         _framebuffer.render_pass = render_pass;
         setupDescriptorSetLayout();
         setupPipelines();
         setupDescriptorSet();
-        updateAfterFramebufferRecreate(input_attachment);
+        updateAfterFramebufferRecreate();
     }
 
     void PColorGradingPass::setupDescriptorSetLayout()
@@ -71,25 +71,8 @@ namespace Pilot
             throw std::runtime_error("create post process pipeline layout");
         }
 
-        VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, POST_PROCESS_VERT);
-        VkShaderModule frag_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, COLOR_GRADING_FRAG);
-
-        VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-        vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-        vert_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-        frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-        frag_pipeline_shader_stage_create_info.pName  = "main";
-
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        VkPipelineShaderStageCreateInfo shader_stages[2] = {};
+        FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, POST_PROCESS_VERT, COLOR_GRADING_FRAG);
 
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -106,9 +89,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_command_info._viewport;
+        viewport_state_create_info.pViewports    = NULL;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_command_info._scissor;
+        viewport_state_create_info.pScissors     = NULL;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -192,8 +175,7 @@ namespace Pilot
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
+        ModuleGC();
     }
 
     void PColorGradingPass::setupDescriptorSet()
@@ -213,12 +195,13 @@ namespace Pilot
         }
     }
 
-    void PColorGradingPass::updateAfterFramebufferRecreate(VkImageView input_attachment)
+    void PColorGradingPass::updateAfterFramebufferRecreate()
     {
         VkDescriptorImageInfo post_process_per_frame_input_attachment_info = {};
         post_process_per_frame_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        post_process_per_frame_input_attachment_info.imageView   = input_attachment;
+        post_process_per_frame_input_attachment_info.imageView = m_p_vulkan_context->getImageView(
+            std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even));
         post_process_per_frame_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo color_grading_LUT_image_info = {};

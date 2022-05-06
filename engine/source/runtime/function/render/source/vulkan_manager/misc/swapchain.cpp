@@ -23,9 +23,11 @@ bool Pilot::PVulkanManager::recreateSwapChain()
     m_vulkan_context.createFramebufferImageAndView();
 
     m_main_camera_pass.updateAfterFramebufferRecreate();
-    m_tone_mapping_pass.updateAfterFramebufferRecreate(m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd]);
-    m_color_grading_pass.updateAfterFramebufferRecreate(m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
-    m_combine_ui_pass.updateAfterFramebufferRecreate(m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_odd], m_main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
+    m_tone_mapping_pass.updateAfterFramebufferRecreate();
+    m_color_grading_pass.updateAfterFramebufferRecreate();
+    m_combine_ui_pass.updateAfterFramebufferRecreate(
+        m_vulkan_context.getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_odd)),
+        m_vulkan_context.getImageView(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_backup_buffer_even)));
     m_mouse_pick_pass.recreateFramebuffer();
 
     return true;
@@ -33,9 +35,6 @@ bool Pilot::PVulkanManager::recreateSwapChain()
 
 void Pilot::PVulkanManager::clearSwapChain()
 {
-    vkDestroyImageView(m_vulkan_context._device, m_vulkan_context._depth_image_view, NULL);
-    vkDestroyImage(m_vulkan_context._device, m_vulkan_context._depth_image, NULL);
-    vkFreeMemory(m_vulkan_context._device, m_vulkan_context._depth_image_memory, NULL);
 
     m_vulkan_context.clearSwapchain();
 }
