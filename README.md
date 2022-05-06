@@ -79,3 +79,6 @@ Or you can execute the **build_macos.sh** to build the binaries.
 
 ### Build on Ubuntu 20.04
 You can execute the **build_linux.sh** to build the binaries.
+
+### Documentation
+For documentation, please refer to the Wiki section.

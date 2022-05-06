@@ -26,13 +26,12 @@ namespace Pilot
         REFLECTION_BODY(MotorComponent)
     public:
         MotorComponent() {}
-        MotorComponent(const MotorComponentRes& motor_param, GObject* parent_object);
+        MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
 
         ~MotorComponent() override;
 
         void tick(float delta_time) override;
         void tickPlayerMotor(float delta_time);
-        void destroy() override {}
 
         const Vector3& getTargetPosition() const { return m_target_position; }
 

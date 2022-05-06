@@ -2,7 +2,7 @@
   "shapes": [
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0.875,
           "y": 0,
           "z": 1
@@ -15,7 +15,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -27,7 +27,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0.625,
           "y": 0,
           "z": 1
@@ -40,7 +40,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -52,7 +52,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0.375,
           "y": 0,
           "z": 1
@@ -65,7 +65,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -77,7 +77,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": 0.125,
           "y": 0,
           "z": 1
@@ -90,7 +90,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -102,7 +102,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": -0.125,
           "y": 0,
           "z": 1
@@ -115,7 +115,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -127,7 +127,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": -0.375,
           "y": 0,
           "z": 1
@@ -140,7 +140,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -152,7 +152,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": -0.625,
           "y": 0,
           "z": 1
@@ -165,7 +165,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,
@@ -177,7 +177,7 @@
     },
     {
       "local_transform": {
-        "position" : {
+        "position": {
           "x": -0.875,
           "y": 0,
           "z": 1
@@ -190,7 +190,7 @@
         }
       },
       "geometry": {
-        "$context":{
+        "$context": {
           "half_extents": {
             "x": 0.125,
             "y": 1,

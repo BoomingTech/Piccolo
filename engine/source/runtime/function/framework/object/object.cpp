@@ -1,5 +1,6 @@
 #include "runtime/function/framework/object/object.h"
 
+#include "runtime/engine.h"
 #include "runtime/function/framework/component/component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
 
@@ -25,6 +26,10 @@ namespace Pilot
     {
         for (auto& component : m_components)
         {
+            if (component->m_tick_in_editor_mode == false && g_is_editor_mode)
+            {
+                continue;
+            }
             component->tick(delta_time);
         }
     }
@@ -35,6 +40,7 @@ namespace Pilot
 
         // load transform component
         auto transform_component_ptr = PILOT_REFLECTION_NEW(TransformComponent, object_instance_res.m_transform, this);
+        transform_component_ptr->m_tick_in_editor_mode = true;
         m_components.push_back(transform_component_ptr);
         m_component_type_names.push_back("TransformComponent");
 
@@ -96,7 +102,6 @@ namespace Pilot
             {
                 m_components.push_back(component);
                 m_component_type_names.push_back(component_definition_res.m_type_name);
-                component->setParentObject(this);
                 out_instance_component_type_set.insert(component_definition_res.m_type_name);
             }
             else
@@ -106,14 +111,6 @@ namespace Pilot
         }
 
         return true;
-    }
-
-    void GObject::destory()
-    {
-        for (auto& component : m_components)
-        {
-            component->destroy();
-        }
     }
 
 } // namespace Pilot

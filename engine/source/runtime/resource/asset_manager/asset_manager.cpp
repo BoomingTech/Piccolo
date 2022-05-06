@@ -18,7 +18,6 @@ namespace Pilot
     void AssetManager::initialize()
     {
         REGISTER_COMPONENT(AnimationComponent, AnimationComponentRes, false);
-        REGISTER_COMPONENT(TransformComponent, Transform, false);
         REGISTER_COMPONENT(MeshComponent, MeshComponentRes, true);
         REGISTER_COMPONENT(RigidBodyComponent, RigidBodyComponentRes, false);
         REGISTER_COMPONENT(CameraComponent, CameraComponentRes, false);
