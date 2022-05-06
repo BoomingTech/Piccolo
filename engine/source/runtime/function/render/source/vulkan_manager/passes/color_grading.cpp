@@ -41,8 +41,7 @@ namespace Pilot
         post_process_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         post_process_global_layout_create_info.pNext = NULL;
         post_process_global_layout_create_info.flags = 0;
-        post_process_global_layout_create_info.bindingCount =
-            sizeof(post_process_global_layout_bindings) / sizeof(post_process_global_layout_bindings[0]);
+        post_process_global_layout_create_info.bindingCount = std::size(post_process_global_layout_bindings);
         post_process_global_layout_create_info.pBindings = post_process_global_layout_bindings;
 
         if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
@@ -145,12 +144,12 @@ namespace Pilot
 
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_state_create_info.dynamicStateCount = 2;
+        dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
         dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount          = 2;
+        pipelineInfo.stageCount          = std::size(shader_stages);
         pipelineInfo.pStages             = shader_stages;
         pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
         pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -235,8 +234,7 @@ namespace Pilot
         post_process_descriptor_LUT_write_info.pImageInfo            = &color_grading_LUT_image_info;
 
         vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(post_process_descriptor_writes_info) /
-                                   sizeof(post_process_descriptor_writes_info[0]),
+                               std::size(post_process_descriptor_writes_info),
                                post_process_descriptor_writes_info,
                                0,
                                NULL);

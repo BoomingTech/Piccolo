@@ -76,7 +76,7 @@ namespace Pilot
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderpass_create_info.attachmentCount = sizeof(attachments) / sizeof(attachments[0]);
+        renderpass_create_info.attachmentCount = std::size(attachments);
         renderpass_create_info.pAttachments    = attachments;
         renderpass_create_info.subpassCount    = 1;
         renderpass_create_info.pSubpasses      = &subpass;
@@ -97,7 +97,7 @@ namespace Pilot
         VkFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.renderPass      = _framebuffer.render_pass;
-        framebuffer_create_info.attachmentCount = sizeof(attachments) / sizeof(attachments[0]);
+        framebuffer_create_info.attachmentCount = std::size(attachments);
         framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.width           = m_p_vulkan_context->_swapchain_extent.width;
         framebuffer_create_info.height          = m_p_vulkan_context->_swapchain_extent.height;
@@ -151,8 +151,7 @@ namespace Pilot
         mesh_inefficient_pick_global_layout_create_info.pNext = NULL;
         mesh_inefficient_pick_global_layout_create_info.flags = 0;
         mesh_inefficient_pick_global_layout_create_info.bindingCount =
-            (sizeof(mesh_inefficient_pick_global_layout_bindings) /
-             sizeof(mesh_inefficient_pick_global_layout_bindings[0]));
+            std::size(mesh_inefficient_pick_global_layout_bindings);
         mesh_inefficient_pick_global_layout_create_info.pBindings = mesh_inefficient_pick_global_layout_bindings;
 
         if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
@@ -171,7 +170,7 @@ namespace Pilot
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
+        pipeline_layout_create_info.setLayoutCount = std::size(descriptorset_layouts);
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
@@ -255,12 +254,12 @@ namespace Pilot
         VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_state_create_info.dynamicStateCount = 2;
+        dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
         dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount          = 2;
+        pipelineInfo.stageCount          = std::size(shader_stages);
         pipelineInfo.pStages             = shader_stages;
         pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
         pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -362,7 +361,7 @@ namespace Pilot
             &mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info;
 
         vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]),
+                               std::size(mesh_descriptor_writes_info),
                                mesh_descriptor_writes_info,
                                0,
                                NULL);
@@ -671,7 +670,7 @@ namespace Pilot
                             0,
                             1,
                             &_descriptor_infos[0].descriptor_set,
-                            sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
+                            std::size(dynamic_offsets),
                             dynamic_offsets);
 
                         m_p_vulkan_context->_vkCmdDrawIndexed(

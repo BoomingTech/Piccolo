@@ -68,23 +68,23 @@ namespace Pilot
         VkAttachmentDescription& point_light_shadow_color_attachment_description = attachments[0];
         point_light_shadow_color_attachment_description.format =
             m_p_vulkan_context->getImageFormat(std::hash<std::string>()("point shadow color"));
-        point_light_shadow_color_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
-        point_light_shadow_color_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        point_light_shadow_color_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_STORE;
-        point_light_shadow_color_attachment_description.stencilLoadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        point_light_shadow_color_attachment_description.stencilStoreOp           = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        point_light_shadow_color_attachment_description.initialLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
-        point_light_shadow_color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        point_light_shadow_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
+        point_light_shadow_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        point_light_shadow_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+        point_light_shadow_color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        point_light_shadow_color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        point_light_shadow_color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        point_light_shadow_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& point_light_shadow_depth_attachment_description = attachments[1];
         point_light_shadow_depth_attachment_description.format =
             m_p_vulkan_context->getImageFormat(std::hash<std::string>()("point shadow depth"));
-        point_light_shadow_depth_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
-        point_light_shadow_depth_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        point_light_shadow_depth_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        point_light_shadow_depth_attachment_description.stencilLoadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        point_light_shadow_depth_attachment_description.stencilStoreOp           = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        point_light_shadow_depth_attachment_description.initialLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
+        point_light_shadow_depth_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
+        point_light_shadow_depth_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        point_light_shadow_depth_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        point_light_shadow_depth_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        point_light_shadow_depth_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        point_light_shadow_depth_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
         point_light_shadow_depth_attachment_description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpasses[1] = {};
@@ -118,11 +118,11 @@ namespace Pilot
 
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderpass_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        renderpass_create_info.attachmentCount = (std::size(attachments));
         renderpass_create_info.pAttachments    = attachments;
-        renderpass_create_info.subpassCount    = (sizeof(subpasses) / sizeof(subpasses[0]));
+        renderpass_create_info.subpassCount    = std::size(subpasses);
         renderpass_create_info.pSubpasses      = subpasses;
-        renderpass_create_info.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));
+        renderpass_create_info.dependencyCount = std::size(dependencies);
         renderpass_create_info.pDependencies   = dependencies;
 
         if (vkCreateRenderPass(
@@ -140,7 +140,7 @@ namespace Pilot
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.flags           = 0U;
         framebuffer_create_info.renderPass      = _framebuffer.render_pass;
-        framebuffer_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        framebuffer_create_info.attachmentCount = (std::size(attachments));
         framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.width           = m_point_light_shadow_map_dimension;
         framebuffer_create_info.height          = m_point_light_shadow_map_dimension;
@@ -192,8 +192,7 @@ namespace Pilot
         mesh_point_light_shadow_global_layout_create_info.pNext = NULL;
         mesh_point_light_shadow_global_layout_create_info.flags = 0;
         mesh_point_light_shadow_global_layout_create_info.bindingCount =
-            (sizeof(mesh_point_light_shadow_global_layout_bindings) /
-             sizeof(mesh_point_light_shadow_global_layout_bindings[0]));
+            std::size(mesh_point_light_shadow_global_layout_bindings);
         mesh_point_light_shadow_global_layout_create_info.pBindings = mesh_point_light_shadow_global_layout_bindings;
 
         if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
@@ -214,7 +213,7 @@ namespace Pilot
         VkDescriptorSetLayout      descriptorset_layouts[] = {_descriptor_infos[0].layout, _per_mesh_layout};
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.setLayoutCount = (sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]));
+        pipeline_layout_create_info.setLayoutCount = std::size(descriptorset_layouts);
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
@@ -309,7 +308,7 @@ namespace Pilot
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount          = (sizeof(shader_stages) / sizeof(shader_stages[0]));
+        pipelineInfo.stageCount          = std::size(shader_stages);
         pipelineInfo.pStages             = shader_stages;
         pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
         pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -423,11 +422,7 @@ namespace Pilot
         mesh_point_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pBufferInfo =
             &mesh_point_light_shadow_per_drawcall_vertex_blending_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
-                               descriptor_writes,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(m_p_vulkan_context->_device, std::size(descriptor_writes), descriptor_writes, 0, NULL);
     }
     void Pilot::PPointLightShadowPass::drawModel()
     {
@@ -471,7 +466,7 @@ namespace Pilot
         VkClearValue clear_values[2];
         clear_values[0].color                 = {1.0f};
         clear_values[1].depthStencil          = {1.0f, 0};
-        renderpass_begin_info.clearValueCount = (sizeof(clear_values) / sizeof(clear_values[0]));
+        renderpass_begin_info.clearValueCount = std::size(clear_values);
         renderpass_begin_info.pClearValues    = clear_values;
 
         m_p_vulkan_context->_vkCmdBeginRenderPass(
@@ -654,15 +649,14 @@ namespace Pilot
                             uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
                                                            perdrawcall_dynamic_offset,
                                                            per_drawcall_vertex_blending_dynamic_offset};
-                            m_p_vulkan_context->_vkCmdBindDescriptorSets(
-                                m_command_info._current_command_buffer,
-                                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                _render_pipelines[0].layout,
-                                0,
-                                1,
-                                &_descriptor_infos[0].descriptor_set,
-                                (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
-                                dynamic_offsets);
+                            m_p_vulkan_context->_vkCmdBindDescriptorSets(m_command_info._current_command_buffer,
+                                                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                                         _render_pipelines[0].layout,
+                                                                         0,
+                                                                         1,
+                                                                         &_descriptor_infos[0].descriptor_set,
+                                                                         std::size(dynamic_offsets),
+                                                                         dynamic_offsets);
 
                             m_p_vulkan_context->_vkCmdDrawIndexed(m_command_info._current_command_buffer,
                                                                   mesh.mesh_index_count,

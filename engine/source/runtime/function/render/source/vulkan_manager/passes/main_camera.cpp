@@ -64,9 +64,9 @@ namespace Pilot
         VkAttachmentDescription& gbuffer_normal_attachment_description = attachments[_main_camera_pass_gbuffer_a];
         gbuffer_normal_attachment_description.format =
             m_p_vulkan_context->getImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_a));
-         gbuffer_normal_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-        gbuffer_normal_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        gbuffer_normal_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_normal_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
+        gbuffer_normal_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gbuffer_normal_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_normal_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         gbuffer_normal_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_normal_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -88,9 +88,9 @@ namespace Pilot
         VkAttachmentDescription& gbuffer_albedo_attachment_description = attachments[_main_camera_pass_gbuffer_c];
         gbuffer_albedo_attachment_description.format =
             m_p_vulkan_context->getImageFormat(std::hash<_main_camera_pass_buffer>()(_main_camera_pass_gbuffer_c));
-        gbuffer_albedo_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-        gbuffer_albedo_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        gbuffer_albedo_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_albedo_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
+        gbuffer_albedo_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        gbuffer_albedo_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_albedo_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         gbuffer_albedo_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_albedo_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -156,10 +156,9 @@ namespace Pilot
         base_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         base_pass_depth_attachment_reference.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& base_pass = subpasses[_main_camera_subpass_basepass];
-        base_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        base_pass.colorAttachmentCount =
-            sizeof(base_pass_color_attachments_reference) / sizeof(base_pass_color_attachments_reference[0]);
+        VkSubpassDescription& base_pass   = subpasses[_main_camera_subpass_basepass];
+        base_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        base_pass.colorAttachmentCount    = std::size(base_pass_color_attachments_reference);
         base_pass.pColorAttachments       = &base_pass_color_attachments_reference[0];
         base_pass.pDepthStencilAttachment = &base_pass_depth_attachment_reference;
         base_pass.preserveAttachmentCount = 0;
@@ -183,13 +182,11 @@ namespace Pilot
             &backup_odd_color_attachment_description - attachments;
         deferred_lighting_pass_color_attachment_reference[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& deferred_lighting_pass = subpasses[_main_camera_subpass_deferred_lighting];
-        deferred_lighting_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        deferred_lighting_pass.inputAttachmentCount  = sizeof(deferred_lighting_pass_input_attachments_reference) /
-                                                      sizeof(deferred_lighting_pass_input_attachments_reference[0]);
-        deferred_lighting_pass.pInputAttachments    = &deferred_lighting_pass_input_attachments_reference[0];
-        deferred_lighting_pass.colorAttachmentCount = sizeof(deferred_lighting_pass_color_attachment_reference) /
-                                                      sizeof(deferred_lighting_pass_color_attachment_reference[0]);
+        VkSubpassDescription& deferred_lighting_pass   = subpasses[_main_camera_subpass_deferred_lighting];
+        deferred_lighting_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        deferred_lighting_pass.inputAttachmentCount    = std::size(deferred_lighting_pass_input_attachments_reference);
+        deferred_lighting_pass.pInputAttachments       = &deferred_lighting_pass_input_attachments_reference[0];
+        deferred_lighting_pass.colorAttachmentCount    = std::size(deferred_lighting_pass_color_attachment_reference);
         deferred_lighting_pass.pColorAttachments       = &deferred_lighting_pass_color_attachment_reference[0];
         deferred_lighting_pass.pDepthStencilAttachment = NULL;
         deferred_lighting_pass.preserveAttachmentCount = 0;
@@ -204,12 +201,11 @@ namespace Pilot
         forward_lighting_pass_depth_attachment_reference.attachment = &depth_attachment_description - attachments;
         forward_lighting_pass_depth_attachment_reference.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription& forward_lighting_pass = subpasses[_main_camera_subpass_forward_lighting];
-        forward_lighting_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        forward_lighting_pass.inputAttachmentCount  = 0U;
-        forward_lighting_pass.pInputAttachments     = NULL;
-        forward_lighting_pass.colorAttachmentCount  = sizeof(forward_lighting_pass_color_attachments_reference) /
-                                                     sizeof(forward_lighting_pass_color_attachments_reference[0]);
+        VkSubpassDescription& forward_lighting_pass   = subpasses[_main_camera_subpass_forward_lighting];
+        forward_lighting_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        forward_lighting_pass.inputAttachmentCount    = 0U;
+        forward_lighting_pass.pInputAttachments       = NULL;
+        forward_lighting_pass.colorAttachmentCount    = std::size(forward_lighting_pass_color_attachments_reference);
         forward_lighting_pass.pColorAttachments       = &forward_lighting_pass_color_attachments_reference[0];
         forward_lighting_pass.pDepthStencilAttachment = &forward_lighting_pass_depth_attachment_reference;
         forward_lighting_pass.preserveAttachmentCount = 0;
@@ -282,11 +278,10 @@ namespace Pilot
         VkAttachmentReference combine_ui_pass_color_attachment_reference {};
         combine_ui_pass_color_attachment_reference.attachment = &swapchain_image_attachment_description - attachments;
         combine_ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        
+
         VkSubpassDescription& combine_ui_pass = subpasses[_main_camera_subpass_combine_ui];
         combine_ui_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        combine_ui_pass.inputAttachmentCount  = sizeof(combine_ui_pass_input_attachments_reference) /
-                                               sizeof(combine_ui_pass_input_attachments_reference[0]);
+        combine_ui_pass.inputAttachmentCount    = std::size(combine_ui_pass_input_attachments_reference);
         combine_ui_pass.pInputAttachments       = combine_ui_pass_input_attachments_reference;
         combine_ui_pass.colorAttachmentCount    = 1;
         combine_ui_pass.pColorAttachments       = &combine_ui_pass_color_attachment_reference;
@@ -382,14 +377,14 @@ namespace Pilot
         combine_ui_pass_depend_on_ui_pass.dstAccessMask =
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         combine_ui_pass_depend_on_ui_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        
+
         VkRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderpass_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        renderpass_create_info.attachmentCount = std::size(attachments);
         renderpass_create_info.pAttachments    = attachments;
-        renderpass_create_info.subpassCount    = (sizeof(subpasses) / sizeof(subpasses[0]));
+        renderpass_create_info.subpassCount    = std::size(subpasses);
         renderpass_create_info.pSubpasses      = subpasses;
-        renderpass_create_info.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));
+        renderpass_create_info.dependencyCount = std::size(dependencies);
         renderpass_create_info.pDependencies   = dependencies;
 
         if (vkCreateRenderPass(
@@ -486,12 +481,11 @@ namespace Pilot
             mesh_global_layout_directional_light_shadow_texture_binding.binding = 7;
 
             VkDescriptorSetLayoutCreateInfo mesh_global_layout_create_info;
-            mesh_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            mesh_global_layout_create_info.pNext = NULL;
-            mesh_global_layout_create_info.flags = 0;
-            mesh_global_layout_create_info.bindingCount =
-                (sizeof(mesh_global_layout_bindings) / sizeof(mesh_global_layout_bindings[0]));
-            mesh_global_layout_create_info.pBindings = mesh_global_layout_bindings;
+            mesh_global_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            mesh_global_layout_create_info.pNext        = NULL;
+            mesh_global_layout_create_info.flags        = 0;
+            mesh_global_layout_create_info.bindingCount = std::size(mesh_global_layout_bindings);
+            mesh_global_layout_create_info.pBindings    = mesh_global_layout_bindings;
 
             if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
                                                           &mesh_global_layout_create_info,
@@ -700,7 +694,7 @@ namespace Pilot
             gbuffer_lighting_global_layout_create_info.pNext = NULL;
             gbuffer_lighting_global_layout_create_info.flags = 0;
             gbuffer_lighting_global_layout_create_info.bindingCount =
-                sizeof(gbuffer_lighting_global_layout_bindings) / sizeof(gbuffer_lighting_global_layout_bindings[0]);
+                std::size(gbuffer_lighting_global_layout_bindings);
             gbuffer_lighting_global_layout_create_info.pBindings = gbuffer_lighting_global_layout_bindings;
 
             if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_p_vulkan_context->_device,
@@ -807,11 +801,10 @@ namespace Pilot
             color_blend_attachments[2].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -829,11 +822,11 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -866,10 +859,9 @@ namespace Pilot
                                                               _descriptor_infos[_deferred_lighting].layout,
                                                               _descriptor_infos[_skybox].layout};
             VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
-            pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_create_info.setLayoutCount =
-                sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
-            pipeline_layout_create_info.pSetLayouts = descriptorset_layouts;
+            pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipeline_layout_create_info.setLayoutCount = std::size(descriptorset_layouts);
+            pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
             if (vkCreatePipelineLayout(m_p_vulkan_context->_device,
                                        &pipeline_layout_create_info,
@@ -881,7 +873,8 @@ namespace Pilot
             }
 
             VkPipelineShaderStageCreateInfo shader_stages[2] = {};
-            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, DEFERRED_LIGHTING_VERT, DEFERRED_LIGHTING_FRAG);
+            FillShaderStageCreateInfo(
+                shader_stages, m_p_vulkan_context->_device, DEFERRED_LIGHTING_VERT, DEFERRED_LIGHTING_FRAG);
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount = 0;
@@ -931,11 +924,10 @@ namespace Pilot
             color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -953,12 +945,12 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -1056,11 +1048,10 @@ namespace Pilot
             color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1078,12 +1069,12 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -1178,11 +1169,10 @@ namespace Pilot
             color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1200,12 +1190,12 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -1248,7 +1238,8 @@ namespace Pilot
             }
 
             VkPipelineShaderStageCreateInfo shader_stages[2] = {};
-            FillShaderStageCreateInfo(shader_stages, m_p_vulkan_context->_device, PARTICLEBILLBOARD_VERT, PARTICLEBILLBOARD_FRAG);
+            FillShaderStageCreateInfo(
+                shader_stages, m_p_vulkan_context->_device, PARTICLEBILLBOARD_VERT, PARTICLEBILLBOARD_FRAG);
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1299,11 +1290,10 @@ namespace Pilot
             color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable     = VK_FALSE;
+            color_blend_state_create_info.logicOp           = VK_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount   = std::size(color_blend_attachments);
             color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
             color_blend_state_create_info.blendConstants[0] = 0.0f;
             color_blend_state_create_info.blendConstants[1] = 0.0f;
@@ -1322,12 +1312,12 @@ namespace Pilot
 
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -1444,12 +1434,12 @@ namespace Pilot
             VkDynamicState                   dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
             dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
+            dynamic_state_create_info.dynamicStateCount = std::size(dynamic_states);
             dynamic_state_create_info.pDynamicStates    = dynamic_states;
 
             VkGraphicsPipelineCreateInfo pipelineInfo {};
             pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
+            pipelineInfo.stageCount          = std::size(shader_stages);
             pipelineInfo.pStages             = shader_stages;
             pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
             pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
@@ -1474,7 +1464,7 @@ namespace Pilot
                 throw std::runtime_error("create axis graphics pipeline");
             }
         }
-            ModuleGC();
+        ModuleGC();
     }
 
     void PMainCameraPass::setupDescriptorSet()
@@ -1614,11 +1604,8 @@ namespace Pilot
         mesh_descriptor_writes_info[7].dstBinding = 7;
         mesh_descriptor_writes_info[7].pImageInfo = &directional_light_shadow_texture_image_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]),
-                               mesh_descriptor_writes_info,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(
+            m_p_vulkan_context->_device, std::size(mesh_descriptor_writes_info), mesh_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupSkyboxDescriptorSet()
@@ -1722,11 +1709,8 @@ namespace Pilot
         axis_descriptor_writes_info[1].descriptorCount = 1;
         axis_descriptor_writes_info[1].pBufferInfo     = &axis_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               (uint32_t)(sizeof(axis_descriptor_writes_info) / sizeof(axis_descriptor_writes_info[0])),
-                               axis_descriptor_writes_info,
-                               0,
-                               NULL);
+        vkUpdateDescriptorSets(
+            m_p_vulkan_context->_device, std::size(axis_descriptor_writes_info), axis_descriptor_writes_info, 0, NULL);
     }
 
     void PMainCameraPass::setupParticleDescriptorSet()
@@ -1884,8 +1868,7 @@ namespace Pilot
         depth_descriptor_input_attachment_write_info.pImageInfo      = &depth_input_attachment_info;
 
         vkUpdateDescriptorSets(m_p_vulkan_context->_device,
-                               sizeof(deferred_lighting_descriptor_writes_info) /
-                                   sizeof(deferred_lighting_descriptor_writes_info[0]),
+                               std::size(deferred_lighting_descriptor_writes_info),
                                deferred_lighting_descriptor_writes_info,
                                0,
                                NULL);
@@ -1913,8 +1896,7 @@ namespace Pilot
             framebuffer_create_info.sType      = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebuffer_create_info.flags      = 0U;
             framebuffer_create_info.renderPass = _framebuffer.render_pass;
-            framebuffer_create_info.attachmentCount =
-                (sizeof(framebuffer_attachments_for_image_view) / sizeof(framebuffer_attachments_for_image_view[0]));
+            framebuffer_create_info.attachmentCount = std::size(framebuffer_attachments_for_image_view);
             framebuffer_create_info.pAttachments = framebuffer_attachments_for_image_view;
             framebuffer_create_info.width        = m_p_vulkan_context->_swapchain_extent.width;
             framebuffer_create_info.height       = m_p_vulkan_context->_swapchain_extent.height;
@@ -1967,7 +1949,7 @@ namespace Pilot
             clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
             clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.clearValueCount                    = std::size(clear_values);
             renderpass_begin_info.pClearValues                       = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
@@ -2045,9 +2027,9 @@ namespace Pilot
         clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
         m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
-                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                   std::size(clear_attachments),
                                                    clear_attachments,
-                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                   std::size(clear_rects),
                                                    clear_rects);
 
         drawAxis();
@@ -2084,7 +2066,7 @@ namespace Pilot
             clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
             clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.clearValueCount                    = std::size(clear_values);
             renderpass_begin_info.pClearValues                       = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
@@ -2136,9 +2118,9 @@ namespace Pilot
         clear_rects[0].rect.extent.width  = m_p_vulkan_context->_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_p_vulkan_context->_swapchain_extent.height;
         m_p_vulkan_context->_vkCmdClearAttachments(m_command_info._current_command_buffer,
-                                                   sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                   std::size(clear_attachments),
                                                    clear_attachments,
-                                                   sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                   std::size(clear_rects),
                                                    clear_rects);
 
         drawAxis();
@@ -2259,7 +2241,7 @@ namespace Pilot
                     VkDeviceSize offsets[]        = {0, 0, 0};
                     m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
                                                                 0,
-                                                                (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                                std::size(vertex_buffers),
                                                                 vertex_buffers,
                                                                 offsets);
                     m_p_vulkan_context->_vkCmdBindIndexBuffer(
@@ -2545,7 +2527,7 @@ namespace Pilot
                     VkDeviceSize offsets[]        = {0, 0, 0};
                     m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
                                                                 0,
-                                                                (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                                std::size(vertex_buffers),
                                                                 vertex_buffers,
                                                                 offsets);
                     m_p_vulkan_context->_vkCmdBindIndexBuffer(
@@ -2885,7 +2867,7 @@ namespace Pilot
         VkDeviceSize offsets[]        = {0, 0, 0};
         m_p_vulkan_context->_vkCmdBindVertexBuffers(m_command_info._current_command_buffer,
                                                     0,
-                                                    (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                    std::size(vertex_buffers),
                                                     vertex_buffers,
                                                     offsets);
         m_p_vulkan_context->_vkCmdBindIndexBuffer(m_command_info._current_command_buffer,

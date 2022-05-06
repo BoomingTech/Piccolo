@@ -249,7 +249,7 @@ bool Pilot::PVulkanManager::updateVertexBuffer(bool                             
             &mesh_vertex_Joint_binding_storage_buffer_info;
 
         vkUpdateDescriptorSets(m_vulkan_context._device,
-                               (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
+                               std::size(descriptor_writes),
                                descriptor_writes,
                                0,
                                NULL);
@@ -419,7 +419,7 @@ bool Pilot::PVulkanManager::updateVertexBuffer(bool                             
             &mesh_vertex_Joint_binding_storage_buffer_info;
 
         vkUpdateDescriptorSets(m_vulkan_context._device,
-                               (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
+                               std::size(descriptor_writes),
                                descriptor_writes,
                                0,
                                NULL);
