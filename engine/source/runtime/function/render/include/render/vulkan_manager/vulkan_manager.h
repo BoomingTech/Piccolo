@@ -51,12 +51,6 @@ namespace Pilot
                          struct SceneReleaseHandles& release_handles,
                          void*                       ui_state);
 
-        // legacy
-        void renderFrameForward(class Scene&                scene,
-                               class PilotRenderer*        pilot_renderer,
-                               struct SceneReleaseHandles& release_handles,
-                               void*                       ui_state);
-
         // initialize vulkan from io->window
         int initialize(GLFWwindow* window, class Scene& scene, class PilotRenderer* pilot_renderer);
 
