@@ -2,7 +2,7 @@
 
 if test \( $# -gt 2 \);
 then
-    echo "Usage: build.sh config [build-tool]"
+    echo "Usage: ./build_linux.sh config [build-tool]"
     echo ""
     echo "config:"
     echo "  debug   -   build with the debug configuration"
@@ -26,9 +26,8 @@ elif test \( \( -n "$2" \) -a \( "$2" = "makefile" \) \);then
 elif test \( \( -n "$2" \) -a \( "$2" = "ninja" \) \);then
     CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG="-G Ninja"
 else
-    if test \( -n "$2" \);then
-        echo "The build-tool \"$2\" is not supported!"
-    fi
+    echo "The build-tool \"$2\" is not supported!"
+    exit 1
 fi
 
 if test \( \( -n "$1" \) -a \( "$1" = "debug" \) \);then 
@@ -50,7 +49,7 @@ cd "${MY_DIR}"
 
 mkdir -p "engine/shader/generated/spv"
 
-export CC=`command -v clang`
-export CXX=`command -v clang++`
+export CC=clang
+export CXX=clang++
 cmake -S . -B build "${CMAKE_ARG_BUILD_TYPE_CONFIG}" "${CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG}" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build "${MY_DIR}/build" -- all
