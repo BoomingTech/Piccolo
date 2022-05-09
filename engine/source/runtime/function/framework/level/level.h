@@ -11,21 +11,15 @@ namespace Pilot
 
     class Level
     {
-    protected:
-        size_t                               m_next_gobject_id {0};
-        std::string                          m_level_res_url;
-        std::unordered_map<size_t, GObject*> m_gobjects;
-
-        Character* m_current_active_character;
-
     public:
-        ~Level();
-        void clear();
+        virtual ~Level();
 
-        void load(const std::string& level_res_url);
-        void save();
+        bool load(const std::string& level_res_url);
+        void unload();
 
-        void tickAll(float delta_time);
+        bool save();
+
+        void tick(float delta_time);
 
         const std::string& getLevelResUrl() const { return m_level_res_url; }
 
@@ -36,5 +30,15 @@ namespace Pilot
 
         const size_t createObject(const ObjectInstanceRes& object_instance_res);
         void         deleteGObjectByID(size_t go_id);
+
+    protected:
+        void clear();
+
+        bool                                 m_is_loaded {k_false};
+        std::string                          m_level_res_url;
+        size_t                               m_next_gobject_id {0};
+        std::unordered_map<size_t, GObject*> m_gobjects;
+
+        Character* m_current_active_character;
     };
 } // namespace Pilot

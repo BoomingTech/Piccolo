@@ -40,8 +40,8 @@ namespace Pilot
 
     void CameraComponent::tick(float delta_time)
     {
-        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
-        Character* current_character = current_level->getCurrentActiveCharacter();
+        std::shared_ptr<Level> current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        Character*             current_character = current_level->getCurrentActiveCharacter();
         if (current_character == nullptr)
             return;
 
@@ -65,8 +65,8 @@ namespace Pilot
 
     void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
-        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
-        Character* current_character = current_level->getCurrentActiveCharacter();
+        std::shared_ptr<Level> current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        Character*             current_character = current_level->getCurrentActiveCharacter();
         if (current_character == nullptr)
             return;
 
@@ -94,8 +94,8 @@ namespace Pilot
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
-        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
-        Character* current_character = current_level->getCurrentActiveCharacter();
+        std::shared_ptr<Level> current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        Character*             current_character = current_level->getCurrentActiveCharacter();
         if (current_character == nullptr)
             return;
 

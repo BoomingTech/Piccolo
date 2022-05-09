@@ -64,12 +64,18 @@ namespace Pilot
         return gobject_id;
     }
 
-    void Level::load(const std::string& level_res_url)
+    bool Level::load(const std::string& level_res_url)
     {
+        LOG_INFO("loading level: {}", level_res_url);
+
         m_level_res_url = level_res_url;
 
         LevelRes level_res;
-        AssetManager::getInstance().loadAsset(level_res_url, level_res);
+        const bool is_load_success = AssetManager::getInstance().loadAsset(level_res_url, level_res);
+        if (is_load_success == false)
+        {
+            return false;
+        }
 
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
@@ -81,10 +87,23 @@ namespace Pilot
             GObject* character_object  = m_gobjects[level_res.m_character_index];
             m_current_active_character = new Character(character_object);
         }
+
+        m_is_loaded = true;
+
+        LOG_INFO("level load succeed");
+
+        return true;
     }
 
-    void Level::save()
+    void Level::unload()
     {
+        clear();
+        LOG_INFO("unload level: {}", m_level_res_url);
+    }
+
+    bool Level::save()
+    {
+        LOG_INFO("saving level: {}", m_level_res_url);
         LevelRes output_level_res;
 
         const size_t                    object_cout    = m_gobjects.size();
@@ -102,11 +121,27 @@ namespace Pilot
             }
         }
 
-        AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
+        const bool is_save_success = AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
+
+        if (is_save_success == false)
+        {
+            LOG_ERROR("failed to save {}", m_level_res_url);
+        }
+        else
+        {
+            LOG_INFO("level save succeed");
+        }
+
+        return is_save_success;
     }
 
-    void Level::tickAll(float delta_time)
+    void Level::tick(float delta_time)
     {
+        if (!m_is_loaded)
+        {
+            return;
+        }
+
         for (const auto& id_object_pair : m_gobjects)
         {
             assert(id_object_pair.second);

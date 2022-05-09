@@ -255,7 +255,7 @@ namespace Pilot
         GObject* selected_object = nullptr;
         if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
         {
-            Level* level = WorldManager::getInstance().getCurrentActiveLevel();
+            auto level = WorldManager::getInstance().getCurrentActiveLevel().lock();
             if (level != nullptr)
             {
                 selected_object = level->getGObjectByID(m_selected_gobject_id);
@@ -398,7 +398,7 @@ namespace Pilot
             return;
         }
 
-        const Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+        auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
@@ -792,7 +792,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        Level* level = WorldManager::getInstance().getCurrentActiveLevel();
+        auto level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -926,7 +926,7 @@ namespace Pilot
         GObject* selected_object = getSelectedGObject();
         if (selected_object != nullptr)
         {
-            Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+            auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 
@@ -1013,7 +1013,7 @@ namespace Pilot
         if (m_cursor_on_axis != 3)
             return;
 
-        const Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+        auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
