@@ -591,7 +591,7 @@ namespace Pilot
             m_last_file_tree_update = current_time;
 
             EditorFileNode* editor_root_node = m_editor_file_service.getEditorRootNode();
-            buildEditorFileAssstsUITree(editor_root_node);
+            buildEditorFileAssetsUITree(editor_root_node);
             ImGui::EndTable();
         }
 
@@ -754,7 +754,7 @@ namespace Pilot
         }
     }
 
-    void EditorUI::buildEditorFileAssstsUITree(EditorFileNode* node)
+    void EditorUI::buildEditorFileAssetsUITree(EditorFileNode* node)
     {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -768,7 +768,7 @@ namespace Pilot
             if (open)
             {
                 for (int child_n = 0; child_n < node->m_child_nodes.size(); child_n++)
-                    buildEditorFileAssstsUITree(node->m_child_nodes[child_n].get());
+                    buildEditorFileAssetsUITree(node->m_child_nodes[child_n].get());
                 ImGui::TreePop();
             }
         }

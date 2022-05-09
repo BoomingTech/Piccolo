@@ -38,7 +38,7 @@ namespace Pilot
                                float     last_mouse_pos_y,
                                Matrix4x4 object_matrix);
         void        updateCursorOnAxis(Vector2 cursor_uv);
-        void        buildEditorFileAssstsUITree(EditorFileNode* node);
+        void        buildEditorFileAssetsUITree(EditorFileNode* node);
         void        processEditorCommand();
         void        drawAxisToggleButton(const char* string_id, bool check_state, EditorAxisMode axis_mode);
         void        createComponentUI(Reflection::ReflectionInstance& instance);
