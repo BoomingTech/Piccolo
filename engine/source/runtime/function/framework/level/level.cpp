@@ -36,24 +36,23 @@ namespace Pilot
         m_gobjects.clear();
     }
 
-    const size_t Level::createObject(const ObjectInstanceRes& object_instance_res)
+    GObjectID Level::createObject(const ObjectInstanceRes& object_instance_res)
     {
-        size_t   gobject_id = PILOT_INVALID_GOBJECT_ID;
-        GObject* gobject    = new GObject(m_next_gobject_id);
-        assert(gobject);
+        GObjectID object_id = ObjectIDAllocator::alloc();
+        ASSERT(object_id != k_invalid_go_id);
+
+        GObject* gobject = new GObject(object_id);
+
         if (gobject == nullptr)
         {
-            LOG_ERROR("cannot allocate memory for new gobject");
+            LOG_FATAL("cannot allocate memory for new gobject");
         }
         else
         {
             bool is_loaded = gobject->load(object_instance_res);
-            assert(is_loaded);
             if (is_loaded)
             {
-                gobject_id = m_next_gobject_id;
-                m_gobjects.emplace(gobject_id, gobject);
-                ++m_next_gobject_id;
+                m_gobjects.emplace(object_id, gobject);
             }
             else
             {
@@ -61,7 +60,7 @@ namespace Pilot
                 delete gobject;
             }
         }
-        return gobject_id;
+        return object_id;
     }
 
     bool Level::load(const std::string& level_res_url)
@@ -70,7 +69,7 @@ namespace Pilot
 
         m_level_res_url = level_res_url;
 
-        LevelRes level_res;
+        LevelRes   level_res;
         const bool is_load_success = AssetManager::getInstance().loadAsset(level_res_url, level_res);
         if (is_load_success == false)
         {
@@ -157,7 +156,7 @@ namespace Pilot
         SceneManager::getInstance().syncSceneObjects();
     }
 
-    GObject* Level::getGObjectByID(size_t go_id) const
+    GObject* Level::getGObjectByID(GObjectID go_id) const
     {
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())
@@ -168,7 +167,7 @@ namespace Pilot
         return nullptr;
     }
 
-    void Level::deleteGObjectByID(size_t go_id)
+    void Level::deleteGObjectByID(GObjectID go_id)
     {
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())
