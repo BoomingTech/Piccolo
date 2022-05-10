@@ -18,21 +18,7 @@ namespace Pilot
 
     void Level::clear()
     {
-        if (m_current_active_character)
-        {
-            delete m_current_active_character;
-            m_current_active_character = nullptr;
-        }
-
-        for (auto& id_gobject_pair : m_gobjects)
-        {
-            GObject* gobject = id_gobject_pair.second;
-            assert(gobject);
-            if (gobject)
-            {
-                delete gobject;
-            }
-        }
+        m_current_active_character.reset();
         m_gobjects.clear();
     }
 
@@ -41,7 +27,8 @@ namespace Pilot
         GObjectID object_id = ObjectIDAllocator::alloc();
         ASSERT(object_id != k_invalid_go_id);
 
-        GObject* gobject = new GObject(object_id);
+        std::shared_ptr<GObject> gobject = std::make_shared<GObject>(object_id);
+
 
         if (gobject == nullptr)
         {
@@ -57,7 +44,7 @@ namespace Pilot
             else
             {
                 LOG_ERROR("loading object " + object_instance_res.m_name + " failed");
-                delete gobject;
+                return k_invalid_go_id;
             }
         }
         return object_id;
@@ -83,8 +70,8 @@ namespace Pilot
 
         if (level_res.m_character_index >= 0 && level_res.m_character_index < m_gobjects.size())
         {
-            GObject* character_object  = m_gobjects[level_res.m_character_index];
-            m_current_active_character = new Character(character_object);
+            std::shared_ptr<GObject> character_object  = m_gobjects[level_res.m_character_index];
+            m_current_active_character                = std::make_shared<Character>(character_object);
         }
 
         m_is_loaded = true;
@@ -112,7 +99,6 @@ namespace Pilot
         size_t object_index = 0;
         for (const auto& id_object_pair : m_gobjects)
         {
-            assert(id_object_pair.second);
             if (id_object_pair.second)
             {
                 id_object_pair.second->save(output_objects[object_index]);
@@ -156,7 +142,7 @@ namespace Pilot
         SceneManager::getInstance().syncSceneObjects();
     }
 
-    GObject* Level::getGObjectByID(GObjectID go_id) const
+    std::weak_ptr<GObject> Level::getGObjectByID(GObjectID go_id) const
     {
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())
@@ -164,7 +150,7 @@ namespace Pilot
             return iter->second;
         }
 
-        return nullptr;
+        return std::weak_ptr<GObject>();
     }
 
     void Level::deleteGObjectByID(GObjectID go_id)
@@ -172,16 +158,14 @@ namespace Pilot
         auto iter = m_gobjects.find(go_id);
         if (iter != m_gobjects.end())
         {
-            GObject* object = iter->second;
-            assert(object);
+            std::shared_ptr<GObject> object = iter->second;
             if (object)
             {
-                if (m_current_active_character && m_current_active_character->getObject() == object)
+                if (m_current_active_character && m_current_active_character->getObjectID() == object->getID())
                 {
                     m_current_active_character->setObject(nullptr);
                 }
             }
-            delete object;
         }
 
         m_gobjects.erase(go_id);

@@ -250,9 +250,9 @@ namespace Pilot
         return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
     }
 
-    GObject* EditorUI::getSelectedGObject() const
+    std::weak_ptr<GObject> EditorUI::getSelectedGObject() const
     {
-        GObject* selected_object = nullptr;
+        std::weak_ptr<GObject> selected_object;
         if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
         {
             auto level = WorldManager::getInstance().getCurrentActiveLevel().lock();
@@ -272,7 +272,7 @@ namespace Pilot
 
         m_selected_gobject_id = selected_gobject_id;
 
-        GObject* selected_gobject = getSelectedGObject();
+        std::shared_ptr<GObject> selected_gobject = getSelectedGObject().lock();
         if (selected_gobject)
         {
             const TransformComponent* transform_component = selected_gobject->tryGetComponentConst(TransformComponent);
@@ -405,9 +405,9 @@ namespace Pilot
         const auto& all_gobjects = current_active_level->getAllGObjects();
         for (auto& id_object_pair : all_gobjects)
         {
-            const size_t      object_id = id_object_pair.first;
-            GObject*          object    = id_object_pair.second;
-            const std::string name      = object->getName();
+            const GObjectID          object_id = id_object_pair.first;
+            std::shared_ptr<GObject> object    = id_object_pair.second;
+            const std::string        name      = object->getName();
             if (name.size() > 0)
             {
                 if (ImGui::Selectable(name.c_str(), m_selected_gobject_id == object_id))
@@ -530,7 +530,7 @@ namespace Pilot
             return;
         }
 
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object == nullptr)
         {
             ImGui::End();
@@ -813,7 +813,7 @@ namespace Pilot
 
     void EditorUI::drawSelectedEntityAxis()
     {
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
 
         if (m_is_editor_mode && selected_object != nullptr)
         {
@@ -923,7 +923,7 @@ namespace Pilot
     void EditorUI::onDeleteSelectedGObject()
     {
         // delete selected entity
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object != nullptr)
         {
             auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
@@ -1038,7 +1038,7 @@ namespace Pilot
                               float     last_mouse_pos_y,
                               Matrix4x4 model_matrix)
     {
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object == nullptr)
             return;
 
