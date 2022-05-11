@@ -1,6 +1,6 @@
 {
   "gravity": 15,
-  "character_index": 0,
+  "character_name": "Player",
   "objects": [
     {
       "name": "Player",

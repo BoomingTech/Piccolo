@@ -39,7 +39,6 @@ namespace Pilot
         if (!m_is_world_loaded)
         {
             loadWorld(m_current_world_url);
-            return;
         }
 
         // tick the active level

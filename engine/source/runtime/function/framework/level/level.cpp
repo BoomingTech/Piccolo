@@ -29,7 +29,6 @@ namespace Pilot
 
         std::shared_ptr<GObject> gobject = std::make_shared<GObject>(object_id);
 
-
         if (gobject == nullptr)
         {
             LOG_FATAL("cannot allocate memory for new gobject");
@@ -68,10 +67,18 @@ namespace Pilot
             createObject(object_instance_res);
         }
 
-        if (level_res.m_character_index >= 0 && level_res.m_character_index < m_gobjects.size())
+        // create active character
+        for (const auto& object_pair : m_gobjects)
         {
-            std::shared_ptr<GObject> character_object  = m_gobjects[level_res.m_character_index];
-            m_current_active_character                = std::make_shared<Character>(character_object);
+            std::shared_ptr<GObject> object = object_pair.second;
+            if (object == nullptr)
+                continue;
+
+            if (level_res.m_character_name == object->getName())
+            {
+                m_current_active_character = std::make_shared<Character>(object);
+				break;
+            }
         }
 
         m_is_loaded = true;
