@@ -5,7 +5,7 @@
 
 namespace Pilot
 {
-    using GObjectID = size_t;
+    using GObjectID = std::size_t;
 
     constexpr GObjectID k_invalid_gobject_id = std::numeric_limits<std::size_t>::max();
 
