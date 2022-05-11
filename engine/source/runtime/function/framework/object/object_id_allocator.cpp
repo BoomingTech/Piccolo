@@ -8,14 +8,14 @@ namespace Pilot
 
     GObjectID ObjectIDAllocator::alloc()
     {
-        std::atomic<GObjectID> ret = m_next_id.load();
+        std::atomic<GObjectID> new_object_ret = m_next_id.load();
         m_next_id++;
         if (m_next_id >= k_invalid_gobject_id)
         {
             LOG_FATAL("gobject id overflow");
         }
 
-        return ret;
+        return new_object_ret;
     }
 
 } // namespace Pilot
