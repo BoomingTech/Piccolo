@@ -43,12 +43,12 @@ namespace Pilot
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
-        Level*     current_level     = WorldManager::getInstance().getCurrentActiveLevel();
-        Character* current_character = current_level->getCurrentActiveCharacter();
+        std::shared_ptr<Level>   current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
 
-        if (current_character->getObject() != m_parent_object)
+        if (current_character->getObjectID() != m_parent_object->getID())
             return;
 
         TransformComponent* transform_component =

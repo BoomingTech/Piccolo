@@ -13,10 +13,10 @@ namespace Pilot
         inline static const float k_camera_blend_time {0.3f};
 
     public:
-        Character(GObject* character_object);
+        Character(std::shared_ptr<GObject> character_object);
 
-        GObject* getObject() const { return m_character_object; }
-        void     setObject(GObject* gobject);
+        GObjectID getObjectID() const;
+        void      setObject(std::shared_ptr<GObject> gobject);
 
         void setPosition(const Vector3& position) { m_position = position; }
         void setRotation(const Quaternion& rotation) { m_rotation = rotation; }
@@ -29,7 +29,8 @@ namespace Pilot
     private:
         Vector3    m_position;
         Quaternion m_rotation;
-        GObject*   m_character_object {nullptr};
+
+        std::shared_ptr<GObject> m_character_object;
 
         // hack for setting rotation frame buffer
         Quaternion m_rotation_buffer;

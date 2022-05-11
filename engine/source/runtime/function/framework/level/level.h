@@ -1,5 +1,8 @@
 #pragma once
 
+#include "runtime/function/framework/object/object_id_allocator.h"
+
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -9,32 +12,40 @@ namespace Pilot
     class GObject;
     class ObjectInstanceRes;
 
+    using LevelObjectsMap = std::unordered_map<GObjectID, std::shared_ptr<GObject>>;
+
+    /// The main class to manage all game objects
     class Level
     {
-    protected:
-        size_t                               m_next_gobject_id {0};
-        std::string                          m_level_res_url;
-        std::unordered_map<size_t, GObject*> m_gobjects;
-
-        Character* m_current_active_character;
-
     public:
-        ~Level();
-        void clear();
+        virtual ~Level();
 
-        void load(const std::string& level_res_url);
-        void save();
+        bool load(const std::string& level_res_url);
+        void unload();
 
-        void tickAll(float delta_time);
+        bool save();
+
+        void tick(float delta_time);
 
         const std::string& getLevelResUrl() const { return m_level_res_url; }
 
-        const std::unordered_map<size_t, GObject*>& getAllGObjects() const { return m_gobjects; }
+        const LevelObjectsMap& getAllGObjects() const { return m_gobjects; }
 
-        GObject*   getGObjectByID(size_t go_id) const;
-        Character* getCurrentActiveCharacter() const { return m_current_active_character; }
+        std::weak_ptr<GObject>   getGObjectByID(GObjectID go_id) const;
+        std::weak_ptr<Character> getCurrentActiveCharacter() const { return m_current_active_character; }
 
-        const size_t createObject(const ObjectInstanceRes& object_instance_res);
-        void         deleteGObjectByID(size_t go_id);
+        GObjectID createObject(const ObjectInstanceRes& object_instance_res);
+        void      deleteGObjectByID(GObjectID go_id);
+
+    protected:
+        void clear();
+
+        bool        m_is_loaded {false};
+        std::string m_level_res_url;
+
+        // all game objects in this level, key: object id, value: object instance
+        LevelObjectsMap m_gobjects;
+
+        std::shared_ptr<Character> m_current_active_character;
     };
 } // namespace Pilot
