@@ -79,7 +79,7 @@ namespace Pilot
 #define tryGetComponentConst(COMPONENT_TYPE) tryGetComponentConst<const COMPONENT_TYPE>(#COMPONENT_TYPE)
 
     protected:
-        GObjectID   m_id {k_invalid_go_id};
+        GObjectID   m_id {k_invalid_gobject_id};
         std::string m_name;
         std::string m_definition_url;
 

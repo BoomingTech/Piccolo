@@ -62,7 +62,7 @@ namespace Pilot
 
         std::weak_ptr<GObject> getSelectedGObject() const;
 
-        void onGObjectSelected(size_t selected_gobject_id);
+        void onGObjectSelected(GObjectID selected_gobject_id);
         void onDeleteSelectedGObject();
 
     public:

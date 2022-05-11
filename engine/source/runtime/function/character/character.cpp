@@ -16,7 +16,7 @@ namespace Pilot
             return m_character_object->getID();
         }
 
-        return k_invalid_go_id;
+        return k_invalid_gobject_id;
     }
 
     void Character::setObject(std::shared_ptr<GObject> gobject)

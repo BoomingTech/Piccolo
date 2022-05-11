@@ -8,7 +8,6 @@
 
 namespace Pilot
 {
-    class PWorldT;
     class Level;
 
     /// Manage all game worlds, it should be support multiple worlds, including game world and editor world.

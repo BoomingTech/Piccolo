@@ -6,8 +6,6 @@
 #include <chrono>
 #include <thread>
 
-#define PILOT_INVALID_GOBJECT_ID std::numeric_limits<size_t>::max()
-
 #define LOG_HELPER(LOG_LEVEL, ...) \
     LogSystem::getInstance().log(LOG_LEVEL, "[" + std::string(__FUNCTION__) + "] " + __VA_ARGS__);
 

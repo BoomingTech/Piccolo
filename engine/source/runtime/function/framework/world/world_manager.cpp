@@ -42,7 +42,7 @@ namespace Pilot
         }
 
         // tick the active level
-        auto active_level = m_current_active_level.lock();
+        std::shared_ptr<Level> active_level = m_current_active_level.lock();
         if (active_level)
         {
             active_level->tick(delta_time);

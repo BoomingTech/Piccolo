@@ -25,7 +25,7 @@ namespace Pilot
     GObjectID Level::createObject(const ObjectInstanceRes& object_instance_res)
     {
         GObjectID object_id = ObjectIDAllocator::alloc();
-        ASSERT(object_id != k_invalid_go_id);
+        ASSERT(object_id != k_invalid_gobject_id);
 
         std::shared_ptr<GObject> gobject = std::make_shared<GObject>(object_id);
 
@@ -43,7 +43,7 @@ namespace Pilot
             else
             {
                 LOG_ERROR("loading object " + object_instance_res.m_name + " failed");
-                return k_invalid_go_id;
+                return k_invalid_gobject_id;
             }
         }
         return object_id;
@@ -77,7 +77,7 @@ namespace Pilot
             if (level_res.m_character_name == object->getName())
             {
                 m_current_active_character = std::make_shared<Character>(object);
-				break;
+                break;
             }
         }
 

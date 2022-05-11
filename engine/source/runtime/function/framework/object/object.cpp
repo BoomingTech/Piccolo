@@ -13,8 +13,6 @@
 
 namespace Pilot
 {
-    std::atomic<GObjectID> ObjectIDAllocator::m_next_id {0};
-
     GObject::~GObject()
     {
         for (auto& component : m_components)

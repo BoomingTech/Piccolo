@@ -2,6 +2,7 @@
 
 #include "runtime/function/framework/object/object_id_allocator.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 

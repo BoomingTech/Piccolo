@@ -253,19 +253,21 @@ namespace Pilot
     std::weak_ptr<GObject> EditorUI::getSelectedGObject() const
     {
         std::weak_ptr<GObject> selected_object;
-        if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        if (m_selected_gobject_id == k_invalid_gobject_id)
         {
-            auto level = WorldManager::getInstance().getCurrentActiveLevel().lock();
-            if (level != nullptr)
-            {
-                selected_object = level->getGObjectByID(m_selected_gobject_id);
-            }
+            return selected_object;
+        }
+
+        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        if (level != nullptr)
+        {
+            selected_object = level->getGObjectByID(m_selected_gobject_id);
         }
 
         return selected_object;
     }
 
-    void EditorUI::onGObjectSelected(size_t selected_gobject_id)
+    void EditorUI::onGObjectSelected(GObjectID selected_gobject_id)
     {
         if (selected_gobject_id == m_selected_gobject_id)
             return;
@@ -281,7 +283,7 @@ namespace Pilot
 
         drawSelectedEntityAxis();
 
-        if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        if (m_selected_gobject_id != k_invalid_gobject_id)
         {
             LOG_INFO("select game object " + std::to_string(m_selected_gobject_id));
         }
@@ -368,7 +370,7 @@ namespace Pilot
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
                     WorldManager::getInstance().reloadCurrentLevel();
-                    onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+                    onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
                 {
@@ -398,11 +400,11 @@ namespace Pilot
             return;
         }
 
-        auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
-        const auto& all_gobjects = current_active_level->getAllGObjects();
+        const LevelObjectsMap& all_gobjects = current_active_level->getAllGObjects();
         for (auto& id_object_pair : all_gobjects)
         {
             const GObjectID          object_id = id_object_pair.first;
@@ -418,7 +420,7 @@ namespace Pilot
                     }
                     else
                     {
-                        onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+                        onGObjectSelected(k_invalid_gobject_id);
                     }
                     break;
                 }
@@ -792,7 +794,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        auto level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -805,7 +807,7 @@ namespace Pilot
             AssetManager::getInstance().getFullPath(node->m_file_path).generic_string();
 
         size_t new_gobject_id = level->createObject(new_object_instance_res);
-        if (new_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        if (new_gobject_id != k_invalid_gobject_id)
         {
             onGObjectSelected(new_gobject_id);
         }
@@ -926,13 +928,13 @@ namespace Pilot
         std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object != nullptr)
         {
-            auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+            std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 
             current_active_level->deleteGObjectByID(m_selected_gobject_id);
         }
-        onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+        onGObjectSelected(k_invalid_gobject_id);
     }
 
     void EditorUI::onCursorPos(double xpos, double ypos)
@@ -1013,7 +1015,7 @@ namespace Pilot
         if (m_cursor_on_axis != 3)
             return;
 
-        auto current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
