@@ -874,12 +874,12 @@ namespace Pilot
         }
     }
 
-    const size_t SceneManager::getGObjectIDByMeshID(size_t mesh_id) const
+    GObjectID SceneManager::getGObjectIDByMeshID(size_t mesh_id) const
     {
         auto iter = m_mesh_id_gobejct_id_map.find(mesh_id);
         if (iter == m_mesh_id_gobejct_id_map.end())
         {
-            return PILOT_INVALID_GOBJECT_ID;
+            return k_invalid_gobject_id;
         }
 
         return iter->second;

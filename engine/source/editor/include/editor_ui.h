@@ -38,7 +38,7 @@ namespace Pilot
                                float     last_mouse_pos_y,
                                Matrix4x4 object_matrix);
         void        updateCursorOnAxis(Vector2 cursor_uv);
-        void        buildEditorFileAssstsUITree(EditorFileNode* node);
+        void        buildEditorFileAssetsUITree(EditorFileNode* node);
         void        processEditorCommand();
         void        drawAxisToggleButton(const char* string_id, bool check_state, EditorAxisMode axis_mode);
         void        createComponentUI(Reflection::ReflectionInstance& instance);
@@ -60,9 +60,10 @@ namespace Pilot
         void onMouseButtonClicked(int key, int action);
         void onWindowClosed();
 
-        GObject* getSelectedGObject() const;
-        void     onGObjectSelected(size_t selected_gobject_id);
-        void     onDeleteSelectedGObject();
+        std::weak_ptr<GObject> getSelectedGObject() const;
+
+        void onGObjectSelected(GObjectID selected_gobject_id);
+        void onDeleteSelectedGObject();
 
     public:
         EditorUI(PilotEditor* editor);

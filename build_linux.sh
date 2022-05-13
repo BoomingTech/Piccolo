@@ -21,7 +21,7 @@ if test \( $# -eq 1 \) ;then
     else
         CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG="-G Unix Makefiles"
     fi
-elif test \( \( -n "$2" \) -a \( "$2" = "makefile" \) \);then
+elif test \( \( -n "$2" \) -a \( "$2" = "make" \) \);then
     CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG="-G Unix Makefiles"
 elif test \( \( -n "$2" \) -a \( "$2" = "ninja" \) \);then
     CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG="-G Ninja"
@@ -52,4 +52,4 @@ mkdir -p "engine/shader/generated/spv"
 export CC=clang
 export CXX=clang++
 cmake -S . -B build "${CMAKE_ARG_BUILD_TYPE_CONFIG}" "${CMAKE_ARG_BUILD_TOOL_TYPE_CONFIG}" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-cmake --build "${MY_DIR}/build" -- all
+cmake --build "${MY_DIR}/build" -- all -j$(nproc)

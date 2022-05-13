@@ -12,7 +12,7 @@ namespace Pilot
 
     public:
         float m_gravity {9.8f};
-        int   m_character_index {0};
+        std::string m_character_name;
 
         std::vector<ObjectInstanceRes> m_objects;
     };
