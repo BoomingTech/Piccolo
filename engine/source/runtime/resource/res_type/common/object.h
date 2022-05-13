@@ -23,6 +23,7 @@ namespace Pilot
 
     public:
         std::vector<std::string> m_components;
+        std::vector<Reflection::ReflectionPtr<Component>> m_new_components;
     };
 
     REFLECTION_TYPE(ObjectInstanceRes)
@@ -35,7 +36,6 @@ namespace Pilot
         Transform                m_transform;
         std::string              m_definition;
         std::vector<std::string> m_instance_components;
-
-        std::vector<Reflection::ReflectionPtr<Component>> m_components;
+        std::vector<Reflection::ReflectionPtr<Component>> m_new_components;
     };
 } // namespace Pilot

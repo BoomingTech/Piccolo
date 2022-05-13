@@ -68,6 +68,8 @@ namespace Pilot
 
         const TransformComponent* transform_conponent = tryGetComponentConst(TransformComponent);
         out_object_instance_res.m_transform           = transform_conponent->getTransformConst();
+
+        out_object_instance_res.m_new_components = m_components;
     }
 
     bool GObject::loadComponents(const std::vector<std::string>& components,
