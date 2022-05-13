@@ -17,7 +17,14 @@ namespace Pilot
     CameraComponent::CameraComponent(const CameraComponentRes& camera_res, GObject* parent_object) :
         Component(parent_object), m_camera_res(camera_res)
     {
-        const std::string& camera_type_name = camera_res.m_parameter.getTypeName();
+        postLoadResource(parent_object);
+    }
+
+    void CameraComponent::postLoadResource(GObject* parent_object)
+    {
+        m_parent_object = parent_object;
+
+        const std::string& camera_type_name = m_camera_res.m_parameter.getTypeName();
         if (camera_type_name == "FirstPersonCameraParameter")
         {
             m_camera_mode = CameraMode::first_person;
@@ -35,7 +42,7 @@ namespace Pilot
             LOG_ERROR("invalid camera type");
         }
 
-        SceneManager::getInstance().setFOV(camera_res.m_parameter->m_fov);
+        SceneManager::getInstance().setFOV(m_camera_res.m_parameter->m_fov);
     }
 
     void CameraComponent::tick(float delta_time)

@@ -40,7 +40,7 @@ namespace Pilot
 
         void impulseResolveCollision(PhysicsActor& object_a, PhysicsActor& object_b, ContactPoint& contact_point) const;
 
-        bool overlap(const AxisAlignedBox& query_bouding);
+        bool isOverlap(const AxisAlignedBox& query_bouding);
 
     private:
         std::vector<PhysicsActor*> m_physics_actors;

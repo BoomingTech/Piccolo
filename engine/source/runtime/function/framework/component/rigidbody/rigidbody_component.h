@@ -21,6 +21,8 @@ namespace Pilot
         RigidBodyComponent(const RigidBodyComponentRes& rigidbody_res, GObject* parent_object);
         ~RigidBodyComponent() override;
 
+        void postLoadResource(GObject* parent_object) override;
+
         void tick(float delta_time) override {}
         void updateGlobalTransform(const Transform& transform);
     };

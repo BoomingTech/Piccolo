@@ -1,6 +1,7 @@
 #include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
 
 #include "runtime/core/base/public_singleton.h"
+#include "runtime/core/base/macro.h"
 
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/object/object.h"
@@ -11,10 +12,22 @@ namespace Pilot
     RigidBodyComponent::RigidBodyComponent(const RigidBodyComponentRes& rigidbody_res, GObject* parent_object) :
         Component(parent_object), m_rigidbody_res(rigidbody_res)
     {
+        postLoadResource(parent_object);
+    }
+
+    void RigidBodyComponent::postLoadResource(GObject* parent_object)
+    {
+        m_parent_object = parent_object;
+
         const TransformComponent* parent_transform = m_parent_object->tryGetComponentConst(TransformComponent);
+        if (parent_transform == nullptr)
+        {
+            LOG_ERROR("No transform component in the object");
+            return;
+        }
 
         m_physics_actor = PhysicsSystem::getInstance().createPhysicsActor(
-            parent_object, parent_transform->getTransformConst(), rigidbody_res);
+            parent_object, parent_transform->getTransformConst(), m_rigidbody_res);
     }
 
     RigidBodyComponent::~RigidBodyComponent()

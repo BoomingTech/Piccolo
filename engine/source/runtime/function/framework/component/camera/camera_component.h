@@ -34,6 +34,8 @@ namespace Pilot
         CameraComponent() {}
         CameraComponent(const CameraComponentRes& camera_param, GObject* parent_object);
 
+        void postLoadResource(GObject * parent_object) override;
+
         void tick(float delta_time) override;
 
     private:

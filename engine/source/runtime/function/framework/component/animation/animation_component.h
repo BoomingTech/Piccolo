@@ -19,6 +19,8 @@ namespace Pilot
         AnimationComponent() = default;
         AnimationComponent(const AnimationComponentRes& animation_res, GObject* parent_object);
 
+        void postLoadResource(GObject * parent_object) override;
+
         void tick(float delta_time) override;
 
         const AnimationResult& getResult() const;

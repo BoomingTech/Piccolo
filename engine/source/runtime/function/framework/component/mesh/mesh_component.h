@@ -25,6 +25,8 @@ namespace Pilot
         MeshComponent() {};
         MeshComponent(const MeshComponentRes& mesh_ast, GObject* parent_object);
 
+        void postLoadResource(GObject* parent_object) override;
+
         const std::vector<GameObjectComponentDesc>& getRawMeshes() const { return m_raw_meshes; }
 
         void tick(float delta_time) override;

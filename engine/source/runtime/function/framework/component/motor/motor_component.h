@@ -28,6 +28,8 @@ namespace Pilot
         MotorComponent() {}
         MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
 
+        void postLoadResource(GObject * parent_object) override;
+
         ~MotorComponent() override;
 
         void tick(float delta_time) override;
@@ -60,7 +62,8 @@ namespace Pilot
         MotorState m_motor_state {MotorState::moving};
         JumpState  m_jump_state {JumpState::idle};
 
-        Controller* m_controller {nullptr};
+        ControllerType m_controller_type {ControllerType::none};
+        Controller*    m_controller {nullptr};
 
         bool m_is_moving {false};
     };

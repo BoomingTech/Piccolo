@@ -12,6 +12,13 @@ namespace Pilot
         m_transform_buffer[1] = transform;
         m_transform           = transform;
     }
+    
+    void TransformComponent::postLoadResource(GObject* parent_gobject) 
+    { 
+        m_parent_object = parent_gobject;
+        m_transform_buffer[0] = m_transform;
+        m_transform_buffer[1] = m_transform;
+    }
 
     void TransformComponent::setPosition(const Vector3& new_translation)
     {
