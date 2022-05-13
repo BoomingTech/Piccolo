@@ -83,6 +83,8 @@ namespace Pilot
         std::string m_name;
         std::string m_definition_url;
 
+        // we have to use the ReflectionPtr due to that the components need to be reflected 
+        // in editor, and it's polymorphism
         std::vector<Reflection::ReflectionPtr<Component>> m_components;
         std::vector<std::string>                          m_component_type_names;
     };

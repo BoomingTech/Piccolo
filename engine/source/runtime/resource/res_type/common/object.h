@@ -35,5 +35,7 @@ namespace Pilot
         Transform                m_transform;
         std::string              m_definition;
         std::vector<std::string> m_instance_components;
+
+        std::vector<Reflection::ReflectionPtr<Component>> m_components;
     };
 } // namespace Pilot
