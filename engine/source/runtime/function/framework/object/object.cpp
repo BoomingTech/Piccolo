@@ -54,29 +54,22 @@ namespace Pilot
         m_definition_url = object_instance_res.m_definition;
 
         ObjectDefinitionRes definition_res;
-        AssetManager::getInstance().loadAsset(m_definition_url, definition_res);
 
-        if (definition_res.m_new_components.empty())
+        const bool is_loaded_success = AssetManager::getInstance().loadAsset(m_definition_url, definition_res);
+        if (!is_loaded_success)
+            return false;
+
+        for (auto loaded_component : definition_res.m_components)
         {
-            if (loadComponents(definition_res.m_components, instance_component_type_set) == false)
-                return false;
-        }
-        else
-        {
-            for (auto loaded_component : definition_res.m_new_components)
-            {
-                const std::string type_name = loaded_component.getTypeName();
-                if (type_name == "TransformComponent")
-                    continue;
+            const std::string type_name = loaded_component.getTypeName();
+            if (type_name == "TransformComponent")
+                continue;
 
-                loaded_component->m_tick_in_editor_mode = true;
+            loaded_component->postLoadResource(this);
 
-                loaded_component->postLoadResource(this);
-
-                m_components.push_back(loaded_component);
-                m_component_type_names.push_back(type_name);
-                instance_component_type_set.insert(type_name);
-            }
+            m_components.push_back(loaded_component);
+            m_component_type_names.push_back(type_name);
+            instance_component_type_set.insert(type_name);
         }
 
         return true;

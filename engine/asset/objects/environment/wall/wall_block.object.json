@@ -1,6 +1,5 @@
 {
-    "components": ["asset/objects/environment/wall/components/mesh/wall_block.mesh.component.json"],
-    "new_components": [
+    "components": [
         {
             "$context": {
                 "rigidbody_res": {
@@ -41,7 +40,8 @@
                 }
             },
             "$typeName": "RigidBodyComponent"
-        }, {
+        },
+        {
             "$context": {
                 "mesh_res": {
                     "sub_meshes": [

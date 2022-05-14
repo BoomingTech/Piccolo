@@ -1,6 +1,5 @@
 {
-    "components": ["asset/objects/environment/floor/components/mesh/floor.mesh.component.json"],
-    "new_components": [
+    "components": [
         {
             "$context": {
                 "transform": {
@@ -23,7 +22,8 @@
                 }
             },
             "$typeName": "TransformComponent"
-        }, {
+        },
+        {
             "$context": {
                 "mesh_res": {
                     "sub_meshes": [

@@ -1,8 +1,5 @@
 {
     "components": [
-        "asset/objects/environment/wall/components/mesh/wall_with_window.mesh.component.json", "asset/objects/environment/wall/components/rigid_body/wall_with_window.rigid_body.component.json"
-    ],
-    "new_components": [
         {
             "$context": {
                 "mesh_res": {
@@ -33,7 +30,8 @@
                 }
             },
             "$typeName": "MeshComponent"
-        }, {
+        },
+        {
             "$context": {
                 "rigidbody_res": {
                     "actor_type": 1,
@@ -158,7 +156,8 @@
                                     "z": 1
                                 }
                             }
-                        }, {
+                        },
+                        {
                             "geometry": {
                                 "$context": {
                                     "half_extents": {
