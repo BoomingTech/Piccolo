@@ -1,6 +1,7 @@
 {
     "components": [
-        "asset/objects/environment/wall/components/mesh/wall.mesh.component.json", "asset/objects/environment/wall/components/rigid_body/wall.rigid_body.component.json"
+        "asset/objects/environment/wall/components/mesh/wall.mesh.component.json",
+        "asset/objects/environment/wall/components/rigid_body/wall.rigid_body.component.json"
     ],
     "new_components": [
         {
@@ -9,8 +10,8 @@
                 "mesh_res": {
                     "sub_meshes": [
                         {
-                            "material": "asset/objects/environment/_material/silver.material.json",
-                            "obj_file_ref": "asset/objects/environment/fence/components/mesh/fence.obj",
+                            "material": "asset/objects/environment/_material/gold.material.json",
+                            "obj_file_ref": "asset/objects/environment/wall/components/mesh/wall.obj",
                             "transform": {
                                 "position": {
                                     "x": 0,
@@ -33,7 +34,8 @@
                     ]
                 }
             }
-        }, {
+        },
+        {
             "$typeName": "RigidBodyComponent",
             "$context": {
                 "rigidbody_res": {
@@ -44,9 +46,9 @@
                             "geometry": {
                                 "$context": {
                                     "half_extents": {
-                                        "x": 43,
-                                        "y": 0.5,
-                                        "z": 6
+                                        "x": 0.15,
+                                        "y": 5,
+                                        "z": 3.5
                                     }
                                 },
                                 "$typeName": "Box"
@@ -54,102 +56,10 @@
                             "local_transform": {
                                 "position": {
                                     "x": 0,
-                                    "y": 24,
-                                    "z": 6
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
                                     "y": 0,
-                                    "z": 0
+                                    "z": 3.5
                                 },
-                                "scale": {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
-                                }
-                            }
-                        }, {
-                            "geometry": {
-                                "$context": {
-                                    "half_extents": {
-                                        "x": 43,
-                                        "y": 0.5,
-                                        "z": 6
-                                    }
-                                },
-                                "$typeName": "Box"
-                            },
-                            "local_transform": {
-                                "position": {
-                                    "x": 0,
-                                    "y": -24,
-                                    "z": 6
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "scale": {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
-                                }
-                            }
-                        }, {
-                            "geometry": {
-                                "$context": {
-                                    "half_extents": {
-                                        "x": 0.5,
-                                        "y": 43,
-                                        "z": 6
-                                    }
-                                },
-                                "$typeName": "Box"
-                            },
-                            "local_transform": {
-                                "position": {
-                                    "x": 42.5,
-                                    "y": 0,
-                                    "z": 6
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "scale": {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
-                                }
-                            }
-                        }, {
-                            "geometry": {
-                                "$context": {
-                                    "half_extents": {
-                                        "x": 0.5,
-                                        "y": 43,
-                                        "z": 6
-                                    }
-                                },
-                                "$typeName": "Box"
-                            },
-                            "local_transform": {
-                                "position": {
-                                    "x": -43,
-                                    "y": 0,
-                                    "z": 6
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
+                                "rotate": {},
                                 "scale": {
                                     "x": 1,
                                     "y": 1,
