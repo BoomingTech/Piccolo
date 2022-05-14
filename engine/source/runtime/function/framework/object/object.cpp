@@ -1,5 +1,6 @@
 #include "runtime/function/framework/object/object.h"
 
+#include "runtime/core/meta/reflection/reflection.h"
 #include "runtime/engine.h"
 #include "runtime/function/framework/component/component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
@@ -55,8 +56,28 @@ namespace Pilot
         ObjectDefinitionRes definition_res;
         AssetManager::getInstance().loadAsset(m_definition_url, definition_res);
 
-        if (loadComponents(definition_res.m_components, instance_component_type_set) == false)
-            return false;
+        if (definition_res.m_new_components.empty())
+        {
+            if (loadComponents(definition_res.m_components, instance_component_type_set) == false)
+                return false;
+        }
+        else
+        {
+            for (auto loaded_component : definition_res.m_new_components)
+            {
+                const std::string type_name = loaded_component.getTypeName();
+                if (type_name == "TransformComponent")
+                    continue;
+
+                loaded_component->m_tick_in_editor_mode = true;
+
+                loaded_component->postLoadResource(this);
+
+                m_components.push_back(loaded_component);
+                m_component_type_names.push_back(type_name);
+                instance_component_type_set.insert(type_name);
+            }
+        }
 
         return true;
     }

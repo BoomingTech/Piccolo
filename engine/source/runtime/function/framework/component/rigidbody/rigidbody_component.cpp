@@ -17,6 +17,16 @@ namespace Pilot
             parent_object, parent_transform->getTransformConst(), rigidbody_res);
     }
 
+    void RigidBodyComponent::postLoadResource(GObject* parent_object)
+    {
+        m_parent_object = parent_object;
+
+        const TransformComponent* parent_transform = m_parent_object->tryGetComponentConst(TransformComponent);
+
+        m_physics_actor = PhysicsSystem::getInstance().createPhysicsActor(
+            parent_object, parent_transform->getTransformConst(), m_rigidbody_res);
+    }
+
     RigidBodyComponent::~RigidBodyComponent()
     {
         if (m_physics_actor)
