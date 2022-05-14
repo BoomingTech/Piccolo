@@ -27,7 +27,6 @@ namespace Pilot
 
         virtual void tick(float delta_time) {};
 
-        bool m_tick_in_editor_mode {false};
     };
 
 } // namespace Pilot

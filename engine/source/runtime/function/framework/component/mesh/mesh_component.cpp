@@ -10,49 +10,13 @@
 
 namespace Pilot
 {
-    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* parent_object) :
-        Component(parent_object), m_mesh_res(mesh_res)
+    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* parent_object) : m_mesh_res(mesh_res)
     {
-        AssetManager& asset_manager = AssetManager::getInstance();
-
-        m_raw_meshes.resize(mesh_res.m_sub_meshes.size());
-
-        size_t raw_mesh_count = 0;
-        for (const SubMeshRes& sub_mesh : mesh_res.m_sub_meshes)
-        {
-            GameObjectComponentDesc& meshComponent = m_raw_meshes[raw_mesh_count];
-            meshComponent.mesh_desc.mesh_file = asset_manager.getFullPath(sub_mesh.m_obj_file_ref).generic_string();
-
-            meshComponent.material_desc.with_texture = sub_mesh.m_material.empty() == false;
-
-            if (meshComponent.material_desc.with_texture)
-            {
-                MaterialRes material_res;
-                asset_manager.loadAsset(sub_mesh.m_material, material_res);
-
-                meshComponent.material_desc.baseColorTextureFile =
-                    asset_manager.getFullPath(material_res.m_base_colour_texture_file).generic_string();
-                meshComponent.material_desc.metallicRoughnessTextureFile =
-                    asset_manager.getFullPath(material_res.m_metallic_roughness_texture_file).generic_string();
-                meshComponent.material_desc.normalTextureFile =
-                    asset_manager.getFullPath(material_res.m_normal_texture_file).generic_string();
-                meshComponent.material_desc.occlusionTextureFile =
-                    asset_manager.getFullPath(material_res.m_occlusion_texture_file).generic_string();
-                meshComponent.material_desc.emissiveTextureFile =
-                    asset_manager.getFullPath(material_res.m_emissive_texture_file).generic_string();
-            }
-
-            auto object_space_transform                   = sub_mesh.m_transform.getMatrix();
-            meshComponent.transform_desc.transform_matrix = object_space_transform;
-
-            ++raw_mesh_count;
-        }
+        postLoadResource(parent_object);
     }
 
-    void MeshComponent::postLoadResource(GObject* parent_object) 
+    void MeshComponent::postLoadResource(GObject* parent_object)
     {
-        m_tick_in_editor_mode = true;
-
         m_parent_object = parent_object;
 
         AssetManager& asset_manager = AssetManager::getInstance();

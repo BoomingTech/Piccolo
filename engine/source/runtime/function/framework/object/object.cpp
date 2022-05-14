@@ -14,6 +14,18 @@
 
 namespace Pilot
 {
+    bool shouldComponentTick(std::string component_type_name)
+    {
+        if (g_is_editor_mode)
+        {
+            return g_editor_tick_component_types.find(component_type_name) != g_editor_tick_component_types.end();
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     GObject::~GObject()
     {
         for (auto& component : m_components)
@@ -27,11 +39,10 @@ namespace Pilot
     {
         for (auto& component : m_components)
         {
-            if (component->m_tick_in_editor_mode == false && g_is_editor_mode)
+            if (shouldComponentTick(component.getTypeName()))
             {
-                continue;
+                component->tick(delta_time);
             }
-            component->tick(delta_time);
         }
     }
 
@@ -52,16 +63,14 @@ namespace Pilot
 
         setName(object_instance_res.m_name);
 
-        // load object instance components
-        m_components = object_instance_res.m_new_components;
-
-        // load transform component
-        if (hasComponent("TransformComponent") == false)
+        // load object instanced components
+        m_components = object_instance_res.m_instanced_components;
+        for (auto component : m_components)
         {
-            auto transform_component_ptr =
-                PILOT_REFLECTION_NEW(TransformComponent, object_instance_res.m_transform, this);
-            transform_component_ptr->m_tick_in_editor_mode = true;
-            m_components.push_back(transform_component_ptr);
+            if (component)
+            {
+                component->postLoadResource(this);
+            }
         }
 
         // load object definition components
@@ -96,7 +105,7 @@ namespace Pilot
         const TransformComponent* transform_conponent = tryGetComponentConst(TransformComponent);
         out_object_instance_res.m_transform           = transform_conponent->getTransformConst();
 
-        out_object_instance_res.m_new_components = m_components;
+        out_object_instance_res.m_instanced_components = m_components;
     }
 
 } // namespace Pilot

@@ -8,15 +8,11 @@ namespace Pilot
     AnimationComponent::AnimationComponent(const AnimationComponentRes& animation_res, GObject* parent_object) :
         Component(parent_object), m_animation_res(animation_res)
     {
-        auto skeleton_res = AnimationManager::tryLoadSkeleton(animation_res.skeleton_file_path);
-
-        m_skeleton.buildSkeleton(*skeleton_res);
+        postLoadResource(parent_object);
     }
 
     void AnimationComponent::postLoadResource(GObject* parent_object)
     {
-        m_tick_in_editor_mode = false;
-
         m_parent_object = parent_object;
 
         auto skeleton_res = AnimationManager::tryLoadSkeleton(m_animation_res.skeleton_file_path);

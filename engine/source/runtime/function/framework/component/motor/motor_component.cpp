@@ -18,22 +18,11 @@ namespace Pilot
     MotorComponent::MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object) :
         Component(parent_object), m_motor_res(motor_res)
     {
-        if (m_motor_res.m_controller_type == ControllerType::physics)
-        {
-            PhysicsControllerConfig* controller_config =
-                static_cast<PhysicsControllerConfig*>(m_motor_res.m_controller_config);
-            m_controller = new CharacterController(controller_config->m_capsule_shape);
-        }
-
-        const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
-
-        m_target_position = transform_component->getPosition();
+        postLoadResource(parent_object);
     }
 
     void MotorComponent::postLoadResource(GObject* parent_object)
     {
-        m_tick_in_editor_mode = false;
-
         m_parent_object = parent_object;
 
         if (m_motor_res.m_controller_type == ControllerType::physics)
