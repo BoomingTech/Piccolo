@@ -35,20 +35,34 @@ namespace Pilot
         }
     }
 
+    bool GObject::hasComponent(const std::string& compenent_type_name) const
+    {
+        for (const auto& component : m_components)
+        {
+            if (component.getTypeName() == compenent_type_name)
+                return true;
+        }
+
+        return false;
+    }
+
     bool GObject::load(const ObjectInstanceRes& object_instance_res)
     {
+        m_components.clear();
+
         setName(object_instance_res.m_name);
 
-        // load transform component
-        auto transform_component_ptr = PILOT_REFLECTION_NEW(TransformComponent, object_instance_res.m_transform, this);
-        transform_component_ptr->m_tick_in_editor_mode = true;
-        m_components.push_back(transform_component_ptr);
-        m_component_type_names.push_back("TransformComponent");
-
         // load object instance components
-        TypeNameSet instance_component_type_set;
-        if (loadComponents(object_instance_res.m_instance_components, instance_component_type_set) == false)
-            return false;
+        m_components = object_instance_res.m_new_components;
+
+        // load transform component
+        if (hasComponent("TransformComponent") == false)
+        {
+            auto transform_component_ptr =
+                PILOT_REFLECTION_NEW(TransformComponent, object_instance_res.m_transform, this);
+            transform_component_ptr->m_tick_in_editor_mode = true;
+            m_components.push_back(transform_component_ptr);
+        }
 
         // load object definition components
         m_definition_url = object_instance_res.m_definition;
@@ -62,14 +76,13 @@ namespace Pilot
         for (auto loaded_component : definition_res.m_components)
         {
             const std::string type_name = loaded_component.getTypeName();
-            if (type_name == "TransformComponent")
+            // don't create component if it has been instanced
+            if (hasComponent(type_name))
                 continue;
 
             loaded_component->postLoadResource(this);
 
             m_components.push_back(loaded_component);
-            m_component_type_names.push_back(type_name);
-            instance_component_type_set.insert(type_name);
         }
 
         return true;
@@ -84,49 +97,6 @@ namespace Pilot
         out_object_instance_res.m_transform           = transform_conponent->getTransformConst();
 
         out_object_instance_res.m_new_components = m_components;
-    }
-
-    bool GObject::loadComponents(const std::vector<std::string>& components,
-                                 TypeNameSet&                    out_instance_component_type_set)
-    {
-        AssetManager&          asset_manager = AssetManager::getInstance();
-        ComponentDefinitionRes definition_res;
-
-        for (const std::string& definition_res_url : components)
-        {
-            asset_manager.loadAsset(definition_res_url, definition_res);
-            if (loadComponentDefinition(definition_res, false, out_instance_component_type_set) == false)
-                return false;
-        }
-
-        return true;
-    }
-
-    bool GObject::loadComponentDefinition(const ComponentDefinitionRes& component_definition_res,
-                                          const bool                    is_instance_component,
-                                          TypeNameSet&                  out_instance_component_type_set)
-    {
-        AssetManager&          asset_manager = AssetManager::getInstance();
-        ComponentDefinitionRes component_definition;
-
-        if (is_instance_component || out_instance_component_type_set.count(component_definition_res.m_type_name) == 0)
-        {
-            auto&& component_loader = asset_manager.getComponentLoader(component_definition_res.m_type_name);
-            auto&& component        = component_loader(component_definition_res.m_component, this);
-
-            if (component)
-            {
-                m_components.push_back(component);
-                m_component_type_names.push_back(component_definition_res.m_type_name);
-                out_instance_component_type_set.insert(component_definition_res.m_type_name);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
 } // namespace Pilot
