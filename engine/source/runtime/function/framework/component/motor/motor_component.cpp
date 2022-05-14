@@ -30,6 +30,24 @@ namespace Pilot
         m_target_position = transform_component->getPosition();
     }
 
+    void MotorComponent::postLoadResource(GObject* parent_object)
+    {
+        m_tick_in_editor_mode = false;
+
+        m_parent_object = parent_object;
+
+        if (m_motor_res.m_controller_type == ControllerType::physics)
+        {
+            PhysicsControllerConfig* controller_config =
+                static_cast<PhysicsControllerConfig*>(m_motor_res.m_controller_config);
+            m_controller = new CharacterController(controller_config->m_capsule_shape);
+        }
+
+        const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
+
+        m_target_position = transform_component->getPosition();
+    }
+
     MotorComponent::~MotorComponent()
     {
         if (m_motor_res.m_controller_type == ControllerType::physics)
@@ -43,7 +61,7 @@ namespace Pilot
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
-        std::shared_ptr<Level>   current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;

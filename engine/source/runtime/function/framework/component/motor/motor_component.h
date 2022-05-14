@@ -28,6 +28,8 @@ namespace Pilot
         MotorComponent() {}
         MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
 
+        void postLoadResource(GObject * parent_object) override;
+
         ~MotorComponent() override;
 
         void tick(float delta_time) override;

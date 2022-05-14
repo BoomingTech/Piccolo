@@ -13,6 +13,17 @@ namespace Pilot
         m_skeleton.buildSkeleton(*skeleton_res);
     }
 
+    void AnimationComponent::postLoadResource(GObject* parent_object)
+    {
+        m_tick_in_editor_mode = false;
+
+        m_parent_object = parent_object;
+
+        auto skeleton_res = AnimationManager::tryLoadSkeleton(m_animation_res.skeleton_file_path);
+
+        m_skeleton.buildSkeleton(*skeleton_res);
+    }
+
     void AnimationComponent::tick(float delta_time)
     {
         m_animation_res.blend_state.blend_ratio[0] +=

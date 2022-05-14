@@ -19,6 +19,8 @@ namespace Pilot
 
     void RigidBodyComponent::postLoadResource(GObject* parent_object)
     {
+        m_tick_in_editor_mode = false;
+
         m_parent_object = parent_object;
 
         const TransformComponent* parent_transform = m_parent_object->tryGetComponentConst(TransformComponent);

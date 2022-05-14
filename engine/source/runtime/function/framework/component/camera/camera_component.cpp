@@ -38,6 +38,33 @@ namespace Pilot
         SceneManager::getInstance().setFOV(camera_res.m_parameter->m_fov);
     }
 
+    void CameraComponent::postLoadResource(GObject* parent_object)
+    {
+        m_tick_in_editor_mode = false;
+
+        m_parent_object = parent_object;
+
+                const std::string& camera_type_name = m_camera_res.m_parameter.getTypeName();
+        if (camera_type_name == "FirstPersonCameraParameter")
+        {
+            m_camera_mode = CameraMode::first_person;
+        }
+        else if (camera_type_name == "ThirdPersonCameraParameter")
+        {
+            m_camera_mode = CameraMode::third_person;
+        }
+        else if (camera_type_name == "FreeCameraParameter")
+        {
+            m_camera_mode = CameraMode::free;
+        }
+        else
+        {
+            LOG_ERROR("invalid camera type");
+        }
+
+        SceneManager::getInstance().setFOV(m_camera_res.m_parameter->m_fov);
+    }
+
     void CameraComponent::tick(float delta_time)
     {
         std::shared_ptr<Level>     current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();

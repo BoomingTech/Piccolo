@@ -51,6 +51,8 @@ namespace Pilot
 
     void MeshComponent::postLoadResource(GObject* parent_object) 
     {
+        m_tick_in_editor_mode = true;
+
         m_parent_object = parent_object;
 
         AssetManager& asset_manager = AssetManager::getInstance();
