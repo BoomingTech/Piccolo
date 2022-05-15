@@ -37,6 +37,7 @@ namespace Pilot
                                                              Pilot::Quaternion& values,
                                                              float              resetValue  = 0.0f,
                                                              float              columnWidth = 100.0f);
+
     EditorUI::EditorUI(PilotEditor* editor) : m_editor(editor)
     {
         Path&       path_service            = Path::getInstance();
@@ -249,29 +250,31 @@ namespace Pilot
         return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
     }
 
-    GObject* EditorUI::getSelectedGObject() const
+    std::weak_ptr<GObject> EditorUI::getSelectedGObject() const
     {
-        GObject* selected_object = nullptr;
-        if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        std::weak_ptr<GObject> selected_object;
+        if (m_selected_gobject_id == k_invalid_gobject_id)
         {
-            Level* level = WorldManager::getInstance().getCurrentActiveLevel();
-            if (level != nullptr)
-            {
-                selected_object = level->getGObjectByID(m_selected_gobject_id);
-            }
+            return selected_object;
+        }
+
+        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        if (level != nullptr)
+        {
+            selected_object = level->getGObjectByID(m_selected_gobject_id);
         }
 
         return selected_object;
     }
 
-    void EditorUI::onGObjectSelected(size_t selected_gobject_id)
+    void EditorUI::onGObjectSelected(GObjectID selected_gobject_id)
     {
         if (selected_gobject_id == m_selected_gobject_id)
             return;
 
         m_selected_gobject_id = selected_gobject_id;
 
-        GObject* selected_gobject = getSelectedGObject();
+        std::shared_ptr<GObject> selected_gobject = getSelectedGObject().lock();
         if (selected_gobject)
         {
             const TransformComponent* transform_component = selected_gobject->tryGetComponentConst(TransformComponent);
@@ -280,7 +283,7 @@ namespace Pilot
 
         drawSelectedEntityAxis();
 
-        if (m_selected_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        if (m_selected_gobject_id != k_invalid_gobject_id)
         {
             LOG_INFO("select game object " + std::to_string(m_selected_gobject_id));
         }
@@ -367,7 +370,7 @@ namespace Pilot
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
                     WorldManager::getInstance().reloadCurrentLevel();
-                    onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+                    onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
                 {
@@ -397,16 +400,16 @@ namespace Pilot
             return;
         }
 
-        const Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
-        const auto& all_gobjects = current_active_level->getAllGObjects();
+        const LevelObjectsMap& all_gobjects = current_active_level->getAllGObjects();
         for (auto& id_object_pair : all_gobjects)
         {
-            const size_t      object_id = id_object_pair.first;
-            GObject*          object    = id_object_pair.second;
-            const std::string name      = object->getName();
+            const GObjectID          object_id = id_object_pair.first;
+            std::shared_ptr<GObject> object    = id_object_pair.second;
+            const std::string        name      = object->getName();
             if (name.size() > 0)
             {
                 if (ImGui::Selectable(name.c_str(), m_selected_gobject_id == object_id))
@@ -417,7 +420,7 @@ namespace Pilot
                     }
                     else
                     {
-                        onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+                        onGObjectSelected(k_invalid_gobject_id);
                     }
                     break;
                 }
@@ -529,7 +532,7 @@ namespace Pilot
             return;
         }
 
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object == nullptr)
         {
             ImGui::End();
@@ -590,7 +593,7 @@ namespace Pilot
             m_last_file_tree_update = current_time;
 
             EditorFileNode* editor_root_node = m_editor_file_service.getEditorRootNode();
-            buildEditorFileAssstsUITree(editor_root_node);
+            buildEditorFileAssetsUITree(editor_root_node);
             ImGui::EndTable();
         }
 
@@ -690,6 +693,11 @@ namespace Pilot
         {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Press Left Alt key to display the mouse cursor!");
         }
+        else
+        {
+            ImGui::TextColored(
+                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", m_camera_speed);
+        }
 
         auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
 
@@ -748,7 +756,7 @@ namespace Pilot
         }
     }
 
-    void EditorUI::buildEditorFileAssstsUITree(EditorFileNode* node)
+    void EditorUI::buildEditorFileAssetsUITree(EditorFileNode* node)
     {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -762,7 +770,7 @@ namespace Pilot
             if (open)
             {
                 for (int child_n = 0; child_n < node->m_child_nodes.size(); child_n++)
-                    buildEditorFileAssstsUITree(node->m_child_nodes[child_n].get());
+                    buildEditorFileAssetsUITree(node->m_child_nodes[child_n].get());
                 ImGui::TreePop();
             }
         }
@@ -786,7 +794,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        Level* level = WorldManager::getInstance().getCurrentActiveLevel();
+        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -799,7 +807,7 @@ namespace Pilot
             AssetManager::getInstance().getFullPath(node->m_file_path).generic_string();
 
         size_t new_gobject_id = level->createObject(new_object_instance_res);
-        if (new_gobject_id != PILOT_INVALID_GOBJECT_ID)
+        if (new_gobject_id != k_invalid_gobject_id)
         {
             onGObjectSelected(new_gobject_id);
         }
@@ -807,7 +815,7 @@ namespace Pilot
 
     void EditorUI::drawSelectedEntityAxis()
     {
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
 
         if (m_is_editor_mode && selected_object != nullptr)
         {
@@ -877,7 +885,7 @@ namespace Pilot
 
     void EditorUI::processEditorCommand()
     {
-        float      camera_speed  = 0.05f;
+        float      camera_speed  = m_camera_speed;
         Quaternion camera_rotate = m_tmp_uistate->m_editor_camera->rotation().inverse();
         Vector3    camera_relative_pos(0, 0, 0);
 
@@ -917,16 +925,16 @@ namespace Pilot
     void EditorUI::onDeleteSelectedGObject()
     {
         // delete selected entity
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object != nullptr)
         {
-            Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+            std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 
             current_active_level->deleteGObjectByID(m_selected_gobject_id);
         }
-        onGObjectSelected(PILOT_INVALID_GOBJECT_ID);
+        onGObjectSelected(k_invalid_gobject_id);
     }
 
     void EditorUI::onCursorPos(double xpos, double ypos)
@@ -934,7 +942,8 @@ namespace Pilot
         if (!m_is_editor_mode)
             return;
 
-        constexpr float angularVelocity = 180.0f / 600.0f; // degrees/pixel
+        float angularVelocity =
+            180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
         if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
         {
             if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
@@ -977,10 +986,25 @@ namespace Pilot
         {
             return;
         }
-        // wheel scrolled up = zoom in by 2 extra degrees
+
         if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
         {
-            m_tmp_uistate->m_editor_camera->zoom((float)yoffset * 2.0f);
+            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+            {
+                if (yoffset > 0)
+                {
+                    m_camera_speed *= 1.2f;
+                }
+                else
+                {
+                    m_camera_speed *= 0.8f;
+                }
+            }
+            else
+            {
+                m_tmp_uistate->m_editor_camera->zoom((float)yoffset *
+                                                     2.0f); // wheel scrolled up = zoom in by 2 extra degrees
+            }
         }
     }
 
@@ -991,7 +1015,7 @@ namespace Pilot
         if (m_cursor_on_axis != 3)
             return;
 
-        const Level* current_active_level = WorldManager::getInstance().getCurrentActiveLevel();
+        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
@@ -1016,12 +1040,13 @@ namespace Pilot
                               float     last_mouse_pos_y,
                               Matrix4x4 model_matrix)
     {
-        GObject* selected_object = getSelectedGObject();
+        std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object == nullptr)
             return;
 
-        constexpr float angularVelocity = 18.0f / 600.0f;
-        Vector2 delta_mouse_move_uv     = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
+        float angularVelocity =
+            18.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 18 degrees while moving full screen
+        Vector2 delta_mouse_move_uv = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
 
         Vector3    model_scale;
         Quaternion model_rotation;

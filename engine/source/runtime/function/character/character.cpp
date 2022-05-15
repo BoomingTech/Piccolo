@@ -7,9 +7,19 @@
 
 namespace Pilot
 {
-    Character::Character(GObject* character_object) { setObject(character_object); }
+    Character::Character(std::shared_ptr<GObject> character_object) { setObject(character_object); }
 
-    void Character::setObject(GObject* gobject)
+    GObjectID Character::getObjectID() const
+    {
+        if (m_character_object)
+        {
+            return m_character_object->getID();
+        }
+
+        return k_invalid_gobject_id;
+    }
+
+    void Character::setObject(std::shared_ptr<GObject> gobject)
     {
         m_character_object = gobject;
         if (m_character_object)
@@ -29,9 +39,6 @@ namespace Pilot
 
     void Character::tick()
     {
-        if (g_is_editor_mode)
-            return;
-
         if (m_character_object == nullptr)
             return;
 

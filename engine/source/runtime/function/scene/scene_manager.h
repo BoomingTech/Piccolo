@@ -5,6 +5,7 @@
 
 #include "runtime/resource/res_type/global/global_rendering.h"
 
+#include "runtime/function/framework/object/object_id_allocator.h"
 #include "runtime/function/render/include/render/framebuffer.h"
 #include "runtime/function/scene/scene_allocator.h"
 #include "runtime/function/scene/scene_object.h"
@@ -16,10 +17,6 @@ namespace Pilot
     class SceneManager final : public PublicSingleton<SceneManager>
     {
         friend class PublicSingleton<SceneManager>;
-
-    public:
-        SceneManager(const SceneManager&) = delete;
-        SceneManager& operator=(const SceneManager&) = delete;
 
     protected:
         SceneManager()                             = default;
@@ -51,8 +48,8 @@ namespace Pilot
         const Vector2  getFOV() const;
 
         // for EditorUI
-        void         setAxisMesh(std::vector<RenderMesh>& axis_meshes);
-        const size_t getGObjectIDByMeshID(size_t mesh_id) const;
+        void      setAxisMesh(std::vector<RenderMesh>& axis_meshes);
+        GObjectID getGObjectIDByMeshID(size_t mesh_id) const;
 
     private:
         std::vector<GameObjectDesc> m_go_descs;

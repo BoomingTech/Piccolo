@@ -77,7 +77,7 @@ namespace Pilot
 
         // rendering config
         static bool m_enable_validation_Layers;
-        static bool m_enable_debug_untils_label;
+        static bool m_enable_debug_utils_label;
         static bool m_enable_point_light_shadow;
 
     private:

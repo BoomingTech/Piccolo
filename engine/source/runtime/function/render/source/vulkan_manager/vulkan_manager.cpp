@@ -7,10 +7,10 @@ uint32_t Pilot::PVulkanManager::m_max_material_count             = 256;
 
 #ifndef NDEBUG
 bool Pilot::PVulkanManager::m_enable_validation_Layers  = true;
-bool Pilot::PVulkanManager::m_enable_debug_untils_label = true;
+bool Pilot::PVulkanManager::m_enable_debug_utils_label = true;
 #else
 bool Pilot::PVulkanManager::m_enable_validation_Layers  = false;
-bool Pilot::PVulkanManager::m_enable_debug_untils_label = false;
+bool Pilot::PVulkanManager::m_enable_debug_utils_label = false;
 #endif
 
 #if defined(__GNUC__) && defined(__MACH__)

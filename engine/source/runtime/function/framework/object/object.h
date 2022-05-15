@@ -1,5 +1,8 @@
 #pragma once
 
+#include "runtime/function/framework/component/component.h"
+#include "runtime/function/framework/object/object_id_allocator.h"
+
 #include "runtime/resource/res_type/common/object.h"
 
 #include <memory>
@@ -9,24 +12,14 @@
 
 namespace Pilot
 {
-    class Component;
-    class PObjectT;
-
-    // GObject : Game Object base class
+    /// GObject : Game Object base class
     class GObject
     {
         typedef std::unordered_set<std::string> TypeNameSet;
 
-    protected:
-        size_t                                            m_id; // compatible with ecs
-        std::string                                       m_name;
-        std::string                                       m_definition_url;
-        std::vector<Reflection::ReflectionPtr<Component>> m_components;
-        std::vector<std::string>                          m_component_type_names;
-
     public:
-        GObject(size_t id) : m_id {id} {}
-        ~GObject();
+        GObject(GObjectID id) : m_id {id} {}
+        virtual ~GObject();
 
         virtual void tick(float delta_time);
 
@@ -39,12 +32,10 @@ namespace Pilot
                                      const bool                    is_instance_component,
                                      TypeNameSet&                  out_instance_component_type_set);
 
-        const size_t getID() const { return m_id; }
+        GObjectID getID() const { return m_id; }
 
         void               setName(std::string name) { m_name = name; }
         const std::string& getName() const { return m_name; }
-
-        void destory();
 
         bool hasComponent(const std::string& compenent_type_name) const
         {
@@ -86,5 +77,13 @@ namespace Pilot
 
 #define tryGetComponent(COMPONENT_TYPE) tryGetComponent<COMPONENT_TYPE>(#COMPONENT_TYPE)
 #define tryGetComponentConst(COMPONENT_TYPE) tryGetComponentConst<const COMPONENT_TYPE>(#COMPONENT_TYPE)
+
+    protected:
+        GObjectID   m_id {k_invalid_gobject_id};
+        std::string m_name;
+        std::string m_definition_url;
+
+        std::vector<Reflection::ReflectionPtr<Component>> m_components;
+        std::vector<std::string>                          m_component_type_names;
     };
 } // namespace Pilot

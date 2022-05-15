@@ -313,8 +313,8 @@ namespace Pilot
     {
         GlobalRenderingRes global_rendering_res;
 
-        const auto& global_rendering_res_path = ConfigManager::getInstance().getGlobalRenderingResPath();
-        AssetManager::getInstance().loadAsset(global_rendering_res_path, global_rendering_res);
+        const auto& global_rendering_res_url = ConfigManager::getInstance().getGlobalRenderingResUrl();
+        AssetManager::getInstance().loadAsset(global_rendering_res_url, global_rendering_res);
         setSceneOnce(global_rendering_res);
     }
 
@@ -853,12 +853,8 @@ namespace Pilot
                                                  .generic_string()
                                                  .c_str());
 
-            
-            m_scene->m_color_grading_LUT_texture_handle =
-                SceneBuilder::loadTexture(AssetManager::getInstance()
-                                              .getFullPath(global_res.m_color_grading_map)
-                                              .generic_string()
-                                              .c_str());
+            m_scene->m_color_grading_LUT_texture_handle = SceneBuilder::loadTexture(
+                AssetManager::getInstance().getFullPath(global_res.m_color_grading_map).generic_string().c_str());
 
             m_scene->m_sky_color     = global_res.m_sky_color.toVector3();
             m_scene->m_ambient_light = {global_res.m_ambient_light.toVector3()};
@@ -878,12 +874,12 @@ namespace Pilot
         }
     }
 
-    const size_t SceneManager::getGObjectIDByMeshID(size_t mesh_id) const
+    GObjectID SceneManager::getGObjectIDByMeshID(size_t mesh_id) const
     {
         auto iter = m_mesh_id_gobejct_id_map.find(mesh_id);
         if (iter == m_mesh_id_gobejct_id_map.end())
         {
-            return PILOT_INVALID_GOBJECT_ID;
+            return k_invalid_gobject_id;
         }
 
         return iter->second;

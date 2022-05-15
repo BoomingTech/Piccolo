@@ -10,21 +10,19 @@ namespace Pilot
     {
         friend class PublicSingleton<ConfigManager>;
 
-    public:
-        ConfigManager(const ConfigManager&) = delete;
-        ConfigManager& operator=(const ConfigManager&) = delete;
-        //
-        ConfigManager() = default;
-
     private:
         std::filesystem::path m_root_folder;
         std::filesystem::path m_asset_folder;
         std::filesystem::path m_schema_folder;
-        std::filesystem::path m_default_world_path;
         std::filesystem::path m_editor_big_icon_path;
         std::filesystem::path m_editor_small_icon_path;
         std::filesystem::path m_editor_font_path;
-        std::filesystem::path m_global_rendering_res_path;
+
+        std::string m_default_world_url;
+        std::string m_global_rendering_res_url;
+
+    protected:
+        ConfigManager() = default;
 
     public:
         void initialize(const EngineInitParams& init_param);
@@ -34,10 +32,11 @@ namespace Pilot
         const std::filesystem::path& getRootFolder() const;
         const std::filesystem::path& getAssetFolder() const;
         const std::filesystem::path& getSchemaFolder() const;
-        const std::filesystem::path& getDefaultWorldUrl() const;
         const std::filesystem::path& getEditorBigIconPath() const;
         const std::filesystem::path& getEditorSmallIconPath() const;
         const std::filesystem::path& getEditorFontPath() const;
-        const std::filesystem::path& getGlobalRenderingResPath() const;
+
+        const std::string& getDefaultWorldUrl() const;
+        const std::string& getGlobalRenderingResUrl() const;
     };
 } // namespace Pilot

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "runtime/core/base/macro.h"
 #include "runtime/core/base/public_singleton.h"
 #include "runtime/core/meta/serializer/serializer.h"
 
@@ -19,10 +20,16 @@ namespace Pilot
     {
     public:
         template<typename AssetType>
-        void loadAsset(const std::filesystem::path& asset_path, AssetType& out_asset) const
+        bool loadAsset(const std::string& asset_url, AssetType& out_asset) const
         {
             // read json file to string
-            std::ifstream     asset_json_file(asset_path);
+            std::ifstream asset_json_file(getFullPath(asset_url));
+            if (!asset_json_file)
+            {
+                LOG_ERROR("open file: {} failed!", asset_url);
+                return false;
+            }
+
             std::stringstream buffer;
             buffer << asset_json_file.rdbuf();
             std::string asset_json_text(buffer.str());
@@ -30,22 +37,35 @@ namespace Pilot
             // parse to json object and read to runtime res object
             std::string error;
             auto&&      asset_json = PJson::parse(asset_json_text, error);
-            assert(error.empty());
+            if (!error.empty())
+            {
+                LOG_ERROR("parse json file {} failed!", asset_url);
+                return false;
+            }
 
             PSerializer::read(asset_json, out_asset);
+            return true;
         }
 
         template<typename AssetType>
-        void saveAsset(const AssetType& out_asset, const std::filesystem::path& asset_path) const
+        bool saveAsset(const AssetType& out_asset, const std::string& asset_url) const
         {
+            std::ofstream asset_json_file(getFullPath(asset_url));
+            if (!asset_json_file)
+            {
+                LOG_ERROR("open file {} failed!", asset_url);
+                return false;
+            }
+
             // write to json object and dump to string
             auto&&        asset_json      = PSerializer::write(out_asset);
             std::string&& asset_json_text = asset_json.dump();
 
             // write to file
-            std::ofstream asset_json_file(asset_path);
             asset_json_file << asset_json_text;
             asset_json_file.flush();
+
+            return true;
         }
 
         void initialize();
@@ -65,9 +85,9 @@ namespace Pilot
         }
 
 #define REGISTER_COMPONENT(COMPONENT_TYPE, COMPONENT_RES_TYPE, TICK_IN_EDITOR_MODE) \
-    registerComponentType(#COMPONENT_TYPE, [this](std::string component_res_file, GObject* parent_object) { \
+    registerComponentType(#COMPONENT_TYPE, [this](std::string component_res_url, GObject* parent_object) { \
         COMPONENT_RES_TYPE component_res; \
-        loadAsset(getFullPath(component_res_file), component_res); \
+        loadAsset(component_res_url, component_res); \
         auto component                   = PILOT_REFLECTION_NEW(COMPONENT_TYPE, component_res, parent_object); \
         component->m_tick_in_editor_mode = TICK_IN_EDITOR_MODE; \
         return component; \
