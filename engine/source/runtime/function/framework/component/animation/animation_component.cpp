@@ -5,13 +5,7 @@
 
 namespace Pilot
 {
-    AnimationComponent::AnimationComponent(const AnimationComponentRes& animation_res, GObject* parent_object) :
-        Component(parent_object), m_animation_res(animation_res)
-    {
-        postLoadResource(parent_object);
-    }
-
-    void AnimationComponent::postLoadResource(GObject* parent_object)
+    void AnimationComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
 

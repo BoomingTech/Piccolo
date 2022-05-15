@@ -25,10 +25,9 @@ namespace Pilot
     {
         REFLECTION_BODY(MotorComponent)
     public:
-        MotorComponent() {}
-        MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
+        MotorComponent() = default;
 
-        void postLoadResource(GObject * parent_object) override;
+        void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
         ~MotorComponent() override;
 

@@ -10,12 +10,7 @@
 
 namespace Pilot
 {
-    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* parent_object) : m_mesh_res(mesh_res)
-    {
-        postLoadResource(parent_object);
-    }
-
-    void MeshComponent::postLoadResource(GObject* parent_object)
+    void MeshComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
 
@@ -57,8 +52,13 @@ namespace Pilot
 
     void MeshComponent::tick(float delta_time)
     {
-        const TransformComponent* transform_component = m_parent_object->tryGetComponentConst(TransformComponent);
-        const AnimationComponent* animation_component = m_parent_object->tryGetComponentConst(AnimationComponent);
+        if (!m_parent_object.lock())
+            return;
+
+        const TransformComponent* transform_component =
+            m_parent_object.lock()->tryGetComponentConst(TransformComponent);
+        const AnimationComponent* animation_component =
+            m_parent_object.lock()->tryGetComponentConst(AnimationComponent);
 
         std::vector<GameObjectComponentDesc> mesh_components;
         Pilot::SkeletonAnimationResult       animResult;
@@ -87,6 +87,6 @@ namespace Pilot
             mesh_component.transform_desc.transform_matrix = object_transform_matrix;
         }
 
-        SceneManager::getInstance().addSceneObject(GameObjectDesc {m_parent_object->getID(), mesh_components});
+        SceneManager::getInstance().addSceneObject(GameObjectDesc {m_parent_object.lock()->getID(), mesh_components});
     }
 } // namespace Pilot

@@ -13,7 +13,7 @@
 namespace Pilot
 {
     /// GObject : Game Object base class
-    class GObject
+    class GObject : public std::enable_shared_from_this<GObject>
     {
         typedef std::unordered_set<std::string> TypeNameSet;
 

@@ -15,13 +15,7 @@
 
 namespace Pilot
 {
-    MotorComponent::MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object) :
-        Component(parent_object), m_motor_res(motor_res)
-    {
-        postLoadResource(parent_object);
-    }
-
-    void MotorComponent::postLoadResource(GObject* parent_object)
+    void MotorComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
 
@@ -38,7 +32,7 @@ namespace Pilot
             LOG_ERROR("invalid controller type, not able to move");
         }
 
-        const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
+        const TransformComponent* transform_component = parent_object.lock()->tryGetComponentConst(TransformComponent);
 
         m_target_position = transform_component->getPosition();
     }
@@ -56,16 +50,19 @@ namespace Pilot
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
+        if (!m_parent_object.lock())
+            return;
+
         std::shared_ptr<Level>     current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
 
-        if (current_character->getObjectID() != m_parent_object->getID())
+        if (current_character->getObjectID() != m_parent_object.lock()->getID())
             return;
 
         TransformComponent* transform_component =
-            m_parent_object->tryGetComponent<TransformComponent>("TransformComponent");
+            m_parent_object.lock()->tryGetComponent<TransformComponent>("TransformComponent");
 
         Radian turn_angle_yaw = InputSystem::getInstance().m_cursor_delta_yaw;
 

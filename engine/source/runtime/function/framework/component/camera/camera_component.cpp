@@ -14,13 +14,7 @@
 
 namespace Pilot
 {
-    CameraComponent::CameraComponent(const CameraComponentRes& camera_res, GObject* parent_object) :
-        Component(parent_object), m_camera_res(camera_res)
-    {
-        postLoadResource(parent_object);
-    }
-
-    void CameraComponent::postLoadResource(GObject* parent_object)
+    void CameraComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
 
@@ -47,12 +41,15 @@ namespace Pilot
 
     void CameraComponent::tick(float delta_time)
     {
+        if (!m_parent_object.lock())
+            return;
+
         std::shared_ptr<Level>     current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
 
-        if (current_character->getObjectID() != m_parent_object->getID())
+        if (current_character->getObjectID() != m_parent_object.lock()->getID())
             return;
 
         switch (m_camera_mode)

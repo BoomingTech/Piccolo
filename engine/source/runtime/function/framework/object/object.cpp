@@ -70,7 +70,7 @@ namespace Pilot
         {
             if (component)
             {
-                component->postLoadResource(this);
+                component->postLoadResource(weak_from_this());
             }
         }
 
@@ -90,7 +90,7 @@ namespace Pilot
             if (hasComponent(type_name))
                 continue;
 
-            loaded_component->postLoadResource(this);
+            loaded_component->postLoadResource(weak_from_this());
 
             m_components.push_back(loaded_component);
         }
