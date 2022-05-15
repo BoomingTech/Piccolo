@@ -1,11 +1,14 @@
 #pragma once
 #include "runtime/core/meta/reflection/reflection.h"
 
-#include "runtime/core/math/transform.h"
+
 #include <string>
 #include <vector>
+
 namespace Pilot
 {
+    class Component;
+
     REFLECTION_TYPE(ComponentDefinitionRes)
     CLASS(ComponentDefinitionRes, Fields)
     {
