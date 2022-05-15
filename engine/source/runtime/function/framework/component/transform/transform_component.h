@@ -26,6 +26,8 @@ namespace Pilot
 
         ~TransformComponent() override {}
 
+        void postLoadResource(GObject * parent_object) override;
+
         Vector3    getPosition() const { return m_transform_buffer[m_current_index].m_position; }
         Vector3    getScale() const { return m_transform_buffer[m_current_index].m_scale; }
         Quaternion getRotation() const { return m_transform_buffer[m_current_index].m_rotation; }

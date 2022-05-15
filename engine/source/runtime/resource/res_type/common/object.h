@@ -32,7 +32,6 @@ namespace Pilot
 
     public:
         std::string              m_name;
-        Transform                m_transform;
         std::string              m_definition;
 
         std::vector<Reflection::ReflectionPtr<Component>> m_instanced_components;

@@ -59,6 +59,7 @@ namespace Pilot
 
     bool GObject::load(const ObjectInstanceRes& object_instance_res)
     {
+        // clear old components
         m_components.clear();
 
         setName(object_instance_res.m_name);
@@ -101,9 +102,6 @@ namespace Pilot
     {
         out_object_instance_res.m_name       = m_name;
         out_object_instance_res.m_definition = m_definition_url;
-
-        const TransformComponent* transform_conponent = tryGetComponentConst(TransformComponent);
-        out_object_instance_res.m_transform           = transform_conponent->getTransformConst();
 
         out_object_instance_res.m_instanced_components = m_components;
     }

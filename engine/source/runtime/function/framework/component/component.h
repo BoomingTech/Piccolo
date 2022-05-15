@@ -18,10 +18,8 @@ namespace Pilot
         Component() {}
         virtual ~Component() { m_parent_object = nullptr; }
 
-        virtual void postLoadResource(GObject* parent_object)
-        {
-            m_parent_object = parent_object;
-        }
+        // Instantiating the component after definition loaded
+        virtual void postLoadResource(GObject * parent_object) { m_parent_object = parent_object; }
 
         void setParentObject(GObject * object) { m_parent_object = object; }
 

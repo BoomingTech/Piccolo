@@ -127,10 +127,10 @@ namespace Pilot
         Vector3        center         = position + capsule_height * Vector3::UNIT_Z;
         Vector3        half_extent    = Vector3(capsule.m_radius, capsule.m_radius, capsule_height);
         AxisAlignedBox bounding(center, half_extent);
-        return overlap(bounding);
+        return isOverlap(bounding);
     }
 
-    bool PhysicsSystem::overlap(const AxisAlignedBox& query_bouding)
+    bool PhysicsSystem::isOverlap(const AxisAlignedBox& query_bouding)
     {
         for (int i = 0; i < m_physics_actors.size(); i++)
         {
