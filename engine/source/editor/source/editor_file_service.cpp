@@ -9,7 +9,7 @@ namespace Pilot
 {
     /// helper function: split the input string with separator, and filter the substring
     std::vector<std::string>
-    splitString(std::string input_string, std::string separator, std::string filter_string = "")
+        splitString(std::string input_string, std::string separator, std::string filter_string = "")
     {
         std::vector<std::string> output_string;
         int                      pos = input_string.find(separator);
@@ -43,10 +43,10 @@ namespace Pilot
     void EditorFileService::buildEngineFileTree()
     {
         ConfigManager& config_manager = ConfigManager::getInstance();
-        Path&          path_singleton = Path::getInstance();
+        Path& path_singleton = Path::getInstance();
 
         std::string                              asset_folder = config_manager.getAssetFolder().generic_string();
-        const std::vector<std::filesystem::path> file_paths   = FileService::getInstance().getFiles(asset_folder);
+        const std::vector<std::filesystem::path> file_paths = FileService::getInstance().getFiles(asset_folder);
         std::vector<std::vector<std::string>>    all_file_segments;
         for (const auto& path : file_paths)
         {
@@ -58,7 +58,7 @@ namespace Pilot
 
         m_file_node_array.clear();
         auto root_node = std::make_shared<EditorFileNode>();
-        *root_node     = m_root_node;
+        *root_node = m_root_node;
         m_file_node_array.push_back(root_node);
 
         int all_file_segments_count = all_file_segments.size();
@@ -70,7 +70,7 @@ namespace Pilot
             int file_segment_count = all_file_segments[file_index].size();
             for (int file_segment_index = 0; file_segment_index < file_segment_count; file_segment_index++)
             {
-                auto file_node         = std::make_shared<EditorFileNode>();
+                auto file_node = std::make_shared<EditorFileNode>();
                 file_node->m_file_name = all_file_segments[file_index][file_segment_index];
                 if (depth < file_segment_count - 1)
                 {

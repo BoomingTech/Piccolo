@@ -5,12 +5,11 @@
 
 namespace Pilot
 {
-    TransformComponent::TransformComponent(const Transform& transform, GObject* parent_gobject) :
-        Component(parent_gobject)
+    void TransformComponent::postLoadResource(std::weak_ptr<GObject> parent_gobject)
     {
-        m_transform_buffer[0] = transform;
-        m_transform_buffer[1] = transform;
-        m_transform           = transform;
+        m_parent_object       = parent_gobject;
+        m_transform_buffer[0] = m_transform;
+        m_transform_buffer[1] = m_transform;
     }
 
     void TransformComponent::setPosition(const Vector3& new_translation)
@@ -52,7 +51,10 @@ namespace Pilot
 
     void TransformComponent::tryUpdateRigidBodyComponent()
     {
-        RigidBodyComponent* rigid_body_component = m_parent_object->tryGetComponent(RigidBodyComponent);
+        if (!m_parent_object.lock())
+            return;
+
+        RigidBodyComponent* rigid_body_component = m_parent_object.lock()->tryGetComponent(RigidBodyComponent);
         if (rigid_body_component)
         {
             rigid_body_component->updateGlobalTransform(m_transform_buffer[m_current_index]);

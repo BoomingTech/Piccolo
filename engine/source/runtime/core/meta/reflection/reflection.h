@@ -179,9 +179,9 @@ namespace Pilot
             const char*           m_field_type_name;
         };
 
-        /// <summary>
-        /// Function reflection is not implemented, so use this as an std::vector accessor
-        /// </summary>
+        /**
+        *  Function reflection is not implemented, so use this as an std::vector accessor
+        */
         class ArrayAccessor
         {
             friend class TypeMeta;
