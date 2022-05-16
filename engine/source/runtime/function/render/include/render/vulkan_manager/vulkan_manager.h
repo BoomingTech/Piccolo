@@ -111,6 +111,7 @@ namespace Pilot
         PPointLightShadowPass       m_point_light_shadow_pass;
         PMainCameraPass             m_main_camera_pass;
         PColorGradingPass           m_color_grading_pass;
+        PFXAAPass                   m_fxaa_pass;
         PToneMappingPass            m_tone_mapping_pass;
         PUIPass                     m_ui_pass;
         PCombineUIPass              m_combine_ui_pass;
