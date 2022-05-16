@@ -9,8 +9,19 @@
 
 namespace Pilot
 {
-    PilotEditor::PilotEditor() {}
+    void registerEdtorTickComponent(std::string component_type_name)
+    {
+        g_editor_tick_component_types.insert(component_type_name);
+    }
+
+    PilotEditor::PilotEditor()
+    {
+        registerEdtorTickComponent("TransformComponent");
+        registerEdtorTickComponent("MeshComponent");
+    }
+
     PilotEditor::~PilotEditor() {}
+
 
     void PilotEditor::initialize(PilotEngine* engine_runtime)
     {

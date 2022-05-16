@@ -16,7 +16,8 @@
 
 namespace Pilot
 {
-    bool g_is_editor_mode{ false };
+    bool g_is_editor_mode {false};
+    std::unordered_set<std::string> g_editor_tick_component_types {};
 
     const FrameBuffer* getFrameBuffer(ThreeFrameBuffers* t, const PilotRenderer*)
     {

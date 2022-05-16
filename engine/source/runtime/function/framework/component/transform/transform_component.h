@@ -12,19 +12,11 @@ namespace Pilot
     CLASS(TransformComponent : public Component, WhiteListFields)
     {
         REFLECTION_BODY(TransformComponent)
-    protected:
-        META(Enable)
-        Transform m_transform;
-
-        Transform m_transform_buffer[2];
-        size_t    m_current_index {0};
-        size_t    m_next_index {1};
 
     public:
-        TransformComponent() {}
-        TransformComponent(const Transform& transform, GObject* parent_gobject);
+        TransformComponent() = default;
 
-        ~TransformComponent() override {}
+        void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
         Vector3    getPosition() const { return m_transform_buffer[m_current_index].m_position; }
         Vector3    getScale() const { return m_transform_buffer[m_current_index].m_scale; }
@@ -44,5 +36,13 @@ namespace Pilot
         void tick(float delta_time) override;
 
         void tryUpdateRigidBodyComponent();
+
+    protected:
+        META(Enable)
+        Transform m_transform;
+
+        Transform m_transform_buffer[2];
+        size_t    m_current_index {0};
+        size_t    m_next_index {1};
     };
 } // namespace Pilot

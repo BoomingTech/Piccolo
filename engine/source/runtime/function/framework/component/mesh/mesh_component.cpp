@@ -10,15 +10,16 @@
 
 namespace Pilot
 {
-    MeshComponent::MeshComponent(const MeshComponentRes& mesh_res, GObject* parent_object) :
-        Component(parent_object), m_mesh_res(mesh_res)
+    void MeshComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
+        m_parent_object = parent_object;
+
         AssetManager& asset_manager = AssetManager::getInstance();
 
-        m_raw_meshes.resize(mesh_res.m_sub_meshes.size());
+        m_raw_meshes.resize(m_mesh_res.m_sub_meshes.size());
 
         size_t raw_mesh_count = 0;
-        for (const SubMeshRes& sub_mesh : mesh_res.m_sub_meshes)
+        for (const SubMeshRes& sub_mesh : m_mesh_res.m_sub_meshes)
         {
             GameObjectComponentDesc& meshComponent = m_raw_meshes[raw_mesh_count];
             meshComponent.mesh_desc.mesh_file = asset_manager.getFullPath(sub_mesh.m_obj_file_ref).generic_string();
@@ -51,8 +52,13 @@ namespace Pilot
 
     void MeshComponent::tick(float delta_time)
     {
-        const TransformComponent* transform_component = m_parent_object->tryGetComponentConst(TransformComponent);
-        const AnimationComponent* animation_component = m_parent_object->tryGetComponentConst(AnimationComponent);
+        if (!m_parent_object.lock())
+            return;
+
+        const TransformComponent* transform_component =
+            m_parent_object.lock()->tryGetComponentConst(TransformComponent);
+        const AnimationComponent* animation_component =
+            m_parent_object.lock()->tryGetComponentConst(AnimationComponent);
 
         std::vector<GameObjectComponentDesc> mesh_components;
         Pilot::SkeletonAnimationResult       animResult;
@@ -81,6 +87,6 @@ namespace Pilot
             mesh_component.transform_desc.transform_matrix = object_transform_matrix;
         }
 
-        SceneManager::getInstance().addSceneObject(GameObjectDesc {m_parent_object->getID(), mesh_components});
+        SceneManager::getInstance().addSceneObject(GameObjectDesc {m_parent_object.lock()->getID(), mesh_components});
     }
 } // namespace Pilot

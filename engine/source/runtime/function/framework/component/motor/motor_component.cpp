@@ -15,24 +15,31 @@
 
 namespace Pilot
 {
-    MotorComponent::MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object) :
-        Component(parent_object), m_motor_res(motor_res)
+    void MotorComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
-        if (m_motor_res.m_controller_type == ControllerType::physics)
+        m_parent_object = parent_object;
+
+        if (m_motor_res.m_controller_config.getTypeName() == "PhysicsControllerConfig")
         {
+            m_controller_type = ControllerType::physics;
             PhysicsControllerConfig* controller_config =
                 static_cast<PhysicsControllerConfig*>(m_motor_res.m_controller_config);
             m_controller = new CharacterController(controller_config->m_capsule_shape);
         }
+        else if (m_motor_res.m_controller_config != nullptr)
+        {
+            m_controller_type = ControllerType::invalid;
+            LOG_ERROR("invalid controller type, not able to move");
+        }
 
-        const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
+        const TransformComponent* transform_component = parent_object.lock()->tryGetComponentConst(TransformComponent);
 
         m_target_position = transform_component->getPosition();
     }
 
     MotorComponent::~MotorComponent()
     {
-        if (m_motor_res.m_controller_type == ControllerType::physics)
+        if (m_controller_type == ControllerType::physics)
         {
             delete m_controller;
             m_controller = nullptr;
@@ -43,16 +50,19 @@ namespace Pilot
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
-        std::shared_ptr<Level>   current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        if (!m_parent_object.lock())
+            return;
+
+        std::shared_ptr<Level>     current_level     = WorldManager::getInstance().getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
 
-        if (current_character->getObjectID() != m_parent_object->getID())
+        if (current_character->getObjectID() != m_parent_object.lock()->getID())
             return;
 
         TransformComponent* transform_component =
-            m_parent_object->tryGetComponent<TransformComponent>("TransformComponent");
+            m_parent_object.lock()->tryGetComponent<TransformComponent>("TransformComponent");
 
         Radian turn_angle_yaw = InputSystem::getInstance().m_cursor_delta_yaw;
 
@@ -155,7 +165,7 @@ namespace Pilot
     {
         Vector3 final_position = current_position;
 
-        switch (m_motor_res.m_controller_type)
+        switch (m_controller_type)
         {
             case ControllerType::none:
                 final_position += m_desired_displacement;
