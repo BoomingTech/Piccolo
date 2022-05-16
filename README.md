@@ -80,5 +80,19 @@ Or you can execute the **build_macos.sh** to build the binaries.
 ### Build on Ubuntu 20.04
 You can execute the **build_linux.sh** to build the binaries.
 
-### Documentation
+## Documentation
 For documentation, please refer to the Wiki section.
+
+## Extra
+
+### Generate Compilation Database
+
+You can build `compile_commands.json` with the following commands when `Unix Makefiles` generaters are avaliable. `compile_commands.json` is the file
+required by `clangd` language server, which is a backend for cpp lsp-mode in Emacs.
+
+For Windows:
+
+``` powershell
+cmake -DCMAKE_TRY_COMPILE_TARGET_TYPE="STATIC_LIBRARY" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B compile_db_temp -G "Unix Makefiles"
+copy compile_db_temp\compile_commands.json .
+```
