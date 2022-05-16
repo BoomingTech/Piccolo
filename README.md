@@ -85,7 +85,7 @@ For documentation, please refer to the Wiki section.
 
 ## Extra
 
-### Build compile db
+### Generate Compilation Database
 
 You can build `compile_commands.json` with the following commands when `Unix Makefiles` generaters are avaliable. `compile_commands.json` is the file
 required by `clangd` language server, which is a backend for cpp lsp-mode in Emacs.
