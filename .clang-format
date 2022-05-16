@@ -1,4 +1,5 @@
 ---
+StatementMacros: ['Meta', 'CLASS', 'REFLECTION_TYPE', 'REFLECTION_BODY']
 Language:        Cpp
 # BasedOnStyle:  Google
 AccessModifierOffset: -4

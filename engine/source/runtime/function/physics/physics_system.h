@@ -20,7 +20,7 @@ namespace Pilot
         void setGravity(const Vector3& g) { m_gravity = g; }
         void setGlobalDamping(float damping) { m_global_damping = damping; }
 
-        PhysicsActor* createPhysicsActor(GObject*                     gobject,
+        PhysicsActor* createPhysicsActor(std::weak_ptr<GObject>       gobject,
                                          const Transform&             global_transform,
                                          const RigidBodyComponentRes& rigid_body_actor_res);
         void          removePhyicsActor(PhysicsActor* gobject);
@@ -40,7 +40,7 @@ namespace Pilot
 
         void impulseResolveCollision(PhysicsActor& object_a, PhysicsActor& object_b, ContactPoint& contact_point) const;
 
-        bool overlap(const AxisAlignedBox& query_bouding);
+        bool isOverlap(const AxisAlignedBox& query_bouding);
 
     private:
         std::vector<PhysicsActor*> m_physics_actors;
