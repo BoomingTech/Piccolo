@@ -74,8 +74,8 @@ namespace Pilot
         }
 
         void   updateWindow(float pos_x, float pos_y, float width, float height) const;
-        size_t updateCursorOnAxis(int axis_mode, const Vector2& cursor_uv, const Vector2& window_size) const;
         size_t getGuidOfPickedMesh(const Vector2& picked_uv) const;
+        void setSceneSelectedAxis(size_t selected_axis) const;
 
         PRegister<const FrameBuffer*, const PilotRenderer*>::GetPtr f_get_framebuffer;
         PRegister<const SceneMemory*, SceneResourceHandle>::GetPtr  f_get_memory;
@@ -84,4 +84,6 @@ namespace Pilot
         PRegister<void, PMaterialHandle>::FuncPtr                   f_add_release_material;
         PRegister<void, SkeletonBindingBufferHandle>::FuncPtr       f_add_release_skeleton_binding;
     };
+
+    extern bool g_is_editor_mode;
 } // namespace Pilot

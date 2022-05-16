@@ -16,7 +16,7 @@
 
 namespace Pilot
 {
-    bool g_is_editor_mode {true};
+    bool g_is_editor_mode{ false };
 
     const FrameBuffer* getFrameBuffer(ThreeFrameBuffers* t, const PilotRenderer*)
     {
@@ -86,18 +86,10 @@ namespace Pilot
     void PilotEngine::clear() {}
     void PilotEngine::run()
     {
+        float delta_time;
         while (true)
         {
-            float delta_time;
-            {
-                using namespace std::chrono;
-
-                steady_clock::time_point tick_time_point = steady_clock::now();
-                duration<float> time_span = duration_cast<duration<float>>(tick_time_point - m_last_tick_time_point);
-                delta_time                = time_span.count();
-
-                m_last_tick_time_point = tick_time_point;
-            }
+            delta_time = getDeltaTime();
 
             logicalTick(delta_time);
             fps(delta_time);
@@ -105,6 +97,29 @@ namespace Pilot
             if (!rendererTick())
                 return;
         }
+    }
+
+    float PilotEngine::getDeltaTime()
+    {
+        float delta_time;
+        {
+            using namespace std::chrono;
+
+            steady_clock::time_point tick_time_point = steady_clock::now();
+            duration<float> time_span = duration_cast<duration<float>>(tick_time_point - m_last_tick_time_point);
+            delta_time = time_span.count();
+
+            m_last_tick_time_point = tick_time_point;
+        }
+        return delta_time;
+    }
+
+    bool PilotEngine::tickOneFrame(float delta_time)
+    {
+        logicalTick(delta_time);
+        fps(delta_time);
+
+        return rendererTick();
     }
 
     void PilotEngine::logicalTick(float delta_time)
@@ -144,7 +159,7 @@ namespace Pilot
         three_buffers._struct._C = new FrameBuffer();
 
         // tri frame buffers are designed to use same scene now
-        auto current_scene                = SceneManager::getInstance().getCurrentScene();
+        auto current_scene = SceneManager::getInstance().getCurrentScene();
         three_buffers._struct._A->m_scene = current_scene;
         three_buffers._struct._B->m_scene = current_scene;
         three_buffers._struct._C->m_scene = current_scene;
@@ -169,7 +184,7 @@ namespace Pilot
         three_buffers._array[m_producing_index]->logicalFrameIndex = ++m_logical_frame_index;
         return three_buffers._array[m_producing_index];
     }
-    FrameBuffer*       ThreeFrameBuffers::getProducingBuffer() { return three_buffers._array[m_producing_index]; }
+    FrameBuffer* ThreeFrameBuffers::getProducingBuffer() { return three_buffers._array[m_producing_index]; }
     const FrameBuffer* ThreeFrameBuffers::consumingBufferShift()
     {
         m_consuming_index = m_last_producing_index;

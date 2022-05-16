@@ -33,14 +33,14 @@ namespace Pilot
         m_surface->updateWindow(pos_x, pos_y, width, height);
     }
 
-    size_t PilotRenderer::updateCursorOnAxis(int axis_mode, const Vector2& cursor_uv, const Vector2& window_size) const
-    {
-        return m_surface->updateCursorOnAxis(axis_mode, cursor_uv, window_size);
-    }
-
     size_t PilotRenderer::getGuidOfPickedMesh(const Vector2& picked_uv) const
     {
         return m_surface->getGuidOfPickedMesh(picked_uv);
+    }
+
+    void PilotRenderer::setSceneSelectedAxis(size_t selected_axis) const
+    {
+        m_surface->setSceneSelectedAxis(selected_axis);
     }
 
 } // namespace Pilot

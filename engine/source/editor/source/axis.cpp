@@ -6,7 +6,7 @@ namespace Pilot
     {
         // create translation axis render mesh
 
-        const float radius   = 0.031f;
+        const float radius = 0.031f;
         const int   segments = 12;
 
         uint32_t stride = sizeof(Mesh_PosNormalTangentTex0Vertex);
@@ -25,7 +25,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
 
         for (int i = 0; i < segments; ++i)
@@ -41,7 +41,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
 
         for (int i = 0; i < segments; ++i)
@@ -59,7 +59,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         {
             Mesh_PosNormalTangentTex0Vertex& vertex_0 =
@@ -71,7 +71,7 @@ namespace Pilot
 
             vertex_0.nx = vertex_0.ny = vertex_0.nz = 0.0f;
             vertex_0.tx = vertex_0.ty = vertex_0.tz = 0.0f;
-            vertex_0.v                              = 0.0f;
+            vertex_0.v = 0.0f;
 
             Mesh_PosNormalTangentTex0Vertex& vertex_1 =
                 *(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + (3 * segments + 1) * stride);
@@ -82,7 +82,7 @@ namespace Pilot
 
             vertex_1.nx = vertex_1.ny = vertex_1.nz = 0.0f;
             vertex_1.tx = vertex_1.ty = vertex_1.tz = 0.0f;
-            vertex_1.v                              = 0.0f;
+            vertex_1.v = 0.0f;
         }
 
         // y, z
@@ -90,7 +90,7 @@ namespace Pilot
         {
             Mesh_PosNormalTangentTex0Vertex& vertex_y =
                 *(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data +
-                                                    ((3 * segments + 2) * 1 + i) * stride);
+                    ((3 * segments + 2) * 1 + i) * stride);
             vertex_y.x = -(*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).y;
             vertex_y.y = (*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).x;
             vertex_y.z = (*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).z;
@@ -98,11 +98,11 @@ namespace Pilot
 
             vertex_y.nx = vertex_y.ny = vertex_y.nz = 0.0f;
             vertex_y.tx = vertex_y.ty = vertex_y.tz = 0.0f;
-            vertex_y.v                              = 0.0f;
+            vertex_y.v = 0.0f;
 
             Mesh_PosNormalTangentTex0Vertex& vertex_z =
                 *(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data +
-                                                    ((3 * segments + 2) * 2 + i) * stride);
+                    ((3 * segments + 2) * 2 + i) * stride);
             vertex_z.x = -(*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).z;
             vertex_z.y = (*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).y;
             vertex_z.z = (*(Mesh_PosNormalTangentTex0Vertex*)(translation_axis_vertex->m_data + i * stride)).x;
@@ -110,12 +110,12 @@ namespace Pilot
 
             vertex_z.nx = vertex_z.ny = vertex_z.nz = 0.0f;
             vertex_z.tx = vertex_z.ty = vertex_z.tz = 0.0f;
-            vertex_z.v                              = 0.0f;
+            vertex_z.v = 0.0f;
         }
 
         m_vertexBuffer = SceneBuffers::createVertexBuffer(translation_axis_vertex, (3 * segments + 2) * 3);
 
-        auto      indexMem   = SceneBuffers::alloc((4 * segments * 3) * 3 * sizeof(uint16_t));
+        auto      indexMem = SceneBuffers::alloc((4 * segments * 3) * 3 * sizeof(uint16_t));
         uint16_t* index_info = (uint16_t*)indexMem->m_data;
 
         for (int i = 0; i < segments; ++i)
@@ -156,7 +156,7 @@ namespace Pilot
 
         const float inner_radius = 0.9f;
         const float outer_radius = 1.0f;
-        const int   segments     = 24;
+        const int   segments = 24;
 
         uint32_t stride = sizeof(Mesh_PosNormalTangentTex0Vertex);
         // vertex
@@ -173,7 +173,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         // outer xy
         for (int i = 0; i < segments; i++)
@@ -187,7 +187,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         // inner yz
         for (int i = 0; i < segments; i++)
@@ -201,7 +201,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         // outer yz
         for (int i = 0; i < segments; i++)
@@ -215,7 +215,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         // inner xz
         for (int i = 0; i < segments; i++)
@@ -229,7 +229,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         // outer xz
         for (int i = 0; i < segments; i++)
@@ -243,13 +243,13 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
 
         m_vertexBuffer = SceneBuffers::createVertexBuffer(rotation_axis_vertex, 2 * 3 * segments);
 
         // index
-        auto      indexMem   = SceneBuffers::alloc(2 * 3 * segments * 3 * sizeof(uint16_t));
+        auto      indexMem = SceneBuffers::alloc(2 * 3 * segments * 3 * sizeof(uint16_t));
         uint16_t* index_info = (uint16_t*)indexMem->m_data;
 
         // xoy inner
@@ -300,7 +300,7 @@ namespace Pilot
 
     EditorScaleAxis::EditorScaleAxis()
     {
-        const float radius   = 0.031f;
+        const float radius = 0.031f;
         const int   segments = 12;
         // DynamicArray<Vector4> positions((2 * segments + 8) * 3 + 8);
 
@@ -319,7 +319,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
         }
         for (int i = 0; i < segments; ++i)
         {
@@ -332,7 +332,7 @@ namespace Pilot
 
             vertex.nx = vertex.ny = vertex.nz = 0.0f;
             vertex.tx = vertex.ty = vertex.tz = 0.0f;
-            vertex.v                          = 0.0f;
+            vertex.v = 0.0f;
             // positions[1 * segments + i] = Vector4(1.6 - radius * 10, positions[0 * segments +
             // i].y, positions[0 * segments + i].z, 0);
         }
@@ -346,7 +346,7 @@ namespace Pilot
 
             vertex0.nx = vertex0.ny = vertex0.nz = 0.0f;
             vertex0.tx = vertex0.ty = vertex0.tz = 0.0f;
-            vertex0.v                            = 0.0f;
+            vertex0.v = 0.0f;
             // positions[2 * segments + 0] = Vector4(1.6 - radius * 10, +radius * 5, +radius * 5,
             // 0);
 
@@ -359,7 +359,7 @@ namespace Pilot
 
             vertex1.nx = vertex1.ny = vertex1.nz = 0.0f;
             vertex1.tx = vertex1.ty = vertex1.tz = 0.0f;
-            vertex1.v                            = 0.0f;
+            vertex1.v = 0.0f;
             // positions[2 * segments + 1] = Vector4(1.6 - radius * 10, +radius * 5, -radius * 5,
             // 0);
 
@@ -372,7 +372,7 @@ namespace Pilot
 
             vertex2.nx = vertex2.ny = vertex2.nz = 0.0f;
             vertex2.tx = vertex2.ty = vertex2.tz = 0.0f;
-            vertex2.v                            = 0.0f;
+            vertex2.v = 0.0f;
             // positions[2 * segments + 2] = Vector4(1.6 - radius * 10, -radius * 5, +radius * 5,
             // 0);
 
@@ -385,7 +385,7 @@ namespace Pilot
 
             vertex3.nx = vertex3.ny = vertex3.nz = 0.0f;
             vertex3.tx = vertex3.ty = vertex3.tz = 0.0f;
-            vertex3.v                            = 0.0f;
+            vertex3.v = 0.0f;
             // positions[2 * segments + 3] = Vector4(1.6 - radius * 10, -radius * 5, -radius * 5,
             // 0);
 
@@ -398,7 +398,7 @@ namespace Pilot
 
             vertex4.nx = vertex4.ny = vertex4.nz = 0.0f;
             vertex4.tx = vertex4.ty = vertex4.tz = 0.0f;
-            vertex4.v                            = 0.0f;
+            vertex4.v = 0.0f;
             // positions[2 * segments + 4] = Vector4(1.6, +radius * 5, +radius * 5, 0);
 
             Mesh_PosNormalTangentTex0Vertex& vertex5 =
@@ -410,7 +410,7 @@ namespace Pilot
 
             vertex5.nx = vertex5.ny = vertex5.nz = 0.0f;
             vertex5.tx = vertex5.ty = vertex5.tz = 0.0f;
-            vertex5.v                            = 0.0f;
+            vertex5.v = 0.0f;
             // positions[2 * segments + 5] = Vector4(1.6, +radius * 5, -radius * 5, 0);
 
             Mesh_PosNormalTangentTex0Vertex& vertex6 =
@@ -422,7 +422,7 @@ namespace Pilot
 
             vertex6.nx = vertex6.ny = vertex6.nz = 0.0f;
             vertex6.tx = vertex6.ty = vertex6.tz = 0.0f;
-            vertex6.v                            = 0.0f;
+            vertex6.v = 0.0f;
             // positions[2 * segments + 6] = Vector4(1.6, -radius * 5, +radius * 5, 0);
 
             Mesh_PosNormalTangentTex0Vertex& vertex7 =
@@ -434,7 +434,7 @@ namespace Pilot
 
             vertex7.nx = vertex7.ny = vertex7.nz = 0.0f;
             vertex7.tx = vertex7.ty = vertex7.tz = 0.0f;
-            vertex7.v                            = 0.0f;
+            vertex7.v = 0.0f;
             // positions[2 * segments + 7] = Vector4(1.6, -radius * 5, -radius * 5, 0);
         }
 
@@ -449,7 +449,7 @@ namespace Pilot
 
             vertex1.nx = vertex1.ny = vertex1.nz = 0.0f;
             vertex1.tx = vertex1.ty = vertex1.tz = 0.0f;
-            vertex1.v                            = 0.0f;
+            vertex1.v = 0.0f;
             // positions[(2 * segments + 8) * 1 + i] = Vector4(-positions[i].y, positions[i].x,
             // positions[i].z, 1);
 
@@ -462,7 +462,7 @@ namespace Pilot
 
             vertex2.nx = vertex2.ny = vertex2.nz = 0.0f;
             vertex2.tx = vertex2.ty = vertex2.tz = 0.0f;
-            vertex2.v                            = 0.0f;
+            vertex2.v = 0.0f;
             // positions[(2 * segments + 8) * 2 + i] = Vector4(-positions[i].z, positions[i].y,
             // positions[i].x, 2);
         }
@@ -478,7 +478,7 @@ namespace Pilot
 
             vertex0.nx = vertex0.ny = vertex0.nz = 0.0f;
             vertex0.tx = vertex0.ty = vertex0.tz = 0.0f;
-            vertex0.v                            = 0.0f;
+            vertex0.v = 0.0f;
             // positions[start_vertex_index + 0] = Vector4(0.0f, 0.0f, 0.0f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex1 =
@@ -490,7 +490,7 @@ namespace Pilot
 
             vertex1.nx = vertex1.ny = vertex1.nz = 0.0f;
             vertex1.tx = vertex1.ty = vertex1.tz = 0.0f;
-            vertex1.v                            = 0.0f;
+            vertex1.v = 0.0f;
             // positions[start_vertex_index + 1] = Vector4(0.1f, 0.0f, 0.0f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex2 =
@@ -502,7 +502,7 @@ namespace Pilot
 
             vertex2.nx = vertex2.ny = vertex2.nz = 0.0f;
             vertex2.tx = vertex2.ty = vertex2.tz = 0.0f;
-            vertex2.v                            = 0.0f;
+            vertex2.v = 0.0f;
             // positions[start_vertex_index + 2] = Vector4(0.1f, 0.1f, 0.0f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex3 =
@@ -514,7 +514,7 @@ namespace Pilot
 
             vertex3.nx = vertex3.ny = vertex3.nz = 0.0f;
             vertex3.tx = vertex3.ty = vertex3.tz = 0.0f;
-            vertex3.v                            = 0.0f;
+            vertex3.v = 0.0f;
             // positions[start_vertex_index + 3] = Vector4(0.0f, 0.1f, 0.0f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex4 =
@@ -526,7 +526,7 @@ namespace Pilot
 
             vertex4.nx = vertex4.ny = vertex4.nz = 0.0f;
             vertex4.tx = vertex4.ty = vertex4.tz = 0.0f;
-            vertex4.v                            = 0.0f;
+            vertex4.v = 0.0f;
             // positions[start_vertex_index + 4] = Vector4(0.0f, 0.0f, 0.1f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex5 =
@@ -538,7 +538,7 @@ namespace Pilot
 
             vertex5.nx = vertex5.ny = vertex5.nz = 0.0f;
             vertex5.tx = vertex5.ty = vertex5.tz = 0.0f;
-            vertex5.v                            = 0.0f;
+            vertex5.v = 0.0f;
             // positions[start_vertex_index + 5] = Vector4(0.1f, 0.0f, 0.1f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex6 =
@@ -550,7 +550,7 @@ namespace Pilot
 
             vertex6.nx = vertex6.ny = vertex6.nz = 0.0f;
             vertex6.tx = vertex6.ty = vertex6.tz = 0.0f;
-            vertex6.v                            = 0.0f;
+            vertex6.v = 0.0f;
             // positions[start_vertex_index + 6] = Vector4(0.1f, 0.1f, 0.1f, 6.0f);
 
             Mesh_PosNormalTangentTex0Vertex& vertex7 =
@@ -562,7 +562,7 @@ namespace Pilot
 
             vertex7.nx = vertex7.ny = vertex7.nz = 0.0f;
             vertex7.tx = vertex7.ty = vertex7.tz = 0.0f;
-            vertex7.v                            = 0.0f;
+            vertex7.v = 0.0f;
             // positions[start_vertex_index + 7] = Vector4(0.0f, 0.1f, 0.1f, 6.0f);
         }
 
@@ -571,7 +571,7 @@ namespace Pilot
         // DynamicArray<UShort> indices(((2 * segments + 12) * 3) * 3 + 3 * 2 * 6);
 
         // index
-        auto      indexMem   = SceneBuffers::alloc((((2 * segments + 12) * 3) * 3 + 3 * 2 * 6) * sizeof(uint16_t));
+        auto      indexMem = SceneBuffers::alloc((((2 * segments + 12) * 3) * 3 + 3 * 2 * 6) * sizeof(uint16_t));
         uint16_t* index_info = (uint16_t*)indexMem->m_data;
         for (int i = 0; i < segments; ++i)
         {
@@ -633,7 +633,7 @@ namespace Pilot
             index_info[(2 * segments + 12) * 3 * 2 + i] = (uint16_t)((2 * segments + 8) * 2 + index_info[i]);
         }
 
-        int start_index                     = ((2 * segments + 12) * 3) * 3;
+        int start_index = ((2 * segments + 12) * 3) * 3;
         index_info[start_index + 0 * 3 + 0] = (uint16_t)(start_vertex_index + 0);
         index_info[start_index + 0 * 3 + 1] = (uint16_t)(start_vertex_index + 1);
         index_info[start_index + 0 * 3 + 2] = (uint16_t)(start_vertex_index + 2);
