@@ -219,7 +219,7 @@ void Pilot::PVulkanManager::culling(class Scene&                scene,
     // Axis
     {
         const auto& axis_meshes = scene.getAxisMeshs();
-        if (axis_meshes.empty())
+        if (axis_meshes.empty() || g_is_editor_mode == false)
         {
             m_is_show_axis = false;
         }
