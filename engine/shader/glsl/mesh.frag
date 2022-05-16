@@ -1,3 +1,5 @@
+#version 310 es
+
 #extension GL_GOOGLE_include_directive : enable
 
 #include "constants.h"
@@ -98,7 +100,5 @@ void main()
 
 #include "mesh_lighting.inl"
 
-
     out_scene_color = vec4(result_color, 1.0);
-    
 }
