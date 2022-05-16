@@ -13,6 +13,20 @@ namespace Pilot
         VkImageView directional_light_shadow_color_image_view;
     };
 
+    class PFXAAPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
     class PColorGradingPass : public PRenderPassBase
     {
     public:
@@ -92,6 +106,7 @@ namespace Pilot
         _main_camera_subpass_forward_lighting,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
+        _main_camera_subpass_fxaa,
         _main_camera_subpass_ui,
         _main_camera_subpass_combine_ui,
         _main_camera_subpass_count
@@ -137,6 +152,7 @@ namespace Pilot
         void initialize();
 
         void draw(PColorGradingPass& color_grading_pass,
+                  PFXAAPass&         fxaa_pass,
                   PToneMappingPass&  tone_mapping_pass,
                   PUIPass&           ui_pass,
                   PCombineUIPass&    combine_ui_pass,
@@ -145,6 +161,7 @@ namespace Pilot
 
         // legacy
         void drawForward(PColorGradingPass& color_grading_pass,
+                         PFXAAPass&         fxaa_pass,
                          PToneMappingPass&  tone_mapping_pass,
                          PUIPass&           ui_pass,
                          PCombineUIPass&    combine_ui_pass,
