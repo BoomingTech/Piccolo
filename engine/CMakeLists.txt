@@ -4,6 +4,16 @@ set(THIRD_PARTY_DIR "${ENGINE_ROOT_DIR}/3rdparty")
 set(ENGINE_ASSET_DIR "/asset")
 set(ENGINE_SCHEMA_DIR "/schema")
 
+option(ENABLE_PHYSICS_DEBUG_RENDERER "Enable Physics Debug Renderer" OFF)
+
+# only support physics debug render at windows platform
+if(NOT WIN32)
+  if(ENABLE_PHYSICS_DEBUG_RENDERER)
+    message(WARNING "Disable Physics Debug Renderer")
+    set(ENABLE_PHYSICS_DEBUG_RENDERER OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/MP")
     set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PilotEditor)

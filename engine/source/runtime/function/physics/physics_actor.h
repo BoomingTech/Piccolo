@@ -55,6 +55,9 @@ namespace Pilot
 
         void setGlobalTransform(const Transform& global_transform);
 
+        void setBodyID(uint32_t body_id) { m_body_id = body_id; }
+        uint32_t getBodyID() const { return m_body_id; }
+
     protected:
         std::vector<RigidBodyShape> m_rigidbody_shapes;
 
@@ -75,5 +78,7 @@ namespace Pilot
         Matrix3x3 m_inverse_inertia_tensor;
 
         int m_actor_type {0};
+
+        uint32_t m_body_id{0xffffffff};
     };
 }; // namespace Pilot
