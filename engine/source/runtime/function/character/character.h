@@ -24,7 +24,7 @@ namespace Pilot
         const Vector3&    getPosition() const { return m_position; }
         const Quaternion& getRotation() const { return m_rotation; }
 
-        void tick();
+        void tick(float delta_time);
 
     private:
         Vector3    m_position;
