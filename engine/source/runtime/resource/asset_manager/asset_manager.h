@@ -1,7 +1,6 @@
 #pragma once
 
 #include "runtime/core/base/macro.h"
-#include "runtime/core/base/public_singleton.h"
 #include "runtime/core/meta/serializer/serializer.h"
 
 #include <filesystem>
@@ -14,7 +13,7 @@
 
 namespace Pilot
 {
-    class AssetManager : public PublicSingleton<AssetManager>
+    class AssetManager
     {
     public:
         template<typename AssetType>
@@ -65,9 +64,6 @@ namespace Pilot
 
             return true;
         }
-
-        void initialize();
-        void clear() {}
 
         std::filesystem::path getFullPath(const std::string& relative_path) const;
 

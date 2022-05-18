@@ -2,8 +2,11 @@
 
 #include "runtime/platform/file_service/file_service.h"
 #include "runtime/platform/path/path.h"
+
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/config_manager/config_manager.h"
+
+#include "runtime/function/global/global_context.h"
 
 namespace Pilot
 {
@@ -42,11 +45,10 @@ namespace Pilot
 
     void EditorFileService::buildEngineFileTree()
     {
-        ConfigManager& config_manager = ConfigManager::getInstance();
-        Path&          path_singleton = Path::getInstance();
+        Path& path_singleton = Path::getInstance();
 
-        std::string                              asset_folder = config_manager.getAssetFolder().generic_string();
-        const std::vector<std::filesystem::path> file_paths   = FileService::getInstance().getFiles(asset_folder);
+        std::string                              asset_folder = g_global_context.m_config_manager->getAssetFolder().generic_string();
+        const std::vector<std::filesystem::path> file_paths = g_global_context.m_file_servcie->getFiles(asset_folder);
         std::vector<std::vector<std::string>>    all_file_segments;
         for (const auto& path : file_paths)
         {
