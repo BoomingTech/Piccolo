@@ -5,10 +5,11 @@
 
 namespace Pilot
 {
-    AnimationComponent::AnimationComponent(const AnimationComponentRes& animation_res, GObject* parent_object) :
-        Component(parent_object), m_animation_res(animation_res)
+    void AnimationComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
-        auto skeleton_res = AnimationManager::tryLoadSkeleton(animation_res.skeleton_file_path);
+        m_parent_object = parent_object;
+
+        auto skeleton_res = AnimationManager::tryLoadSkeleton(m_animation_res.skeleton_file_path);
 
         m_skeleton.buildSkeleton(*skeleton_res);
     }

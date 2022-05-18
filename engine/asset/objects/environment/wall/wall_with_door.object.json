@@ -1,6 +1,129 @@
 {
-  "components": [
-    "asset/objects/environment/wall/components/mesh/wall_with_door.mesh.component.json",
-    "asset/objects/environment/wall/components/rigid_body/wall_with_door.rigid_body.component.json"
-  ]
+    "components": [
+        {
+            "$context": {
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "w": 1
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            "$typeName": "TransformComponent"
+        },
+        {
+            "$context": {
+                "mesh_res": {
+                    "sub_meshes": [
+                        {
+                            "material": "asset/objects/environment/_material/gold.material.json",
+                            "obj_file_ref": "asset/objects/environment/wall/components/mesh/wall_with_door.obj",
+                            "transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "rotation": {
+                                    "w": 1,
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "$typeName": "MeshComponent"
+        },
+        {
+            "$context": {
+                "rigidbody_res": {
+                    "actor_type": 1,
+                    "inverse_mass": 0,
+                    "shapes": [
+                        {
+                            "geometry": {
+                                "$context": {
+                                    "half_extents": {
+                                        "x": 0.15000000596046448,
+                                        "y": 1.7000000476837158,
+                                        "z": 3.5
+                                    }
+                                },
+                                "$typeName": "Box"
+                            },
+                            "local_transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": -3,
+                                    "z": 3.5
+                                },
+                                "rotation": {
+                                    "w": 1,
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        },
+                        {
+                            "geometry": {
+                                "$context": {
+                                    "half_extents": {
+                                        "x": 0.15000000596046448,
+                                        "y": 2.6500000953674316,
+                                        "z": 3.5
+                                    }
+                                },
+                                "$typeName": "Box"
+                            },
+                            "local_transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": 3.2999999523162842,
+                                    "z": 3.5
+                                },
+                                "rotation": {
+                                    "w": 1,
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "$typeName": "RigidBodyComponent"
+        }
+    ]
 }

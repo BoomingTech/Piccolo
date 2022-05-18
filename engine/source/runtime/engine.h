@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 #include <filesystem>
+#include <unordered_set>
 
 namespace Pilot
 {
@@ -13,6 +14,7 @@ namespace Pilot
     class SurfaceIO;
 
     extern bool g_is_editor_mode;
+    extern std::unordered_set<std::string> g_editor_tick_component_types;
 
     struct EngineInitParams
     {
@@ -50,6 +52,7 @@ namespace Pilot
     class PilotEngine : public PublicSingleton<PilotEngine>
     {
         friend class PublicSingleton<PilotEngine>;
+        friend class PilotEditor;
 
         static const float k_fps_alpha;
 
@@ -71,6 +74,11 @@ namespace Pilot
 
         void fps(float delta_time);
 
+        /**
+        *  Each frame can only be called once
+        */
+        float getDeltaTime();
+
     public:
         void startEngine(const EngineInitParams& param);
         void shutdownEngine();
@@ -80,6 +88,7 @@ namespace Pilot
 
         bool isQuit() const { return m_is_quit; }
         void run();
+        bool tickOneFrame(float delta_time);
 
         int getFPS() const { return m_fps; }
 

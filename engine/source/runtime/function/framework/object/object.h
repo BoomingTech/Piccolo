@@ -13,7 +13,7 @@
 namespace Pilot
 {
     /// GObject : Game Object base class
-    class GObject
+    class GObject : public std::enable_shared_from_this<GObject>
     {
         typedef std::unordered_set<std::string> TypeNameSet;
 
@@ -26,50 +26,37 @@ namespace Pilot
         bool load(const ObjectInstanceRes& object_instance_res);
         void save(ObjectInstanceRes& out_object_instance_res);
 
-        bool loadComponents(const std::vector<std::string>& components, TypeNameSet& out_instance_component_type_set);
-
-        bool loadComponentDefinition(const ComponentDefinitionRes& component_definition_res,
-                                     const bool                    is_instance_component,
-                                     TypeNameSet&                  out_instance_component_type_set);
-
         GObjectID getID() const { return m_id; }
 
         void               setName(std::string name) { m_name = name; }
         const std::string& getName() const { return m_name; }
 
-        bool hasComponent(const std::string& compenent_type_name) const
-        {
-            for (const std::string& type_name : m_component_type_names)
-            {
-                if (compenent_type_name == type_name)
-                    return true;
-            }
-            return false;
-        }
+        bool hasComponent(const std::string& compenent_type_name) const;
 
         std::vector<Reflection::ReflectionPtr<Component>> getComponents() { return m_components; }
 
         template<typename TComponent>
         TComponent* tryGetComponent(const std::string& compenent_type_name)
         {
-            for (int i = 0; i < m_components.size(); ++i)
+            for (auto& component : m_components)
             {
-                if (compenent_type_name == m_component_type_names[i])
+                if (component.getTypeName() == compenent_type_name)
                 {
-                    return static_cast<TComponent*>(m_components[i].operator->());
+                    return static_cast<TComponent*>(component.operator->());
                 }
             }
+
             return nullptr;
         }
 
         template<typename TComponent>
         const TComponent* tryGetComponentConst(const std::string& compenent_type_name) const
         {
-            for (int i = 0; i < m_components.size(); ++i)
+            for (const auto& component : m_components)
             {
-                if (compenent_type_name == m_component_type_names[i])
+                if (component.getTypeName() == compenent_type_name)
                 {
-                    return static_cast<TComponent*>(m_components[i].operator->());
+                    return static_cast<const TComponent*>(component.operator->());
                 }
             }
             return nullptr;
@@ -83,7 +70,8 @@ namespace Pilot
         std::string m_name;
         std::string m_definition_url;
 
+        // we have to use the ReflectionPtr due to that the components need to be reflected 
+        // in editor, and it's polymorphism
         std::vector<Reflection::ReflectionPtr<Component>> m_components;
-        std::vector<std::string>                          m_component_type_names;
     };
 } // namespace Pilot

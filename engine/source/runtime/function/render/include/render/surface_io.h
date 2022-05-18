@@ -163,9 +163,7 @@ namespace Pilot
             m_title = title;
             glfwSetWindowTitle(m_window, title);
         }
-        bool m_is_editor_mode {true};
         bool m_is_focus_mode {false};
-        void setEditorMode(bool mode) { m_is_editor_mode = mode; }
         void setFocusMode(bool mode) { m_is_focus_mode = mode; }
         void toggleFullscreen()
         {

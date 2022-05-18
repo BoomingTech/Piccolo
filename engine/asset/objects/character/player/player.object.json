@@ -1,8 +1,126 @@
 {
-  "components": [
-    "asset/objects/character/player/components/animation/player.animation.component.json",
-    "asset/objects/character/player/components/mesh/player.mesh.component.json",
-    "asset/objects/character/player/components/motor/player.motor.component.json",
-    "asset/objects/character/player/components/camera/third_person.camera.component.json"
-  ]
+    "components": [
+        {
+            "$context": {
+                "transform": {
+                    "position": {
+                        "x": 3,
+                        "y": 3,
+                        "z": 0
+                    },
+                    "rotation": {
+                        "w": 1,
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "scale": {
+                        "x": 1,
+                        "y": 1,
+                        "z": 1
+                    }
+                }
+            },
+            "$typeName": "TransformComponent"
+        },
+        {
+            "$context": {
+                "animation_res": {
+                    "blend_state": {
+                        "blend_anim_skel_map_path": [
+                            "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                        ],
+                        "blend_clip_file_length": [
+                            0.76666998863220215
+                        ],
+                        "blend_clip_file_path": [
+                            "asset/objects/character/player/components/animation/data/W2_CrouchWalk_Aim_F_Loop_IP.animation_clip.json"
+                        ],
+                        "blend_mask_file_path": [
+                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+                        ],
+                        "blend_ratio": [
+                            0
+                        ],
+                        "blend_weight": [
+                            1
+                        ],
+                        "clip_count": 1
+                    },
+                    "frame_position": 0,
+                    "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json"
+                }
+            },
+            "$typeName": "AnimationComponent"
+        },
+        {
+            "$context": {
+                "mesh_res": {
+                    "sub_meshes": [
+                        {
+                            "material": "asset/objects/character/player/components/mesh/robot.material.json",
+                            "obj_file_ref": "asset/objects/character/player/components/animation/data/robot.mesh_bind.json",
+                            "transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "rotation": {
+                                    "w": 1,
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "$typeName": "MeshComponent"
+        },
+        {
+            "$context": {
+                "motor_res": {
+                    "controller_config": {
+                        "$context": {
+                            "capsule_shape": {
+                                "half_height": 0.69999998807907104,
+                                "radius": 0.30000001192092896
+                            }
+                        },
+                        "$typeName": "PhysicsControllerConfig"
+                    },
+                    "jump_height": 0,
+                    "max_move_speed_ratio": 1,
+                    "max_sprint_speed_ratio": 2,
+                    "move_acceleration": 2,
+                    "move_speed": 2,
+                    "sprint_acceleration": 2
+                }
+            },
+            "$typeName": "MotorComponent"
+        },
+        {
+            "$context": {
+                "camera_res": {
+                    "parameter": {
+                        "$context": {
+                            "fov": 70,
+                            "horizontal_offset": 3,
+                            "vertical_offset": 1.5
+                        },
+                        "$typeName": "ThirdPersonCameraParameter"
+                    }
+                }
+            },
+            "$typeName": "CameraComponent"
+        }
+    ]
 }
