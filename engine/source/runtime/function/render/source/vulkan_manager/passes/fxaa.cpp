@@ -250,10 +250,11 @@ namespace Pilot
                                static_cast<float>(m_p_vulkan_context->_swapchain_extent.height),
                                0.0,
                                1.0};
-        VkRect2D   scissor  = {0,
-                            0,
-                            m_p_vulkan_context->_swapchain_extent.width,
-                            m_p_vulkan_context->_swapchain_extent.height};
+        uint32_t x = static_cast<uint32_t>(m_command_info._viewport.x);
+        uint32_t y = static_cast<uint32_t>(m_command_info._viewport.y);
+        uint32_t width = static_cast<uint32_t>(m_command_info._viewport.width);
+        uint32_t height = static_cast<uint32_t>(m_command_info._viewport.height);
+        VkRect2D scissor = {x, y, width, height};
 
         m_p_vulkan_context->_vkCmdBindPipeline(
             m_command_info._current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
