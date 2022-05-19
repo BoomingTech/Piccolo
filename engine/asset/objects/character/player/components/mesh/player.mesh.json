@@ -1,15 +1,15 @@
 {
   "sub_meshes": [
     {
-      "obj_file_ref": "asset/objects/character/player/components/animation/data/robot.mesh_bind.json",
-      "material": "asset/objects/character/player/components/mesh/robot.material.json",
-      "transform": {
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        }
-      }
+		"obj_file_ref": "asset/objects/character/player/components/animation/data/robot.mesh_bind.json",
+		"material": "asset/objects/character/player/components/mesh/robot.material.json",
+	  "transform":{
+	    "position":{
+		  "x":0,
+		  "y":0,
+		  "z":0
+		}
+	  }
     }
   ]
 }

@@ -940,8 +940,7 @@ namespace Pilot
         if (!m_is_editor_mode)
             return;
 
-        float angularVelocity =
-            180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
+        constexpr float angularVelocity = 180.0f / 600.0f; // degrees/pixel
         if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
         {
             if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
@@ -1042,9 +1041,8 @@ namespace Pilot
         if (selected_object == nullptr)
             return;
 
-        float angularVelocity =
-            18.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 18 degrees while moving full screen
-        Vector2 delta_mouse_move_uv = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
+        constexpr float angularVelocity = 18.0f / 600.0f;
+        Vector2 delta_mouse_move_uv     = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
 
         Vector3    model_scale;
         Quaternion model_rotation;

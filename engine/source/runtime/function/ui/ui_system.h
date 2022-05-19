@@ -9,6 +9,9 @@ namespace Pilot
         friend class PublicSingleton<PUIManager>;
 
     public:
+        PUIManager(const PUIManager&) = delete;
+        PUIManager& operator=(const PUIManager&) = delete;
+
         int initialize();
         int update();
         int clear();

@@ -1,6 +1,6 @@
 {
   "name": "HelloWorld",
   "levels": [
-    "asset/level/1-1.level.json"
+      "asset/level/1-1.level.json"
   ]
 }

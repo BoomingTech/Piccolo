@@ -37,10 +37,18 @@ namespace Pilot
         std::string skeleton_file_path;
         BlendState  blend_state;
         // animation to skeleton map
-        float       frame_position; // 0-1
-
-        META(Disable)
+        float           frame_position; // 0-1
         AnimationResult animation_result;
+    };
+
+    REFLECTION_TYPE(AnimationComponents)
+    CLASS(AnimationComponents, Fields)
+    {
+        REFLECTION_BODY(AnimationComponents);
+
+    public:
+        std::string                        schemaFile;
+        std::vector<AnimationComponentRes> components;
     };
 
 } // namespace Pilot

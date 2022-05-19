@@ -11,16 +11,16 @@ namespace Pilot
     {
         REFLECTION_BODY(AnimationComponent)
 
-        Skeleton m_skeleton;
+        Skeleton skeleton;
         META(Enable)
-        AnimationComponentRes m_animation_res;
+        AnimationComponentRes animation_component;
 
     public:
         AnimationComponent() = default;
-        AnimationComponent(const AnimationComponentRes& animation_res, GObject* parent_object);
+        AnimationComponent(const AnimationComponentRes& rigidbody_ast, GObject* parent_object);
 
-        void tick(float delta_time) override;
-
+        void                   tick(float delta_time) override;
+        void                   destroy() override {}
         const AnimationResult& getResult() const;
     };
 } // namespace Pilot

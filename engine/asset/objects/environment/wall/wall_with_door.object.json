@@ -1,6 +1,6 @@
 {
   "components": [
-    "asset/objects/environment/wall/components/mesh/wall_with_door.mesh.component.json",
-    "asset/objects/environment/wall/components/rigid_body/wall_with_door.rigid_body.component.json"
+      "asset/objects/environment/wall/mesh/wall_with_door.mesh.component.json",
+      "asset/objects/environment/wall/rigid_body/wall_with_door.rigid_body.component.json"
   ]
 }

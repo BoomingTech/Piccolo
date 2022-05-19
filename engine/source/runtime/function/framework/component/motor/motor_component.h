@@ -26,12 +26,13 @@ namespace Pilot
         REFLECTION_BODY(MotorComponent)
     public:
         MotorComponent() {}
-        MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object);
+        MotorComponent(const MotorRes& motor_param, GObject* parent_object);
 
         ~MotorComponent() override;
 
         void tick(float delta_time) override;
         void tickPlayerMotor(float delta_time);
+        void destroy() override {}
 
         const Vector3& getTargetPosition() const { return m_target_position; }
 
@@ -46,7 +47,7 @@ namespace Pilot
         void calculateTargetPosition(const Vector3&& current_position);
 
         META(Enable)
-        MotorComponentRes m_motor_res;
+        MotorRes m_motor_res;
 
         float m_move_speed_ratio {0.f};
         float m_vertical_move_speed {0.f};

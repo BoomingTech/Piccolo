@@ -1,5 +1,5 @@
 {
   "components": [
-    "asset/objects/environment/wall/components/mesh/wall_block.mesh.component.json"
+      "asset/objects/environment/wall/mesh/wall_block.mesh.component.json"
   ]
 }

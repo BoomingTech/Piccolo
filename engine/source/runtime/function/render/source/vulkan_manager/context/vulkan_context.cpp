@@ -201,7 +201,7 @@ std::vector<const char*> Pilot::PVulkanContext::getRequiredExtensions()
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-    if (Pilot::PVulkanManager::m_enable_validation_Layers || Pilot::PVulkanManager::m_enable_debug_utils_label)
+    if (Pilot::PVulkanManager::m_enable_validation_Layers || Pilot::PVulkanManager::m_enable_debug_untils_label)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
@@ -292,7 +292,7 @@ void Pilot::PVulkanContext::initializeDebugMessenger()
         }
     }
 
-    if (Pilot::PVulkanManager::m_enable_debug_utils_label)
+    if (Pilot::PVulkanManager::m_enable_debug_untils_label)
     {
         _vkCmdBeginDebugUtilsLabelEXT =
             (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(_instance, "vkCmdBeginDebugUtilsLabelEXT");

@@ -1,0 +1,206 @@
+{
+  "shapes": [
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0.875,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.125
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0.625,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.25
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0.375,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.375
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": 0.125,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.5
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": -0.125,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.625
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": -0.375,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.75
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": -0.625,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.875
+          }
+        },
+        "$typeName": "Box"
+      }
+    },
+    {
+      "local_transform": {
+        "position" : {
+          "x": -0.875,
+          "y": 0,
+          "z": 1
+        },
+        "rotate": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "geometry": {
+        "$context":{
+          "half_extents": {
+            "x": 0.125,
+            "y": 1,
+            "z": 0.25
+          }
+        },
+        "$typeName": "Box"
+      }
+    }
+  ],
+  "inverse_mass": 0,
+  "actor_type": 1
+}

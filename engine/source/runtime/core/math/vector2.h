@@ -251,12 +251,18 @@ namespace Pilot
         /** Returns true if the vector's scalar components are all greater
         that the ones of the vector it is compared against.
         */
-        bool operator<(const Vector2& rhs) const { return x < rhs.x && y < rhs.y; }
+        bool operator<(const Vector2& rhs) const
+        {
+            return x < rhs.x && y < rhs.y;
+        }
 
         /** Returns true if the vector's scalar components are all smaller
         that the ones of the vector it is compared against.
         */
-        bool operator>(const Vector2& rhs) const { return x > rhs.x && y > rhs.y; }
+        bool operator>(const Vector2& rhs) const
+        {
+            return x > rhs.x && y > rhs.y;
+        }
 
         /** Sets this vector's components to the minimum of its own and the
         ones of the passed in vector.

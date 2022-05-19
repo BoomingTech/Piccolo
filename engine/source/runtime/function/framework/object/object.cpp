@@ -1,6 +1,5 @@
 #include "runtime/function/framework/object/object.h"
 
-#include "runtime/engine.h"
 #include "runtime/function/framework/component/component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
 
@@ -26,10 +25,6 @@ namespace Pilot
     {
         for (auto& component : m_components)
         {
-            if (component->m_tick_in_editor_mode == false && g_is_editor_mode)
-            {
-                continue;
-            }
             component->tick(delta_time);
         }
     }
@@ -39,8 +34,8 @@ namespace Pilot
         setName(object_instance_res.m_name);
 
         // load transform component
-        auto transform_component_ptr = PILOT_REFLECTION_NEW(TransformComponent, object_instance_res.m_transform, this);
-        transform_component_ptr->m_tick_in_editor_mode = true;
+        const Transform& transform               = object_instance_res.m_transform;
+        auto             transform_component_ptr = PILOT_REFLECTION_NEW(TransformComponent, transform, this);
         m_components.push_back(transform_component_ptr);
         m_component_type_names.push_back("TransformComponent");
 
@@ -49,11 +44,13 @@ namespace Pilot
         if (loadComponents(object_instance_res.m_instance_components, instance_component_type_set) == false)
             return false;
 
+        AssetManager& asset_manager = AssetManager::getInstance();
         // load object definition components
-        m_definition_url = object_instance_res.m_definition;
+        m_definition_url            = object_instance_res.m_definition;
+        std::string definition_path = asset_manager.getFullPath(m_definition_url).generic_string();
 
         ObjectDefinitionRes definition_res;
-        AssetManager::getInstance().loadAsset(m_definition_url, definition_res);
+        AssetManager::getInstance().loadAsset(definition_path, definition_res);
 
         if (loadComponents(definition_res.m_components, instance_component_type_set) == false)
             return false;
@@ -76,9 +73,9 @@ namespace Pilot
         AssetManager&          asset_manager = AssetManager::getInstance();
         ComponentDefinitionRes definition_res;
 
-        for (const std::string& definition_res_url : components)
+        for (const std::string& definition_res_path : components)
         {
-            asset_manager.loadAsset(definition_res_url, definition_res);
+            asset_manager.loadAsset(asset_manager.getFullPath(definition_res_path), definition_res);
             if (loadComponentDefinition(definition_res, false, out_instance_component_type_set) == false)
                 return false;
         }
@@ -102,6 +99,7 @@ namespace Pilot
             {
                 m_components.push_back(component);
                 m_component_type_names.push_back(component_definition_res.m_type_name);
+                component->setParentObject(this);
                 out_instance_component_type_set.insert(component_definition_res.m_type_name);
             }
             else
@@ -111,6 +109,14 @@ namespace Pilot
         }
 
         return true;
+    }
+
+    void GObject::destory()
+    {
+        for (auto& component : m_components)
+        {
+            component->destroy();
+        }
     }
 
 } // namespace Pilot

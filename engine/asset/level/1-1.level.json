@@ -6,20 +6,20 @@
       "name": "Player",
       "transform": {
         "position": {
-          "x": 3,
-          "y": 3,
-          "z": 0
+            "x": 3,
+            "y": 3,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/character/player/player.object.json"
@@ -28,20 +28,20 @@
       "name": "Wall_1",
       "transform": {
         "position": {
-          "x": 1.94597,
-          "y": -0.38554,
-          "z": 0
+            "x": 1.94597,
+            "y": -0.38554,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999993,
-          "y": 0.999993,
-          "z": 1
+            "x": 0.999993,
+            "y": 0.999993,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -50,20 +50,20 @@
       "name": "Wall_2",
       "transform": {
         "position": {
-          "x": -7.9951,
-          "y": -0.38554,
-          "z": 0
+            "x": -7.9951,
+            "y": -0.38554,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999918,
-          "y": 0.999918,
-          "z": 1
+            "x": 0.999918,
+            "y": 0.999918,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -72,42 +72,43 @@
       "name": "Wall_3",
       "transform": {
         "position": {
-          "x": -14.2042,
-          "y": -0.38554,
-          "z": 0
+            "x": -14.2042,
+            "y": -0.38554,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999902,
-          "y": 0.999902,
-          "z": 1
+            "x": 0.999902,
+            "y": 0.999902,
+            "z": 1
         }
-      },
+    },
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
+    
     {
       "name": "Wall_4",
       "transform": {
         "position": {
-          "x": -23.9528,
-          "y": 8.1511,
-          "z": 0
+            "x": -23.9528,
+            "y": 8.1511,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999856,
-          "y": 0.999856,
-          "z": 1
+            "x": 0.999856,
+            "y": 0.999856,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -116,20 +117,20 @@
       "name": "Wall_5",
       "transform": {
         "position": {
-          "x": -31.1963,
-          "y": 8.1511,
-          "z": 0
+            "x": -31.1963,
+            "y": 8.1511,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -138,20 +139,20 @@
       "name": "Wall_6",
       "transform": {
         "position": {
-          "x": -31.1344,
-          "y": -6.53789,
-          "z": 0
+            "x": -31.1344,
+            "y": -6.53789,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.839828,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.839828,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -160,20 +161,20 @@
       "name": "Wall_7",
       "transform": {
         "position": {
-          "x": -0.294272,
-          "y": -16.3531,
-          "z": 0
+            "x": -0.294272,
+            "y": -16.3531,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -182,20 +183,20 @@
       "name": "Wall_8",
       "transform": {
         "position": {
-          "x": 6.32963,
-          "y": -16.3531,
-          "z": 0
+            "x": 6.32963,
+            "y": -16.3531,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -204,20 +205,20 @@
       "name": "Wall_9",
       "transform": {
         "position": {
-          "x": 28.1092,
-          "y": -9.2787,
-          "z": 0
+            "x": 28.1092,
+            "y": -9.2787,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -226,42 +227,43 @@
       "name": "Wall_10",
       "transform": {
         "position": {
-          "x": 27.5417,
-          "y": -1.22435,
-          "z": 0
+            "x": 27.5417,
+            "y": -1.22435,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
-      },
+    },
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
+    
     {
       "name": "Wall_11",
-      "transform": {
+      "transform":{
         "position": {
-          "x": 24.1145,
-          "y": 11.7602,
-          "z": 0
+            "x": 24.1145,
+            "y": 11.7602,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -270,20 +272,20 @@
       "name": "Wall_12",
       "transform": {
         "position": {
-          "x": 16.9293,
-          "y": 11.7602,
-          "z": 0
+            "x": 16.9293,
+            "y": 11.7602,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.999829,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.999829,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -292,20 +294,20 @@
       "name": "Wall_13",
       "transform": {
         "position": {
-          "x": -4.55501,
-          "y": 15.5394,
-          "z": 0
+            "x": -4.55501,
+            "y": 15.5394,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
         "scale": {
-          "x": 0.999829,
-          "y": 0.879828,
-          "z": 1
+            "x": 0.999829,
+            "y": 0.879828,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -314,20 +316,20 @@
       "name": "Wall_14",
       "transform": {
         "position": {
-          "x": -0.227576,
-          "y": 20.4413,
-          "z": 0
+            "x": -0.227576,
+            "y": 20.4413,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -336,20 +338,20 @@
       "name": "Wall_15",
       "transform": {
         "position": {
-          "x": -23.9121,
-          "y": 13.0192,
-          "z": 0
+            "x": -23.9121,
+            "y": 13.0192,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -358,42 +360,43 @@
       "name": "Wall_16",
       "transform": {
         "position": {
-          "x": -26.9155,
-          "y": -11.4134,
-          "z": 0
+            "x": -26.9155,
+            "y": -11.4134,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
+  
     {
       "name": "Wall_17",
       "transform": {
         "position": {
-          "x": 23.1772,
-          "y": -13.4053,
-          "z": 0
+            "x": 23.1772,
+            "y": -13.4053,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
         "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+            "x": 1,
+            "y": 0.86,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall.object.json"
@@ -401,21 +404,21 @@
     {
       "name": "WallWithDoor_1",
       "transform": {
-        "position": {
-          "x": -19.0837,
-          "y": 3.74536,
-          "z": 0
+        "position":{
+            "x": -19.0837,
+            "y": 3.74536,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 0.86,
+            "z":1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_door.object.json"
@@ -423,21 +426,21 @@
     {
       "name": "WallWithDoor_2",
       "transform": {
-        "position": {
-          "x": -23.8943,
-          "y": 19.4922,
-          "z": 0
+        "position":{
+            "x": -23.8943,
+            "y": 19.4922,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 0.86,
+            "z":1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_door.object.json"
@@ -445,21 +448,21 @@
     {
       "name": "WallWithDoor_3",
       "transform": {
-        "position": {
-          "x": -8.84542,
-          "y": 19.4922,
-          "z": 0
+        "position":{
+            "x": -8.84542,
+            "y": 19.4922,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 0.86,
+            "z":1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_door.object.json"
@@ -467,21 +470,21 @@
     {
       "name": "WallWithDoor_4",
       "transform": {
-        "position": {
-          "x": 20.2928,
-          "y": 15.6586,
-          "z": 0
+        "position":{
+            "x": 20.2928,
+            "y": 15.6586,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 0.86,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_door.object.json"
@@ -489,21 +492,21 @@
     {
       "name": "WallWithDoor_5",
       "transform": {
-        "position": {
-          "x": 36.2481,
-          "y": 7.65696,
-          "z": 0
+        "position":{
+            "x": 36.2481,
+            "y": 7.65696,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": -0.707683,
-          "w": 0.70653
+            "x": 0,
+            "y": 0,
+            "z": -0.707683,
+            "w": 0.70653
         },
-        "scale": {
-          "x": 1,
-          "y": 0.86,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 0.86,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_door.object.json"
@@ -511,21 +514,21 @@
     {
       "name": "WallWithWindow_1",
       "transform": {
-        "position": {
-          "x": -26.9268,
-          "y": -19.3617,
-          "z": 0
+        "position":{
+            "x": -26.9268,
+            "y": -19.3617,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_window.object.json"
@@ -533,21 +536,21 @@
     {
       "name": "WallWithWindow_2",
       "transform": {
-        "position": {
-          "x": 32.3802,
-          "y": 3.21519,
-          "z": 0
+        "position":{
+            "x": 32.3802,
+            "y": 3.21519,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_with_window.object.json"
@@ -555,46 +558,46 @@
     {
       "name": "WallBlock_1",
       "transform": {
-        "position": {
-          "x": 5.70719,
-          "y": 13.5344,
-          "z": 0
+        "position":{
+            "x": 5.70719,
+            "y": 13.5344,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_block.object.json",
-      "instance_components": [
-        "asset/objects/environment/wall/components/rigid_body/wall_block.rigid_body.component.json"
-      ]
+	  "instance_components" : [
+		"asset/objects/environment/wall/rigid_body/wall_block.rigid_body.component.json"
+	  ]
     },
     {
       "name": "WallBlock_2",
       "transform": {
-        "position": {
-          "x": 3.87136,
-          "y": -1.51802,
-          "z": 0
+        "position":{
+            "x": 3.87136,
+            "y": -1.51802,
+            "z": 0
         },
         "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/wall/wall_block.object.json"
@@ -603,20 +606,20 @@
       "name": "Stairs",
       "transform": {
         "position": {
-          "x": 5.87136,
-          "y": -1.51802,
-          "z": 0
+            "x": 5.87136,
+            "y": -1.51802,
+            "z": 0
         },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0,
-          "w": 1
+        "rotation":{
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+        "scale":{
+            "x": 1,
+            "y": 1,
+            "z": 1
         }
       },
       "definition": "asset/objects/environment/stairs/stairs.object.json"
@@ -657,3 +660,4 @@
     }
   ]
 }
+

@@ -17,6 +17,10 @@ namespace Pilot
     {
         friend class PublicSingleton<SceneManager>;
 
+    public:
+        SceneManager(const SceneManager&) = delete;
+        SceneManager& operator=(const SceneManager&) = delete;
+
     protected:
         SceneManager()                             = default;
         std::shared_ptr<Scene>             m_scene = std::make_shared<Scene>();

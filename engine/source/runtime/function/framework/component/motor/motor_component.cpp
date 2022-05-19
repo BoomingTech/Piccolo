@@ -3,6 +3,7 @@
 #include "runtime/core/base/macro.h"
 #include "runtime/core/base/public_singleton.h"
 
+#include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/controller/character_controller.h"
 #include "runtime/function/framework/component/animation/animation_component.h"
@@ -15,14 +16,22 @@
 
 namespace Pilot
 {
-    MotorComponent::MotorComponent(const MotorComponentRes& motor_res, GObject* parent_object) :
-        Component(parent_object), m_motor_res(motor_res)
+    MotorComponent::MotorComponent(const MotorRes& motor_param, GObject* parent_object) :
+        Component(parent_object), m_motor_res(motor_param)
     {
-        if (m_motor_res.m_controller_type == ControllerType::physics)
+        if (motor_param.m_controller_config.getTypeName() == "PhysicsControllerConfig")
         {
-            PhysicsControllerConfig* controller_config =
-                static_cast<PhysicsControllerConfig*>(m_motor_res.m_controller_config);
-            m_controller = new CharacterController(controller_config->m_capsule_shape);
+            auto controller_config                            = new PhysicsControllerConfig;
+            m_motor_res.m_controller_config.getPtrReference() = controller_config;
+            *controller_config = *static_cast<PhysicsControllerConfig*>(motor_param.m_controller_config.operator->());
+
+            m_motor_res.m_controller_type = ControllerType::physics;
+            m_controller                  = new CharacterController(controller_config->m_capsule_shape);
+        }
+        else if (motor_param.m_controller_config != nullptr)
+        {
+            m_motor_res.m_controller_type = ControllerType::invalid;
+            LOG_ERROR("invalid controller type, not able to move");
         }
 
         const TransformComponent* transform_component = parent_object->tryGetComponentConst(TransformComponent);
@@ -39,7 +48,13 @@ namespace Pilot
         }
     }
 
-    void MotorComponent::tick(float delta_time) { tickPlayerMotor(delta_time); }
+    void MotorComponent::tick(float delta_time)
+    {
+        if ((m_tick_in_editor_mode == false) && g_is_editor_mode)
+            return;
+
+        tickPlayerMotor(delta_time);
+    }
 
     void MotorComponent::tickPlayerMotor(float delta_time)
     {
@@ -68,6 +83,7 @@ namespace Pilot
         calculateTargetPosition(transform_component->getPosition());
 
         transform_component->setPosition(m_target_position);
+
     }
 
     void MotorComponent::calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time)
@@ -104,7 +120,9 @@ namespace Pilot
         m_move_speed_ratio = std::clamp(m_move_speed_ratio, min_speed_ratio, max_speed_ratio);
     }
 
-    void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time) {}
+    void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time)
+    {
+    }
 
     void MotorComponent::calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation)
     {

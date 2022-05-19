@@ -2,7 +2,7 @@
   "shapes": [
     {
       "local_transform": {
-        "translation": {
+        "translation" : {
           "x": 0,
           "y": 0,
           "z": 1
@@ -15,7 +15,7 @@
         }
       },
       "geometry": {
-        "$context": {
+        "$context":{
           "radius": 0.3,
           "half_height": 0.7
         },

@@ -17,7 +17,7 @@ namespace Pilot
             static T instance;
             return instance;
         }
-        virtual ~PublicSingleton() noexcept     = default;
+        virtual ~PublicSingleton() noexcept = default;
         PublicSingleton(const PublicSingleton&) = delete;
         PublicSingleton& operator=(const PublicSingleton&) = delete;
     };

@@ -5,9 +5,7 @@
     "blend_clip_file_path": [
       "asset/objects/character/player/components/animation/data/W2_CrouchWalk_Aim_F_Loop_IP.animation_clip.json"
     ],
-    "blend_clip_file_length": [
-      0.76667
-    ],
+    "blend_clip_file_length":[0.76667],
     "blend_anim_skel_map_path": [
       "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
     ],

@@ -1,6 +1,6 @@
 {
   "components": [
-    "asset/objects/environment/fence/components/mesh/fence.mesh.component.json",
-    "asset/objects/environment/fence/components/rigid_body/fence.rigid_body.component.json"
+    "asset/objects/environment/fence/mesh/fence.mesh.component.json",
+    "asset/objects/environment/fence/rigid_body/fence.rigid_body.component.json"
   ]
 }

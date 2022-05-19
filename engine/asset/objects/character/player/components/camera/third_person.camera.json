@@ -1,9 +1,9 @@
 {
   "parameter": {
-    "$context": {
+	  "$context":{
       "fov": 70,
-      "horizontal_offset": 3,
-      "vertical_offset": 1.5
+      "horizontal_offset":3,
+      "vertical_offset":1.5
     },
     "$typeName": "ThirdPersonCameraParameter"
   }

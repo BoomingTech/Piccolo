@@ -77,8 +77,8 @@ La            = basecolor * ambient_light;
 highp vec3 irradiance = texture(irradiance_sampler, origin_samplecube_N).rgb;
 highp vec3 diffuse    = irradiance * basecolor;
 
-highp vec3 F       = F_SchlickR(clamp(dot(N, V), 0.0, 1.0), F0, roughness);
-highp vec2 brdfLUT = texture(brdfLUT_sampler, vec2(clamp(dot(N, V), 0.0, 1.0), roughness)).rg;
+highp vec3 F       = F_SchlickR(max(dot(N, V), 0.0), F0, roughness);
+highp vec2 brdfLUT = texture(brdfLUT_sampler, vec2(max(dot(N, V), 0.0), roughness)).rg;
 
 highp float lod        = roughness * MAX_REFLECTION_LOD;
 highp vec3  reflection = textureLod(specular_sampler, origin_samplecube_R, lod).rgb;

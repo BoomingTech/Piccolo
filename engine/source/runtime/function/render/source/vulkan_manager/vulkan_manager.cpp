@@ -7,10 +7,10 @@ uint32_t Pilot::PVulkanManager::m_max_material_count             = 256;
 
 #ifndef NDEBUG
 bool Pilot::PVulkanManager::m_enable_validation_Layers  = true;
-bool Pilot::PVulkanManager::m_enable_debug_utils_label = true;
+bool Pilot::PVulkanManager::m_enable_debug_untils_label = true;
 #else
 bool Pilot::PVulkanManager::m_enable_validation_Layers  = false;
-bool Pilot::PVulkanManager::m_enable_debug_utils_label = false;
+bool Pilot::PVulkanManager::m_enable_debug_untils_label = false;
 #endif
 
 #if defined(__GNUC__) && defined(__MACH__)
@@ -130,7 +130,7 @@ void Pilot::PVulkanManager::renderFrame(class Scene&                scene,
     m_point_light_shadow_pass.draw();
 
     m_main_camera_pass.draw(
-        m_color_grading_pass, m_tone_mapping_pass, m_ui_pass, m_combine_ui_pass, current_swapchain_image_index, ui_state);
+        m_color_grading_pass, m_tone_mapping_pass, m_pixel_pass, m_ui_pass, m_combine_ui_pass, current_swapchain_image_index, ui_state);
 
     // end command buffer
     VkResult res_end_command_buffer = m_vulkan_context._vkEndCommandBuffer(m_command_buffers[m_current_frame_index]);
@@ -262,7 +262,7 @@ void Pilot::PVulkanManager::renderFrameForward(class Scene&                scene
     m_point_light_shadow_pass.draw();
 
     m_main_camera_pass.drawForward(
-        m_color_grading_pass, m_tone_mapping_pass, m_ui_pass, m_combine_ui_pass, current_swapchain_image_index, ui_state);
+        m_color_grading_pass, m_tone_mapping_pass, m_pixel_pass,m_ui_pass, m_combine_ui_pass, current_swapchain_image_index, ui_state);
 
     // end command buffer
     VkResult res_end_command_buffer = m_vulkan_context._vkEndCommandBuffer(m_command_buffers[m_current_frame_index]);

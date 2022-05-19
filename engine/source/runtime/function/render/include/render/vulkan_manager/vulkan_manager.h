@@ -77,7 +77,7 @@ namespace Pilot
 
         // rendering config
         static bool m_enable_validation_Layers;
-        static bool m_enable_debug_utils_label;
+        static bool m_enable_debug_untils_label;
         static bool m_enable_point_light_shadow;
 
     private:
@@ -119,6 +119,7 @@ namespace Pilot
         PMainCameraPass             m_main_camera_pass;
         PColorGradingPass           m_color_grading_pass;
         PToneMappingPass            m_tone_mapping_pass;
+    	PPixelPass                  m_pixel_pass;
         PUIPass                     m_ui_pass;
         PCombineUIPass              m_combine_ui_pass;
         PPickPass                   m_mouse_pick_pass;

@@ -31,16 +31,13 @@ namespace Pilot
         META(Enable)
         Reflection::ReflectionPtr<Geometry> m_geometry;
 
-        RigidBodyShape() = default;
-        RigidBodyShape(const RigidBodyShape& res);
-
-        ~RigidBodyShape();
+        ~RigidBodyShape() { PILOT_REFLECTION_DELETE(m_geometry); }
     };
 
-    REFLECTION_TYPE(RigidBodyComponentRes)
-    CLASS(RigidBodyComponentRes, Fields)
+    REFLECTION_TYPE(RigidBodyActorRes)
+    CLASS(RigidBodyActorRes, Fields)
     {
-        REFLECTION_BODY(RigidBodyComponentRes);
+        REFLECTION_BODY(RigidBodyActorRes);
 
     public:
         std::vector<RigidBodyShape> m_shapes;

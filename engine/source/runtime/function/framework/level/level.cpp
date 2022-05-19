@@ -5,7 +5,6 @@
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/res_type/common/level.h"
 
-#include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/scene/scene_manager.h"
@@ -68,8 +67,10 @@ namespace Pilot
     {
         m_level_res_url = level_res_url;
 
+        AssetManager& asset_manager = AssetManager::getInstance();
+
         LevelRes level_res;
-        AssetManager::getInstance().loadAsset(level_res_url, level_res);
+        asset_manager.loadAsset(asset_manager.getFullPath(level_res_url), level_res);
 
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
@@ -102,7 +103,8 @@ namespace Pilot
             }
         }
 
-        AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
+        AssetManager& asset_manager = AssetManager::getInstance();
+        asset_manager.saveAsset(output_level_res, asset_manager.getFullPath(m_level_res_url));
     }
 
     void Level::tickAll(float delta_time)
@@ -115,7 +117,7 @@ namespace Pilot
                 id_object_pair.second->tick(delta_time);
             }
         }
-        if (m_current_active_character && g_is_editor_mode == false)
+        if (m_current_active_character)
         {
             m_current_active_character->tick();
         }
@@ -146,6 +148,7 @@ namespace Pilot
                 {
                     m_current_active_character->setObject(nullptr);
                 }
+                object->destory();
             }
             delete object;
         }

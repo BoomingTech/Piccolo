@@ -25,7 +25,7 @@ namespace Pilot
             {
                 Box* box_shape_geom = new Box;
 
-                (*box_shape_geom) = *static_cast<Box*>(shape.m_geometry.getPtr());
+                (*box_shape_geom) = *static_cast<Box*>(shape.m_geometry.operator->());
 
                 shape.m_geometry.getPtrReference() = box_shape_geom;
                 shape.m_type                       = RigidBodyShapeType::box;

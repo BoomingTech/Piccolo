@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/function/framework/component/component.h"
-
 #include "runtime/resource/res_type/common/object.h"
 
 #include <memory>
@@ -11,6 +9,9 @@
 
 namespace Pilot
 {
+    class Component;
+    class PObjectT;
+
     // GObject : Game Object base class
     class GObject
     {
@@ -42,6 +43,8 @@ namespace Pilot
 
         void               setName(std::string name) { m_name = name; }
         const std::string& getName() const { return m_name; }
+
+        void destory();
 
         bool hasComponent(const std::string& compenent_type_name) const
         {

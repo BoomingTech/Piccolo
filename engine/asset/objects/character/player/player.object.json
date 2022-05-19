@@ -1,5 +1,5 @@
 {
-  "components": [
+  "components": [    
     "asset/objects/character/player/components/animation/player.animation.component.json",
     "asset/objects/character/player/components/mesh/player.mesh.component.json",
     "asset/objects/character/player/components/motor/player.motor.component.json",
