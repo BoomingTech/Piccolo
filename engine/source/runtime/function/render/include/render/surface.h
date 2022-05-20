@@ -39,7 +39,6 @@ namespace Pilot
         inline SurfaceUI() : m_tmp_uistate(NULL) {}
         UIState*     m_tmp_uistate;
         virtual void onTick(UIState* uistate) = 0;
-        virtual void registerInput()          = 0;
         float        getContentScale() const;
 
     protected:

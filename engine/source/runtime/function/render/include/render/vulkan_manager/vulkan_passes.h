@@ -68,7 +68,6 @@ namespace Pilot
         void setupDescriptorSet();
     };
 
-    extern void  surface_ui_register_input(void* m_surface_ui);
     extern void  surface_ui_on_tick(void* surface_ui, void* ui_state);
     extern float surface_ui_content_scale(void* surface_ui);
 
