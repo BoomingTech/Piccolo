@@ -7,7 +7,6 @@
 
 namespace Pilot
 {
-    void surface_ui_register_input(void* surface_ui) { static_cast<SurfaceUI*>(surface_ui)->registerInput(); }
 
     void surface_ui_on_tick(void* surface_ui, void* ui_state)
     {

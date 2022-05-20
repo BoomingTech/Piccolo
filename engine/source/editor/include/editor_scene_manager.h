@@ -41,6 +41,7 @@ namespace Pilot
             Vector2   engine_window_size,
             size_t    cursor_on_axis,
             Matrix4x4 model_matrix);
+        size_t getGuidOfPickedMesh(const Vector2& picked_uv) const;
 
     public:
         std::shared_ptr<PCamera> getEditorCamera() { return m_camera; };
@@ -52,11 +53,7 @@ namespace Pilot
         void setSelectedObjectID(size_t selected_gobject_id) { m_selected_gobject_id = selected_gobject_id; };
         void setSelectedObjectMatrix(Matrix4x4 new_object_matrix) { m_selected_object_matrix = new_object_matrix; }
         void setEditorAxisMode(EditorAxisMode new_axis_mode) { m_axis_mode = new_axis_mode; }
-        void setSceneEditor(PilotEditor* editor) { m_editor = editor; }
     private:
-
-        PilotEditor* m_editor{ nullptr };
-
         EditorTranslationAxis m_translation_axis;
         EditorRotationAxis    m_rotation_axis;
         EditorScaleAxis       m_scale_aixs;

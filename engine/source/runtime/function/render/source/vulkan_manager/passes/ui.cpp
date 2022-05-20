@@ -81,9 +81,6 @@ namespace Pilot
         // fonts upload
         fontsUpload();
 
-        // register input
-        surface_ui_register_input(m_surface_ui);
-
         // initialize window icon
         GLFWimage   window_icon[2];
         std::string big_icon_path_string   = ConfigManager::getInstance().getEditorBigIconPath().generic_string();

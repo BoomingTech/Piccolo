@@ -1,8 +1,8 @@
 #include "editor/include/editor_ui.h"
 
-#include "editor/include/editor.h"
 #include "editor/include/editor_global_context.h"
 #include "editor/include/editor_scene_manager.h"
+#include "editor/include/editor_input_manager.h"
 
 #include "runtime/core/base/macro.h"
 #include "runtime/core/meta/reflection/reflection.h"
@@ -40,7 +40,7 @@ namespace Pilot
                                                              float              resetValue  = 0.0f,
                                                              float              columnWidth = 100.0f);
 
-    EditorUI::EditorUI(PilotEditor* editor) : m_editor(editor)
+    EditorUI::EditorUI()
     {
         Path&       path_service            = Path::getInstance();
         const auto& asset_folder            = ConfigManager::getInstance().getAssetFolder();
@@ -247,15 +247,9 @@ namespace Pilot
         return parent_label;
     }
 
-    bool EditorUI::isCursorInRect(Vector2 pos, Vector2 size) const
-    {
-        return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
-    }
-
     void EditorUI::onTick(UIState* uistate)
     {
         showEditorUI();
-        processEditorCommand();
     }
 
     void EditorUI::showEditorUI()
@@ -617,7 +611,7 @@ namespace Pilot
             ImGui::SameLine();
 
             float indent_val = 0.0f;
-            indent_val       = m_engine_window_size.x - 100.0f * getIndentScale();
+            indent_val = g_editor_global_context.m_input_manager->getEngineWindowSize().x - 100.0f * getIndentScale();
 
             ImGui::Indent(indent_val);
             if (g_is_editor_mode)
@@ -627,6 +621,7 @@ namespace Pilot
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
+                    g_editor_global_context.m_input_manager->resetEditorCommand();
                     g_is_editor_mode = false;
                     m_io->setFocusMode(true);
                 }
@@ -638,6 +633,7 @@ namespace Pilot
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
+                    InputSystem::getInstance().resetGameCommand();
                     g_is_editor_mode = true;
                     SceneManager::getInstance().setMainViewMatrix(
                         g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
@@ -654,7 +650,7 @@ namespace Pilot
         else
         {
             ImGui::TextColored(
-                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", m_camera_speed);
+                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", g_editor_global_context.m_input_manager->getCameraSpeed());
         }
 
         auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
@@ -673,17 +669,16 @@ namespace Pilot
             // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
             // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
             float dpi_scale = main_viewport->DpiScale;
-            m_editor->onWindowChanged(new_window_pos.x * dpi_scale,
-                                      new_window_pos.y * dpi_scale,
-                                      new_window_size.x * dpi_scale,
-                                      new_window_size.y * dpi_scale);
+            PilotEngine::getInstance().getRender()->updateWindow(new_window_pos.x * dpi_scale,
+                new_window_pos.y * dpi_scale,
+                new_window_size.x * dpi_scale,
+                new_window_size.y * dpi_scale);
 #else
-            m_editor->onWindowChanged(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
+            PilotEngine::getInstance().getRender()->updateWindow(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
 #endif
-
-            m_engine_window_pos  = new_window_pos;
-            m_engine_window_size = new_window_size;
-            SceneManager::getInstance().setWindowSize(m_engine_window_size);
+            g_editor_global_context.m_input_manager->setEngineWindowPos(new_window_pos);
+            g_editor_global_context.m_input_manager->setEngineWindowSize(new_window_size);
+            SceneManager::getInstance().setWindowSize(g_editor_global_context.m_input_manager->getEngineWindowSize());
         }
 
         ImGui::End();
@@ -770,179 +765,6 @@ namespace Pilot
             g_editor_global_context.m_scene_manager->onGObjectSelected(new_gobject_id);
         }
     }
-
-    void EditorUI::updateCursorOnAxis(Vector2 cursor_uv)
-    {
-        if (g_editor_global_context.m_scene_manager->getEditorCamera())
-        {
-            Vector2 window_size(m_engine_window_size.x, m_engine_window_size.y);
-            m_cursor_on_axis = m_editor->onUpdateCursorOnAxis(cursor_uv, window_size);
-        }
-    }
-
-    void EditorUI::onReset()
-    {
-        // to do
-    }
-
-    void EditorUI::registerInput()
-    {
-        m_io->registerOnResetFunc(std::bind(&EditorUI::onReset, this));
-        m_io->registerOnCursorPosFunc(
-            std::bind(&EditorUI::onCursorPos, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnCursorEnterFunc(std::bind(&EditorUI::onCursorEnter, this, std::placeholders::_1));
-        m_io->registerOnScrollFunc(std::bind(&EditorUI::onScroll, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnMouseButtonFunc(
-            std::bind(&EditorUI::onMouseButtonClicked, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnWindowCloseFunc(std::bind(&EditorUI::onWindowClosed, this));
-        return;
-    }
-
-    void EditorUI::processEditorCommand()
-    {
-        float           camera_speed  = m_camera_speed;
-        std::shared_ptr editor_camera = g_editor_global_context.m_scene_manager->getEditorCamera();
-        Quaternion      camera_rotate = editor_camera->rotation().inverse();
-        Vector3         camera_relative_pos(0, 0, 0);
-
-        unsigned int command = InputSystem::getInstance().getEditorCommand();
-        if ((unsigned int)EditorCommand::camera_foward & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3 {0, camera_speed, 0};
-        }
-        if ((unsigned int)EditorCommand::camera_back & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3 {0, -camera_speed, 0};
-        }
-        if ((unsigned int)EditorCommand::camera_left & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3 {-camera_speed, 0, 0};
-        }
-        if ((unsigned int)EditorCommand::camera_right & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3 {camera_speed, 0, 0};
-        }
-        if ((unsigned int)EditorCommand::camera_up & command)
-        {
-            camera_relative_pos += Vector3 {0, 0, camera_speed};
-        }
-        if ((unsigned int)EditorCommand::camera_down & command)
-        {
-            camera_relative_pos += Vector3 {0, 0, -camera_speed};
-        }
-        if ((unsigned int)EditorCommand::delete_object & command)
-        {
-            g_editor_global_context.m_scene_manager->onDeleteSelectedGObject();
-        }
-
-        editor_camera->move(camera_relative_pos);
-    }
-
-    void EditorUI::onCursorPos(double xpos, double ypos)
-    {
-        if (!g_is_editor_mode)
-            return;
-
-        float angularVelocity =
-            180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
-        if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
-        {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
-            {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                g_editor_global_context.m_scene_manager->getEditorCamera()->rotate(
-                    Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
-            }
-            else if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
-            {
-                g_editor_global_context.m_scene_manager->moveEntity(
-                    xpos,
-                    ypos,
-                    m_mouse_x,
-                    m_mouse_y,
-                    m_engine_window_pos,
-                    m_engine_window_size,
-                    m_cursor_on_axis,
-                    g_editor_global_context.m_scene_manager->getSelectedObjectMatrix());
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            }
-            else
-            {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-                if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-                {
-                    Vector2 cursor_uv = Vector2((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                                                (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
-                    updateCursorOnAxis(cursor_uv);
-                }
-            }
-        }
-        m_mouse_x = xpos;
-        m_mouse_y = ypos;
-    }
-
-    void EditorUI::onCursorEnter(int entered)
-    {
-        if (!entered) // lost focus
-        {
-            m_mouse_x = m_mouse_y = -1.0f;
-        }
-    }
-
-    void EditorUI::onScroll(double xoffset, double yoffset)
-    {
-        if (!g_is_editor_mode)
-        {
-            return;
-        }
-
-        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-        {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
-            {
-                if (yoffset > 0)
-                {
-                    m_camera_speed *= 1.2f;
-                }
-                else
-                {
-                    m_camera_speed *= 0.8f;
-                }
-            }
-            else
-            {
-                g_editor_global_context.m_scene_manager->getEditorCamera()->zoom(
-                    (float)yoffset * 2.0f); // wheel scrolled up = zoom in by 2 extra degrees
-            }
-        }
-    }
-
-    void EditorUI::onMouseButtonClicked(int key, int action)
-    {
-        if (!g_is_editor_mode)
-            return;
-        if (m_cursor_on_axis != 3)
-            return;
-
-        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
-        if (current_active_level == nullptr)
-            return;
-
-        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-        {
-            if (key == GLFW_MOUSE_BUTTON_LEFT)
-            {
-                Vector2 picked_uv((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                                  (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
-                size_t  select_mesh_id = m_editor->getGuidOfPickedMesh(picked_uv);
-
-                size_t gobject_id = SceneManager::getInstance().getGObjectIDByMeshID(select_mesh_id);
-                g_editor_global_context.m_scene_manager->onGObjectSelected(gobject_id);
-            }
-        }
-    }
-    void EditorUI::onWindowClosed() { PilotEngine::getInstance().shutdownEngine(); }
 
     void DrawVecControl(const std::string& label, Pilot::Vector3& values, float resetValue, float columnWidth)
     {

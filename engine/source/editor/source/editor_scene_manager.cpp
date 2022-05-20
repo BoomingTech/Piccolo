@@ -181,7 +181,8 @@ namespace Pilot
                 return m_selected_axis;
             }
         }
-        m_editor->setSceneSelectedAxis(m_selected_axis);
+        
+        PilotEngine::getInstance().getRender()->setSceneSelectedAxis(m_selected_axis);
         return m_selected_axis;
     }
 
@@ -533,5 +534,9 @@ namespace Pilot
             transform_component->setScale(new_scale);
         }
         setSelectedObjectMatrix(new_model_matrix);
+    }
+    size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const
+    {         
+        return  PilotEngine::getInstance().getRender()->getGuidOfPickedMesh(picked_uv);
     }
 }
