@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <runtime/function/render/include/render/surface_io.h>
 #include "render/render_camera.h"
 
