@@ -5,7 +5,6 @@
 
 namespace Pilot
 {
-    class GObject;
     enum SweepPass
     {
         SWEEP_PASS_UP,
@@ -17,8 +16,6 @@ namespace Pilot
     class Controller
     {
     public:
-        virtual ~Controller();
-
         virtual Vector3 move(const Vector3& current_position, const Vector3& displacement) = 0;
     };
 
@@ -26,7 +23,6 @@ namespace Pilot
     {
     public:
         CharacterController(const Capsule& capsule) : m_capsule(capsule) {}
-        ~CharacterController();
 
         Vector3 move(const Vector3& current_position, const Vector3& displacement) override;
 
