@@ -27,24 +27,25 @@ namespace Pilot
         GObjectID object_id = ObjectIDAllocator::alloc();
         ASSERT(object_id != k_invalid_gobject_id);
 
-        std::shared_ptr<GObject> gobject = std::make_shared<GObject>(object_id);
-
-        if (gobject == nullptr)
+        std::shared_ptr<GObject> gobject;
+        try
+        {
+            gobject = std::make_shared<GObject>(object_id);
+        }
+        catch(const std::bad_alloc&)
         {
             LOG_FATAL("cannot allocate memory for new gobject");
         }
+
+        bool is_loaded = gobject->load(object_instance_res);
+        if (is_loaded)
+        {
+            m_gobjects.emplace(object_id, gobject);
+        }
         else
         {
-            bool is_loaded = gobject->load(object_instance_res);
-            if (is_loaded)
-            {
-                m_gobjects.emplace(object_id, gobject);
-            }
-            else
-            {
-                LOG_ERROR("loading object " + object_instance_res.m_name + " failed");
-                return k_invalid_gobject_id;
-            }
+            LOG_ERROR("loading object " + object_instance_res.m_name + " failed");
+            return k_invalid_gobject_id;
         }
         return object_id;
     }
