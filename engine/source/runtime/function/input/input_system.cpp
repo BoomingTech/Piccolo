@@ -8,102 +8,13 @@
 
 namespace Pilot
 {
-    unsigned int InputSystem::k_complement_control_command = 0xFFFFFFFF;
+    unsigned int k_complement_control_command = 0xFFFFFFFF;
 
     void InputSystem::onKey(int key, int scancode, int action, int mods)
     {
-        if (g_is_editor_mode)
+        if (!g_is_editor_mode)
         {
-            m_game_command = 0;
-            onKeyInEditorMode(key, scancode, action, mods);
-        }
-        else
-        {
-            m_editor_command = 0;
             onKeyInGameMode(key, scancode, action, mods);
-        }
-    }
-
-    void InputSystem::onKeyInEditorMode(int key, int scancode, int action, int mods)
-    {
-        if (action == GLFW_PRESS)
-        {
-            switch (key)
-            {
-                case GLFW_KEY_A:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_left;
-                    break;
-                case GLFW_KEY_S:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_back;
-                    break;
-                case GLFW_KEY_W:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_foward;
-                    break;
-                case GLFW_KEY_D:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_right;
-                    break;
-                case GLFW_KEY_Q:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_up;
-                    break;
-                case GLFW_KEY_E:
-                    m_editor_command |= (unsigned int)EditorCommand::camera_down;
-                    break;
-                case GLFW_KEY_T:
-                    m_editor_command |= (unsigned int)EditorCommand::translation_mode;
-                    break;
-                case GLFW_KEY_R:
-                    m_editor_command |= (unsigned int)EditorCommand::rotation_mode;
-                    break;
-                case GLFW_KEY_C:
-                    m_editor_command |= (unsigned int)EditorCommand::scale_mode;
-                    break;
-                case GLFW_KEY_DELETE:
-                    m_editor_command |= (unsigned int)EditorCommand::delete_object;
-                    break;
-                default:
-                    break;
-            }
-        }
-        else if (action == GLFW_RELEASE)
-        {
-            switch (key)
-            {
-                case GLFW_KEY_ESCAPE:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::exit);
-                    break;
-                case GLFW_KEY_A:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_left);
-                    break;
-                case GLFW_KEY_S:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_back);
-                    break;
-                case GLFW_KEY_W:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_foward);
-                    break;
-                case GLFW_KEY_D:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_right);
-                    break;
-                case GLFW_KEY_Q:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_up);
-                    break;
-                case GLFW_KEY_E:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::camera_down);
-                    break;
-                case GLFW_KEY_T:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::translation_mode);
-                    break;
-                case GLFW_KEY_R:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::rotation_mode);
-                    break;
-                case GLFW_KEY_C:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::scale_mode);
-                    break;
-                case GLFW_KEY_DELETE:
-                    m_editor_command &= (k_complement_control_command ^ (unsigned int)EditorCommand::delete_object);
-                    break;
-                default:
-                    break;
-            }
         }
     }
 

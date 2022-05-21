@@ -13,6 +13,20 @@ namespace Pilot
         VkImageView directional_light_shadow_color_image_view;
     };
 
+    class PFXAAPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
     class PColorGradingPass : public PRenderPassBase
     {
     public:
@@ -68,21 +82,23 @@ namespace Pilot
         void setupDescriptorSet();
     };
 
-    extern void  surface_ui_register_input(void* m_surface_ui);
     extern void  surface_ui_on_tick(void* surface_ui, void* ui_state);
     extern float surface_ui_content_scale(void* surface_ui);
 
     enum
     {
-        _main_camera_pass_gbuffer_a               = 0,
-        _main_camera_pass_gbuffer_b               = 1,
-        _main_camera_pass_gbuffer_c               = 2,
-        _main_camera_pass_backup_buffer_odd       = 3,
-        _main_camera_pass_backup_buffer_even      = 4,
-        _main_camera_pass_depth                   = 5,
-        _main_camera_pass_swap_chain_image        = 6,
-        _main_camera_pass_custom_attachment_count = 5,
-        _main_camera_pass_attachment_count        = 7,
+        _main_camera_pass_gbuffer_a                     = 0,
+        _main_camera_pass_gbuffer_b                     = 1,
+        _main_camera_pass_gbuffer_c                     = 2,
+        _main_camera_pass_backup_buffer_odd             = 3,
+        _main_camera_pass_backup_buffer_even            = 4,
+        _main_camera_pass_post_process_buffer_odd       = 5,
+        _main_camera_pass_post_process_buffer_even      = 6,
+        _main_camera_pass_depth                         = 7,
+        _main_camera_pass_swap_chain_image              = 8,
+        _main_camera_pass_custom_attachment_count       = 5,
+        _main_camera_pass_post_process_attachment_count = 2,
+        _main_camera_pass_attachment_count              = 9,
     };
 
     enum
@@ -92,6 +108,7 @@ namespace Pilot
         _main_camera_subpass_forward_lighting,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
+        _main_camera_subpass_fxaa,
         _main_camera_subpass_ui,
         _main_camera_subpass_combine_ui,
         _main_camera_subpass_count
@@ -137,6 +154,7 @@ namespace Pilot
         void initialize();
 
         void draw(PColorGradingPass& color_grading_pass,
+                  PFXAAPass&         fxaa_pass,
                   PToneMappingPass&  tone_mapping_pass,
                   PUIPass&           ui_pass,
                   PCombineUIPass&    combine_ui_pass,
@@ -145,6 +163,7 @@ namespace Pilot
 
         // legacy
         void drawForward(PColorGradingPass& color_grading_pass,
+                         PFXAAPass&         fxaa_pass,
                          PToneMappingPass&  tone_mapping_pass,
                          PUIPass&           ui_pass,
                          PCombineUIPass&    combine_ui_pass,

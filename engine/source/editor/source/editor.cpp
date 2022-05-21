@@ -1,6 +1,7 @@
 #include "editor//include/editor.h"
 #include "editor/include/editor_ui.h"
 #include "editor/include/editor_scene_manager.h"
+#include "editor/include/editor_input_manager.h"
 #include "editor/include/editor_global_context.h"
 #include "runtime/engine.h"
 #include "runtime/function/render/include/render/render.h"
@@ -30,8 +31,7 @@ namespace Pilot
         g_is_editor_mode = true;
         m_engine_runtime = engine_runtime;
         g_editor_global_context.initialize();
-        m_editor_ui = std::make_shared<EditorUI>(this);
-        g_editor_global_context.m_scene_manager->setSceneEditor(this);
+        m_editor_ui = std::make_shared<EditorUI>();
 
         std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
         assert(render);
@@ -53,41 +53,9 @@ namespace Pilot
         {
             delta_time = m_engine_runtime->getDeltaTime();
             g_editor_global_context.m_scene_manager->tick(delta_time);
+            g_editor_global_context.m_input_manager->tick(delta_time);
             if (!m_engine_runtime->tickOneFrame(delta_time))
                 return;
         }
     }
-
-    void PilotEditor::onWindowChanged(float pos_x, float pos_y, float width, float height) const
-    {
-        std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
-        assert(render);
-
-        render->updateWindow(pos_x, pos_y, width, height);
-    }
-
-    size_t PilotEditor::onUpdateCursorOnAxis(const Vector2& cursor_uv, const Vector2& window_size) const
-    {
-        std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
-        assert(render);
-
-        return g_editor_global_context.m_scene_manager->updateCursorOnAxis(cursor_uv, window_size);
-    }
-
-    size_t PilotEditor::getGuidOfPickedMesh(const Vector2& picked_uv) const
-    {
-        std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
-        assert(render);
-
-        return render->getGuidOfPickedMesh(picked_uv);
-    }
-
-    void PilotEditor::setSceneSelectedAxis(size_t selected_axis)
-    {
-        std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
-        assert(render);
-
-        render->setSceneSelectedAxis(selected_axis);
-    }
-
 } // namespace Pilot
