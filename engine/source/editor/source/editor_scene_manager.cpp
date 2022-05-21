@@ -1,10 +1,9 @@
 #include <mutex>
+#include <cassert>
+
 #include "editor/include/editor.h"
 #include "editor/include/editor_scene_manager.h"
-#include "runtime/function/render/include/render/glm_wrapper.h"
-
-#include "runtime/function/scene/scene_manager.h"
-#include "render/glm_wrapper.h"
+#include "editor/include/editor_global_context.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
 #include <runtime/function/framework/component/transform/transform_component.cpp>
@@ -13,23 +12,22 @@
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/render/include/render/render.h"
-#include "runtime/function/scene/scene_manager.h"
 #include "runtime/function/ui/ui_system.h"
+
+#include "runtime/function/render/glm_wrapper.h"
+#include "runtime/function/render/render_camera.h"
+#include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
     void EditorSceneManager::initialize()
     {
-        auto current_scene = SceneManager::getInstance().getCurrentScene();
-        m_camera = current_scene->m_camera;
     }
 
     void EditorSceneManager::tick(float delta_time)
     {
         //todo: editor scene tick
     }
-
 
     float intersectPlaneRay(glm::vec3 normal, float d, glm::vec3 origin, glm::vec3 dir)
     {
@@ -58,7 +56,7 @@ namespace Pilot
         {
             return m_selected_axis;
         }
-        RenderMesh* selected_aixs = getAxisMeshByType(m_axis_mode);
+        RenderEntity* selected_aixs = getAxisMeshByType(m_axis_mode);
         m_selected_axis = 3;
         if (m_is_show_axis == false)
         {
@@ -182,13 +180,14 @@ namespace Pilot
             }
         }
         
-        PilotEngine::getInstance().getRender()->setSceneSelectedAxis(m_selected_axis);
+        g_editor_global_context.m_render_system->setSelectedAxis(m_selected_axis);
+
         return m_selected_axis;
     }
 
-    RenderMesh* EditorSceneManager::getAxisMeshByType(EditorAxisMode axis_mode)
+    RenderEntity* EditorSceneManager::getAxisMeshByType(EditorAxisMode axis_mode)
     {
-        RenderMesh* axis_mesh = nullptr;
+        RenderEntity* axis_mesh = nullptr;
         switch (axis_mode)
         {
         case EditorAxisMode::TranslateMode:
@@ -213,7 +212,6 @@ namespace Pilot
         if (g_is_editor_mode && selected_object != nullptr)
         {
             const TransformComponent* transform_component = selected_object->tryGetComponentConst(TransformComponent);
-            std::vector<RenderMesh>   axis_meshs;
 
             Vector3    scale;
             Quaternion rotation;
@@ -222,7 +220,7 @@ namespace Pilot
             Matrix4x4 translation_matrix = Matrix4x4::getTrans(translation);
             Matrix4x4 scale_matrix = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, 1.0f);
             Matrix4x4 axis_model_matrix = translation_matrix * scale_matrix;
-            RenderMesh* selected_aixs = getAxisMeshByType(m_axis_mode);
+            RenderEntity* selected_aixs = getAxisMeshByType(m_axis_mode);
             if (m_axis_mode == EditorAxisMode::TranslateMode || m_axis_mode == EditorAxisMode::RotateMode)
             {
                 selected_aixs->m_model_matrix = axis_model_matrix;
@@ -230,15 +228,13 @@ namespace Pilot
             else if (m_axis_mode == EditorAxisMode::ScaleMode)
             {
                 selected_aixs->m_model_matrix = axis_model_matrix * Matrix4x4(rotation);
-
             }
-            axis_meshs.push_back(*selected_aixs);
-            SceneManager::getInstance().setAxisMesh(axis_meshs);
+            
+            g_editor_global_context.m_render_system->setVisibleAxis(*selected_aixs);
         }
         else
         {
-            std::vector<RenderMesh> axis_meshs;
-            SceneManager::getInstance().setAxisMesh(axis_meshs);
+            g_editor_global_context.m_render_system->setVisibleAxis(std::nullopt);
         }
     }
 
@@ -256,7 +252,7 @@ namespace Pilot
         return selected_object;
     }
 
-    void EditorSceneManager::onGObjectSelected(size_t selected_gobject_id)
+    void EditorSceneManager::onGObjectSelected(GObjectID selected_gobject_id)
     {
         if (selected_gobject_id == m_selected_gobject_id)
             return;
@@ -293,6 +289,9 @@ namespace Pilot
                 return;
 
             current_active_level->deleteGObjectByID(m_selected_gobject_id);
+
+            RenderSwapContext& swap_context = g_editor_global_context.m_render_system->getSwapContext();
+            swap_context.getLogicSwapData().addDeleteGameObject(GameObjectDesc {selected_object->getID(), {}});
         }
         onGObjectSelected(k_invalid_gobject_id);
     }
@@ -414,9 +413,8 @@ namespace Pilot
             m_translation_axis.m_model_matrix = axis_model_matrix;
             m_rotation_axis.m_model_matrix = axis_model_matrix;
             m_scale_aixs.m_model_matrix = axis_model_matrix;
-            std::vector<RenderMesh> axis_meshs;
-            axis_meshs.push_back(m_translation_axis);
-            SceneManager::getInstance().setAxisMesh(axis_meshs);
+            
+          g_editor_global_context.m_render_system->setVisibleAxis(m_translation_axis);
 
             transform_component->setPosition(new_translation);
             transform_component->setRotation(new_rotation);
@@ -535,8 +533,44 @@ namespace Pilot
         }
         setSelectedObjectMatrix(new_model_matrix);
     }
+
+    void EditorSceneManager::uploadAxisResource()
+    {
+        auto& instance_id_allocator   = g_editor_global_context.m_render_system->getGOInstanceIdAllocator();
+        auto& mesh_asset_id_allocator = g_editor_global_context.m_render_system->getMeshAssetIdAllocator();
+
+        // assign some value that won't be used by other game objects
+        {
+            GameObjectPartId axis_instance_id = {0xFFAA, 0xFFAA};
+            MeshSourceDesc   mesh_source_desc = {"%%translation_axis%%"};
+
+            m_translation_axis.m_instance_id   = instance_id_allocator.allocGuid(axis_instance_id);
+            m_translation_axis.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
+        }
+
+        {
+            GameObjectPartId axis_instance_id = {0xFFBB, 0xFFBB};
+            MeshSourceDesc   mesh_source_desc = {"%%rotate_axis%%"};
+
+            m_rotation_axis.m_instance_id   = instance_id_allocator.allocGuid(axis_instance_id);
+            m_rotation_axis.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
+        }
+
+        {
+            GameObjectPartId axis_instance_id = {0xFFCC, 0xFFCC};
+            MeshSourceDesc   mesh_source_desc = {"%%scale_axis%%"};
+
+            m_scale_aixs.m_instance_id   = instance_id_allocator.allocGuid(axis_instance_id);
+            m_scale_aixs.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
+        }
+
+      g_editor_global_context.m_render_system->createAxis(
+            {m_translation_axis, m_rotation_axis, m_scale_aixs},
+            {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_aixs.m_mesh_data});
+    }
+
     size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const
     {         
-        return  PilotEngine::getInstance().getRender()->getGuidOfPickedMesh(picked_uv);
+        return g_editor_global_context.m_render_system->getGuidOfPickedMesh(picked_uv);
     }
 }

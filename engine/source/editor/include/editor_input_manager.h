@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include <runtime/function/render/include/render/surface_io.h>
-#include "render/render_camera.h"
+//#include <runtime/function/render/include/render/surface_io.h>
+#include "runtime/function/render/render_camera.h"
 
 #include "runtime/core/math/vector2.h"
 
@@ -54,9 +54,6 @@ namespace Pilot
 		void setEngineWindowSize(Vector2 new_window_size) { m_engine_window_size = new_window_size; };
 		void resetEditorCommand() { m_editor_command = 0; }
 	private:
-		//PilotEditor* m_editor{ nullptr };
-		std::shared_ptr<SurfaceIO> m_io;
-
 		Vector2 m_engine_window_pos{ 0.0f, 0.0f };
 		Vector2 m_engine_window_size{ 1280.0f, 768.0f };
 		float   m_mouse_x{ 0.0f };

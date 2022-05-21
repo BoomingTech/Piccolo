@@ -9,9 +9,8 @@
 
 namespace Pilot
 {
-    class PilotRenderer;
-    class FrameBuffer;
-    class SurfaceIO;
+    class WindowSystem;
+    class RenderSystem;
 
     extern bool g_is_editor_mode;
     extern std::unordered_set<std::string> g_editor_tick_component_types;
@@ -20,33 +19,6 @@ namespace Pilot
     {
         std::filesystem::path m_root_folder;
         std::filesystem::path m_config_file_path;
-    };
-
-    class ThreeFrameBuffers
-    {
-        union TriBuffer
-        {
-            struct _Struct
-            {
-                FrameBuffer* _A;
-                FrameBuffer* _B;
-                FrameBuffer* _C;
-            } _struct;
-            FrameBuffer*(_array)[3];
-        } three_buffers;
-
-        std::atomic<size_t> m_logical_frame_index {0};
-        size_t              m_last_producing_index {0};
-        size_t              m_producing_index {0};
-        size_t              m_consuming_index {0};
-
-    public:
-        void               initialize();
-        void               clear();
-        FrameBuffer*       producingBufferShift();
-        FrameBuffer*       getProducingBuffer();
-        const FrameBuffer* consumingBufferShift();
-        const FrameBuffer* getConsumingBuffer();
     };
 
     class PilotEngine : public PublicSingleton<PilotEngine>
@@ -62,8 +34,8 @@ namespace Pilot
         bool                                  m_is_quit {false};
         std::chrono::steady_clock::time_point m_last_tick_time_point {std::chrono::steady_clock::now()};
 
-        ThreeFrameBuffers              m_tri_frame_buffer;
-        std::shared_ptr<PilotRenderer> m_renderer;
+        std::shared_ptr<WindowSystem> m_window_system;
+        std::shared_ptr<RenderSystem> m_render_system;
 
         float m_average_duration {0.f};
         int   m_frame_count {0};
@@ -75,8 +47,8 @@ namespace Pilot
         void fps(float delta_time);
 
         /**
-        *  Each frame can only be called once
-        */
+         *  Each frame can only be called once
+         */
         float getDeltaTime();
 
     public:
@@ -92,8 +64,8 @@ namespace Pilot
 
         int getFPS() const { return m_fps; }
 
-        std::shared_ptr<SurfaceIO>     getSurfaceIO();
-        std::shared_ptr<PilotRenderer> getRender() const { return m_renderer; }
+        std::shared_ptr<WindowSystem> getWindowSystem() const { return m_window_system; }
+        std::shared_ptr<RenderSystem> getRenderSystem() const { return m_render_system; }
     };
 
 } // namespace Pilot

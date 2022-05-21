@@ -7,14 +7,16 @@
 #include "engine.h"
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/scene/scene_manager.h"
 #include "runtime/function/framework/world/world_manager.h"
+
+#include "runtime/function/render/render_camera.h"
+#include "runtime/function/render/window_system.h"
+#include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
     void EditorInputManager::initialize()
     {
-        m_io = PilotEngine::getInstance().getSurfaceIO();
         registerInput();
     }
 
@@ -25,21 +27,18 @@ namespace Pilot
 
     void EditorInputManager::registerInput()
     {
-        m_io->registerOnResetFunc(std::bind(&EditorInputManager::onReset, this));
-        m_io->registerOnCursorPosFunc(
-            std::bind(&EditorInputManager::onCursorPos, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnCursorEnterFunc(std::bind(&EditorInputManager::onCursorEnter, this, std::placeholders::_1));
-        m_io->registerOnScrollFunc(std::bind(&EditorInputManager::onScroll, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnMouseButtonFunc(
-            std::bind(&EditorInputManager::onMouseButtonClicked, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnWindowCloseFunc(std::bind(&EditorInputManager::onWindowClosed, this));
-        m_io->registerOnKeyFunc(std::bind(&EditorInputManager::onKey,
+        g_editor_global_context.m_window_system->registerOnResetFunc(std::bind(&EditorInputManager::onReset, this));
+        g_editor_global_context.m_window_system->registerOnCursorPosFunc(std::bind(&EditorInputManager::onCursorPos, this, std::placeholders::_1, std::placeholders::_2));
+        g_editor_global_context.m_window_system->registerOnCursorEnterFunc(std::bind(&EditorInputManager::onCursorEnter, this, std::placeholders::_1));
+        g_editor_global_context.m_window_system->registerOnScrollFunc(std::bind(&EditorInputManager::onScroll, this, std::placeholders::_1, std::placeholders::_2));
+        g_editor_global_context.m_window_system->registerOnMouseButtonFunc(std::bind(&EditorInputManager::onMouseButtonClicked, this, std::placeholders::_1, std::placeholders::_2));
+        g_editor_global_context.m_window_system->registerOnWindowCloseFunc(std::bind(&EditorInputManager::onWindowClosed, this));
+        g_editor_global_context.m_window_system->registerOnKeyFunc(std::bind(&EditorInputManager::onKey,
             this,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3,
             std::placeholders::_4));
-        return;
     }
 
     void EditorInputManager::updateCursorOnAxis(Vector2 cursor_uv)
@@ -195,20 +194,20 @@ namespace Pilot
             180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
         if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
         {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+            if (g_editor_global_context.m_window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
             {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                glfwSetInputMode(g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 g_editor_global_context.m_scene_manager->getEditorCamera()->rotate(Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
             }
-            else if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
+            else if (g_editor_global_context.m_window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
             {
                 g_editor_global_context.m_scene_manager->moveEntity(xpos, ypos, m_mouse_x, m_mouse_y, m_engine_window_pos, m_engine_window_size,
                     m_cursor_on_axis, g_editor_global_context.m_scene_manager->getSelectedObjectMatrix());
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetInputMode(g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
             else
             {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetInputMode(g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
                 if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
                 {
@@ -239,7 +238,7 @@ namespace Pilot
 
         if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
         {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+            if (g_editor_global_context.m_window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
             {
                 if (yoffset > 0)
                 {
@@ -277,7 +276,7 @@ namespace Pilot
                     (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
                 size_t  select_mesh_id = g_editor_global_context.m_scene_manager->getGuidOfPickedMesh(picked_uv);
 
-                size_t gobject_id = SceneManager::getInstance().getGObjectIDByMeshID(select_mesh_id);
+                size_t gobject_id = g_editor_global_context.m_render_system->getGObjectIDByMeshID(select_mesh_id);
                 g_editor_global_context.m_scene_manager->onGObjectSelected(gobject_id);
             }
         }

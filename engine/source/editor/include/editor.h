@@ -8,9 +8,7 @@
 namespace Pilot
 {
     class EditorUI;
-    class EditorSceneManager;
     class PilotEngine;
-
 
     class PilotEditor : public PublicSingleton<PilotEditor>
     {

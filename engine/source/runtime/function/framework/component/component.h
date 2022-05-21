@@ -22,6 +22,11 @@ namespace Pilot
 
         virtual void tick(float delta_time) {};
 
+        bool isDirty() const { return m_is_dirty; }
+
+        void setDirtyFlag(bool is_dirty) { m_is_dirty = is_dirty; }
+
+        bool m_tick_in_editor_mode {false};
     };
 
 } // namespace Pilot

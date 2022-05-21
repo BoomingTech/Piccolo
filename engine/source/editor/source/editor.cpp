@@ -4,7 +4,9 @@
 #include "editor/include/editor_input_manager.h"
 #include "editor/include/editor_global_context.h"
 #include "runtime/engine.h"
-#include "runtime/function/render/include/render/render.h"
+
+#include "runtime/function/render/render_system.h"
+#include "runtime/function/render/render_camera.h"
 
 #include <cassert>
 
@@ -30,13 +32,15 @@ namespace Pilot
 
         g_is_editor_mode = true;
         m_engine_runtime = engine_runtime;
-        g_editor_global_context.initialize();
+
+        EditorGlobalContextInitInfo init_info = {engine_runtime->getWindowSystem().get(),engine_runtime->getRenderSystem().get()};
+        g_editor_global_context.initialize(init_info);
+        g_editor_global_context.m_scene_manager->setEditorCamera(engine_runtime->m_render_system->getRenderCamera());
+        g_editor_global_context.m_scene_manager->uploadAxisResource();
+
         m_editor_ui = std::make_shared<EditorUI>();
-
-        std::shared_ptr<PilotRenderer> render = m_engine_runtime->getRender();
-        assert(render);
-
-        render->setSurfaceUI(m_editor_ui);
+        WindowUIInitInfo ui_init_info = {engine_runtime->m_window_system, engine_runtime->m_render_system};
+        m_editor_ui->initialize(ui_init_info);
     }
 
     void PilotEditor::clear()
