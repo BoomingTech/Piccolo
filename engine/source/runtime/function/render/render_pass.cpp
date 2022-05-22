@@ -5,7 +5,7 @@
 #include "runtime/function/render/render_resource.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 
-Pilot::PVisiableNodes Pilot::RenderPass::m_visiable_nodes;
+Pilot::VisiableNodes Pilot::RenderPass::m_visiable_nodes;
 
 namespace Pilot
 {

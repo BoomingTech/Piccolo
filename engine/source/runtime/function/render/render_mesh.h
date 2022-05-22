@@ -16,7 +16,7 @@
 
 namespace Pilot
 {
-    struct PMeshVertex
+    struct MeshVertex
     {
         struct VulkanMeshVertexPostition
         {

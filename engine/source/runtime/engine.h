@@ -39,12 +39,12 @@ namespace Pilot
         void logicalTick(float delta_time);
         bool rendererTick();
 
-        void fps(float delta_time);
+        void calculateFPS(float delta_time);
 
         /**
          *  Each frame can only be called once
          */
-        float getDeltaTime();
+        float calculateDeltaTime();
 
     protected:
         EngineInitParams m_init_params;

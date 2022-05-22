@@ -42,13 +42,13 @@ namespace Pilot
         _main_camera_subpass_count
     };
 
-    struct PVisiableNodes
+    struct VisiableNodes
     {
-        std::vector<PVulkanMeshNode>*              p_directional_light_visible_mesh_nodes        = nullptr;
-        std::vector<PVulkanMeshNode>*              p_point_lights_visible_mesh_nodes             = nullptr;
-        std::vector<PVulkanMeshNode>*              p_main_camera_visible_mesh_nodes              = nullptr;
-        PVulkanAxisNode*                           p_axis_node                                   = nullptr;
-        std::vector<PVulkanParticleBillboardNode>* p_main_camera_visible_particlebillboard_nodes = nullptr;
+        std::vector<VulkanMeshNode>*              p_directional_light_visible_mesh_nodes        = nullptr;
+        std::vector<VulkanMeshNode>*              p_point_lights_visible_mesh_nodes             = nullptr;
+        std::vector<VulkanMeshNode>*              p_main_camera_visible_mesh_nodes              = nullptr;
+        VulkanAxisNode*                           p_axis_node                                   = nullptr;
+        std::vector<VulkanParticleBillboardNode>* p_main_camera_visible_particlebillboard_nodes = nullptr;
     };
 
     class RenderPass : public RenderPassBase
@@ -85,7 +85,7 @@ namespace Pilot
         };
 
         std::shared_ptr<VulkanRHI> m_vulkan_rhi {nullptr};
-        PGlobalRenderResource*     m_global_render_resource {nullptr};
+        GlobalRenderResource*      m_global_render_resource {nullptr};
 
         std::vector<Descriptor>         m_descriptor_infos;
         std::vector<RenderPipelineBase> m_render_pipelines;
@@ -100,7 +100,7 @@ namespace Pilot
         virtual std::vector<VkImageView>           getFramebufferImageViews() const;
         virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() const;
 
-        static PVisiableNodes m_visiable_nodes;
+        static VisiableNodes m_visiable_nodes;
 
     private:
     };

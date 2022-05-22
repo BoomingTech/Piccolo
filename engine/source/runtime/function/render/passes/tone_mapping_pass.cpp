@@ -62,13 +62,14 @@ namespace Pilot
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) != VK_SUCCESS)
+                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
+            VK_SUCCESS)
         {
             throw std::runtime_error("create post process pipeline layout");
         }
 
-        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_vulkan_rhi->_device, POST_PROCESS_VERT);
-        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_vulkan_rhi->_device, TONE_MAPPING_FRAG);
+        VkShaderModule vert_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->_device, POST_PROCESS_VERT);
+        VkShaderModule frag_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->_device, TONE_MAPPING_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -207,7 +208,7 @@ namespace Pilot
     {
         VkDescriptorImageInfo post_process_per_frame_input_attachment_info = {};
         post_process_per_frame_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(m_vulkan_rhi->_physical_device, m_vulkan_rhi->_device);
+            VulkanUtil::getOrCreateNearestSampler(m_vulkan_rhi->_physical_device, m_vulkan_rhi->_device);
         post_process_per_frame_input_attachment_info.imageView   = input_attachment;
         post_process_per_frame_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -246,13 +247,13 @@ namespace Pilot
         m_vulkan_rhi->_vkCmdSetViewport(m_vulkan_rhi->_current_command_buffer, 0, 1, &m_vulkan_rhi->_viewport);
         m_vulkan_rhi->_vkCmdSetScissor(m_vulkan_rhi->_current_command_buffer, 0, 1, &m_vulkan_rhi->_scissor);
         m_vulkan_rhi->_vkCmdBindDescriptorSets(m_vulkan_rhi->_current_command_buffer,
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        m_render_pipelines[0].layout,
-                                        0,
-                                        1,
-                                        &m_descriptor_infos[0].descriptor_set,
-                                        0,
-                                        NULL);
+                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                               m_render_pipelines[0].layout,
+                                               0,
+                                               1,
+                                               &m_descriptor_infos[0].descriptor_set,
+                                               0,
+                                               NULL);
 
         vkCmdDraw(m_vulkan_rhi->_current_command_buffer, 3, 1, 0, 0);
 

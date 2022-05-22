@@ -20,7 +20,7 @@ namespace Pilot
     class RenderPassBase;
     class RenderCamera;
 
-    struct PIBLResource
+    struct IBLResource
     {
         VkImage       _brdfLUT_texture_image {VK_NULL_HANDLE};
         VkImageView   _brdfLUT_texture_image_view {VK_NULL_HANDLE};
@@ -38,7 +38,7 @@ namespace Pilot
         VmaAllocation _specular_texture_image_allocation;
     };
 
-    struct PIBLResourceData
+    struct IBLResourceData
     {
         void*                _brdfLUT_texture_image_pixels;
         uint32_t             _brdfLUT_texture_image_width;
@@ -54,14 +54,14 @@ namespace Pilot
         PILOT_PIXEL_FORMAT   _specular_texture_image_format;
     };
 
-    struct PColorGradingResource
+    struct ColorGradingResource
     {
         VkImage       _color_grading_LUT_texture_image {VK_NULL_HANDLE};
         VkImageView   _color_grading_LUT_texture_image_view {VK_NULL_HANDLE};
         VmaAllocation _color_grading_LUT_texture_image_allocation;
     };
 
-    struct PColorGradingResourceData
+    struct ColorGradingResourceData
     {
         void*              _color_grading_LUT_texture_image_pixels;
         uint32_t           _color_grading_LUT_texture_image_width;
@@ -69,7 +69,7 @@ namespace Pilot
         PILOT_PIXEL_FORMAT _color_grading_LUT_texture_image_format;
     };
 
-    struct PStorageBuffer
+    struct StorageBuffer
     {
         // limits
         uint32_t _min_uniform_buffer_offset_alignment {256};
@@ -93,11 +93,11 @@ namespace Pilot
         void*          _axis_inefficient_storage_buffer_memory_pointer;
     };
 
-    struct PGlobalRenderResource
+    struct GlobalRenderResource
     {
-        PIBLResource          _ibl_resource;
-        PColorGradingResource _color_grading_resource;
-        PStorageBuffer        _storage_buffer;
+        IBLResource          _ibl_resource;
+        ColorGradingResource _color_grading_resource;
+        StorageBuffer        _storage_buffer;
     };
 
     class RenderResource : public RenderResourceBase
@@ -134,7 +134,7 @@ namespace Pilot
         void resetRingBufferOffset(uint8_t current_frame_index);
 
         // global rendering resource, include IBL data, global storage buffer
-        PGlobalRenderResource m_global_render_resource;
+        GlobalRenderResource m_global_render_resource;
 
         // storage buffer objects
         MeshPerframeStorageBufferObject                 m_mesh_perframe_storage_buffer_object;
@@ -150,11 +150,11 @@ namespace Pilot
         std::map<size_t, VulkanPBRMaterial> m_vulkan_pbr_materials;
 
         // visible objects (updated per frame)
-        std::vector<PVulkanMeshNode>              m_directional_light_visible_mesh_nodes;
-        std::vector<PVulkanMeshNode>              m_point_lights_visible_mesh_nodes;
-        std::vector<PVulkanMeshNode>              m_main_camera_visible_mesh_nodes;
-        std::vector<PVulkanParticleBillboardNode> m_main_camera_visible_particlebillboard_nodes;
-        PVulkanAxisNode                           m_axis_node;
+        std::vector<VulkanMeshNode>              m_directional_light_visible_mesh_nodes;
+        std::vector<VulkanMeshNode>              m_point_lights_visible_mesh_nodes;
+        std::vector<VulkanMeshNode>              m_main_camera_visible_mesh_nodes;
+        std::vector<VulkanParticleBillboardNode> m_main_camera_visible_particlebillboard_nodes;
+        VulkanAxisNode                           m_axis_node;
 
         // descriptor layout in main camera pass will be used when uploading resource
         std::shared_ptr<RenderPassBase> m_main_camera_pass;
@@ -192,7 +192,7 @@ namespace Pilot
                                uint32_t             index_buffer_size,
                                void*                index_buffer_data,
                                VulkanMesh&          now_mesh);
-        void updateTextureImageData(std::shared_ptr<RHI> rhi, const PTextureDataToUpdate& texture_data);
+        void updateTextureImageData(std::shared_ptr<RHI> rhi, const TextureDataToUpdate& texture_data);
 
         void updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderScene>  render_scene,
                                                   std::shared_ptr<RenderCamera> camera);

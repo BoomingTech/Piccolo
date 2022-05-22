@@ -12,7 +12,7 @@
 
 namespace Pilot
 {
-    class PVulkanUtil
+    class VulkanUtil
     {
     public:
         static uint32_t

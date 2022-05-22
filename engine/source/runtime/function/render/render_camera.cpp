@@ -2,13 +2,13 @@
 
 namespace Pilot
 {
-    void RenderCamera::setCurrentCameraType(PCurrentCameraType type)
+    void RenderCamera::setCurrentCameraType(CurrentCameraType type)
     {
         std::lock_guard<std::mutex> lock_guard(m_view_matrix_mutex);
         m_current_camera_type = type;
     }
 
-    void RenderCamera::setMainViewMatrix(const Matrix4x4& view_matrix, PCurrentCameraType type)
+    void RenderCamera::setMainViewMatrix(const Matrix4x4& view_matrix, CurrentCameraType type)
     {
         std::lock_guard<std::mutex> lock_guard(m_view_matrix_mutex);
         m_current_camera_type                   = type;
@@ -80,10 +80,10 @@ namespace Pilot
         auto                        view_matrix = Matrix4x4::IDENTITY;
         switch (m_current_camera_type)
         {
-            case Pilot::PCurrentCameraType::Editor:
+            case Pilot::CurrentCameraType::Editor:
                 view_matrix = Math::makeLookAtMatrix(position(), position() + forward(), up());
                 break;
-            case Pilot::PCurrentCameraType::Motor:
+            case Pilot::CurrentCameraType::Motor:
                 view_matrix = m_view_matrices[MAIN_VIEW_MATRIX_INDEX];
                 break;
             default:

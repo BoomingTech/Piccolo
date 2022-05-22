@@ -49,26 +49,26 @@ namespace Pilot
         m_framebuffer.attachments.resize(1);
         m_framebuffer.attachments[0].format = VK_FORMAT_R32_UINT;
 
-        PVulkanUtil::createImage(m_vulkan_rhi->_physical_device,
-                                 m_vulkan_rhi->_device,
-                                 m_vulkan_rhi->_swapchain_extent.width,
-                                 m_vulkan_rhi->_swapchain_extent.height,
-                                 m_framebuffer.attachments[0].format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 m_framebuffer.attachments[0].image,
-                                 m_framebuffer.attachments[0].mem,
-                                 0,
-                                 1,
-                                 1);
-        m_framebuffer.attachments[0].view = PVulkanUtil::createImageView(m_vulkan_rhi->_device,
-                                                                         m_framebuffer.attachments[0].image,
-                                                                         m_framebuffer.attachments[0].format,
-                                                                         VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                         VK_IMAGE_VIEW_TYPE_2D,
-                                                                         1,
-                                                                         1);
+        VulkanUtil::createImage(m_vulkan_rhi->_physical_device,
+                                m_vulkan_rhi->_device,
+                                m_vulkan_rhi->_swapchain_extent.width,
+                                m_vulkan_rhi->_swapchain_extent.height,
+                                m_framebuffer.attachments[0].format,
+                                VK_IMAGE_TILING_OPTIMAL,
+                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                m_framebuffer.attachments[0].image,
+                                m_framebuffer.attachments[0].mem,
+                                0,
+                                1,
+                                1);
+        m_framebuffer.attachments[0].view = VulkanUtil::createImageView(m_vulkan_rhi->_device,
+                                                                        m_framebuffer.attachments[0].image,
+                                                                        m_framebuffer.attachments[0].format,
+                                                                        VK_IMAGE_ASPECT_COLOR_BIT,
+                                                                        VK_IMAGE_VIEW_TYPE_2D,
+                                                                        1,
+                                                                        1);
     }
     void PickPass::setupRenderPass()
     {
@@ -187,9 +187,10 @@ namespace Pilot
              sizeof(mesh_inefficient_pick_global_layout_bindings[0]));
         mesh_inefficient_pick_global_layout_create_info.pBindings = mesh_inefficient_pick_global_layout_bindings;
 
-        if (VK_SUCCESS !=
-            vkCreateDescriptorSetLayout(
-                m_vulkan_rhi->_device, &mesh_inefficient_pick_global_layout_create_info, NULL, &m_descriptor_infos[0].layout))
+        if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_vulkan_rhi->_device,
+                                                      &mesh_inefficient_pick_global_layout_create_info,
+                                                      NULL,
+                                                      &m_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create mesh inefficient pick global layout");
         }
@@ -206,13 +207,16 @@ namespace Pilot
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) != VK_SUCCESS)
+                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
+            VK_SUCCESS)
         {
             throw std::runtime_error("create mesh inefficient pick pipeline layout");
         }
 
-        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_INEFFICIENT_PICK_VERT);
-        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_INEFFICIENT_PICK_FRAG);
+        VkShaderModule vert_shader_module =
+            VulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_INEFFICIENT_PICK_VERT);
+        VkShaderModule frag_shader_module =
+            VulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_INEFFICIENT_PICK_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -229,8 +233,8 @@ namespace Pilot
         VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
                                                            frag_pipeline_shader_stage_create_info};
 
-        auto                                 vertex_binding_descriptions   = PMeshVertex::getBindingDescriptions();
-        auto                                 vertex_attribute_descriptions = PMeshVertex::getAttributeDescriptions();
+        auto                                 vertex_binding_descriptions   = MeshVertex::getBindingDescriptions();
+        auto                                 vertex_attribute_descriptions = MeshVertex::getAttributeDescriptions();
         VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
         vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
@@ -425,28 +429,30 @@ namespace Pilot
     }
     uint32_t PickPass::pick(const Vector2& picked_uv)
     {
-        uint32_t pixel_x            = static_cast<uint32_t>(picked_uv.x * m_vulkan_rhi->_viewport.width + m_vulkan_rhi->_viewport.x);
-        uint32_t pixel_y            = static_cast<uint32_t>(picked_uv.y * m_vulkan_rhi->_viewport.height + m_vulkan_rhi->_viewport.y);
+        uint32_t pixel_x =
+            static_cast<uint32_t>(picked_uv.x * m_vulkan_rhi->_viewport.width + m_vulkan_rhi->_viewport.x);
+        uint32_t pixel_y =
+            static_cast<uint32_t>(picked_uv.y * m_vulkan_rhi->_viewport.height + m_vulkan_rhi->_viewport.y);
         uint32_t picked_pixel_index = m_vulkan_rhi->_swapchain_extent.width * pixel_y + pixel_x;
         if (pixel_x >= m_vulkan_rhi->_swapchain_extent.width || pixel_y >= m_vulkan_rhi->_swapchain_extent.height)
             return 0;
 
-        struct PMeshNode
+        struct MeshNode
         {
             glm::mat4 model_matrix;
             uint32_t  node_id;
             glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
         };
 
-        std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<PMeshNode>>> main_camera_mesh_drawcall_batch;
+        std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (PVulkanMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (VulkanMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& model_nodes    = mesh_instanced[node.ref_mesh];
 
-            PMeshNode temp;
+            MeshNode temp;
             temp.model_matrix = node.model_matrix;
             temp.node_id      = node.node_id;
             if (node.ref_mesh->enable_vertex_blending)
@@ -461,15 +467,21 @@ namespace Pilot
         }
 
         // reset storage buffer offset
-        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[*m_vulkan_rhi->_p_current_frame_index];
+        m_global_render_resource->_storage_buffer
+            ._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] =
+            m_global_render_resource->_storage_buffer
+                ._global_upload_ringbuffers_begin[*m_vulkan_rhi->_p_current_frame_index];
 
-        VkResult res_wait_for_fences = vkWaitForFences(
-            m_vulkan_rhi->_device, 1, &m_vulkan_rhi->_is_frame_in_flight_fences[*m_vulkan_rhi->_p_current_frame_index], VK_TRUE, UINT64_MAX);
+        VkResult res_wait_for_fences =
+            vkWaitForFences(m_vulkan_rhi->_device,
+                            1,
+                            &m_vulkan_rhi->_is_frame_in_flight_fences[*m_vulkan_rhi->_p_current_frame_index],
+                            VK_TRUE,
+                            UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
-        VkResult res_reset_command_pool =
-            m_vulkan_rhi->_vkResetCommandPool(m_vulkan_rhi->_device, m_vulkan_rhi->_p_command_pools[*m_vulkan_rhi->_p_current_frame_index], 0);
+        VkResult res_reset_command_pool = m_vulkan_rhi->_vkResetCommandPool(
+            m_vulkan_rhi->_device, m_vulkan_rhi->_p_command_pools[*m_vulkan_rhi->_p_current_frame_index], 0);
         assert(VK_SUCCESS == res_reset_command_pool);
 
         VkCommandBufferBeginInfo command_buffer_begin_info {};
@@ -505,8 +517,10 @@ namespace Pilot
                                  &transfer_to_render_barrier);
         }
 
-        m_vulkan_rhi->_vkCmdSetViewport(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_viewport);
-        m_vulkan_rhi->_vkCmdSetScissor(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_scissor);
+        m_vulkan_rhi->_vkCmdSetViewport(
+            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_viewport);
+        m_vulkan_rhi->_vkCmdSetScissor(
+            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_scissor);
 
         VkRenderPassBeginInfo renderpass_begin_info {};
         renderpass_begin_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -521,35 +535,39 @@ namespace Pilot
         renderpass_begin_info.pClearValues    = clearValues;
 
         m_vulkan_rhi->_vkCmdBeginRenderPass(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                     &renderpass_begin_info,
-                                     VK_SUBPASS_CONTENTS_INLINE); // no second buffer
+                                            &renderpass_begin_info,
+                                            VK_SUBPASS_CONTENTS_INLINE); // no second buffer
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Mesh Inefficient Pick", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                                 &label_info);
+            m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(
+                m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], &label_info);
         }
 
         m_vulkan_rhi->_vkCmdBindPipeline(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                  VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                  m_render_pipelines[0].pipeline);
-        m_vulkan_rhi->_vkCmdSetViewport(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_viewport);
-        m_vulkan_rhi->_vkCmdSetScissor(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_scissor);
+                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                         m_render_pipelines[0].pipeline);
+        m_vulkan_rhi->_vkCmdSetViewport(
+            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_viewport);
+        m_vulkan_rhi->_vkCmdSetScissor(
+            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, &m_vulkan_rhi->_scissor);
 
         // perframe storage buffer
-        uint32_t perframe_dynamic_offset = roundUp(
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index],
-            m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] =
+        uint32_t perframe_dynamic_offset =
+            roundUp(m_global_render_resource->_storage_buffer
+                        ._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index],
+                    m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+        m_global_render_resource->_storage_buffer
+            ._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshInefficientPickPerframeStorageBufferObject);
-        assert(
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] <=
-            (m_global_render_resource->_storage_buffer
-                 ._global_upload_ringbuffers_begin[*m_vulkan_rhi->_p_current_frame_index] +
-             m_global_render_resource->_storage_buffer
-                 ._global_upload_ringbuffers_size[*m_vulkan_rhi->_p_current_frame_index]));
+        assert(m_global_render_resource->_storage_buffer
+                   ._global_upload_ringbuffers_end[*m_vulkan_rhi->_p_current_frame_index] <=
+               (m_global_render_resource->_storage_buffer
+                    ._global_upload_ringbuffers_begin[*m_vulkan_rhi->_p_current_frame_index] +
+                m_global_render_resource->_storage_buffer
+                    ._global_upload_ringbuffers_size[*m_vulkan_rhi->_p_current_frame_index]));
 
         (*reinterpret_cast<MeshInefficientPickPerframeStorageBufferObject*>(
             reinterpret_cast<uintptr_t>(
@@ -572,23 +590,29 @@ namespace Pilot
                 if (total_instance_count > 0)
                 {
                     // bind per mesh
-                    m_vulkan_rhi->_vkCmdBindDescriptorSets(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    m_render_pipelines[0].layout,
-                                                    1,
-                                                    1,
-                                                    &mesh.mesh_vertex_blending_descriptor_set,
-                                                    0,
-                                                    NULL);
+                    m_vulkan_rhi->_vkCmdBindDescriptorSets(
+                        m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
+                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        m_render_pipelines[0].layout,
+                        1,
+                        1,
+                        &mesh.mesh_vertex_blending_descriptor_set,
+                        0,
+                        NULL);
 
                     VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer};
                     VkDeviceSize offsets[]        = {0};
                     m_vulkan_rhi->_vkCmdBindVertexBuffers(
-                        m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index], 0, 1, vertex_buffers, offsets);
-                    m_vulkan_rhi->_vkCmdBindIndexBuffer(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                                 mesh.mesh_index_buffer,
-                                                 0,
-                                                 VK_INDEX_TYPE_UINT16);
+                        m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
+                        0,
+                        1,
+                        vertex_buffers,
+                        offsets);
+                    m_vulkan_rhi->_vkCmdBindIndexBuffer(
+                        m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
+                        mesh.mesh_index_buffer,
+                        0,
+                        VK_INDEX_TYPE_UINT16);
 
                     uint32_t drawcall_max_instance_count =
                         (sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices) /
@@ -677,21 +701,23 @@ namespace Pilot
                         uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
                                                        perdrawcall_dynamic_offset,
                                                        per_drawcall_vertex_blending_dynamic_offset};
-                        m_vulkan_rhi->_vkCmdBindDescriptorSets(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                        m_render_pipelines[0].layout,
-                                                        0,
-                                                        1,
-                                                        &m_descriptor_infos[0].descriptor_set,
-                                                        sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
-                                                        dynamic_offsets);
+                        m_vulkan_rhi->_vkCmdBindDescriptorSets(
+                            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_render_pipelines[0].layout,
+                            0,
+                            1,
+                            &m_descriptor_infos[0].descriptor_set,
+                            sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
+                            dynamic_offsets);
 
-                        m_vulkan_rhi->_vkCmdDrawIndexed(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
-                                                 mesh.mesh_index_count,
-                                                 current_instance_count,
-                                                 0,
-                                                 0,
-                                                 0);
+                        m_vulkan_rhi->_vkCmdDrawIndexed(
+                            m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index],
+                            mesh.mesh_index_count,
+                            current_instance_count,
+                            0,
+                            0,
+                            0);
                     }
                 }
             }
@@ -699,7 +725,8 @@ namespace Pilot
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
-            m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index]);
+            m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(
+                m_vulkan_rhi->_p_command_buffers[*m_vulkan_rhi->_p_current_frame_index]);
         }
 
         // end render pass
@@ -724,16 +751,22 @@ namespace Pilot
         submit_info.signalSemaphoreCount = 0;
         submit_info.pSignalSemaphores    = NULL;
 
-        VkResult res_queue_submit = vkQueueSubmit(
-            m_vulkan_rhi->_graphics_queue, 1, &submit_info, m_vulkan_rhi->_is_frame_in_flight_fences[*m_vulkan_rhi->_p_current_frame_index]);
+        VkResult res_queue_submit =
+            vkQueueSubmit(m_vulkan_rhi->_graphics_queue,
+                          1,
+                          &submit_info,
+                          m_vulkan_rhi->_is_frame_in_flight_fences[*m_vulkan_rhi->_p_current_frame_index]);
         assert(VK_SUCCESS == res_queue_submit);
 
-        auto new_index                 = (*m_vulkan_rhi->_p_current_frame_index + 1) % m_vulkan_rhi->_max_frames_in_flight;
+        auto new_index = (*m_vulkan_rhi->_p_current_frame_index + 1) % m_vulkan_rhi->_max_frames_in_flight;
         *m_vulkan_rhi->_p_current_frame_index = new_index;
 
         // implicit host read barrier
-        res_wait_for_fences = m_vulkan_rhi->_vkWaitForFences(
-            m_vulkan_rhi->_device, m_vulkan_rhi->_max_frames_in_flight, m_vulkan_rhi->_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+        res_wait_for_fences = m_vulkan_rhi->_vkWaitForFences(m_vulkan_rhi->_device,
+                                                             m_vulkan_rhi->_max_frames_in_flight,
+                                                             m_vulkan_rhi->_is_frame_in_flight_fences,
+                                                             VK_TRUE,
+                                                             UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
         auto command_buffer = m_vulkan_rhi->beginSingleTimeCommands();
@@ -747,18 +780,18 @@ namespace Pilot
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount     = 1;
         region.imageOffset                     = {0, 0, 0};
-        region.imageExtent                     = {m_vulkan_rhi->_swapchain_extent.width, m_vulkan_rhi->_swapchain_extent.height, 1};
+        region.imageExtent = {m_vulkan_rhi->_swapchain_extent.width, m_vulkan_rhi->_swapchain_extent.height, 1};
 
         uint32_t       buffer_size = m_vulkan_rhi->_swapchain_extent.width * m_vulkan_rhi->_swapchain_extent.height * 4;
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        PVulkanUtil::createBuffer(m_vulkan_rhi->_physical_device,
-                                  m_vulkan_rhi->_device,
-                                  buffer_size,
-                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                  inefficient_staging_buffer,
-                                  inefficient_staging_buffer_memory);
+        VulkanUtil::createBuffer(m_vulkan_rhi->_physical_device,
+                                 m_vulkan_rhi->_device,
+                                 buffer_size,
+                                 VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                 inefficient_staging_buffer,
+                                 inefficient_staging_buffer_memory);
 
         VkImageMemoryBarrier copy_to_buffer_barrier {};
         copy_to_buffer_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

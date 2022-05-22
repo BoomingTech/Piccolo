@@ -39,13 +39,16 @@ namespace Pilot
 
     void PilotEngine::run()
     {
+        std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
+        ASSERT(window_system);
+
         float delta_time;
-        while (!g_runtime_global_context.m_window_system->shouldClose())
+        while (!window_system->shouldClose())
         {
-            delta_time = getDeltaTime();
+            delta_time = calculateDeltaTime();
 
             logicalTick(delta_time);
-            fps(delta_time);
+            calculateFPS(delta_time);
 
             // single thread
             // exchange data between logic and render contexts
@@ -53,14 +56,13 @@ namespace Pilot
 
             rendererTick();
 
-            g_runtime_global_context.m_window_system->pollEvents();
+            window_system->pollEvents();
 
-            g_runtime_global_context.m_window_system->setTile(
-                std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+            window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
         }
     }
 
-    float PilotEngine::getDeltaTime()
+    float PilotEngine::calculateDeltaTime()
     {
         float delta_time;
         {
@@ -78,7 +80,7 @@ namespace Pilot
     bool PilotEngine::tickOneFrame(float delta_time)
     {
         logicalTick(delta_time);
-        fps(delta_time);
+        calculateFPS(delta_time);
 
         // single thread
         // exchange data between logic and render contexts
@@ -88,7 +90,8 @@ namespace Pilot
 
         g_runtime_global_context.m_window_system->pollEvents();
 
-        g_runtime_global_context.m_window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+        g_runtime_global_context.m_window_system->setTile(
+            std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
 
         const bool should_window_close = g_runtime_global_context.m_window_system->shouldClose();
         return !should_window_close;
@@ -107,7 +110,7 @@ namespace Pilot
     }
 
     const float PilotEngine::k_fps_alpha = 1.f / 100;
-    void        PilotEngine::fps(float delta_time)
+    void        PilotEngine::calculateFPS(float delta_time)
     {
         m_frame_count++;
 

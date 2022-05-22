@@ -60,21 +60,21 @@ namespace Pilot
         createIBLTextures(rhi, irradiance_maps, specular_maps);
 
         // create brdf lut texture
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       m_global_render_resource._ibl_resource._brdfLUT_texture_image,
-                                       m_global_render_resource._ibl_resource._brdfLUT_texture_image_view,
-                                       m_global_render_resource._ibl_resource._brdfLUT_texture_image_allocation,
-                                       brdf_map->m_width,
-                                       brdf_map->m_height,
-                                       brdf_map->m_pixels,
-                                       brdf_map->m_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      m_global_render_resource._ibl_resource._brdfLUT_texture_image,
+                                      m_global_render_resource._ibl_resource._brdfLUT_texture_image_view,
+                                      m_global_render_resource._ibl_resource._brdfLUT_texture_image_allocation,
+                                      brdf_map->m_width,
+                                      brdf_map->m_height,
+                                      brdf_map->m_pixels,
+                                      brdf_map->m_format);
 
         // color grading
         std::shared_ptr<TextureData> color_grading_map =
             loadTexture(level_resource_desc.color_grading_resource_desc.color_grading_map);
 
         // create color grading texture
-        PVulkanUtil::createGlobalImage(
+        VulkanUtil::createGlobalImage(
             rhi.get(),
             m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image,
             m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_view,
@@ -257,39 +257,39 @@ namespace Pilot
             static_cast<uint32_t>(
                 std::floor(std::log2(std::max(irradiance_maps[0]->m_width, irradiance_maps[0]->m_height)))) +
             1;
-        PVulkanUtil::createCubeMap(rhi.get(),
-                                   m_global_render_resource._ibl_resource._irradiance_texture_image,
-                                   m_global_render_resource._ibl_resource._irradiance_texture_image_view,
-                                   m_global_render_resource._ibl_resource._irradiance_texture_image_allocation,
-                                   irradiance_maps[0]->m_width,
-                                   irradiance_maps[0]->m_height,
-                                   {irradiance_maps[0]->m_pixels,
-                                    irradiance_maps[1]->m_pixels,
-                                    irradiance_maps[2]->m_pixels,
-                                    irradiance_maps[3]->m_pixels,
-                                    irradiance_maps[4]->m_pixels,
-                                    irradiance_maps[5]->m_pixels},
-                                   irradiance_maps[0]->m_format,
-                                   irradiance_cubemap_miplevels);
+        VulkanUtil::createCubeMap(rhi.get(),
+                                  m_global_render_resource._ibl_resource._irradiance_texture_image,
+                                  m_global_render_resource._ibl_resource._irradiance_texture_image_view,
+                                  m_global_render_resource._ibl_resource._irradiance_texture_image_allocation,
+                                  irradiance_maps[0]->m_width,
+                                  irradiance_maps[0]->m_height,
+                                  {irradiance_maps[0]->m_pixels,
+                                   irradiance_maps[1]->m_pixels,
+                                   irradiance_maps[2]->m_pixels,
+                                   irradiance_maps[3]->m_pixels,
+                                   irradiance_maps[4]->m_pixels,
+                                   irradiance_maps[5]->m_pixels},
+                                  irradiance_maps[0]->m_format,
+                                  irradiance_cubemap_miplevels);
 
         uint32_t specular_cubemap_miplevels =
             static_cast<uint32_t>(
                 std::floor(std::log2(std::max(specular_maps[0]->m_width, specular_maps[0]->m_height)))) +
             1;
-        PVulkanUtil::createCubeMap(rhi.get(),
-                                   m_global_render_resource._ibl_resource._specular_texture_image,
-                                   m_global_render_resource._ibl_resource._specular_texture_image_view,
-                                   m_global_render_resource._ibl_resource._specular_texture_image_allocation,
-                                   specular_maps[0]->m_width,
-                                   specular_maps[0]->m_height,
-                                   {specular_maps[0]->m_pixels,
-                                    specular_maps[1]->m_pixels,
-                                    specular_maps[2]->m_pixels,
-                                    specular_maps[3]->m_pixels,
-                                    specular_maps[4]->m_pixels,
-                                    specular_maps[5]->m_pixels},
-                                   specular_maps[0]->m_format,
-                                   specular_cubemap_miplevels);
+        VulkanUtil::createCubeMap(rhi.get(),
+                                  m_global_render_resource._ibl_resource._specular_texture_image,
+                                  m_global_render_resource._ibl_resource._specular_texture_image_view,
+                                  m_global_render_resource._ibl_resource._specular_texture_image_allocation,
+                                  specular_maps[0]->m_width,
+                                  specular_maps[0]->m_height,
+                                  {specular_maps[0]->m_pixels,
+                                   specular_maps[1]->m_pixels,
+                                   specular_maps[2]->m_pixels,
+                                   specular_maps[3]->m_pixels,
+                                   specular_maps[4]->m_pixels,
+                                   specular_maps[5]->m_pixels},
+                                  specular_maps[0]->m_format,
+                                  specular_cubemap_miplevels);
     }
 
     VulkanMesh&
@@ -441,13 +441,13 @@ namespace Pilot
 
                 VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
                 VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-                PVulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                          vulkan_context->_device,
-                                          buffer_size,
-                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                          inefficient_staging_buffer,
-                                          inefficient_staging_buffer_memory);
+                VulkanUtil::createBuffer(vulkan_context->_physical_device,
+                                         vulkan_context->_device,
+                                         buffer_size,
+                                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                         inefficient_staging_buffer,
+                                         inefficient_staging_buffer_memory);
                 // VK_BUFFER_USAGE_TRANSFER_SRC_BIT: buffer can be used as source in a
                 // memory transfer operation
 
@@ -490,7 +490,7 @@ namespace Pilot
                     NULL);
 
                 // use the data from staging buffer
-                PVulkanUtil::copyBuffer(
+                VulkanUtil::copyBuffer(
                     rhi.get(), inefficient_staging_buffer, now_material.material_uniform_buffer, 0, 0, buffer_size);
 
                 // release staging buffer
@@ -498,7 +498,7 @@ namespace Pilot
                 vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
             }
 
-            PTextureDataToUpdate update_texture_data;
+            TextureDataToUpdate update_texture_data;
             update_texture_data.base_color_image_pixels         = base_color_image_pixels;
             update_texture_data.base_color_image_width          = base_color_image_width;
             update_texture_data.base_color_image_height         = base_color_image_height;
@@ -548,41 +548,40 @@ namespace Pilot
             VkDescriptorImageInfo base_color_image_info = {};
             base_color_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             base_color_image_info.imageView             = now_material.base_color_image_view;
-            base_color_image_info.sampler = PVulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                                                  vulkan_context->_device,
-                                                                                  base_color_image_width,
-                                                                                  base_color_image_height);
+            base_color_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
+                                                                                 vulkan_context->_device,
+                                                                                 base_color_image_width,
+                                                                                 base_color_image_height);
 
             VkDescriptorImageInfo metallic_roughness_image_info = {};
             metallic_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             metallic_roughness_image_info.imageView             = now_material.metallic_roughness_image_view;
             metallic_roughness_image_info.sampler =
-                PVulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                      vulkan_context->_device,
-                                                      metallic_roughness_width,
-                                                      metallic_roughness_height);
+                VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
+                                                     vulkan_context->_device,
+                                                     metallic_roughness_width,
+                                                     metallic_roughness_height);
 
             VkDescriptorImageInfo normal_roughness_image_info = {};
             normal_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             normal_roughness_image_info.imageView             = now_material.normal_image_view;
-            normal_roughness_image_info.sampler =
-                PVulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                      vulkan_context->_device,
-                                                      normal_roughness_width,
-                                                      normal_roughness_height);
+            normal_roughness_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
+                                                                                       vulkan_context->_device,
+                                                                                       normal_roughness_width,
+                                                                                       normal_roughness_height);
 
             VkDescriptorImageInfo occlusion_image_info = {};
             occlusion_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             occlusion_image_info.imageView             = now_material.occlusion_image_view;
-            occlusion_image_info.sampler = PVulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                                                 vulkan_context->_device,
-                                                                                 occlusion_image_width,
-                                                                                 occlusion_image_height);
+            occlusion_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
+                                                                                vulkan_context->_device,
+                                                                                occlusion_image_width,
+                                                                                occlusion_image_height);
 
             VkDescriptorImageInfo emissive_image_info = {};
             emissive_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             emissive_image_info.imageView             = now_material.emissive_image_view;
-            emissive_image_info.sampler               = PVulkanUtil::getOrCreateMipmapSampler(
+            emissive_image_info.sampler               = VulkanUtil::getOrCreateMipmapSampler(
                 vulkan_context->_physical_device, vulkan_context->_device, emissive_image_width, emissive_image_height);
 
             VkWriteDescriptorSet mesh_descriptor_writes_info[6];
@@ -673,12 +672,12 @@ namespace Pilot
             assert(0 == (index_buffer_size % sizeof(uint16_t)));
             uint32_t index_count = index_buffer_size / sizeof(uint16_t);
 
-            VkDeviceSize vertex_position_buffer_size = sizeof(PMeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            VkDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
             VkDeviceSize vertex_varying_enable_blending_buffer_size =
-                sizeof(PMeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
-            VkDeviceSize vertex_varying_buffer_size = sizeof(PMeshVertex::VulkanMeshVertexVarying) * vertex_count;
+                sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
+            VkDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
             VkDeviceSize vertex_joint_binding_buffer_size =
-                sizeof(PMeshVertex::VulkanMeshVertexJointBinding) * index_count;
+                sizeof(MeshVertex::VulkanMeshVertexJointBinding) * index_count;
 
             VkDeviceSize vertex_position_buffer_offset = 0;
             VkDeviceSize vertex_varying_enable_blending_buffer_offset =
@@ -693,13 +692,13 @@ namespace Pilot
                 vertex_joint_binding_buffer_size;
             VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
             VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-            PVulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                      vulkan_context->_device,
-                                      inefficient_staging_buffer_size,
-                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                      inefficient_staging_buffer,
-                                      inefficient_staging_buffer_memory);
+            VulkanUtil::createBuffer(vulkan_context->_physical_device,
+                                     vulkan_context->_device,
+                                     inefficient_staging_buffer_size,
+                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                     inefficient_staging_buffer,
+                                     inefficient_staging_buffer_memory);
 
             void* inefficient_staging_buffer_data;
             vkMapMemory(vulkan_context->_device,
@@ -709,18 +708,18 @@ namespace Pilot
                         0,
                         &inefficient_staging_buffer_data);
 
-            PMeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexPostition*>(
+            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
-            PMeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
+            MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
                     vertex_varying_enable_blending_buffer_offset);
-            PMeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexVarying*>(
+            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
-            PMeshVertex::VulkanMeshVertexJointBinding* mesh_vertex_joint_binding =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexJointBinding*>(
+            MeshVertex::VulkanMeshVertexJointBinding* mesh_vertex_joint_binding =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexJointBinding*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_joint_binding_buffer_offset);
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
@@ -810,30 +809,30 @@ namespace Pilot
                             NULL);
 
             // use the data from staging buffer
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_position_buffer,
-                                    vertex_position_buffer_offset,
-                                    0,
-                                    vertex_position_buffer_size);
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_varying_enable_blending_buffer,
-                                    vertex_varying_enable_blending_buffer_offset,
-                                    0,
-                                    vertex_varying_enable_blending_buffer_size);
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_varying_buffer,
-                                    vertex_varying_buffer_offset,
-                                    0,
-                                    vertex_varying_buffer_size);
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_joint_binding_buffer,
-                                    vertex_joint_binding_buffer_offset,
-                                    0,
-                                    vertex_joint_binding_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_position_buffer,
+                                   vertex_position_buffer_offset,
+                                   0,
+                                   vertex_position_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_varying_enable_blending_buffer,
+                                   vertex_varying_enable_blending_buffer_offset,
+                                   0,
+                                   vertex_varying_enable_blending_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_varying_buffer,
+                                   vertex_varying_buffer_offset,
+                                   0,
+                                   vertex_varying_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_joint_binding_buffer,
+                                   vertex_joint_binding_buffer_offset,
+                                   0,
+                                   vertex_joint_binding_buffer_size);
 
             // release staging buffer
             vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
@@ -894,10 +893,10 @@ namespace Pilot
             assert(0 == (vertex_buffer_size % sizeof(MeshVertexDataDefinition)));
             uint32_t vertex_count = vertex_buffer_size / sizeof(MeshVertexDataDefinition);
 
-            VkDeviceSize vertex_position_buffer_size = sizeof(PMeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            VkDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
             VkDeviceSize vertex_varying_enable_blending_buffer_size =
-                sizeof(PMeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
-            VkDeviceSize vertex_varying_buffer_size = sizeof(PMeshVertex::VulkanMeshVertexVarying) * vertex_count;
+                sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
+            VkDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
 
             VkDeviceSize vertex_position_buffer_offset = 0;
             VkDeviceSize vertex_varying_enable_blending_buffer_offset =
@@ -910,13 +909,13 @@ namespace Pilot
                 vertex_position_buffer_size + vertex_varying_enable_blending_buffer_size + vertex_varying_buffer_size;
             VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
             VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-            PVulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                      vulkan_context->_device,
-                                      inefficient_staging_buffer_size,
-                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                      inefficient_staging_buffer,
-                                      inefficient_staging_buffer_memory);
+            VulkanUtil::createBuffer(vulkan_context->_physical_device,
+                                     vulkan_context->_device,
+                                     inefficient_staging_buffer_size,
+                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                     inefficient_staging_buffer,
+                                     inefficient_staging_buffer_memory);
 
             void* inefficient_staging_buffer_data;
             vkMapMemory(vulkan_context->_device,
@@ -926,15 +925,15 @@ namespace Pilot
                         0,
                         &inefficient_staging_buffer_data);
 
-            PMeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexPostition*>(
+            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
-            PMeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
+            MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
                     vertex_varying_enable_blending_buffer_offset);
-            PMeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
-                reinterpret_cast<PMeshVertex::VulkanMeshVertexVarying*>(
+            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
@@ -989,24 +988,24 @@ namespace Pilot
                             NULL);
 
             // use the data from staging buffer
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_position_buffer,
-                                    vertex_position_buffer_offset,
-                                    0,
-                                    vertex_position_buffer_size);
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_varying_enable_blending_buffer,
-                                    vertex_varying_enable_blending_buffer_offset,
-                                    0,
-                                    vertex_varying_enable_blending_buffer_size);
-            PVulkanUtil::copyBuffer(rhi.get(),
-                                    inefficient_staging_buffer,
-                                    now_mesh.mesh_vertex_varying_buffer,
-                                    vertex_varying_buffer_offset,
-                                    0,
-                                    vertex_varying_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_position_buffer,
+                                   vertex_position_buffer_offset,
+                                   0,
+                                   vertex_position_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_varying_enable_blending_buffer,
+                                   vertex_varying_enable_blending_buffer_offset,
+                                   0,
+                                   vertex_varying_enable_blending_buffer_size);
+            VulkanUtil::copyBuffer(rhi.get(),
+                                   inefficient_staging_buffer,
+                                   now_mesh.mesh_vertex_varying_buffer,
+                                   vertex_varying_buffer_offset,
+                                   0,
+                                   vertex_varying_buffer_size);
 
             // release staging buffer
             vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
@@ -1076,13 +1075,13 @@ namespace Pilot
 
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        PVulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                  vulkan_context->_device,
-                                  buffer_size,
-                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                  inefficient_staging_buffer,
-                                  inefficient_staging_buffer_memory);
+        VulkanUtil::createBuffer(vulkan_context->_physical_device,
+                                 vulkan_context->_device,
+                                 buffer_size,
+                                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                 inefficient_staging_buffer,
+                                 inefficient_staging_buffer_memory);
 
         void* staging_buffer_data;
         vkMapMemory(
@@ -1106,59 +1105,59 @@ namespace Pilot
                         NULL);
 
         // use the data from staging buffer
-        PVulkanUtil::copyBuffer(rhi.get(), inefficient_staging_buffer, now_mesh.mesh_index_buffer, 0, 0, buffer_size);
+        VulkanUtil::copyBuffer(rhi.get(), inefficient_staging_buffer, now_mesh.mesh_index_buffer, 0, 0, buffer_size);
 
         // release temp staging buffer
         vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
         vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
     }
 
-    void RenderResource::updateTextureImageData(std::shared_ptr<RHI> rhi, const PTextureDataToUpdate& texture_data)
+    void RenderResource::updateTextureImageData(std::shared_ptr<RHI> rhi, const TextureDataToUpdate& texture_data)
     {
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       texture_data.now_material->base_color_texture_image,
-                                       texture_data.now_material->base_color_image_view,
-                                       texture_data.now_material->base_color_image_allocation,
-                                       texture_data.base_color_image_width,
-                                       texture_data.base_color_image_height,
-                                       texture_data.base_color_image_pixels,
-                                       texture_data.base_color_image_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      texture_data.now_material->base_color_texture_image,
+                                      texture_data.now_material->base_color_image_view,
+                                      texture_data.now_material->base_color_image_allocation,
+                                      texture_data.base_color_image_width,
+                                      texture_data.base_color_image_height,
+                                      texture_data.base_color_image_pixels,
+                                      texture_data.base_color_image_format);
 
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       texture_data.now_material->metallic_roughness_texture_image,
-                                       texture_data.now_material->metallic_roughness_image_view,
-                                       texture_data.now_material->metallic_roughness_image_allocation,
-                                       texture_data.metallic_roughness_image_width,
-                                       texture_data.metallic_roughness_image_height,
-                                       texture_data.metallic_roughness_image_pixels,
-                                       texture_data.metallic_roughness_image_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      texture_data.now_material->metallic_roughness_texture_image,
+                                      texture_data.now_material->metallic_roughness_image_view,
+                                      texture_data.now_material->metallic_roughness_image_allocation,
+                                      texture_data.metallic_roughness_image_width,
+                                      texture_data.metallic_roughness_image_height,
+                                      texture_data.metallic_roughness_image_pixels,
+                                      texture_data.metallic_roughness_image_format);
 
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       texture_data.now_material->normal_texture_image,
-                                       texture_data.now_material->normal_image_view,
-                                       texture_data.now_material->normal_image_allocation,
-                                       texture_data.normal_roughness_image_width,
-                                       texture_data.normal_roughness_image_height,
-                                       texture_data.normal_roughness_image_pixels,
-                                       texture_data.normal_roughness_image_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      texture_data.now_material->normal_texture_image,
+                                      texture_data.now_material->normal_image_view,
+                                      texture_data.now_material->normal_image_allocation,
+                                      texture_data.normal_roughness_image_width,
+                                      texture_data.normal_roughness_image_height,
+                                      texture_data.normal_roughness_image_pixels,
+                                      texture_data.normal_roughness_image_format);
 
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       texture_data.now_material->occlusion_texture_image,
-                                       texture_data.now_material->occlusion_image_view,
-                                       texture_data.now_material->occlusion_image_allocation,
-                                       texture_data.occlusion_image_width,
-                                       texture_data.occlusion_image_height,
-                                       texture_data.occlusion_image_pixels,
-                                       texture_data.occlusion_image_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      texture_data.now_material->occlusion_texture_image,
+                                      texture_data.now_material->occlusion_image_view,
+                                      texture_data.now_material->occlusion_image_allocation,
+                                      texture_data.occlusion_image_width,
+                                      texture_data.occlusion_image_height,
+                                      texture_data.occlusion_image_pixels,
+                                      texture_data.occlusion_image_format);
 
-        PVulkanUtil::createGlobalImage(rhi.get(),
-                                       texture_data.now_material->emissive_texture_image,
-                                       texture_data.now_material->emissive_image_view,
-                                       texture_data.now_material->emissive_image_allocation,
-                                       texture_data.emissive_image_width,
-                                       texture_data.emissive_image_height,
-                                       texture_data.emissive_image_pixels,
-                                       texture_data.emissive_image_format);
+        VulkanUtil::createGlobalImage(rhi.get(),
+                                      texture_data.now_material->emissive_texture_image,
+                                      texture_data.now_material->emissive_image_view,
+                                      texture_data.now_material->emissive_image_allocation,
+                                      texture_data.emissive_image_width,
+                                      texture_data.emissive_image_height,
+                                      texture_data.emissive_image_pixels,
+                                      texture_data.emissive_image_format);
     }
 
     void RenderResource::updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderScene>  render_scene,
@@ -1183,7 +1182,7 @@ namespace Pilot
                     frustum, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
             {
                 m_directional_light_visible_mesh_nodes.emplace_back();
-                PVulkanMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
+                VulkanMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
 
                 temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
 
@@ -1238,7 +1237,7 @@ namespace Pilot
             if (intersect_with_point_lights)
             {
                 m_point_lights_visible_mesh_nodes.emplace_back();
-                PVulkanMeshNode& temp_node = m_point_lights_visible_mesh_nodes.back();
+                VulkanMeshNode& temp_node = m_point_lights_visible_mesh_nodes.back();
 
                 temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
 
@@ -1280,7 +1279,7 @@ namespace Pilot
                     f, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
             {
                 m_main_camera_visible_mesh_nodes.emplace_back();
-                PVulkanMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
+                VulkanMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
 
                 temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
 
@@ -1360,9 +1359,9 @@ namespace Pilot
 
     void RenderResource::createAndMapStorageBuffer(std::shared_ptr<RHI> rhi)
     {
-        VulkanRHI*      raw_rhi          = static_cast<VulkanRHI*>(rhi.get());
-        PStorageBuffer& _storage_buffer  = m_global_render_resource._storage_buffer;
-        uint32_t        frames_in_flight = raw_rhi->_max_frames_in_flight;
+        VulkanRHI*     raw_rhi          = static_cast<VulkanRHI*>(rhi.get());
+        StorageBuffer& _storage_buffer  = m_global_render_resource._storage_buffer;
+        uint32_t       frames_in_flight = raw_rhi->_max_frames_in_flight;
 
         VkPhysicalDeviceProperties properties;
         vkGetPhysicalDeviceProperties(raw_rhi->_physical_device, &properties);
@@ -1378,13 +1377,13 @@ namespace Pilot
         // The size is 128MB in NVIDIA D3D11
         // driver(https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0).
         uint32_t global_storage_buffer_size = 1024 * 1024 * 128;
-        PVulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                  raw_rhi->_device,
-                                  global_storage_buffer_size,
-                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                  _storage_buffer._global_upload_ringbuffer,
-                                  _storage_buffer._global_upload_ringbuffer_memory);
+        VulkanUtil::createBuffer(raw_rhi->_physical_device,
+                                 raw_rhi->_device,
+                                 global_storage_buffer_size,
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                 _storage_buffer._global_upload_ringbuffer,
+                                 _storage_buffer._global_upload_ringbuffer_memory);
 
         _storage_buffer._global_upload_ringbuffers_begin.resize(frames_in_flight);
         _storage_buffer._global_upload_ringbuffers_end.resize(frames_in_flight);
@@ -1398,22 +1397,22 @@ namespace Pilot
         }
 
         // axis
-        PVulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                  raw_rhi->_device,
-                                  sizeof(AxisStorageBufferObject),
-                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                  _storage_buffer._axis_inefficient_storage_buffer,
-                                  _storage_buffer._axis_inefficient_storage_buffer_memory);
+        VulkanUtil::createBuffer(raw_rhi->_physical_device,
+                                 raw_rhi->_device,
+                                 sizeof(AxisStorageBufferObject),
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                 _storage_buffer._axis_inefficient_storage_buffer,
+                                 _storage_buffer._axis_inefficient_storage_buffer_memory);
 
         // null descriptor
-        PVulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                  raw_rhi->_device,
-                                  64,
-                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                                  0,
-                                  _storage_buffer._global_null_descriptor_storage_buffer,
-                                  _storage_buffer._global_null_descriptor_storage_buffer_memory);
+        VulkanUtil::createBuffer(raw_rhi->_physical_device,
+                                 raw_rhi->_device,
+                                 64,
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                 0,
+                                 _storage_buffer._global_null_descriptor_storage_buffer,
+                                 _storage_buffer._global_null_descriptor_storage_buffer_memory);
 
         // TODO: Unmap when program terminates
         vkMapMemory(raw_rhi->_device,
@@ -1430,6 +1429,6 @@ namespace Pilot
                     0,
                     &_storage_buffer._axis_inefficient_storage_buffer_memory_pointer);
 
-        static_assert(64 >= sizeof(PMeshVertex::VulkanMeshVertexJointBinding), "");
+        static_assert(64 >= sizeof(MeshVertex::VulkanMeshVertexJointBinding), "");
     }
 } // namespace Pilot
