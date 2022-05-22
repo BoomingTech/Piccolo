@@ -11,7 +11,7 @@ namespace Pilot
 {
     void RenderPass::initialize(const RenderPassInitInfo* init_info)
     {
-        m_rhi = std::static_pointer_cast<VulkanRHI>(m_rhi);
+        m_vulkan_rhi = std::static_pointer_cast<VulkanRHI>(m_rhi);
         m_global_render_resource =
             &(std::static_pointer_cast<RenderResource>(m_render_resource)->m_global_render_resource);
     }
