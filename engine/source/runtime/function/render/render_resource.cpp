@@ -530,7 +530,7 @@ namespace Pilot
             material_descriptor_set_alloc_info.descriptorSetCount = 1;
             material_descriptor_set_alloc_info.pSetLayouts =
                 &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->_descriptor_infos[MainCameraPass::LayoutType::_mesh_per_material]
+                     ->m_descriptor_infos[MainCameraPass::LayoutType::_mesh_per_material]
                      .layout;
 
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
@@ -848,7 +848,7 @@ namespace Pilot
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
                 &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
+                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
                      .layout;
 
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
@@ -1021,7 +1021,7 @@ namespace Pilot
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
                 &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
+                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
                      .layout;
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
                                                        &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,

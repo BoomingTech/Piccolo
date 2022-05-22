@@ -49,9 +49,9 @@ namespace Pilot
             _render_pipeline_type_count
         };
 
-        virtual void initialize(const RenderPassInitInfo* init_info) override final;
+        void initialize(const RenderPassInitInfo* init_info) override final;
 
-        virtual void preparePassData(std::shared_ptr<RenderResourceBase> render_resource) override final;
+        void preparePassData(std::shared_ptr<RenderResourceBase> render_resource) override final;
 
         void draw(ColorGradingPass& color_grading_pass,
                   FXAAPass&         fxaa_pass,

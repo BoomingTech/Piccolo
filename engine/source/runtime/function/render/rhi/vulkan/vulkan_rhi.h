@@ -26,7 +26,7 @@ namespace Pilot
         std::vector<VkPresentModeKHR>   presentModes;
     };
 
-    class VulkanRHI : public RHI
+    class VulkanRHI final : public RHI
     {
     public:
         // override functions

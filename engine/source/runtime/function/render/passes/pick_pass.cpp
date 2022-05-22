@@ -39,41 +39,41 @@ namespace Pilot
         {
             _mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix =
                 vulkan_resource->m_mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix;
-            _mesh_inefficient_pick_perframe_storage_buffer_object.rt_width  = _rhi->_swapchain_extent.width;
-            _mesh_inefficient_pick_perframe_storage_buffer_object.rt_height = _rhi->_swapchain_extent.height;
+            _mesh_inefficient_pick_perframe_storage_buffer_object.rt_width  = m_rhi->_swapchain_extent.width;
+            _mesh_inefficient_pick_perframe_storage_buffer_object.rt_height = m_rhi->_swapchain_extent.height;
         }
     }
     void PickPass::draw() {}
     void PickPass::setupAttachments()
     {
-        _framebuffer.attachments.resize(1);
-        _framebuffer.attachments[0].format = VK_FORMAT_R32_UINT;
+        m_framebuffer.attachments.resize(1);
+        m_framebuffer.attachments[0].format = VK_FORMAT_R32_UINT;
 
-        PVulkanUtil::createImage(_rhi->_physical_device,
-                                 _rhi->_device,
-                                 _rhi->_swapchain_extent.width,
-                                 _rhi->_swapchain_extent.height,
-                                 _framebuffer.attachments[0].format,
+        PVulkanUtil::createImage(m_rhi->_physical_device,
+                                 m_rhi->_device,
+                                 m_rhi->_swapchain_extent.width,
+                                 m_rhi->_swapchain_extent.height,
+                                 m_framebuffer.attachments[0].format,
                                  VK_IMAGE_TILING_OPTIMAL,
                                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _framebuffer.attachments[0].image,
-                                 _framebuffer.attachments[0].mem,
+                                 m_framebuffer.attachments[0].image,
+                                 m_framebuffer.attachments[0].mem,
                                  0,
                                  1,
                                  1);
-        _framebuffer.attachments[0].view = PVulkanUtil::createImageView(_rhi->_device,
-                                                                        _framebuffer.attachments[0].image,
-                                                                        _framebuffer.attachments[0].format,
-                                                                        VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                        VK_IMAGE_VIEW_TYPE_2D,
-                                                                        1,
-                                                                        1);
+        m_framebuffer.attachments[0].view = PVulkanUtil::createImageView(m_rhi->_device,
+                                                                         m_framebuffer.attachments[0].image,
+                                                                         m_framebuffer.attachments[0].format,
+                                                                         VK_IMAGE_ASPECT_COLOR_BIT,
+                                                                         VK_IMAGE_VIEW_TYPE_2D,
+                                                                         1,
+                                                                         1);
     }
     void PickPass::setupRenderPass()
     {
         VkAttachmentDescription color_attachment_description {};
-        color_attachment_description.format         = _framebuffer.attachments[0].format;
+        color_attachment_description.format         = m_framebuffer.attachments[0].format;
         color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
@@ -83,7 +83,7 @@ namespace Pilot
         color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
         VkAttachmentDescription depth_attachment_description {};
-        depth_attachment_description.format         = _rhi->_depth_image_format;
+        depth_attachment_description.format         = m_rhi->_depth_image_format;
         depth_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
         depth_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depth_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -117,7 +117,7 @@ namespace Pilot
         renderpass_create_info.dependencyCount = 0;
         renderpass_create_info.pDependencies   = NULL;
 
-        if (vkCreateRenderPass(_rhi->_device, &renderpass_create_info, nullptr, &_framebuffer.render_pass) !=
+        if (vkCreateRenderPass(m_rhi->_device, &renderpass_create_info, nullptr, &m_framebuffer.render_pass) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create inefficient pick render pass");
@@ -125,18 +125,18 @@ namespace Pilot
     }
     void PickPass::setupFramebuffer()
     {
-        VkImageView attachments[2] = {_framebuffer.attachments[0].view, _rhi->_depth_image_view};
+        VkImageView attachments[2] = {m_framebuffer.attachments[0].view, m_rhi->_depth_image_view};
 
         VkFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass      = _framebuffer.render_pass;
+        framebuffer_create_info.renderPass      = m_framebuffer.render_pass;
         framebuffer_create_info.attachmentCount = sizeof(attachments) / sizeof(attachments[0]);
         framebuffer_create_info.pAttachments    = attachments;
-        framebuffer_create_info.width           = _rhi->_swapchain_extent.width;
-        framebuffer_create_info.height          = _rhi->_swapchain_extent.height;
+        framebuffer_create_info.width           = m_rhi->_swapchain_extent.width;
+        framebuffer_create_info.height          = m_rhi->_swapchain_extent.height;
         framebuffer_create_info.layers          = 1;
 
-        if (vkCreateFramebuffer(_rhi->_device, &framebuffer_create_info, nullptr, &_framebuffer.framebuffer) !=
+        if (vkCreateFramebuffer(m_rhi->_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create inefficient pick framebuffer");
@@ -144,7 +144,7 @@ namespace Pilot
     }
     void PickPass::setupDescriptorSetLayout()
     {
-        _descriptor_infos.resize(1);
+        m_descriptor_infos.resize(1);
 
         VkDescriptorSetLayoutBinding mesh_inefficient_pick_global_layout_bindings[3];
 
@@ -189,16 +189,16 @@ namespace Pilot
 
         if (VK_SUCCESS !=
             vkCreateDescriptorSetLayout(
-                _rhi->_device, &mesh_inefficient_pick_global_layout_create_info, NULL, &_descriptor_infos[0].layout))
+                m_rhi->_device, &mesh_inefficient_pick_global_layout_create_info, NULL, &m_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create mesh inefficient pick global layout");
         }
     }
     void PickPass::setupPipelines()
     {
-        _render_pipelines.resize(1);
+        m_render_pipelines.resize(1);
 
-        VkDescriptorSetLayout descriptorset_layouts[] = {_descriptor_infos[0].layout, _per_mesh_layout};
+        VkDescriptorSetLayout descriptorset_layouts[] = {m_descriptor_infos[0].layout, _per_mesh_layout};
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -206,13 +206,13 @@ namespace Pilot
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                _rhi->_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) != VK_SUCCESS)
+                m_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) != VK_SUCCESS)
         {
             throw std::runtime_error("create mesh inefficient pick pipeline layout");
         }
 
-        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(_rhi->_device, MESH_INEFFICIENT_PICK_VERT);
-        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(_rhi->_device, MESH_INEFFICIENT_PICK_FRAG);
+        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_rhi->_device, MESH_INEFFICIENT_PICK_VERT);
+        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_rhi->_device, MESH_INEFFICIENT_PICK_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -246,9 +246,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &_rhi->_viewport;
+        viewport_state_create_info.pViewports    = &m_rhi->_viewport;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &_rhi->_scissor;
+        viewport_state_create_info.pScissors     = &m_rhi->_scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -314,33 +314,34 @@ namespace Pilot
         pipelineInfo.pMultisampleState   = &multisample_state_create_info;
         pipelineInfo.pColorBlendState    = &color_blend_state_create_info;
         pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
-        pipelineInfo.layout              = _render_pipelines[0].layout;
-        pipelineInfo.renderPass          = _framebuffer.render_pass;
+        pipelineInfo.layout              = m_render_pipelines[0].layout;
+        pipelineInfo.renderPass          = m_framebuffer.render_pass;
         pipelineInfo.subpass             = 0;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
         if (vkCreateGraphicsPipelines(
-                _rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_render_pipelines[0].pipeline) != VK_SUCCESS)
+                m_rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
+            VK_SUCCESS)
         {
             throw std::runtime_error("create mesh inefficient pick graphics pipeline");
         }
 
-        vkDestroyShaderModule(_rhi->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(_rhi->_device, frag_shader_module, nullptr);
+        vkDestroyShaderModule(m_rhi->_device, vert_shader_module, nullptr);
+        vkDestroyShaderModule(m_rhi->_device, frag_shader_module, nullptr);
     }
     void PickPass::setupDescriptorSet()
     {
         VkDescriptorSetAllocateInfo mesh_inefficient_pick_global_descriptor_set_alloc_info;
         mesh_inefficient_pick_global_descriptor_set_alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         mesh_inefficient_pick_global_descriptor_set_alloc_info.pNext = NULL;
-        mesh_inefficient_pick_global_descriptor_set_alloc_info.descriptorPool     = _rhi->_descriptor_pool;
+        mesh_inefficient_pick_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->_descriptor_pool;
         mesh_inefficient_pick_global_descriptor_set_alloc_info.descriptorSetCount = 1;
-        mesh_inefficient_pick_global_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[0].layout;
+        mesh_inefficient_pick_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(_rhi->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(m_rhi->_device,
                                                    &mesh_inefficient_pick_global_descriptor_set_alloc_info,
-                                                   &_descriptor_infos[0].descriptor_set))
+                                                   &m_descriptor_infos[0].descriptor_set))
         {
             throw std::runtime_error("allocate mesh inefficient pick global descriptor set");
         }
@@ -353,31 +354,31 @@ namespace Pilot
         mesh_inefficient_pick_perframe_storage_buffer_info.range =
             sizeof(MeshInefficientPickPerframeStorageBufferObject);
         mesh_inefficient_pick_perframe_storage_buffer_info.buffer =
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
 
         VkDescriptorBufferInfo mesh_inefficient_pick_perdrawcall_storage_buffer_info = {};
         mesh_inefficient_pick_perdrawcall_storage_buffer_info.offset                 = 0;
         mesh_inefficient_pick_perdrawcall_storage_buffer_info.range =
             sizeof(MeshInefficientPickPerdrawcallStorageBufferObject);
         mesh_inefficient_pick_perdrawcall_storage_buffer_info.buffer =
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
         assert(mesh_inefficient_pick_perdrawcall_storage_buffer_info.range <
-               _p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
         VkDescriptorBufferInfo mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info = {};
         mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.offset                 = 0;
         mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.range =
             sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
         mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.buffer =
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
         assert(mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.range <
-               _p_global_render_resource->_storage_buffer._max_storage_buffer_range);
+               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
         VkWriteDescriptorSet mesh_descriptor_writes_info[3];
 
         mesh_descriptor_writes_info[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         mesh_descriptor_writes_info[0].pNext           = NULL;
-        mesh_descriptor_writes_info[0].dstSet          = _descriptor_infos[0].descriptor_set;
+        mesh_descriptor_writes_info[0].dstSet          = m_descriptor_infos[0].descriptor_set;
         mesh_descriptor_writes_info[0].dstBinding      = 0;
         mesh_descriptor_writes_info[0].dstArrayElement = 0;
         mesh_descriptor_writes_info[0].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -386,7 +387,7 @@ namespace Pilot
 
         mesh_descriptor_writes_info[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         mesh_descriptor_writes_info[1].pNext           = NULL;
-        mesh_descriptor_writes_info[1].dstSet          = _descriptor_infos[0].descriptor_set;
+        mesh_descriptor_writes_info[1].dstSet          = m_descriptor_infos[0].descriptor_set;
         mesh_descriptor_writes_info[1].dstBinding      = 1;
         mesh_descriptor_writes_info[1].dstArrayElement = 0;
         mesh_descriptor_writes_info[1].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -395,7 +396,7 @@ namespace Pilot
 
         mesh_descriptor_writes_info[2].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         mesh_descriptor_writes_info[2].pNext           = NULL;
-        mesh_descriptor_writes_info[2].dstSet          = _descriptor_infos[0].descriptor_set;
+        mesh_descriptor_writes_info[2].dstSet          = m_descriptor_infos[0].descriptor_set;
         mesh_descriptor_writes_info[2].dstBinding      = 2;
         mesh_descriptor_writes_info[2].dstArrayElement = 0;
         mesh_descriptor_writes_info[2].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -403,7 +404,7 @@ namespace Pilot
         mesh_descriptor_writes_info[2].pBufferInfo =
             &mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info;
 
-        vkUpdateDescriptorSets(_rhi->_device,
+        vkUpdateDescriptorSets(m_rhi->_device,
                                sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]),
                                mesh_descriptor_writes_info,
                                0,
@@ -411,23 +412,23 @@ namespace Pilot
     }
     void PickPass::recreateFramebuffer()
     {
-        for (size_t i = 0; i < _framebuffer.attachments.size(); i++)
+        for (size_t i = 0; i < m_framebuffer.attachments.size(); i++)
         {
-            vkDestroyImage(_rhi->_device, _framebuffer.attachments[i].image, nullptr);
-            vkDestroyImageView(_rhi->_device, _framebuffer.attachments[i].view, nullptr);
-            vkFreeMemory(_rhi->_device, _framebuffer.attachments[i].mem, nullptr);
+            vkDestroyImage(m_rhi->_device, m_framebuffer.attachments[i].image, nullptr);
+            vkDestroyImageView(m_rhi->_device, m_framebuffer.attachments[i].view, nullptr);
+            vkFreeMemory(m_rhi->_device, m_framebuffer.attachments[i].mem, nullptr);
         }
-        vkDestroyFramebuffer(_rhi->_device, _framebuffer.framebuffer, nullptr);
+        vkDestroyFramebuffer(m_rhi->_device, m_framebuffer.framebuffer, nullptr);
 
         setupAttachments();
         setupFramebuffer();
     }
     uint32_t PickPass::pick(const Vector2& picked_uv)
     {
-        uint32_t pixel_x            = static_cast<uint32_t>(picked_uv.x * _rhi->_viewport.width + _rhi->_viewport.x);
-        uint32_t pixel_y            = static_cast<uint32_t>(picked_uv.y * _rhi->_viewport.height + _rhi->_viewport.y);
-        uint32_t picked_pixel_index = _rhi->_swapchain_extent.width * pixel_y + pixel_x;
-        if (pixel_x >= _rhi->_swapchain_extent.width || pixel_y >= _rhi->_swapchain_extent.height)
+        uint32_t pixel_x            = static_cast<uint32_t>(picked_uv.x * m_rhi->_viewport.width + m_rhi->_viewport.x);
+        uint32_t pixel_y            = static_cast<uint32_t>(picked_uv.y * m_rhi->_viewport.height + m_rhi->_viewport.y);
+        uint32_t picked_pixel_index = m_rhi->_swapchain_extent.width * pixel_y + pixel_x;
+        if (pixel_x >= m_rhi->_swapchain_extent.width || pixel_y >= m_rhi->_swapchain_extent.height)
             return 0;
 
         struct PMeshNode
@@ -460,15 +461,15 @@ namespace Pilot
         }
 
         // reset storage buffer offset
-        _p_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] =
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[*_rhi->_p_current_frame_index];
+        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] =
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[*m_rhi->_p_current_frame_index];
 
         VkResult res_wait_for_fences = vkWaitForFences(
-            _rhi->_device, 1, &_rhi->_is_frame_in_flight_fences[*_rhi->_p_current_frame_index], VK_TRUE, UINT64_MAX);
+            m_rhi->_device, 1, &m_rhi->_is_frame_in_flight_fences[*m_rhi->_p_current_frame_index], VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
         VkResult res_reset_command_pool =
-            _rhi->_vkResetCommandPool(_rhi->_device, _rhi->_p_command_pools[*_rhi->_p_current_frame_index], 0);
+            m_rhi->_vkResetCommandPool(m_rhi->_device, m_rhi->_p_command_pools[*m_rhi->_p_current_frame_index], 0);
         assert(VK_SUCCESS == res_reset_command_pool);
 
         VkCommandBufferBeginInfo command_buffer_begin_info {};
@@ -476,8 +477,8 @@ namespace Pilot
         command_buffer_begin_info.flags            = 0;
         command_buffer_begin_info.pInheritanceInfo = nullptr;
 
-        VkResult res_begin_command_buffer = _rhi->_vkBeginCommandBuffer(
-            _rhi->_p_command_buffers[*_rhi->_p_current_frame_index], &command_buffer_begin_info);
+        VkResult res_begin_command_buffer = m_rhi->_vkBeginCommandBuffer(
+            m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
 
         {
@@ -488,11 +489,11 @@ namespace Pilot
             transfer_to_render_barrier.dstAccessMask       = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             transfer_to_render_barrier.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
             transfer_to_render_barrier.newLayout           = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            transfer_to_render_barrier.srcQueueFamilyIndex = _rhi->_queue_indices.graphics_family.value();
-            transfer_to_render_barrier.dstQueueFamilyIndex = _rhi->_queue_indices.graphics_family.value();
-            transfer_to_render_barrier.image               = _framebuffer.attachments[0].image;
+            transfer_to_render_barrier.srcQueueFamilyIndex = m_rhi->_queue_indices.graphics_family.value();
+            transfer_to_render_barrier.dstQueueFamilyIndex = m_rhi->_queue_indices.graphics_family.value();
+            transfer_to_render_barrier.image               = m_framebuffer.attachments[0].image;
             transfer_to_render_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-            vkCmdPipelineBarrier(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
+            vkCmdPipelineBarrier(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  0,
@@ -504,54 +505,55 @@ namespace Pilot
                                  &transfer_to_render_barrier);
         }
 
-        _rhi->_vkCmdSetViewport(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index], 0, 1, &_rhi->_viewport);
-        _rhi->_vkCmdSetScissor(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index], 0, 1, &_rhi->_scissor);
+        m_rhi->_vkCmdSetViewport(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], 0, 1, &m_rhi->_viewport);
+        m_rhi->_vkCmdSetScissor(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], 0, 1, &m_rhi->_scissor);
 
         VkRenderPassBeginInfo renderpass_begin_info {};
         renderpass_begin_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderpass_begin_info.renderPass        = _framebuffer.render_pass;
-        renderpass_begin_info.framebuffer       = _framebuffer.framebuffer;
+        renderpass_begin_info.renderPass        = m_framebuffer.render_pass;
+        renderpass_begin_info.framebuffer       = m_framebuffer.framebuffer;
         renderpass_begin_info.renderArea.offset = {0, 0};
-        renderpass_begin_info.renderArea.extent = _rhi->_swapchain_extent;
+        renderpass_begin_info.renderArea.extent = m_rhi->_swapchain_extent;
 
         VkClearColorValue color_value         = {0, 0, 0, 0};
         VkClearValue      clearValues[2]      = {color_value, {1.0f, 0}};
         renderpass_begin_info.clearValueCount = 2;
         renderpass_begin_info.pClearValues    = clearValues;
 
-        _rhi->_vkCmdBeginRenderPass(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                    &renderpass_begin_info,
-                                    VK_SUBPASS_CONTENTS_INLINE); // no second buffer
+        m_rhi->_vkCmdBeginRenderPass(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                     &renderpass_begin_info,
+                                     VK_SUBPASS_CONTENTS_INLINE); // no second buffer
 
-        if (_rhi->isDebugLabelEnabled())
+        if (m_rhi->isDebugLabelEnabled())
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Mesh Inefficient Pick", {1.0f, 1.0f, 1.0f, 1.0f}};
-            _rhi->_vkCmdBeginDebugUtilsLabelEXT(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index], &label_info);
+            m_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                                 &label_info);
         }
 
-        _rhi->_vkCmdBindPipeline(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                 _render_pipelines[0].pipeline);
-        _rhi->_vkCmdSetViewport(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index], 0, 1, &_rhi->_viewport);
-        _rhi->_vkCmdSetScissor(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index], 0, 1, &_rhi->_scissor);
+        m_rhi->_vkCmdBindPipeline(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                  VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                  m_render_pipelines[0].pipeline);
+        m_rhi->_vkCmdSetViewport(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], 0, 1, &m_rhi->_viewport);
+        m_rhi->_vkCmdSetScissor(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], 0, 1, &m_rhi->_scissor);
 
         // perframe storage buffer
         uint32_t perframe_dynamic_offset = roundUp(
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index],
-            _p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-        _p_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] =
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index],
+            m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] =
             perframe_dynamic_offset + sizeof(MeshInefficientPickPerframeStorageBufferObject);
         assert(
-            _p_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] <=
-            (_p_global_render_resource->_storage_buffer
-                 ._global_upload_ringbuffers_begin[*_rhi->_p_current_frame_index] +
-             _p_global_render_resource->_storage_buffer
-                 ._global_upload_ringbuffers_size[*_rhi->_p_current_frame_index]));
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] <=
+            (m_global_render_resource->_storage_buffer
+                 ._global_upload_ringbuffers_begin[*m_rhi->_p_current_frame_index] +
+             m_global_render_resource->_storage_buffer
+                 ._global_upload_ringbuffers_size[*m_rhi->_p_current_frame_index]));
 
         (*reinterpret_cast<MeshInefficientPickPerframeStorageBufferObject*>(
             reinterpret_cast<uintptr_t>(
-                _p_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = _mesh_inefficient_pick_perframe_storage_buffer_object;
 
         for (auto& pair1 : main_camera_mesh_drawcall_batch)
@@ -570,23 +572,23 @@ namespace Pilot
                 if (total_instance_count > 0)
                 {
                     // bind per mesh
-                    _rhi->_vkCmdBindDescriptorSets(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                                   VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                   _render_pipelines[0].layout,
-                                                   1,
-                                                   1,
-                                                   &mesh.mesh_vertex_blending_descriptor_set,
-                                                   0,
-                                                   NULL);
+                    m_rhi->_vkCmdBindDescriptorSets(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    m_render_pipelines[0].layout,
+                                                    1,
+                                                    1,
+                                                    &mesh.mesh_vertex_blending_descriptor_set,
+                                                    0,
+                                                    NULL);
 
                     VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer};
                     VkDeviceSize offsets[]        = {0};
-                    _rhi->_vkCmdBindVertexBuffers(
-                        _rhi->_p_command_buffers[*_rhi->_p_current_frame_index], 0, 1, vertex_buffers, offsets);
-                    _rhi->_vkCmdBindIndexBuffer(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                                mesh.mesh_index_buffer,
-                                                0,
-                                                VK_INDEX_TYPE_UINT16);
+                    m_rhi->_vkCmdBindVertexBuffers(
+                        m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index], 0, 1, vertex_buffers, offsets);
+                    m_rhi->_vkCmdBindIndexBuffer(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                                 mesh.mesh_index_buffer,
+                                                 0,
+                                                 VK_INDEX_TYPE_UINT16);
 
                     uint32_t drawcall_max_instance_count =
                         (sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices) /
@@ -604,22 +606,22 @@ namespace Pilot
 
                         // perdrawcall storage buffer
                         uint32_t perdrawcall_dynamic_offset =
-                            roundUp(_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index],
-                                    _p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                        _p_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] =
+                            roundUp(m_global_render_resource->_storage_buffer
+                                        ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index],
+                                    m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+                        m_global_render_resource->_storage_buffer
+                            ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] =
                             perdrawcall_dynamic_offset + sizeof(MeshInefficientPickPerdrawcallStorageBufferObject);
-                        assert(_p_global_render_resource->_storage_buffer
-                                   ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] <=
-                               (_p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_begin[*_rhi->_p_current_frame_index] +
-                                _p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_size[*_rhi->_p_current_frame_index]));
+                        assert(m_global_render_resource->_storage_buffer
+                                   ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] <=
+                               (m_global_render_resource->_storage_buffer
+                                    ._global_upload_ringbuffers_begin[*m_rhi->_p_current_frame_index] +
+                                m_global_render_resource->_storage_buffer
+                                    ._global_upload_ringbuffers_size[*m_rhi->_p_current_frame_index]));
 
                         MeshInefficientPickPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
                             (*reinterpret_cast<MeshInefficientPickPerdrawcallStorageBufferObject*>(
-                                reinterpret_cast<uintptr_t>(_p_global_render_resource->_storage_buffer
+                                reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
                                                                 ._global_upload_ringbuffer_memory_pointer) +
                                 perdrawcall_dynamic_offset));
                         for (uint32_t i = 0; i < current_instance_count; ++i)
@@ -634,26 +636,26 @@ namespace Pilot
                         uint32_t per_drawcall_vertex_blending_dynamic_offset;
                         if (mesh.enable_vertex_blending)
                         {
-                            per_drawcall_vertex_blending_dynamic_offset = roundUp(
-                                _p_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index],
-                                _p_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            _p_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] =
+                            per_drawcall_vertex_blending_dynamic_offset =
+                                roundUp(m_global_render_resource->_storage_buffer
+                                            ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index],
+                                        m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+                            m_global_render_resource->_storage_buffer
+                                ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] =
                                 per_drawcall_vertex_blending_dynamic_offset +
                                 sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
-                            assert(_p_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[*_rhi->_p_current_frame_index] <=
-                                   (_p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[*_rhi->_p_current_frame_index] +
-                                    _p_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[*_rhi->_p_current_frame_index]));
+                            assert(m_global_render_resource->_storage_buffer
+                                       ._global_upload_ringbuffers_end[*m_rhi->_p_current_frame_index] <=
+                                   (m_global_render_resource->_storage_buffer
+                                        ._global_upload_ringbuffers_begin[*m_rhi->_p_current_frame_index] +
+                                    m_global_render_resource->_storage_buffer
+                                        ._global_upload_ringbuffers_size[*m_rhi->_p_current_frame_index]));
 
                             MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject&
                                 per_drawcall_vertex_blending_storage_buffer_object =
                                     (*reinterpret_cast<
                                         MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(_p_global_render_resource->_storage_buffer
+                                        reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
                                                                         ._global_upload_ringbuffer_memory_pointer) +
                                         per_drawcall_vertex_blending_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
@@ -675,41 +677,41 @@ namespace Pilot
                         uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
                                                        perdrawcall_dynamic_offset,
                                                        per_drawcall_vertex_blending_dynamic_offset};
-                        _rhi->_vkCmdBindDescriptorSets(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                                       VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                       _render_pipelines[0].layout,
-                                                       0,
-                                                       1,
-                                                       &_descriptor_infos[0].descriptor_set,
-                                                       sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
-                                                       dynamic_offsets);
+                        m_rhi->_vkCmdBindDescriptorSets(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                        m_render_pipelines[0].layout,
+                                                        0,
+                                                        1,
+                                                        &m_descriptor_infos[0].descriptor_set,
+                                                        sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
+                                                        dynamic_offsets);
 
-                        _rhi->_vkCmdDrawIndexed(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index],
-                                                mesh.mesh_index_count,
-                                                current_instance_count,
-                                                0,
-                                                0,
-                                                0);
+                        m_rhi->_vkCmdDrawIndexed(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index],
+                                                 mesh.mesh_index_count,
+                                                 current_instance_count,
+                                                 0,
+                                                 0,
+                                                 0);
                     }
                 }
             }
         }
 
-        if (_rhi->isDebugLabelEnabled())
+        if (m_rhi->isDebugLabelEnabled())
         {
-            _rhi->_vkCmdEndDebugUtilsLabelEXT(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index]);
+            m_rhi->_vkCmdEndDebugUtilsLabelEXT(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index]);
         }
 
         // end render pass
-        _rhi->_vkCmdEndRenderPass(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index]);
+        m_rhi->_vkCmdEndRenderPass(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index]);
 
         // end command buffer
         VkResult res_end_command_buffer =
-            _rhi->_vkEndCommandBuffer(_rhi->_p_command_buffers[*_rhi->_p_current_frame_index]);
+            m_rhi->_vkEndCommandBuffer(m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index]);
         assert(VK_SUCCESS == res_end_command_buffer);
 
-        VkResult res_reset_fences =
-            _rhi->_vkResetFences(_rhi->_device, 1, &_rhi->_is_frame_in_flight_fences[*_rhi->_p_current_frame_index]);
+        VkResult res_reset_fences = m_rhi->_vkResetFences(
+            m_rhi->_device, 1, &m_rhi->_is_frame_in_flight_fences[*m_rhi->_p_current_frame_index]);
         assert(VK_SUCCESS == res_reset_fences);
 
         VkSubmitInfo submit_info         = {};
@@ -718,23 +720,23 @@ namespace Pilot
         submit_info.pWaitSemaphores      = NULL;
         submit_info.pWaitDstStageMask    = 0;
         submit_info.commandBufferCount   = 1;
-        submit_info.pCommandBuffers      = &_rhi->_p_command_buffers[*_rhi->_p_current_frame_index];
+        submit_info.pCommandBuffers      = &m_rhi->_p_command_buffers[*m_rhi->_p_current_frame_index];
         submit_info.signalSemaphoreCount = 0;
         submit_info.pSignalSemaphores    = NULL;
 
         VkResult res_queue_submit = vkQueueSubmit(
-            _rhi->_graphics_queue, 1, &submit_info, _rhi->_is_frame_in_flight_fences[*_rhi->_p_current_frame_index]);
+            m_rhi->_graphics_queue, 1, &submit_info, m_rhi->_is_frame_in_flight_fences[*m_rhi->_p_current_frame_index]);
         assert(VK_SUCCESS == res_queue_submit);
 
-        auto new_index                = (*_rhi->_p_current_frame_index + 1) % _rhi->_max_frames_in_flight;
-        *_rhi->_p_current_frame_index = new_index;
+        auto new_index                 = (*m_rhi->_p_current_frame_index + 1) % m_rhi->_max_frames_in_flight;
+        *m_rhi->_p_current_frame_index = new_index;
 
         // implicit host read barrier
-        res_wait_for_fences = _rhi->_vkWaitForFences(
-            _rhi->_device, _rhi->_max_frames_in_flight, _rhi->_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+        res_wait_for_fences = m_rhi->_vkWaitForFences(
+            m_rhi->_device, m_rhi->_max_frames_in_flight, m_rhi->_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
-        auto command_buffer = _rhi->beginSingleTimeCommands();
+        auto command_buffer = m_rhi->beginSingleTimeCommands();
 
         VkBufferImageCopy region {};
         region.bufferOffset                    = 0;
@@ -745,13 +747,13 @@ namespace Pilot
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount     = 1;
         region.imageOffset                     = {0, 0, 0};
-        region.imageExtent                     = {_rhi->_swapchain_extent.width, _rhi->_swapchain_extent.height, 1};
+        region.imageExtent                     = {m_rhi->_swapchain_extent.width, m_rhi->_swapchain_extent.height, 1};
 
-        uint32_t       buffer_size = _rhi->_swapchain_extent.width * _rhi->_swapchain_extent.height * 4;
+        uint32_t       buffer_size = m_rhi->_swapchain_extent.width * m_rhi->_swapchain_extent.height * 4;
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        PVulkanUtil::createBuffer(_rhi->_physical_device,
-                                  _rhi->_device,
+        PVulkanUtil::createBuffer(m_rhi->_physical_device,
+                                  m_rhi->_device,
                                   buffer_size,
                                   VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -765,9 +767,9 @@ namespace Pilot
         copy_to_buffer_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_READ_BIT;
         copy_to_buffer_barrier.oldLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         copy_to_buffer_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        copy_to_buffer_barrier.srcQueueFamilyIndex = _rhi->_queue_indices.graphics_family.value();
-        copy_to_buffer_barrier.dstQueueFamilyIndex = _rhi->_queue_indices.graphics_family.value();
-        copy_to_buffer_barrier.image               = _framebuffer.attachments[0].image;
+        copy_to_buffer_barrier.srcQueueFamilyIndex = m_rhi->_queue_indices.graphics_family.value();
+        copy_to_buffer_barrier.dstQueueFamilyIndex = m_rhi->_queue_indices.graphics_family.value();
+        copy_to_buffer_barrier.image               = m_framebuffer.attachments[0].image;
         copy_to_buffer_barrier.subresourceRange    = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         vkCmdPipelineBarrier(command_buffer,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -781,16 +783,16 @@ namespace Pilot
                              &copy_to_buffer_barrier);
 
         vkCmdCopyImageToBuffer(command_buffer,
-                               _framebuffer.attachments[0].image,
+                               m_framebuffer.attachments[0].image,
                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                inefficient_staging_buffer,
                                1,
                                &region);
 
-        _rhi->endSingleTimeCommands(command_buffer);
+        m_rhi->endSingleTimeCommands(command_buffer);
 
         uint32_t* data = nullptr;
-        vkMapMemory(_rhi->_device, inefficient_staging_buffer_memory, 0, buffer_size, 0, (void**)&data);
+        vkMapMemory(m_rhi->_device, inefficient_staging_buffer_memory, 0, buffer_size, 0, (void**)&data);
 
 #if 0
         auto                 w = _rhi->_swapchain_extent.width;
@@ -810,10 +812,10 @@ namespace Pilot
 #endif
 
         uint32_t node_id = data[picked_pixel_index];
-        vkUnmapMemory(_rhi->_device, inefficient_staging_buffer_memory);
+        vkUnmapMemory(m_rhi->_device, inefficient_staging_buffer_memory);
 
-        vkDestroyBuffer(_rhi->_device, inefficient_staging_buffer, nullptr);
-        vkFreeMemory(_rhi->_device, inefficient_staging_buffer_memory, nullptr);
+        vkDestroyBuffer(m_rhi->_device, inefficient_staging_buffer, nullptr);
+        vkFreeMemory(m_rhi->_device, inefficient_staging_buffer_memory, nullptr);
 
         return node_id;
     }

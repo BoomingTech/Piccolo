@@ -17,28 +17,28 @@ namespace Pilot
     {
         RenderPass::initialize(nullptr);
 
-        _framebuffer.render_pass = static_cast<const UIPassInitInfo*>(init_info)->render_pass;
+        m_framebuffer.render_pass = static_cast<const UIPassInitInfo*>(init_info)->render_pass;
     }
 
     void UIPass::initializeUIRenderBackend(WindowUI* window_ui)
     {
         m_window_ui = window_ui;
 
-        ImGui_ImplGlfw_InitForVulkan(_rhi->_window, true);
+        ImGui_ImplGlfw_InitForVulkan(m_rhi->_window, true);
         ImGui_ImplVulkan_InitInfo init_info = {};
-        init_info.Instance                  = _rhi->_instance;
-        init_info.PhysicalDevice            = _rhi->_physical_device;
-        init_info.Device                    = _rhi->_device;
-        init_info.QueueFamily               = _rhi->_queue_indices.graphics_family.value();
-        init_info.Queue                     = _rhi->_graphics_queue;
-        init_info.DescriptorPool            = _rhi->_descriptor_pool;
+        init_info.Instance                  = m_rhi->_instance;
+        init_info.PhysicalDevice            = m_rhi->_physical_device;
+        init_info.Device                    = m_rhi->_device;
+        init_info.QueueFamily               = m_rhi->_queue_indices.graphics_family.value();
+        init_info.Queue                     = m_rhi->_graphics_queue;
+        init_info.DescriptorPool            = m_rhi->_descriptor_pool;
         init_info.Subpass                   = _main_camera_subpass_ui;
 
         // may be different from the real swapchain image count
         // see ImGui_ImplVulkanH_GetMinImageCountFromPresentMode
         init_info.MinImageCount = 3;
         init_info.ImageCount    = 3;
-        ImGui_ImplVulkan_Init(&init_info, _framebuffer.render_pass);
+        ImGui_ImplVulkan_Init(&init_info, m_framebuffer.render_pass);
 
         uploadFonts();
     }
@@ -48,11 +48,11 @@ namespace Pilot
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool                 = _rhi->_command_pool;
+        allocInfo.commandPool                 = m_rhi->_command_pool;
         allocInfo.commandBufferCount          = 1;
 
         VkCommandBuffer commandBuffer = {};
-        if (VK_SUCCESS != vkAllocateCommandBuffers(_rhi->_device, &allocInfo, &commandBuffer))
+        if (VK_SUCCESS != vkAllocateCommandBuffers(m_rhi->_device, &allocInfo, &commandBuffer))
         {
             throw std::runtime_error("failed to allocate command buffers!");
         }
@@ -78,10 +78,10 @@ namespace Pilot
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers    = &commandBuffer;
 
-        vkQueueSubmit(_rhi->_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(_rhi->_graphics_queue);
+        vkQueueSubmit(m_rhi->_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_rhi->_graphics_queue);
 
-        vkFreeCommandBuffers(_rhi->_device, _rhi->_command_pool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_rhi->_device, m_rhi->_command_pool, 1, &commandBuffer);
 
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
@@ -96,20 +96,20 @@ namespace Pilot
 
             m_window_ui->preRender();
 
-            if (_rhi->isDebugLabelEnabled())
+            if (m_rhi->isDebugLabelEnabled())
             {
                 VkDebugUtilsLabelEXT label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, "ImGUI", {1.0f, 1.0f, 1.0f, 1.0f}};
-                _rhi->_vkCmdBeginDebugUtilsLabelEXT(_rhi->_current_command_buffer, &label_info);
+                m_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_rhi->_current_command_buffer, &label_info);
             }
 
             ImGui::Render();
 
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), _rhi->_current_command_buffer);
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_rhi->_current_command_buffer);
 
-            if (_rhi->isDebugLabelEnabled())
+            if (m_rhi->isDebugLabelEnabled())
             {
-                _rhi->_vkCmdEndDebugUtilsLabelEXT(_rhi->_current_command_buffer);
+                m_rhi->_vkCmdEndDebugUtilsLabelEXT(m_rhi->_current_command_buffer);
             }
         }
     }

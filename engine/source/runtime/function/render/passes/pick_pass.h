@@ -15,12 +15,13 @@ namespace Pilot
     class PickPass : public RenderPass
     {
     public:
-        virtual void initialize(const RenderPassInitInfo* init_info) override final;
-        void         postInitialize();
-        virtual void preparePassData(std::shared_ptr<RenderResourceBase> render_resource) override final;
-        void         draw();
-        uint32_t     pick(const Vector2& picked_uv);
-        void         recreateFramebuffer();
+        void initialize(const RenderPassInitInfo* init_info) override final;
+        void postInitialize() override final;
+        void preparePassData(std::shared_ptr<RenderResourceBase> render_resource) override final;
+        void draw() override final;
+
+        uint32_t pick(const Vector2& picked_uv);
+        void     recreateFramebuffer();
 
         MeshInefficientPickPerframeStorageBufferObject _mesh_inefficient_pick_perframe_storage_buffer_object;
 

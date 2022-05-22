@@ -15,7 +15,7 @@ namespace Pilot
         RenderPass::initialize(nullptr);
 
         const CombineUIPassInitInfo* _init_info = static_cast<const CombineUIPassInitInfo*>(init_info);
-        _framebuffer.render_pass                = _init_info->render_pass;
+        m_framebuffer.render_pass               = _init_info->render_pass;
 
         setupDescriptorSetLayout();
         setupPipelines();
@@ -25,7 +25,7 @@ namespace Pilot
 
     void CombineUIPass::setupDescriptorSetLayout()
     {
-        _descriptor_infos.resize(1);
+        m_descriptor_infos.resize(1);
 
         VkDescriptorSetLayoutBinding post_process_global_layout_bindings[2] = {};
 
@@ -53,7 +53,7 @@ namespace Pilot
 
         if (VK_SUCCESS !=
             vkCreateDescriptorSetLayout(
-                _rhi->_device, &post_process_global_layout_create_info, NULL, &_descriptor_infos[0].layout))
+                m_rhi->_device, &post_process_global_layout_create_info, NULL, &m_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create combine ui global layout");
         }
@@ -61,22 +61,22 @@ namespace Pilot
 
     void CombineUIPass::setupPipelines()
     {
-        _render_pipelines.resize(1);
+        m_render_pipelines.resize(1);
 
-        VkDescriptorSetLayout      descriptorset_layouts[1] = {_descriptor_infos[0].layout};
+        VkDescriptorSetLayout      descriptorset_layouts[1] = {m_descriptor_infos[0].layout};
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.setLayoutCount = 1;
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                _rhi->_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) != VK_SUCCESS)
+                m_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) != VK_SUCCESS)
         {
             throw std::runtime_error("create combine ui pipeline layout");
         }
 
-        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(_rhi->_device, POST_PROCESS_VERT);
-        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(_rhi->_device, COMBINE_UI_FRAG);
+        VkShaderModule vert_shader_module = PVulkanUtil::createShaderModule(m_rhi->_device, POST_PROCESS_VERT);
+        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(m_rhi->_device, COMBINE_UI_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -108,9 +108,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &_rhi->_viewport;
+        viewport_state_create_info.pViewports    = &m_rhi->_viewport;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &_rhi->_scissor;
+        viewport_state_create_info.pScissors     = &m_rhi->_scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -178,20 +178,21 @@ namespace Pilot
         pipelineInfo.pMultisampleState   = &multisample_state_create_info;
         pipelineInfo.pColorBlendState    = &color_blend_state_create_info;
         pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
-        pipelineInfo.layout              = _render_pipelines[0].layout;
-        pipelineInfo.renderPass          = _framebuffer.render_pass;
+        pipelineInfo.layout              = m_render_pipelines[0].layout;
+        pipelineInfo.renderPass          = m_framebuffer.render_pass;
         pipelineInfo.subpass             = _main_camera_subpass_combine_ui;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
         if (vkCreateGraphicsPipelines(
-                _rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_render_pipelines[0].pipeline) != VK_SUCCESS)
+                m_rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
+            VK_SUCCESS)
         {
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        vkDestroyShaderModule(_rhi->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(_rhi->_device, frag_shader_module, nullptr);
+        vkDestroyShaderModule(m_rhi->_device, vert_shader_module, nullptr);
+        vkDestroyShaderModule(m_rhi->_device, frag_shader_module, nullptr);
     }
 
     void CombineUIPass::setupDescriptorSet()
@@ -199,13 +200,13 @@ namespace Pilot
         VkDescriptorSetAllocateInfo post_process_global_descriptor_set_alloc_info;
         post_process_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         post_process_global_descriptor_set_alloc_info.pNext          = NULL;
-        post_process_global_descriptor_set_alloc_info.descriptorPool = _rhi->_descriptor_pool;
+        post_process_global_descriptor_set_alloc_info.descriptorPool = m_rhi->_descriptor_pool;
         post_process_global_descriptor_set_alloc_info.descriptorSetCount = 1;
-        post_process_global_descriptor_set_alloc_info.pSetLayouts        = &_descriptor_infos[0].layout;
+        post_process_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(_rhi->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(m_rhi->_device,
                                                    &post_process_global_descriptor_set_alloc_info,
-                                                   &_descriptor_infos[0].descriptor_set))
+                                                   &m_descriptor_infos[0].descriptor_set))
         {
             throw std::runtime_error("allocate post process global descriptor set");
         }
@@ -216,13 +217,13 @@ namespace Pilot
     {
         VkDescriptorImageInfo per_frame_scene_input_attachment_info = {};
         per_frame_scene_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(_rhi->_physical_device, _rhi->_device);
+            PVulkanUtil::getOrCreateNearestSampler(m_rhi->_physical_device, m_rhi->_device);
         per_frame_scene_input_attachment_info.imageView   = scene_input_attachment;
         per_frame_scene_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkDescriptorImageInfo per_frame_ui_input_attachment_info = {};
         per_frame_ui_input_attachment_info.sampler =
-            PVulkanUtil::getOrCreateNearestSampler(_rhi->_physical_device, _rhi->_device);
+            PVulkanUtil::getOrCreateNearestSampler(m_rhi->_physical_device, m_rhi->_device);
         per_frame_ui_input_attachment_info.imageView   = ui_input_attachment;
         per_frame_ui_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -231,7 +232,7 @@ namespace Pilot
         VkWriteDescriptorSet& per_frame_scene_input_attachment_write_info = post_process_descriptor_writes_info[0];
         per_frame_scene_input_attachment_write_info.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         per_frame_scene_input_attachment_write_info.pNext                 = NULL;
-        per_frame_scene_input_attachment_write_info.dstSet                = _descriptor_infos[0].descriptor_set;
+        per_frame_scene_input_attachment_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
         per_frame_scene_input_attachment_write_info.dstBinding            = 0;
         per_frame_scene_input_attachment_write_info.dstArrayElement       = 0;
         per_frame_scene_input_attachment_write_info.descriptorType        = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
@@ -241,14 +242,14 @@ namespace Pilot
         VkWriteDescriptorSet& per_frame_ui_input_attachment_write_info = post_process_descriptor_writes_info[1];
         per_frame_ui_input_attachment_write_info.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         per_frame_ui_input_attachment_write_info.pNext                 = NULL;
-        per_frame_ui_input_attachment_write_info.dstSet                = _descriptor_infos[0].descriptor_set;
+        per_frame_ui_input_attachment_write_info.dstSet                = m_descriptor_infos[0].descriptor_set;
         per_frame_ui_input_attachment_write_info.dstBinding            = 1;
         per_frame_ui_input_attachment_write_info.dstArrayElement       = 0;
         per_frame_ui_input_attachment_write_info.descriptorType        = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         per_frame_ui_input_attachment_write_info.descriptorCount       = 1;
         per_frame_ui_input_attachment_write_info.pImageInfo            = &per_frame_ui_input_attachment_info;
 
-        vkUpdateDescriptorSets(_rhi->_device,
+        vkUpdateDescriptorSets(m_rhi->_device,
                                sizeof(post_process_descriptor_writes_info) /
                                    sizeof(post_process_descriptor_writes_info[0]),
                                post_process_descriptor_writes_info,
@@ -258,39 +259,39 @@ namespace Pilot
 
     void CombineUIPass::draw()
     {
-        if (_rhi->isDebugLabelEnabled())
+        if (m_rhi->isDebugLabelEnabled())
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Combine UI", {1.0f, 1.0f, 1.0f, 1.0f}};
-            _rhi->_vkCmdBeginDebugUtilsLabelEXT(_rhi->_current_command_buffer, &label_info);
+            m_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_rhi->_current_command_buffer, &label_info);
         }
 
         VkViewport viewport = {0.0,
                                0.0,
-                               static_cast<float>(_rhi->_swapchain_extent.width),
-                               static_cast<float>(_rhi->_swapchain_extent.height),
+                               static_cast<float>(m_rhi->_swapchain_extent.width),
+                               static_cast<float>(m_rhi->_swapchain_extent.height),
                                0.0,
                                1.0};
-        VkRect2D   scissor  = {0, 0, _rhi->_swapchain_extent.width, _rhi->_swapchain_extent.height};
+        VkRect2D   scissor  = {0, 0, m_rhi->_swapchain_extent.width, m_rhi->_swapchain_extent.height};
 
-        _rhi->_vkCmdBindPipeline(
-            _rhi->_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _render_pipelines[0].pipeline);
-        _rhi->_vkCmdSetViewport(_rhi->_current_command_buffer, 0, 1, &viewport);
-        _rhi->_vkCmdSetScissor(_rhi->_current_command_buffer, 0, 1, &scissor);
-        _rhi->_vkCmdBindDescriptorSets(_rhi->_current_command_buffer,
-                                       VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                       _render_pipelines[0].layout,
-                                       0,
-                                       1,
-                                       &_descriptor_infos[0].descriptor_set,
-                                       0,
-                                       NULL);
+        m_rhi->_vkCmdBindPipeline(
+            m_rhi->_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
+        m_rhi->_vkCmdSetViewport(m_rhi->_current_command_buffer, 0, 1, &viewport);
+        m_rhi->_vkCmdSetScissor(m_rhi->_current_command_buffer, 0, 1, &scissor);
+        m_rhi->_vkCmdBindDescriptorSets(m_rhi->_current_command_buffer,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        m_render_pipelines[0].layout,
+                                        0,
+                                        1,
+                                        &m_descriptor_infos[0].descriptor_set,
+                                        0,
+                                        NULL);
 
-        vkCmdDraw(_rhi->_current_command_buffer, 3, 1, 0, 0);
+        vkCmdDraw(m_rhi->_current_command_buffer, 3, 1, 0, 0);
 
-        if (_rhi->isDebugLabelEnabled())
+        if (m_rhi->isDebugLabelEnabled())
         {
-            _rhi->_vkCmdEndDebugUtilsLabelEXT(_rhi->_current_command_buffer);
+            m_rhi->_vkCmdEndDebugUtilsLabelEXT(m_rhi->_current_command_buffer);
         }
     }
 } // namespace Pilot

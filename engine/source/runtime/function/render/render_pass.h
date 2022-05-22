@@ -84,20 +84,21 @@ namespace Pilot
             VkPipeline       pipeline;
         };
 
-        std::shared_ptr<VulkanRHI> _rhi {nullptr};
-        PGlobalRenderResource*     _p_global_render_resource {nullptr};
+        std::shared_ptr<VulkanRHI> m_rhi {nullptr};
+        PGlobalRenderResource*     m_global_render_resource {nullptr};
 
-        std::vector<Descriptor>         _descriptor_infos;
-        std::vector<RenderPipelineBase> _render_pipelines;
-        Framebuffer                     _framebuffer;
+        std::vector<Descriptor>         m_descriptor_infos;
+        std::vector<RenderPipelineBase> m_render_pipelines;
+        Framebuffer                     m_framebuffer;
 
-        virtual void initialize(const RenderPassInitInfo* init_info) override;
+        void initialize(const RenderPassInitInfo* init_info) override;
+        void postInitialize() override;
+
         virtual void draw();
-        virtual void postInitialize();
 
-        virtual VkRenderPass                       getRenderPass();
-        virtual std::vector<VkImageView>           getFramebufferImageViews();
-        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
+        virtual VkRenderPass                       getRenderPass() const;
+        virtual std::vector<VkImageView>           getFramebufferImageViews() const;
+        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() const;
 
         static PVisiableNodes m_visiable_nodes;
 

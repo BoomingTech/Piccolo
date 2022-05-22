@@ -14,8 +14,8 @@ namespace Pilot
     class CombineUIPass : public RenderPass
     {
     public:
-        virtual void initialize(const RenderPassInitInfo* init_info) override final;
-        void         draw();
+        void initialize(const RenderPassInitInfo* init_info) override final;
+        void draw() override final;
 
         void updateAfterFramebufferRecreate(VkImageView scene_input_attachment, VkImageView ui_input_attachment);
 

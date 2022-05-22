@@ -49,15 +49,15 @@ namespace Pilot
         main_camera_pass->m_point_light_shadow_color_image_view =
             std::static_pointer_cast<RenderPass>(m_point_light_shadow_pass)->getFramebufferImageViews()[0];
         main_camera_pass->m_directional_light_shadow_color_image_view =
-            std::static_pointer_cast<RenderPass>(m_directional_light_pass)->_framebuffer.attachments[0].view;
+            std::static_pointer_cast<RenderPass>(m_directional_light_pass)->m_framebuffer.attachments[0].view;
 
         m_main_camera_pass->initialize(nullptr);
 
         std::vector<VkDescriptorSetLayout> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
-        std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)->_per_mesh_layout =
-            descriptor_layouts[MainCameraPass::LayoutType::_per_mesh];
-        std::static_pointer_cast<PointLightShadowPass>(m_directional_light_pass)->_per_mesh_layout =
-            descriptor_layouts[MainCameraPass::LayoutType::_per_mesh];
+        std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)
+            ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
+        std::static_pointer_cast<PointLightShadowPass>(m_directional_light_pass)
+            ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
 
         m_point_light_shadow_pass->postInitialize();
         m_directional_light_pass->postInitialize();
