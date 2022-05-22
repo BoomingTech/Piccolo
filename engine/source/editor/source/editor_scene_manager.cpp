@@ -239,7 +239,7 @@ namespace Pilot
         std::weak_ptr<GObject> selected_object;
         if (m_selected_gobject_id != k_invalid_gobject_id)
         {
-            std::shared_ptr<Level> level = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+            std::shared_ptr<Level> level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
             if (level != nullptr)
             {
                 selected_object = level->getGObjectByID(m_selected_gobject_id);
@@ -281,7 +281,7 @@ namespace Pilot
         if (selected_object != nullptr)
         {
             std::shared_ptr<Level> current_active_level =
-                g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+                g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 

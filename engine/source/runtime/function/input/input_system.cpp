@@ -49,7 +49,7 @@ namespace Pilot
                     m_game_command |= (unsigned int)GameCommand::squat;
                     break;
                 case GLFW_KEY_LEFT_ALT: {
-                    std::shared_ptr<WindowSystem> window_system = g_global_context.m_window_system;
+                    std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
                     window_system->setFocusMode(!window_system->getFocusMode());
                 }
                 break;
@@ -95,7 +95,7 @@ namespace Pilot
 
     void InputSystem::onCursorPos(double current_cursor_x, double current_cursor_y)
     {
-        if (g_global_context.m_window_system->getFocusMode())
+        if (g_runtime_global_context.m_window_system->getFocusMode())
         {
             m_cursor_delta_x = m_last_cursor_x - current_cursor_x;
             m_cursor_delta_y = m_last_cursor_y - current_cursor_y;
@@ -112,14 +112,14 @@ namespace Pilot
 
     void InputSystem::calculateCursorDeltaAngles()
     {
-        std::array<int, 2> window_size = g_global_context.m_window_system->getWindowSize();
+        std::array<int, 2> window_size = g_runtime_global_context.m_window_system->getWindowSize();
 
         if (window_size[0] < 1 || window_size[1] < 1)
         {
             return;
         }
 
-        std::shared_ptr<RenderCamera> render_camera = g_global_context.m_render_system->getRenderCamera();
+        std::shared_ptr<RenderCamera> render_camera = g_runtime_global_context.m_render_system->getRenderCamera();
         const Vector2&                fov           = render_camera->getFOV();
 
         Radian cursor_delta_x(Math::degreesToRadians(m_cursor_delta_x));
@@ -131,7 +131,7 @@ namespace Pilot
 
     void InputSystem::initialize()
     {
-        std::shared_ptr<WindowSystem> window_system = g_global_context.m_window_system;
+        std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
         ASSERT(window_system);
 
         window_system->registerOnKeyFunc(std::bind(&InputSystem::onKey,
@@ -149,7 +149,7 @@ namespace Pilot
         calculateCursorDeltaAngles();
         clear();
 
-        std::shared_ptr<WindowSystem> window_system = g_global_context.m_window_system;
+        std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
         if (window_system->getFocusMode())
         {
             m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::invalid);

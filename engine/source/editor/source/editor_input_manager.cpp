@@ -273,7 +273,7 @@ namespace Pilot
         if (m_cursor_on_axis != 3)
             return;
 
-        std::shared_ptr<Level> current_active_level = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 

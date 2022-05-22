@@ -17,7 +17,7 @@ namespace Pilot
     void WorldManager::initialize()
     {
         m_is_world_loaded   = false;
-        m_current_world_url = g_global_context.m_config_manager->getDefaultWorldUrl();
+        m_current_world_url = g_runtime_global_context.m_config_manager->getDefaultWorldUrl();
     }
 
     void WorldManager::clear()
@@ -56,7 +56,7 @@ namespace Pilot
     {
         LOG_INFO("loading world: {}", world_url);
         WorldRes   world_res;
-        const bool is_world_load_success = g_global_context.m_asset_manager->loadAsset(world_url, world_res);
+        const bool is_world_load_success = g_runtime_global_context.m_asset_manager->loadAsset(world_url, world_res);
         if (!is_world_load_success)
         {
             return false;

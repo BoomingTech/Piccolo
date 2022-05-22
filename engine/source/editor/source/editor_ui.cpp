@@ -43,7 +43,7 @@ namespace Pilot
 
     EditorUI::EditorUI()
     {
-        const auto& asset_folder            = g_global_context.m_config_manager->getAssetFolder();
+        const auto& asset_folder            = g_runtime_global_context.m_config_manager->getAssetFolder();
         m_editor_ui_creator["TreeNodePush"] = [this](const std::string& name, void* value_ptr) -> void {
             static ImGuiTableFlags flags      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
             bool                   node_state = false;
@@ -201,8 +201,7 @@ namespace Pilot
             qua_ptr->z = val[2];
             qua_ptr->w = val[3];
         };
-        m_editor_ui_creator["std::string"] = [this, &asset_folder](const std::string& name,
-                                                                                  void* value_ptr) -> void {
+        m_editor_ui_creator["std::string"] = [this, &asset_folder](const std::string& name, void* value_ptr) -> void {
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -320,12 +319,12 @@ namespace Pilot
             {
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
-                    g_global_context.m_world_manager->reloadCurrentLevel();
+                    g_runtime_global_context.m_world_manager->reloadCurrentLevel();
                     g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
                 {
-                    g_global_context.m_world_manager->saveCurrentLevel();
+                    g_runtime_global_context.m_world_manager->saveCurrentLevel();
                 }
                 if (ImGui::MenuItem("Exit"))
                 {
@@ -351,7 +350,8 @@ namespace Pilot
             return;
         }
 
-        std::shared_ptr<Level> current_active_level = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level =
+            g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
@@ -640,7 +640,7 @@ namespace Pilot
                 {
                     g_is_editor_mode = true;
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
-                    g_global_context.m_input_system->resetGameCommand();
+                    g_runtime_global_context.m_input_system->resetGameCommand();
                     g_editor_global_context.m_render_system->getRenderCamera()->setMainViewMatrix(
                         g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
                 }
@@ -677,12 +677,12 @@ namespace Pilot
             // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
             // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
             float dpi_scale = main_viewport->DpiScale;
-            PilotEngine::getInstance().getRenderSystem()->updateEngineContentViewport(new_window_pos.x * dpi_scale,
-                                                                                      new_window_pos.y * dpi_scale,
-                                                                                      new_window_size.x * dpi_scale,
-                                                                                      new_window_size.y * dpi_scale);
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(new_window_pos.x * dpi_scale,
+                                                                                  new_window_pos.y * dpi_scale,
+                                                                                  new_window_size.x * dpi_scale,
+                                                                                  new_window_size.y * dpi_scale);
 #else
-            g_global_context.m_render_system->updateEngineContentViewport(
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(
                 new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
 #endif
             g_editor_global_context.m_input_manager->setEngineWindowPos(new_window_pos);
@@ -755,7 +755,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        std::shared_ptr<Level> level = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -765,7 +765,7 @@ namespace Pilot
         new_object_instance_res.m_name =
             "New_" + Path::getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
         new_object_instance_res.m_definition =
-            g_global_context.m_asset_manager->getFullPath(node->m_file_path).generic_string();
+            g_runtime_global_context.m_asset_manager->getFullPath(node->m_file_path).generic_string();
 
         size_t new_gobject_id = level->createObject(new_object_instance_res);
         if (new_gobject_id != k_invalid_gobject_id)
@@ -790,7 +790,7 @@ namespace Pilot
 
     void EditorUI::initialize(WindowUIInitInfo init_info)
     {
-        std::shared_ptr<ConfigManager> config_manager = g_global_context.m_config_manager;
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
         ASSERT(config_manager);
 
         // create imgui context
@@ -809,10 +809,8 @@ namespace Pilot
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.ConfigDockingAlwaysTabBar         = true;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        io.Fonts->AddFontFromFileTTF(config_manager->getEditorFontPath().generic_string().data(),
-                                     content_scale * 16,
-                                     nullptr,
-                                     nullptr);
+        io.Fonts->AddFontFromFileTTF(
+            config_manager->getEditorFontPath().generic_string().data(), content_scale * 16, nullptr, nullptr);
         io.Fonts->Build();
 
         ImGuiStyle& style     = ImGui::GetStyle();

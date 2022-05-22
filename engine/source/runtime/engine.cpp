@@ -20,7 +20,7 @@ namespace Pilot
 
         Reflection::TypeMetaRegister::Register();
 
-        g_global_context.startSystems(param);
+        g_runtime_global_context.startSystems(param);
 
         LOG_INFO("engine start");
     }
@@ -29,7 +29,7 @@ namespace Pilot
     {
         LOG_INFO("engine shutdown");
 
-        g_global_context.shutdownSystems();
+        g_runtime_global_context.shutdownSystems();
 
         Reflection::TypeMetaRegister::Unregister();
     }
@@ -40,7 +40,7 @@ namespace Pilot
     void PilotEngine::run()
     {
         float delta_time;
-        while (!g_global_context.m_window_system->shouldClose())
+        while (!g_runtime_global_context.m_window_system->shouldClose())
         {
             delta_time = getDeltaTime();
 
@@ -49,13 +49,13 @@ namespace Pilot
 
             // single thread
             // exchange data between logic and render contexts
-            g_global_context.m_render_system->swapLogicRenderData();
+            g_runtime_global_context.m_render_system->swapLogicRenderData();
 
             rendererTick();
 
-            g_global_context.m_window_system->pollEvents();
+            g_runtime_global_context.m_window_system->pollEvents();
 
-            g_global_context.m_window_system->setTile(
+            g_runtime_global_context.m_window_system->setTile(
                 std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
         }
     }
@@ -82,27 +82,27 @@ namespace Pilot
 
         // single thread
         // exchange data between logic and render contexts
-        g_global_context.m_render_system->swapLogicRenderData();
+        g_runtime_global_context.m_render_system->swapLogicRenderData();
 
         rendererTick();
 
-        g_global_context.m_window_system->pollEvents();
+        g_runtime_global_context.m_window_system->pollEvents();
 
-        g_global_context.m_window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+        g_runtime_global_context.m_window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
 
-        const bool should_window_close = g_global_context.m_window_system->shouldClose();
+        const bool should_window_close = g_runtime_global_context.m_window_system->shouldClose();
         return !should_window_close;
     }
 
     void PilotEngine::logicalTick(float delta_time)
     {
-        g_global_context.m_world_manager->tick(delta_time);
-        g_global_context.m_input_system->tick();
+        g_runtime_global_context.m_world_manager->tick(delta_time);
+        g_runtime_global_context.m_input_system->tick();
     }
 
     bool PilotEngine::rendererTick()
     {
-        g_global_context.m_render_system->tick();
+        g_runtime_global_context.m_render_system->tick();
         return true;
     }
 

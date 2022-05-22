@@ -9,7 +9,7 @@ namespace Pilot
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)
     {
         Vector3 desired_position = current_position + displacement;
-        if (g_global_context.m_physics_system->overlapByCapsule(desired_position, m_capsule))
+        if (g_runtime_global_context.m_physics_system->overlapByCapsule(desired_position, m_capsule))
         {
             desired_position = current_position;
         }

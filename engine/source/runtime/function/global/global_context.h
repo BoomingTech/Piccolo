@@ -18,7 +18,7 @@ namespace Pilot
     struct EngineInitParams;
 
     /// Manage the lifetime and creation/destruction order of all global system
-    class GlobalContext
+    class RuntimeGlobalContext
     {
     public:
         // create all global systems and initialize these systems
@@ -39,5 +39,5 @@ namespace Pilot
         std::shared_ptr<RenderSystem>  m_render_system;
     };
 
-    extern GlobalContext g_global_context;
+    extern RuntimeGlobalContext g_runtime_global_context;
 } // namespace Pilot

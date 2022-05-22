@@ -53,7 +53,7 @@ namespace Pilot
         if (!m_parent_object.lock())
             return;
 
-        std::shared_ptr<Level>     current_level     = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -64,9 +64,9 @@ namespace Pilot
         TransformComponent* transform_component =
             m_parent_object.lock()->tryGetComponent<TransformComponent>("TransformComponent");
 
-        Radian turn_angle_yaw = g_global_context.m_input_system->m_cursor_delta_yaw;
+        Radian turn_angle_yaw = g_runtime_global_context.m_input_system->m_cursor_delta_yaw;
 
-        unsigned int command = g_global_context.m_input_system->getGameCommand();
+        unsigned int command = g_runtime_global_context.m_input_system->getGameCommand();
 
         if (command >= (unsigned int)GameCommand::invalid)
             return;

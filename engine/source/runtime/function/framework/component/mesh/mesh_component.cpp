@@ -18,7 +18,7 @@ namespace Pilot
     {
         m_parent_object = parent_object;
 
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         m_raw_meshes.resize(m_mesh_res.m_sub_meshes.size());

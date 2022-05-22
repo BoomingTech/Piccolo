@@ -19,9 +19,9 @@ namespace Pilot
 
     void RenderSystem::initialize(RenderSystemInitInfo init_info)
     {
-        std::shared_ptr<ConfigManager> config_manager = g_global_context.m_config_manager;
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
         ASSERT(config_manager);
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         // render context initialize
@@ -186,7 +186,7 @@ namespace Pilot
     {
         RenderSwapData& swap_data = m_swap_context.getRenderSwapData();
 
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         // TODO: update global resources if needed

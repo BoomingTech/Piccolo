@@ -82,7 +82,7 @@ namespace Pilot
 
         ObjectDefinitionRes definition_res;
 
-        const bool is_loaded_success = g_global_context.m_asset_manager->loadAsset(m_definition_url, definition_res);
+        const bool is_loaded_success = g_runtime_global_context.m_asset_manager->loadAsset(m_definition_url, definition_res);
         if (!is_loaded_success)
             return false;
 

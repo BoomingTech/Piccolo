@@ -50,7 +50,7 @@ namespace Pilot
         if (!m_parent_object.lock())
             return;
 
-        std::shared_ptr<Level>     current_level     = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -75,15 +75,15 @@ namespace Pilot
 
     void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level>     current_level     = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
 
         Quaternion q_yaw, q_pitch;
 
-        q_yaw.fromAngleAxis(g_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
-        q_pitch.fromAngleAxis(g_global_context.m_input_system->m_cursor_delta_pitch, m_left);
+        q_yaw.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
+        q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, m_left);
 
         const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
         Vector3     eye_pos = current_character->getPosition() + offset * Vector3::UNIT_Z;
@@ -108,7 +108,7 @@ namespace Pilot
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level>     current_level     = g_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -117,8 +117,8 @@ namespace Pilot
 
         Quaternion q_yaw, q_pitch;
 
-        q_yaw.fromAngleAxis(g_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
-        q_pitch.fromAngleAxis(g_global_context.m_input_system->m_cursor_delta_pitch, Vector3::UNIT_X);
+        q_yaw.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
+        q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, Vector3::UNIT_X);
 
         param->m_cursor_pitch = q_pitch * param->m_cursor_pitch;
 

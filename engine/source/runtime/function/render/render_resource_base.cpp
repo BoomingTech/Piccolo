@@ -22,7 +22,7 @@ namespace Pilot
 {
     std::shared_ptr<TextureData> RenderResourceBase::loadTextureHDR(std::string file, int desired_channels)
     {
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         std::shared_ptr<TextureData> texture = std::make_shared<TextureData>();
@@ -59,7 +59,7 @@ namespace Pilot
 
     std::shared_ptr<TextureData> RenderResourceBase::loadTexture(std::string file, bool is_srgb)
     {
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         std::shared_ptr<TextureData> texture = std::make_shared<TextureData>();
@@ -84,7 +84,7 @@ namespace Pilot
 
     RenderMeshData RenderResourceBase::loadMeshData(const MeshSourceDesc& source, AxisAlignedBox& bounding_box)
     {
-        std::shared_ptr<AssetManager> asset_manager = g_global_context.m_asset_manager;
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
         ASSERT(asset_manager);
 
         RenderMeshData ret;

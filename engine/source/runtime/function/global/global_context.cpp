@@ -18,9 +18,9 @@
 
 namespace Pilot
 {
-    GlobalContext g_global_context;
+    RuntimeGlobalContext g_runtime_global_context;
 
-    void GlobalContext::startSystems(const EngineInitParams& init_params)
+    void RuntimeGlobalContext::startSystems(const EngineInitParams& init_params)
     {
         m_config_manager = std::make_shared<ConfigManager>();
         m_config_manager->initialize(init_params);
@@ -52,7 +52,7 @@ namespace Pilot
         CameraComponent::m_render_camera = &(*m_render_system->getRenderCamera());
     }
 
-    void GlobalContext::shutdownSystems()
+    void RuntimeGlobalContext::shutdownSystems()
     {
         m_render_system.reset();
 

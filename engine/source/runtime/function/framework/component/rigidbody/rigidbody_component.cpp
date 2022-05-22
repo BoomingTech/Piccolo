@@ -20,7 +20,7 @@ namespace Pilot
             return;
         }
 
-        m_physics_actor = g_global_context.m_physics_system->createPhysicsActor(
+        m_physics_actor = g_runtime_global_context.m_physics_system->createPhysicsActor(
             parent_object, parent_transform->getTransformConst(), m_rigidbody_res);
     }
 
@@ -28,7 +28,7 @@ namespace Pilot
     {
         if (m_physics_actor)
         {
-            g_global_context.m_physics_system->removePhyicsActor(m_physics_actor);
+            g_runtime_global_context.m_physics_system->removePhyicsActor(m_physics_actor);
             m_physics_actor = nullptr;
         }
     }

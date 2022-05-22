@@ -32,14 +32,14 @@ namespace Pilot
         g_is_editor_mode = true;
         m_engine_runtime = engine_runtime;
 
-        EditorGlobalContextInitInfo init_info = {g_global_context.m_window_system.get(),
-                                                 g_global_context.m_render_system.get()};
+        EditorGlobalContextInitInfo init_info = {g_runtime_global_context.m_window_system.get(),
+                                                 g_runtime_global_context.m_render_system.get()};
         g_editor_global_context.initialize(init_info);
-        g_editor_global_context.m_scene_manager->setEditorCamera(g_global_context.m_render_system->getRenderCamera());
+        g_editor_global_context.m_scene_manager->setEditorCamera(g_runtime_global_context.m_render_system->getRenderCamera());
         g_editor_global_context.m_scene_manager->uploadAxisResource();
 
         m_editor_ui                   = std::make_shared<EditorUI>();
-        WindowUIInitInfo ui_init_info = {g_global_context.m_window_system, g_global_context.m_render_system};
+        WindowUIInitInfo ui_init_info = {g_runtime_global_context.m_window_system, g_runtime_global_context.m_render_system};
         m_editor_ui->initialize(ui_init_info);
     }
 
