@@ -84,7 +84,7 @@ namespace Pilot
             VkPipeline       pipeline;
         };
 
-        std::shared_ptr<VulkanRHI> m_rhi {nullptr};
+        std::shared_ptr<VulkanRHI> m_vulkan_rhi {nullptr};
         PGlobalRenderResource*     m_global_render_resource {nullptr};
 
         std::vector<Descriptor>         m_descriptor_infos;
