@@ -24,8 +24,6 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
-#include "runtime/function/ui/ui_system.h"
-
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <stb_image.h>
@@ -45,7 +43,6 @@ namespace Pilot
 
     EditorUI::EditorUI()
     {
-        Path&       path_service            = Path::getInstance();
         const auto& asset_folder            = g_global_context.m_config_manager->getAssetFolder();
         m_editor_ui_creator["TreeNodePush"] = [this](const std::string& name, void* value_ptr) -> void {
             static ImGuiTableFlags flags      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
@@ -204,7 +201,7 @@ namespace Pilot
             qua_ptr->z = val[2];
             qua_ptr->w = val[3];
         };
-        m_editor_ui_creator["std::string"] = [this, &path_service, &asset_folder](const std::string& name,
+        m_editor_ui_creator["std::string"] = [this, &asset_folder](const std::string& name,
                                                                                   void* value_ptr) -> void {
             if (g_node_depth == -1)
             {
@@ -225,7 +222,7 @@ namespace Pilot
                         std::filesystem::path value_path(value_str);
                         if (value_path.is_absolute())
                         {
-                            value_path = path_service.getRelativePath(asset_folder, value_path);
+                            value_path = Path::getRelativePath(asset_folder, value_path);
                         }
                         value_str = value_path.generic_string();
                         if (value_str.size() >= 2 && value_str[0] == '.' && value_str[1] == '.')
@@ -766,7 +763,7 @@ namespace Pilot
 
         ObjectInstanceRes new_object_instance_res;
         new_object_instance_res.m_name =
-            "New_" + Path::getInstance().getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
+            "New_" + Path::getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
         new_object_instance_res.m_definition =
             g_global_context.m_asset_manager->getFullPath(node->m_file_path).generic_string();
 

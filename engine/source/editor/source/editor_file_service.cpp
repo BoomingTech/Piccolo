@@ -45,15 +45,13 @@ namespace Pilot
 
     void EditorFileService::buildEngineFileTree()
     {
-        Path& path_singleton = Path::getInstance();
-
         std::string                              asset_folder = g_global_context.m_config_manager->getAssetFolder().generic_string();
         const std::vector<std::filesystem::path> file_paths = g_global_context.m_file_servcie->getFiles(asset_folder);
         std::vector<std::vector<std::string>>    all_file_segments;
         for (const auto& path : file_paths)
         {
-            const std::filesystem::path& relative_path = path_singleton.getRelativePath(asset_folder, path);
-            all_file_segments.emplace_back(path_singleton.getPathSegments(relative_path));
+            const std::filesystem::path& relative_path = Path::getRelativePath(asset_folder, path);
+            all_file_segments.emplace_back(Path::getPathSegments(relative_path));
         }
 
         std::vector<std::shared_ptr<EditorFileNode>> node_array;
@@ -80,7 +78,7 @@ namespace Pilot
                 }
                 else
                 {
-                    const auto& extensions = path_singleton.getFileExtensions(file_paths[file_index]);
+                    const auto& extensions = Path::getFileExtensions(file_paths[file_index]);
                     file_node->m_file_type = std::get<0>(extensions);
                     if (file_node->m_file_type.size() == 0)
                         continue;

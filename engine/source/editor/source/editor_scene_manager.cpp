@@ -6,14 +6,14 @@
 #include "editor/include/editor_scene_manager.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
-#include <runtime/function/framework/component/transform/transform_component.cpp>
 
+#include "runtime/core/base/macro.h"
+
+#include "runtime/engine.h"
+#include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/ui/ui_system.h"
-#include <runtime/core/base/macro.h>
-
 #include "runtime/function/render/glm_wrapper.h"
 #include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_system.h"

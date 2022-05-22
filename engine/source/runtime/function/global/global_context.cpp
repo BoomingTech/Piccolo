@@ -31,8 +31,6 @@ namespace Pilot
 
         m_asset_manager = std::make_shared<AssetManager>();
 
-        m_input_system = std::make_shared<InputSystem>();
-
         m_world_manager = std::make_shared<WorldManager>();
         m_world_manager->initialize();
 
@@ -41,6 +39,9 @@ namespace Pilot
         m_window_system = std::make_shared<WindowSystem>();
         WindowCreateInfo window_create_info;
         m_window_system->initialize(window_create_info);
+
+        m_input_system = std::make_shared<InputSystem>();
+        m_input_system->initialize();
 
         m_render_system = std::make_shared<RenderSystem>();
         RenderSystemInitInfo render_init_info;

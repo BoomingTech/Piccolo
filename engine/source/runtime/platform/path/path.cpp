@@ -20,14 +20,14 @@ namespace Pilot
         return segments;
     }
 
-    const tuple<string, string, string> Path::getFileExtensions(const filesystem::path& file_path) const
+    const tuple<string, string, string> Path::getFileExtensions(const filesystem::path& file_path)
     {
         return make_tuple(file_path.extension().generic_string(),
                           file_path.stem().extension().generic_string(),
                           file_path.stem().stem().extension().generic_string());
     }
 
-    const string Path::getFilePureName(const string file_full_name) const
+    const string Path::getFilePureName(const string file_full_name)
     {
         string file_pure_name = file_full_name;
         auto   pos            = file_full_name.find_first_of('.');
