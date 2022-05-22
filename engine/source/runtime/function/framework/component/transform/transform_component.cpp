@@ -10,6 +10,7 @@ namespace Pilot
         m_parent_object       = parent_gobject;
         m_transform_buffer[0] = m_transform;
         m_transform_buffer[1] = m_transform;
+        m_is_dirty            = true;
     }
 
     void TransformComponent::setPosition(const Vector3& new_translation)
@@ -39,8 +40,8 @@ namespace Pilot
 
         if (m_is_dirty)
         {
+            // update transform component, dirty flag will be reset in mesh component
             tryUpdateRigidBodyComponent();
-            m_is_dirty = false;
         }
 
         if (g_is_editor_mode)

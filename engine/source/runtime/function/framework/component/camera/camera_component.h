@@ -8,6 +8,8 @@
 
 namespace Pilot
 {
+    class RenderCamera;
+
     enum class CameraMode : unsigned char
     {
         third_person,
@@ -27,6 +29,8 @@ namespace Pilot
         void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
         void tick(float delta_time) override;
+
+        static RenderCamera* m_render_camera;
 
     private:
         void tickFirstPersonCamera(float delta_time);

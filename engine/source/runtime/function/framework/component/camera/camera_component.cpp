@@ -9,11 +9,13 @@
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/render/include/render/glm_wrapper.h"
-#include "runtime/function/scene/scene_manager.h"
+
+#include "runtime/function/render/render_camera.h"
 
 namespace Pilot
 {
+    RenderCamera* CameraComponent::m_render_camera = nullptr;
+
     void CameraComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
@@ -36,7 +38,10 @@ namespace Pilot
             LOG_ERROR("invalid camera type");
         }
 
-        SceneManager::getInstance().setFOV(m_camera_res.m_parameter->m_fov);
+        if (m_render_camera)
+        {
+            m_render_camera->setFOVx(m_camera_res.m_parameter->m_fov);
+        }
     }
 
     void CameraComponent::tick(float delta_time)
@@ -87,7 +92,11 @@ namespace Pilot
         m_up     = m_foward.crossProduct(m_left);
 
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, m_foward, m_up);
-        SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+
+        if (m_render_camera)
+        {
+            m_render_camera->setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+        }
 
         Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
@@ -125,6 +134,10 @@ namespace Pilot
         current_character->setRotation(q_yaw * current_character->getRotation());
 
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
-        SceneManager::getInstance().setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+
+        if (m_render_camera)
+        {
+            m_render_camera->setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+        }
     }
 } // namespace Pilot

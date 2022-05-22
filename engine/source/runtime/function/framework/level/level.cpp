@@ -8,7 +8,6 @@
 #include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/framework/object/object.h"
-#include "runtime/function/scene/scene_manager.h"
 
 #include <limits>
 
@@ -147,7 +146,6 @@ namespace Pilot
         {
             m_current_active_character->tick();
         }
-        SceneManager::getInstance().syncSceneObjects();
     }
 
     std::weak_ptr<GObject> Level::getGObjectByID(GObjectID go_id) const

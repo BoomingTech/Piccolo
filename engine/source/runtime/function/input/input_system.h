@@ -28,6 +28,7 @@ namespace Pilot
         void onKey(int key, int scancode, int action, int mods);
         void onCursorPos(double current_cursor_x, double current_cursor_y);
 
+        void initialize();
         void tick();
         void clear();
 
