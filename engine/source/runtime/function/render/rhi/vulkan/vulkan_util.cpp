@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 namespace Pilot
@@ -250,7 +252,7 @@ namespace Pilot
 
         // generate mipmapped image
         uint32_t mip_levels =
-            (miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
+            (miplevels != 0) ? miplevels : floor(std::log2(std::max(texture_image_width, texture_image_height))) + 1;
 
         // use the vmaAllocator to allocate asset texture image
         VkImageCreateInfo image_create_info {};
@@ -790,7 +792,7 @@ namespace Pilot
         assert(width > 0 && height > 0);
 
         VkSampler sampler;
-        uint32_t  mip_levels   = floor(log2(std::max(width, height))) + 1;
+        uint32_t  mip_levels   = floor(std::log2(std::max(width, height))) + 1;
         auto      find_sampler = m_mipmap_sampler_map.find(mip_levels);
         if (find_sampler != m_mipmap_sampler_map.end())
         {
