@@ -1,32 +1,30 @@
-#include <mutex>
 #include <cassert>
+#include <mutex>
 
 #include "editor/include/editor.h"
-#include "editor/include/editor_scene_manager.h"
 #include "editor/include/editor_global_context.h"
+#include "editor/include/editor_scene_manager.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
-#include <runtime/function/framework/component/transform/transform_component.cpp>
 
-#include <runtime/core/base/macro.h>
+#include "runtime/core/base/macro.h"
+
+#include "runtime/engine.h"
+#include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/ui/ui_system.h"
-
 #include "runtime/function/render/glm_wrapper.h"
 #include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
-    void EditorSceneManager::initialize()
-    {
-    }
+    void EditorSceneManager::initialize() {}
 
     void EditorSceneManager::tick(float delta_time)
     {
-        //todo: editor scene tick
+        // todo: editor scene tick
     }
 
     float intersectPlaneRay(glm::vec3 normal, float d, glm::vec3 origin, glm::vec3 dir)
@@ -40,16 +38,14 @@ namespace Pilot
         return -(glm::dot(normal, origin) + d) / deno;
     }
 
-    size_t EditorSceneManager::updateCursorOnAxis(
-        Vector2 cursor_uv,
-        Vector2 game_engine_window_size)
+    size_t EditorSceneManager::updateCursorOnAxis(Vector2 cursor_uv, Vector2 game_engine_window_size)
     {
 
-        float   camera_fov = m_camera->getFovYDeprecated();
+        float   camera_fov     = m_camera->getFovYDeprecated();
         Vector3 camera_forward = m_camera->forward();
 
-        Vector3 camera_up = m_camera->up();
-        Vector3 camera_right = m_camera->right();
+        Vector3 camera_up       = m_camera->up();
+        Vector3 camera_right    = m_camera->right();
         Vector3 camera_position = m_camera->position();
 
         if (m_selected_gobject_id == k_invalid_gobject_id)
@@ -57,7 +53,7 @@ namespace Pilot
             return m_selected_axis;
         }
         RenderEntity* selected_aixs = getAxisMeshByType(m_axis_mode);
-        m_selected_axis = 3;
+        m_selected_axis             = 3;
         if (m_is_show_axis == false)
         {
             return m_selected_axis;
@@ -71,7 +67,7 @@ namespace Pilot
             glm::vec3 model_skew;
             glm::vec4 model_perspective;
             glm::decompose(model_matrix, model_scale, model_rotation, model_translation, model_skew, model_perspective);
-            float     window_forward = game_engine_window_size.y / 2.0f / glm::tan(glm::radians(camera_fov) / 2.0f);
+            float     window_forward   = game_engine_window_size.y / 2.0f / glm::tan(glm::radians(camera_fov) / 2.0f);
             glm::vec2 screen_center_uv = glm::vec2(cursor_uv.x, 1 - cursor_uv.y) - glm::vec2(0.5, 0.5);
             glm::vec3 world_ray_dir =
                 GLMUtil::fromVec3(camera_forward) * window_forward +
@@ -81,13 +77,13 @@ namespace Pilot
             glm::vec4 local_ray_origin =
                 glm::inverse(model_matrix) * glm::vec4(GLMUtil::fromVec3(camera_position), 1.0f);
             glm::vec3 local_ray_origin_xyz = glm::vec3(local_ray_origin.x, local_ray_origin.y, local_ray_origin.z);
-            glm::vec3 local_ray_dir = glm::normalize(glm::inverse(model_rotation)) * world_ray_dir;
+            glm::vec3 local_ray_dir        = glm::normalize(glm::inverse(model_rotation)) * world_ray_dir;
 
-            glm::vec3 plane_normals[3] = { glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1) };
+            glm::vec3 plane_normals[3] = {glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)};
 
-            float plane_view_depth[3] = { intersectPlaneRay(plane_normals[0], 0, local_ray_origin_xyz, local_ray_dir),
+            float plane_view_depth[3] = {intersectPlaneRay(plane_normals[0], 0, local_ray_origin_xyz, local_ray_dir),
                                          intersectPlaneRay(plane_normals[1], 0, local_ray_origin_xyz, local_ray_dir),
-                                         intersectPlaneRay(plane_normals[2], 0, local_ray_origin_xyz, local_ray_dir) };
+                                         intersectPlaneRay(plane_normals[2], 0, local_ray_origin_xyz, local_ray_dir)};
 
             glm::vec3 intersect_pt[3] = {
                 local_ray_origin_xyz + plane_view_depth[0] * local_ray_dir, // yoz
@@ -97,23 +93,23 @@ namespace Pilot
 
             if ((int)m_axis_mode == 0 || (int)m_axis_mode == 2) // transition axis & scale axis
             {
-                const float DIST_THRESHOLD = 0.6f;
+                const float DIST_THRESHOLD   = 0.6f;
                 const float EDGE_OF_AXIS_MIN = 0.1f;
                 const float EDGE_OF_AXIS_MAX = 2.0f;
-                const float AXIS_LENGTH = 2.0f;
+                const float AXIS_LENGTH      = 2.0f;
 
                 float max_dist = 0.0f;
                 // whether the ray (camera to mouse point) on any plane
                 for (int i = 0; i < 3; ++i)
                 {
                     float local_ray_dir_proj = glm::abs(glm::dot(local_ray_dir, plane_normals[i]));
-                    float cos_alpha = local_ray_dir_proj / 1.0f; // local_ray_dir_proj / local_ray_dir.length
+                    float cos_alpha          = local_ray_dir_proj / 1.0f; // local_ray_dir_proj / local_ray_dir.length
                     if (cos_alpha <= 0.15)                                // cos(80deg)~cps(100deg)
                     {
-                        int   index00 = (i + 1) % 3;
-                        int   index01 = 3 - i - index00;
-                        int   index10 = (i + 2) % 3;
-                        int   index11 = 3 - i - index10;
+                        int   index00   = (i + 1) % 3;
+                        int   index01   = 3 - i - index00;
+                        int   index10   = (i + 2) % 3;
+                        int   index11   = 3 - i - index10;
                         float axis_dist = (glm::abs(intersect_pt[index00][i]) + glm::abs(intersect_pt[index10][i])) / 2;
                         if (axis_dist > DIST_THRESHOLD) // too far from axis
                         {
@@ -125,7 +121,7 @@ namespace Pilot
                             (intersect_pt[index00][index01] > max_dist) &&
                             (glm::abs(intersect_pt[index00][i]) < EDGE_OF_AXIS_MAX))
                         {
-                            max_dist = intersect_pt[index00][index01];
+                            max_dist        = intersect_pt[index00][index01];
                             m_selected_axis = index01;
                         }
                         if ((intersect_pt[index10][index11] > EDGE_OF_AXIS_MIN) &&
@@ -133,7 +129,7 @@ namespace Pilot
                             (intersect_pt[index10][index11] > max_dist) &&
                             (glm::abs(intersect_pt[index10][i]) < EDGE_OF_AXIS_MAX))
                         {
-                            max_dist = intersect_pt[index10][index11];
+                            max_dist        = intersect_pt[index10][index11];
                             m_selected_axis = index11;
                         }
                     }
@@ -152,7 +148,7 @@ namespace Pilot
                             (intersect_pt[index0][i] < EDGE_OF_AXIS_MAX) && (dist < DIST_THRESHOLD) &&
                             (dist < min_dist))
                         {
-                            min_dist = dist;
+                            min_dist        = dist;
                             m_selected_axis = i;
                         }
                     }
@@ -169,7 +165,7 @@ namespace Pilot
                         std::fabs(1 - std::hypot(intersect_pt[i].x, intersect_pt[i].y, intersect_pt[i].z));
                     if ((dist < DIST_THRESHOLD) && (dist < min_dist))
                     {
-                        min_dist = dist;
+                        min_dist        = dist;
                         m_selected_axis = i;
                     }
                 }
@@ -179,7 +175,7 @@ namespace Pilot
                 return m_selected_axis;
             }
         }
-        
+
         g_editor_global_context.m_render_system->setSelectedAxis(m_selected_axis);
 
         return m_selected_axis;
@@ -190,17 +186,17 @@ namespace Pilot
         RenderEntity* axis_mesh = nullptr;
         switch (axis_mode)
         {
-        case EditorAxisMode::TranslateMode:
-            axis_mesh = &m_translation_axis;
-            break;
-        case EditorAxisMode::RotateMode:
-            axis_mesh = &m_rotation_axis;
-            break;
-        case EditorAxisMode::ScaleMode:
-            axis_mesh = &m_scale_aixs;
-            break;
-        default:
-            break;
+            case EditorAxisMode::TranslateMode:
+                axis_mesh = &m_translation_axis;
+                break;
+            case EditorAxisMode::RotateMode:
+                axis_mesh = &m_rotation_axis;
+                break;
+            case EditorAxisMode::ScaleMode:
+                axis_mesh = &m_scale_aixs;
+                break;
+            default:
+                break;
         }
         return axis_mesh;
     }
@@ -217,10 +213,10 @@ namespace Pilot
             Quaternion rotation;
             Vector3    translation;
             transform_component->getMatrix().decomposition(translation, scale, rotation);
-            Matrix4x4 translation_matrix = Matrix4x4::getTrans(translation);
-            Matrix4x4 scale_matrix = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, 1.0f);
-            Matrix4x4 axis_model_matrix = translation_matrix * scale_matrix;
-            RenderEntity* selected_aixs = getAxisMeshByType(m_axis_mode);
+            Matrix4x4     translation_matrix = Matrix4x4::getTrans(translation);
+            Matrix4x4     scale_matrix       = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, 1.0f);
+            Matrix4x4     axis_model_matrix  = translation_matrix * scale_matrix;
+            RenderEntity* selected_aixs      = getAxisMeshByType(m_axis_mode);
             if (m_axis_mode == EditorAxisMode::TranslateMode || m_axis_mode == EditorAxisMode::RotateMode)
             {
                 selected_aixs->m_model_matrix = axis_model_matrix;
@@ -229,7 +225,7 @@ namespace Pilot
             {
                 selected_aixs->m_model_matrix = axis_model_matrix * Matrix4x4(rotation);
             }
-            
+
             g_editor_global_context.m_render_system->setVisibleAxis(*selected_aixs);
         }
         else
@@ -243,7 +239,7 @@ namespace Pilot
         std::weak_ptr<GObject> selected_object;
         if (m_selected_gobject_id != k_invalid_gobject_id)
         {
-            std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+            std::shared_ptr<Level> level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
             if (level != nullptr)
             {
                 selected_object = level->getGObjectByID(m_selected_gobject_id);
@@ -263,7 +259,7 @@ namespace Pilot
         if (selected_gobject)
         {
             const TransformComponent* transform_component = selected_gobject->tryGetComponentConst(TransformComponent);
-            m_selected_object_matrix = transform_component->getMatrix();
+            m_selected_object_matrix                      = transform_component->getMatrix();
         }
 
         drawSelectedEntityAxis();
@@ -284,7 +280,8 @@ namespace Pilot
         std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object != nullptr)
         {
-            std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+            std::shared_ptr<Level> current_active_level =
+                g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 
@@ -297,13 +294,13 @@ namespace Pilot
     }
 
     void EditorSceneManager::moveEntity(float     new_mouse_pos_x,
-        float     new_mouse_pos_y,
-        float     last_mouse_pos_x,
-        float     last_mouse_pos_y,
-        Vector2   engine_window_pos,
-        Vector2   engine_window_size,
-        size_t    cursor_on_axis,
-        Matrix4x4 model_matrix)
+                                        float     new_mouse_pos_y,
+                                        float     last_mouse_pos_x,
+                                        float     last_mouse_pos_y,
+                                        Vector2   engine_window_pos,
+                                        Vector2   engine_window_size,
+                                        size_t    cursor_on_axis,
+                                        Matrix4x4 model_matrix)
     {
         std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object == nullptr)
@@ -311,7 +308,7 @@ namespace Pilot
 
         float angularVelocity =
             18.0f / Math::max(engine_window_size.x, engine_window_size.y); // 18 degrees while moving full screen
-        Vector2 delta_mouse_move_uv = { (new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y) };
+        Vector2 delta_mouse_move_uv = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
 
         Vector3    model_scale;
         Quaternion model_rotation;
@@ -337,8 +334,8 @@ namespace Pilot
             axis_x_local_position_4 = Matrix4x4(model_rotation) * axis_x_local_position_4;
         }
         Vector4 axis_x_world_position_4 = axis_model_matrix * axis_x_local_position_4;
-        axis_x_world_position_4.w = 1.0f;
-        Vector4 axis_x_clip_position = proj_matrix * view_matrix * axis_x_world_position_4;
+        axis_x_world_position_4.w       = 1.0f;
+        Vector4 axis_x_clip_position    = proj_matrix * view_matrix * axis_x_world_position_4;
         axis_x_clip_position /= axis_x_clip_position.w;
         Vector2 axis_x_clip_uv((axis_x_clip_position.x + 1) / 2.0f, (axis_x_clip_position.y + 1) / 2.0f);
         Vector2 axis_x_direction_uv = axis_x_clip_uv - model_origin_clip_uv;
@@ -350,8 +347,8 @@ namespace Pilot
             axis_y_local_position_4 = Matrix4x4(model_rotation) * axis_y_local_position_4;
         }
         Vector4 axis_y_world_position_4 = axis_model_matrix * axis_y_local_position_4;
-        axis_y_world_position_4.w = 1.0f;
-        Vector4 axis_y_clip_position = proj_matrix * view_matrix * axis_y_world_position_4;
+        axis_y_world_position_4.w       = 1.0f;
+        Vector4 axis_y_clip_position    = proj_matrix * view_matrix * axis_y_world_position_4;
         axis_y_clip_position /= axis_y_clip_position.w;
         Vector2 axis_y_clip_uv((axis_y_clip_position.x + 1) / 2.0f, (axis_y_clip_position.y + 1) / 2.0f);
         Vector2 axis_y_direction_uv = axis_y_clip_uv - model_origin_clip_uv;
@@ -363,8 +360,8 @@ namespace Pilot
             axis_z_local_position_4 = Matrix4x4(model_rotation) * axis_z_local_position_4;
         }
         Vector4 axis_z_world_position_4 = axis_model_matrix * axis_z_local_position_4;
-        axis_z_world_position_4.w = 1.0f;
-        Vector4 axis_z_clip_position = proj_matrix * view_matrix * axis_z_world_position_4;
+        axis_z_world_position_4.w       = 1.0f;
+        Vector4 axis_z_clip_position    = proj_matrix * view_matrix * axis_z_world_position_4;
         axis_z_clip_position /= axis_z_clip_position.w;
         Vector2 axis_z_clip_uv((axis_z_clip_position.x + 1) / 2.0f, (axis_z_clip_position.y + 1) / 2.0f);
         Vector2 axis_z_direction_uv = axis_z_clip_uv - model_origin_clip_uv;
@@ -375,7 +372,7 @@ namespace Pilot
         Matrix4x4 new_model_matrix(Matrix4x4::IDENTITY);
         if (m_axis_mode == EditorAxisMode::TranslateMode) // translate
         {
-            Vector3 move_vector = { 0, 0, 0 };
+            Vector3 move_vector = {0, 0, 0};
             if (cursor_on_axis == 0)
             {
                 move_vector.x = delta_mouse_move_uv.dotProduct(axis_x_direction_uv) * angularVelocity;
@@ -407,14 +404,14 @@ namespace Pilot
             new_model_matrix.decomposition(new_translation, new_scale, new_rotation);
 
             Matrix4x4 translation_matrix = Matrix4x4::getTrans(new_translation);
-            Matrix4x4 scale_matrix = Matrix4x4::buildScaleMatrix(1.f, 1.f, 1.f);
-            Matrix4x4 axis_model_matrix = translation_matrix * scale_matrix;
+            Matrix4x4 scale_matrix       = Matrix4x4::buildScaleMatrix(1.f, 1.f, 1.f);
+            Matrix4x4 axis_model_matrix  = translation_matrix * scale_matrix;
 
             m_translation_axis.m_model_matrix = axis_model_matrix;
-            m_rotation_axis.m_model_matrix = axis_model_matrix;
-            m_scale_aixs.m_model_matrix = axis_model_matrix;
-            
-          g_editor_global_context.m_render_system->setVisibleAxis(m_translation_axis);
+            m_rotation_axis.m_model_matrix    = axis_model_matrix;
+            m_scale_aixs.m_model_matrix       = axis_model_matrix;
+
+            g_editor_global_context.m_render_system->setVisibleAxis(m_translation_axis);
 
             transform_component->setPosition(new_translation);
             transform_component->setRotation(new_rotation);
@@ -430,7 +427,7 @@ namespace Pilot
             Vector2 new_move_vector(new_mouse_u - model_origin_clip_uv.x, new_mouse_v - model_origin_clip_uv.y);
             Vector3 delta_mouse_uv_3(delta_mouse_move_uv.x, delta_mouse_move_uv.y, 0);
             float   move_radian;
-            Vector3 axis_of_rotation = { 0, 0, 0 };
+            Vector3 axis_of_rotation = {0, 0, 0};
             if (cursor_on_axis == 0)
             {
                 move_radian = (delta_mouse_move_uv * angularVelocity).length();
@@ -487,8 +484,8 @@ namespace Pilot
         }
         else if (m_axis_mode == EditorAxisMode::ScaleMode) // scale
         {
-            Vector3 delta_scale_vector = { 0, 0, 0 };
-            Vector3 new_model_scale = { 0, 0, 0 };
+            Vector3 delta_scale_vector = {0, 0, 0};
+            Vector3 new_model_scale    = {0, 0, 0};
             if (cursor_on_axis == 0)
             {
                 delta_scale_vector.x = 0.01f;
@@ -517,7 +514,7 @@ namespace Pilot
             {
                 return;
             }
-            new_model_scale = model_scale + delta_scale_vector;
+            new_model_scale   = model_scale + delta_scale_vector;
             axis_model_matrix = axis_model_matrix * Matrix4x4(model_rotation);
             Matrix4x4 scale_mat;
             scale_mat.makeTransform(Vector3::ZERO, new_model_scale, Quaternion::IDENTITY);
@@ -564,13 +561,13 @@ namespace Pilot
             m_scale_aixs.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
         }
 
-      g_editor_global_context.m_render_system->createAxis(
+        g_editor_global_context.m_render_system->createAxis(
             {m_translation_axis, m_rotation_axis, m_scale_aixs},
             {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_aixs.m_mesh_data});
     }
 
     size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const
-    {         
+    {
         return g_editor_global_context.m_render_system->getGuidOfPickedMesh(picked_uv);
     }
-}
+} // namespace Pilot

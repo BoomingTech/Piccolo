@@ -31,7 +31,7 @@ namespace Pilot
         {
             gobject = std::make_shared<GObject>(object_id);
         }
-        catch(const std::bad_alloc&)
+        catch (const std::bad_alloc&)
         {
             LOG_FATAL("cannot allocate memory for new gobject");
         }
@@ -56,7 +56,7 @@ namespace Pilot
         m_level_res_url = level_res_url;
 
         LevelRes   level_res;
-        const bool is_load_success = AssetManager::getInstance().loadAsset(level_res_url, level_res);
+        const bool is_load_success = g_runtime_global_context.m_asset_manager->loadAsset(level_res_url, level_res);
         if (is_load_success == false)
         {
             return false;
@@ -113,7 +113,7 @@ namespace Pilot
             }
         }
 
-        const bool is_save_success = AssetManager::getInstance().saveAsset(output_level_res, m_level_res_url);
+        const bool is_save_success = g_runtime_global_context.m_asset_manager->saveAsset(output_level_res, m_level_res_url);
 
         if (is_save_success == false)
         {
@@ -144,7 +144,7 @@ namespace Pilot
         }
         if (m_current_active_character && g_is_editor_mode == false)
         {
-            m_current_active_character->tick();
+            m_current_active_character->tick(delta_time);
         }
     }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/core/base/public_singleton.h"
-
 #include <spdlog/spdlog.h>
 
 #include <cstdint>
@@ -10,7 +8,7 @@
 namespace Pilot
 {
 
-    class LogSystem final : public PublicSingleton<LogSystem>
+    class LogSystem final
     {
     public:
         enum class LogLevel : uint8_t

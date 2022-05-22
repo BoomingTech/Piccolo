@@ -1,6 +1,5 @@
 #pragma once
 
-#include "runtime/core/base/public_singleton.h"
 #include "runtime/core/math/vector2.h"
 
 #include <memory>
@@ -10,12 +9,12 @@ namespace Pilot
     class EditorUI;
     class PilotEngine;
 
-    class PilotEditor : public PublicSingleton<PilotEditor>
+    class PilotEditor 
     {
         friend class EditorUI;
-        friend class PublicSingleton<PilotEditor>;
 
     public:
+        PilotEditor();
         virtual ~PilotEditor();
 
         void initialize(PilotEngine* engine_runtime);
@@ -24,8 +23,6 @@ namespace Pilot
         void run();
 
     protected:
-        PilotEditor();
-
         std::shared_ptr<EditorUI> m_editor_ui;
         PilotEngine* m_engine_runtime{ nullptr };
     };

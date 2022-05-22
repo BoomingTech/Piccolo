@@ -6,6 +6,8 @@
 #include "runtime/resource/config_manager/config_manager.h"
 #include "runtime/resource/res_type/data/mesh_data.h"
 
+#include "runtime/function/global/global_context.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -20,11 +22,14 @@ namespace Pilot
 {
     std::shared_ptr<TextureData> RenderResourceBase::loadTextureHDR(std::string file, int desired_channels)
     {
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
+        ASSERT(asset_manager);
+
         std::shared_ptr<TextureData> texture = std::make_shared<TextureData>();
 
         int iw, ih, n;
-        texture->m_pixels = stbi_loadf(
-            AssetManager::getInstance().getFullPath(file).generic_string().c_str(), &iw, &ih, &n, desired_channels);
+        texture->m_pixels =
+            stbi_loadf(asset_manager->getFullPath(file).generic_string().c_str(), &iw, &ih, &n, desired_channels);
 
         if (!texture->m_pixels)
             return nullptr;
@@ -54,11 +59,13 @@ namespace Pilot
 
     std::shared_ptr<TextureData> RenderResourceBase::loadTexture(std::string file, bool is_srgb)
     {
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
+        ASSERT(asset_manager);
+
         std::shared_ptr<TextureData> texture = std::make_shared<TextureData>();
 
         int iw, ih, n;
-        texture->m_pixels =
-            stbi_load(AssetManager::getInstance().getFullPath(file).generic_string().c_str(), &iw, &ih, &n, 4);
+        texture->m_pixels = stbi_load(asset_manager->getFullPath(file).generic_string().c_str(), &iw, &ih, &n, 4);
 
         if (!texture->m_pixels)
             return nullptr;
@@ -77,6 +84,9 @@ namespace Pilot
 
     RenderMeshData RenderResourceBase::loadMeshData(const MeshSourceDesc& source, AxisAlignedBox& bounding_box)
     {
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
+        ASSERT(asset_manager);
+
         RenderMeshData ret;
 
         if (std::filesystem::path(source.mesh_file).extension() == ".obj")
@@ -86,7 +96,7 @@ namespace Pilot
         else if (std::filesystem::path(source.mesh_file).extension() == ".json")
         {
             std::shared_ptr<MeshData> bind_data = std::make_shared<MeshData>();
-            AssetManager::getInstance().loadAsset<MeshData>(source.mesh_file, *bind_data);
+            asset_manager->loadAsset<MeshData>(source.mesh_file, *bind_data);
 
             // vertex buffer
             size_t vertex_size                     = bind_data->vertex_buffer.size() * sizeof(MeshVertexDataDefinition);
