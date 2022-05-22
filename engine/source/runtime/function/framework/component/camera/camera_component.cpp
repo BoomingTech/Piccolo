@@ -50,7 +50,7 @@ namespace Pilot
         if (!m_parent_object.lock())
             return;
 
-        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -75,7 +75,7 @@ namespace Pilot
 
     void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -96,7 +96,7 @@ namespace Pilot
 
         if (m_render_camera)
         {
-            m_render_camera->setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+            m_render_camera->setMainViewMatrix(desired_mat, CurrentCameraType::Motor);
         }
 
         Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
@@ -108,7 +108,7 @@ namespace Pilot
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -138,7 +138,7 @@ namespace Pilot
 
         if (m_render_camera)
         {
-            m_render_camera->setMainViewMatrix(desired_mat, PCurrentCameraType::Motor);
+            m_render_camera->setMainViewMatrix(desired_mat, CurrentCameraType::Motor);
         }
     }
 } // namespace Pilot

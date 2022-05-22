@@ -8,7 +8,7 @@
 
 namespace Pilot
 {
-    struct PPointLight
+    struct PointLight
     {
         Vector3 m_position;
         // radiant flux in W
@@ -29,7 +29,7 @@ namespace Pilot
         }
     };
 
-    struct PAmbientLight
+    struct AmbientLight
     {
         Vector3 m_irradiance;
     };
@@ -40,7 +40,7 @@ namespace Pilot
         Vector3 m_color;
     };
 
-    struct PLightList
+    struct LightList
     {
         // vertex buffers seem to be aligned to 16 bytes
         struct PointLightVertex
@@ -54,7 +54,7 @@ namespace Pilot
         };
     };
 
-    class PPointLightList : public PLightList
+    class PointLightList : public LightList
     {
     public:
         void init() {}
@@ -63,7 +63,7 @@ namespace Pilot
         // upload changes to GPU
         void update() {}
 
-        std::vector<PPointLight> m_lights;
+        std::vector<PointLight> m_lights;
 
         std::shared_ptr<BufferData> m_buffer;
     };
