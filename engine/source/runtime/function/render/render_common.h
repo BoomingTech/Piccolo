@@ -224,7 +224,7 @@ namespace Pilot
     };
 
     // nodes
-    struct PVulkanMeshNode
+    struct VulkanMeshNode
     {
         glm::mat4          model_matrix;
         glm::mat4          joint_matrices[m_mesh_vertex_blending_max_joint_count];
@@ -234,7 +234,7 @@ namespace Pilot
         bool               enable_vertex_blending = false;
     };
 
-    struct PVulkanAxisNode
+    struct VulkanAxisNode
     {
         glm::mat4   model_matrix {glm::mat4(1.0f)};
         VulkanMesh* ref_mesh {nullptr};
@@ -242,12 +242,12 @@ namespace Pilot
         bool        enable_vertex_blending {false};
     };
 
-    struct PVulkanParticleBillboardNode
+    struct VulkanParticleBillboardNode
     {
         std::vector<Vector4> positions;
     };
 
-    struct PTextureDataToUpdate
+    struct TextureDataToUpdate
     {
         void*              base_color_image_pixels;
         uint32_t           base_color_image_width;

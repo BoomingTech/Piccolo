@@ -1,11 +1,14 @@
 #include "runtime/function/framework/object/object.h"
 
-#include "runtime/core/meta/reflection/reflection.h"
 #include "runtime/engine.h"
-#include "runtime/function/framework/component/component.h"
-#include "runtime/function/framework/component/transform/transform_component.h"
+
+#include "runtime/core/meta/reflection/reflection.h"
 
 #include "runtime/resource/asset_manager/asset_manager.h"
+
+#include "runtime/function/framework/component/component.h"
+#include "runtime/function/framework/component/transform/transform_component.h"
+#include "runtime/function/global/global_context.h"
 
 #include <cassert>
 #include <unordered_set>
@@ -79,7 +82,7 @@ namespace Pilot
 
         ObjectDefinitionRes definition_res;
 
-        const bool is_loaded_success = AssetManager::getInstance().loadAsset(m_definition_url, definition_res);
+        const bool is_loaded_success = g_runtime_global_context.m_asset_manager->loadAsset(m_definition_url, definition_res);
         if (!is_loaded_success)
             return false;
 

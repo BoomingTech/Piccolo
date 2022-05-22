@@ -3,48 +3,24 @@
 #include "runtime/core/base/macro.h"
 #include "runtime/core/meta/reflection/reflection_register.h"
 
-#include "runtime/resource/asset_manager/asset_manager.h"
-#include "runtime/resource/config_manager/config_manager.h"
-
 #include "runtime/function/framework/world/world_manager.h"
+#include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
-
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
-
-#include "runtime/function/ui/ui_system.h"
 
 namespace Pilot
 {
     bool                            g_is_editor_mode {false};
     std::unordered_set<std::string> g_editor_tick_component_types {};
 
-    PilotEngine::PilotEngine()
-    {
-        m_window_system = std::make_shared<WindowSystem>();
-        m_render_system = std::make_shared<RenderSystem>();
-    }
-
     void PilotEngine::startEngine(const EngineInitParams& param)
     {
+        m_init_params = param;
+
         Reflection::TypeMetaRegister::Register();
 
-        ConfigManager::getInstance().initialize(param);
-        AssetManager::getInstance().initialize();
-        PUIManager::getInstance().initialize();
-        InputSystem::getInstance().initialize();
-
-        WorldManager::getInstance().initialize();
-
-        WindowCreateInfo window_create_info;
-        m_window_system->initialize(window_create_info);
-
-        RenderSystemInitInfo render_init_info;
-        render_init_info.window_system = m_window_system;
-        m_render_system->initialize(render_init_info);
-
-        MeshComponent::m_swap_context = &(m_render_system->getSwapContext());
-        CameraComponent::m_render_camera = &(*m_render_system->getRenderCamera());
+        g_runtime_global_context.startSystems(param);
 
         LOG_INFO("engine start");
     }
@@ -53,39 +29,40 @@ namespace Pilot
     {
         LOG_INFO("engine shutdown");
 
-        WorldManager::getInstance().clear();
-        PUIManager::getInstance().clear();
-        AssetManager::getInstance().clear();
-        ConfigManager::getInstance().clear();
+        g_runtime_global_context.shutdownSystems();
 
         Reflection::TypeMetaRegister::Unregister();
     }
 
     void PilotEngine::initialize() {}
     void PilotEngine::clear() {}
+
     void PilotEngine::run()
     {
+        std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
+        ASSERT(window_system);
+
         float delta_time;
-        while (!m_window_system->shouldClose())
+        while (!window_system->shouldClose())
         {
-            delta_time = getDeltaTime();
+            delta_time = calculateDeltaTime();
 
             logicalTick(delta_time);
-            fps(delta_time);
+            calculateFPS(delta_time);
 
             // single thread
             // exchange data between logic and render contexts
-            m_render_system->swapLogicRenderData();
+            g_runtime_global_context.m_render_system->swapLogicRenderData();
 
             rendererTick();
 
-            m_window_system->pollEvents();
+            window_system->pollEvents();
 
-            m_window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+            window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
         }
     }
 
-    float PilotEngine::getDeltaTime()
+    float PilotEngine::calculateDeltaTime()
     {
         float delta_time;
         {
@@ -103,36 +80,37 @@ namespace Pilot
     bool PilotEngine::tickOneFrame(float delta_time)
     {
         logicalTick(delta_time);
-        fps(delta_time);
+        calculateFPS(delta_time);
 
         // single thread
         // exchange data between logic and render contexts
-        m_render_system->swapLogicRenderData();
+        g_runtime_global_context.m_render_system->swapLogicRenderData();
 
         rendererTick();
 
-        m_window_system->pollEvents();
+        g_runtime_global_context.m_window_system->pollEvents();
 
-        m_window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+        g_runtime_global_context.m_window_system->setTile(
+            std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
 
-        return !m_window_system->shouldClose();
+        const bool should_window_close = g_runtime_global_context.m_window_system->shouldClose();
+        return !should_window_close;
     }
 
     void PilotEngine::logicalTick(float delta_time)
     {
-        WorldManager::getInstance().tick(delta_time);
-        InputSystem::getInstance().tick();
-        // PhysicsSystem::getInstance().tick(delta_time);
+        g_runtime_global_context.m_world_manager->tick(delta_time);
+        g_runtime_global_context.m_input_system->tick();
     }
 
     bool PilotEngine::rendererTick()
     {
-        m_render_system->tick();
+        g_runtime_global_context.m_render_system->tick();
         return true;
     }
 
     const float PilotEngine::k_fps_alpha = 1.f / 100;
-    void        PilotEngine::fps(float delta_time)
+    void        PilotEngine::calculateFPS(float delta_time)
     {
         m_frame_count++;
 

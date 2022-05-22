@@ -9,13 +9,13 @@
 
 namespace Pilot
 {
-    std::unordered_map<uint32_t, VkSampler> PVulkanUtil::m_mipmap_sampler_map;
-    VkSampler                               PVulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
-    VkSampler                               PVulkanUtil::m_linear_sampler  = VK_NULL_HANDLE;
+    std::unordered_map<uint32_t, VkSampler> VulkanUtil::m_mipmap_sampler_map;
+    VkSampler                               VulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
+    VkSampler                               VulkanUtil::m_linear_sampler  = VK_NULL_HANDLE;
 
-    uint32_t PVulkanUtil::findMemoryType(VkPhysicalDevice      physical_device,
-                                         uint32_t              type_filter,
-                                         VkMemoryPropertyFlags properties_flag)
+    uint32_t VulkanUtil::findMemoryType(VkPhysicalDevice      physical_device,
+                                        uint32_t              type_filter,
+                                        VkMemoryPropertyFlags properties_flag)
     {
         VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
         vkGetPhysicalDeviceMemoryProperties(physical_device, &physical_device_memory_properties);
@@ -30,7 +30,7 @@ namespace Pilot
         throw std::runtime_error("findMemoryType");
     }
 
-    VkShaderModule PVulkanUtil::createShaderModule(VkDevice device, const std::vector<unsigned char>& shader_code)
+    VkShaderModule VulkanUtil::createShaderModule(VkDevice device, const std::vector<unsigned char>& shader_code)
     {
         VkShaderModuleCreateInfo shader_module_create_info {};
         shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -45,13 +45,13 @@ namespace Pilot
         return shader_module;
     }
 
-    void PVulkanUtil::createBuffer(VkPhysicalDevice      physical_device,
-                                   VkDevice              device,
-                                   VkDeviceSize          size,
-                                   VkBufferUsageFlags    usage,
-                                   VkMemoryPropertyFlags properties,
-                                   VkBuffer&             buffer,
-                                   VkDeviceMemory&       buffer_memory)
+    void VulkanUtil::createBuffer(VkPhysicalDevice      physical_device,
+                                  VkDevice              device,
+                                  VkDeviceSize          size,
+                                  VkBufferUsageFlags    usage,
+                                  VkMemoryPropertyFlags properties,
+                                  VkBuffer&             buffer,
+                                  VkDeviceMemory&       buffer_memory)
     {
         VkBufferCreateInfo buffer_create_info {};
         buffer_create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -72,7 +72,7 @@ namespace Pilot
         buffer_memory_allocate_info.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         buffer_memory_allocate_info.allocationSize = buffer_memory_requirements.size;
         buffer_memory_allocate_info.memoryTypeIndex =
-            PVulkanUtil::findMemoryType(physical_device, buffer_memory_requirements.memoryTypeBits, properties);
+            VulkanUtil::findMemoryType(physical_device, buffer_memory_requirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device, &buffer_memory_allocate_info, nullptr, &buffer_memory) != VK_SUCCESS)
         {
@@ -83,12 +83,12 @@ namespace Pilot
         vkBindBufferMemory(device, buffer, buffer_memory, 0); // offset = 0
     }
 
-    void PVulkanUtil::copyBuffer(RHI*         rhi,
-                                 VkBuffer     srcBuffer,
-                                 VkBuffer     dstBuffer,
-                                 VkDeviceSize srcOffset,
-                                 VkDeviceSize dstOffset,
-                                 VkDeviceSize size)
+    void VulkanUtil::copyBuffer(RHI*         rhi,
+                                VkBuffer     srcBuffer,
+                                VkBuffer     dstBuffer,
+                                VkDeviceSize srcOffset,
+                                VkDeviceSize dstOffset,
+                                VkDeviceSize size)
     {
         assert(rhi);
 
@@ -100,19 +100,19 @@ namespace Pilot
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(command_buffer);
     }
 
-    void PVulkanUtil::createImage(VkPhysicalDevice      physical_device,
-                                  VkDevice              device,
-                                  uint32_t              image_width,
-                                  uint32_t              image_height,
-                                  VkFormat              format,
-                                  VkImageTiling         image_tiling,
-                                  VkImageUsageFlags     image_usage_flags,
-                                  VkMemoryPropertyFlags memory_property_flags,
-                                  VkImage&              image,
-                                  VkDeviceMemory&       memory,
-                                  VkImageCreateFlags    image_create_flags,
-                                  uint32_t              array_layers,
-                                  uint32_t              miplevels)
+    void VulkanUtil::createImage(VkPhysicalDevice      physical_device,
+                                 VkDevice              device,
+                                 uint32_t              image_width,
+                                 uint32_t              image_height,
+                                 VkFormat              format,
+                                 VkImageTiling         image_tiling,
+                                 VkImageUsageFlags     image_usage_flags,
+                                 VkMemoryPropertyFlags memory_property_flags,
+                                 VkImage&              image,
+                                 VkDeviceMemory&       memory,
+                                 VkImageCreateFlags    image_create_flags,
+                                 uint32_t              array_layers,
+                                 uint32_t              miplevels)
     {
         VkImageCreateInfo image_create_info {};
         image_create_info.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -152,13 +152,13 @@ namespace Pilot
         vkBindImageMemory(device, image, memory, 0);
     }
 
-    VkImageView PVulkanUtil::createImageView(VkDevice           device,
-                                             VkImage&           image,
-                                             VkFormat           format,
-                                             VkImageAspectFlags image_aspect_flags,
-                                             VkImageViewType    view_type,
-                                             uint32_t           layout_count,
-                                             uint32_t           miplevels)
+    VkImageView VulkanUtil::createImageView(VkDevice           device,
+                                            VkImage&           image,
+                                            VkFormat           format,
+                                            VkImageAspectFlags image_aspect_flags,
+                                            VkImageViewType    view_type,
+                                            uint32_t           layout_count,
+                                            uint32_t           miplevels)
     {
         VkImageViewCreateInfo image_view_create_info {};
         image_view_create_info.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -181,15 +181,15 @@ namespace Pilot
         return image_view;
     }
 
-    void PVulkanUtil::createGlobalImage(RHI*               rhi,
-                                        VkImage&           image,
-                                        VkImageView&       image_view,
-                                        VmaAllocation&     image_allocation,
-                                        uint32_t           texture_image_width,
-                                        uint32_t           texture_image_height,
-                                        void*              texture_image_pixels,
-                                        PILOT_PIXEL_FORMAT texture_image_format,
-                                        uint32_t           miplevels)
+    void VulkanUtil::createGlobalImage(RHI*               rhi,
+                                       VkImage&           image,
+                                       VkImageView&       image_view,
+                                       VmaAllocation&     image_allocation,
+                                       uint32_t           texture_image_width,
+                                       uint32_t           texture_image_height,
+                                       void*              texture_image_pixels,
+                                       PILOT_PIXEL_FORMAT texture_image_format,
+                                       uint32_t           miplevels)
     {
         if (!texture_image_pixels)
         {
@@ -236,13 +236,13 @@ namespace Pilot
         // use staging buffer
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        PVulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->_physical_device,
-                                  static_cast<VulkanRHI*>(rhi)->_device,
-                                  texture_byte_size,
-                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                  inefficient_staging_buffer,
-                                  inefficient_staging_buffer_memory);
+        VulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->_physical_device,
+                                 static_cast<VulkanRHI*>(rhi)->_device,
+                                 texture_byte_size,
+                                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                 inefficient_staging_buffer,
+                                 inefficient_staging_buffer_memory);
 
         void* data;
         vkMapMemory(
@@ -316,15 +316,15 @@ namespace Pilot
                                      mip_levels);
     }
 
-    void PVulkanUtil::createCubeMap(RHI*                 rhi,
-                                    VkImage&             image,
-                                    VkImageView&         image_view,
-                                    VmaAllocation&       image_allocation,
-                                    uint32_t             texture_image_width,
-                                    uint32_t             texture_image_height,
-                                    std::array<void*, 6> texture_image_pixels,
-                                    PILOT_PIXEL_FORMAT   texture_image_format,
-                                    uint32_t             miplevels)
+    void VulkanUtil::createCubeMap(RHI*                 rhi,
+                                   VkImage&             image,
+                                   VkImageView&         image_view,
+                                   VmaAllocation&       image_allocation,
+                                   uint32_t             texture_image_width,
+                                   uint32_t             texture_image_height,
+                                   std::array<void*, 6> texture_image_pixels,
+                                   PILOT_PIXEL_FORMAT   texture_image_format,
+                                   uint32_t             miplevels)
     {
         VkDeviceSize texture_layer_byte_size;
         VkDeviceSize cube_byte_size;
@@ -449,13 +449,13 @@ namespace Pilot
                                      miplevels);
     }
 
-    void PVulkanUtil::generateTextureMipMaps(RHI*     rhi,
-                                             VkImage  image,
-                                             VkFormat image_format,
-                                             uint32_t texture_width,
-                                             uint32_t texture_height,
-                                             uint32_t layers,
-                                             uint32_t miplevels)
+    void VulkanUtil::generateTextureMipMaps(RHI*     rhi,
+                                            VkImage  image,
+                                            VkFormat image_format,
+                                            uint32_t texture_width,
+                                            uint32_t texture_height,
+                                            uint32_t layers,
+                                            uint32_t miplevels)
     {
         VkFormatProperties format_properties;
         vkGetPhysicalDeviceFormatProperties(
@@ -565,13 +565,13 @@ namespace Pilot
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(commandbuffer);
     }
 
-    void PVulkanUtil::transitionImageLayout(RHI*               rhi,
-                                            VkImage            image,
-                                            VkImageLayout      old_layout,
-                                            VkImageLayout      new_layout,
-                                            uint32_t           layer_count,
-                                            uint32_t           miplevels,
-                                            VkImageAspectFlags aspect_mask_bits)
+    void VulkanUtil::transitionImageLayout(RHI*               rhi,
+                                           VkImage            image,
+                                           VkImageLayout      old_layout,
+                                           VkImageLayout      new_layout,
+                                           uint32_t           layer_count,
+                                           uint32_t           miplevels,
+                                           VkImageAspectFlags aspect_mask_bits)
     {
         assert(rhi);
 
@@ -649,12 +649,12 @@ namespace Pilot
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(commandBuffer);
     }
 
-    void PVulkanUtil::copyBufferToImage(RHI*     rhi,
-                                        VkBuffer buffer,
-                                        VkImage  image,
-                                        uint32_t width,
-                                        uint32_t height,
-                                        uint32_t layer_count)
+    void VulkanUtil::copyBufferToImage(RHI*     rhi,
+                                       VkBuffer buffer,
+                                       VkImage  image,
+                                       uint32_t width,
+                                       uint32_t height,
+                                       uint32_t layer_count)
     {
         assert(rhi);
 
@@ -676,7 +676,7 @@ namespace Pilot
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(commandBuffer);
     }
 
-    void PVulkanUtil::genMipmappedImage(RHI* rhi, VkImage image, uint32_t width, uint32_t height, uint32_t mip_levels)
+    void VulkanUtil::genMipmappedImage(RHI* rhi, VkImage image, uint32_t width, uint32_t height, uint32_t mip_levels)
     {
         assert(rhi);
 
@@ -784,10 +784,10 @@ namespace Pilot
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(commandBuffer);
     }
 
-    VkSampler PVulkanUtil::getOrCreateMipmapSampler(VkPhysicalDevice physical_device,
-                                                    VkDevice         device,
-                                                    uint32_t         width,
-                                                    uint32_t         height)
+    VkSampler VulkanUtil::getOrCreateMipmapSampler(VkPhysicalDevice physical_device,
+                                                   VkDevice         device,
+                                                   uint32_t         width,
+                                                   uint32_t         height)
     {
         assert(width > 0 && height > 0);
 
@@ -833,7 +833,7 @@ namespace Pilot
         return sampler;
     }
 
-    void PVulkanUtil::destroyMipmappedSampler(VkDevice device)
+    void VulkanUtil::destroyMipmappedSampler(VkDevice device)
     {
         for (auto sampler : m_mipmap_sampler_map)
         {
@@ -842,7 +842,7 @@ namespace Pilot
         m_mipmap_sampler_map.clear();
     }
 
-    VkSampler PVulkanUtil::getOrCreateNearestSampler(VkPhysicalDevice physical_device, VkDevice device)
+    VkSampler VulkanUtil::getOrCreateNearestSampler(VkPhysicalDevice physical_device, VkDevice device)
     {
         if (m_nearest_sampler == VK_NULL_HANDLE)
         {
@@ -877,7 +877,7 @@ namespace Pilot
         return m_nearest_sampler;
     }
 
-    VkSampler PVulkanUtil::getOrCreateLinearSampler(VkPhysicalDevice physical_device, VkDevice device)
+    VkSampler VulkanUtil::getOrCreateLinearSampler(VkPhysicalDevice physical_device, VkDevice device)
     {
         if (m_linear_sampler == VK_NULL_HANDLE)
         {
@@ -912,13 +912,13 @@ namespace Pilot
         return m_linear_sampler;
     }
 
-    void PVulkanUtil::destroyNearestSampler(VkDevice device)
+    void VulkanUtil::destroyNearestSampler(VkDevice device)
     {
         vkDestroySampler(device, m_nearest_sampler, nullptr);
         m_nearest_sampler = VK_NULL_HANDLE;
     }
 
-    void PVulkanUtil::destroyLinearSampler(VkDevice device)
+    void VulkanUtil::destroyLinearSampler(VkDevice device)
     {
         vkDestroySampler(device, m_linear_sampler, nullptr);
         m_linear_sampler = VK_NULL_HANDLE;

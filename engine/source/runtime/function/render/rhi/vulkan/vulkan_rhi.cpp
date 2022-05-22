@@ -726,22 +726,22 @@ namespace Pilot
 
     void VulkanRHI::createFramebufferImageAndView()
     {
-        PVulkanUtil::createImage(_physical_device,
-                                 _device,
-                                 _swapchain_extent.width,
-                                 _swapchain_extent.height,
-                                 _depth_image_format,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                 _depth_image,
-                                 _depth_image_memory,
-                                 0,
-                                 1,
-                                 1);
+        VulkanUtil::createImage(_physical_device,
+                                _device,
+                                _swapchain_extent.width,
+                                _swapchain_extent.height,
+                                _depth_image_format,
+                                VK_IMAGE_TILING_OPTIMAL,
+                                VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                _depth_image,
+                                _depth_image_memory,
+                                0,
+                                1,
+                                1);
 
-        _depth_image_view = PVulkanUtil::createImageView(
+        _depth_image_view = VulkanUtil::createImageView(
             _device, _depth_image, _depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
     }
 
@@ -752,13 +752,13 @@ namespace Pilot
         // create imageview (one for each this time) for all swapchain images
         for (size_t i = 0; i < _swapchain_images.size(); i++)
         {
-            _swapchain_imageviews[i] = PVulkanUtil::createImageView(_device,
-                                                                    _swapchain_images[i],
-                                                                    _swapchain_image_format,
-                                                                    VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                    VK_IMAGE_VIEW_TYPE_2D,
-                                                                    1,
-                                                                    1);
+            _swapchain_imageviews[i] = VulkanUtil::createImageView(_device,
+                                                                   _swapchain_images[i],
+                                                                   _swapchain_image_format,
+                                                                   VK_IMAGE_ASPECT_COLOR_BIT,
+                                                                   VK_IMAGE_VIEW_TYPE_2D,
+                                                                   1,
+                                                                   1);
         }
     }
 

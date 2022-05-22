@@ -1,8 +1,8 @@
 #include "editor/include/editor_ui.h"
 
 #include "editor/include/editor_global_context.h"
-#include "editor/include/editor_scene_manager.h"
 #include "editor/include/editor_input_manager.h"
+#include "editor/include/editor_scene_manager.h"
 
 #include "runtime/core/base/macro.h"
 #include "runtime/core/meta/reflection/reflection.h"
@@ -16,16 +16,13 @@
 
 #include "runtime/function/framework/component/mesh/mesh_component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
-
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/world/world_manager.h"
+#include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
-
 #include "runtime/function/render/render_camera.h"
-#include "runtime/function/render/window_system.h"
 #include "runtime/function/render/render_system.h"
-
-#include "runtime/function/ui/ui_system.h"
+#include "runtime/function/render/window_system.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -46,8 +43,7 @@ namespace Pilot
 
     EditorUI::EditorUI()
     {
-        Path&       path_service            = Path::getInstance();
-        const auto& asset_folder            = ConfigManager::getInstance().getAssetFolder();
+        const auto& asset_folder            = g_runtime_global_context.m_config_manager->getAssetFolder();
         m_editor_ui_creator["TreeNodePush"] = [this](const std::string& name, void* value_ptr) -> void {
             static ImGuiTableFlags flags      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
             bool                   node_state = false;
@@ -205,8 +201,7 @@ namespace Pilot
             qua_ptr->z = val[2];
             qua_ptr->w = val[3];
         };
-        m_editor_ui_creator["std::string"] = [this, &path_service, &asset_folder](const std::string& name,
-                                                                                  void* value_ptr) -> void {
+        m_editor_ui_creator["std::string"] = [this, &asset_folder](const std::string& name, void* value_ptr) -> void {
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -226,7 +221,7 @@ namespace Pilot
                         std::filesystem::path value_path(value_str);
                         if (value_path.is_absolute())
                         {
-                            value_path = path_service.getRelativePath(asset_folder, value_path);
+                            value_path = Path::getRelativePath(asset_folder, value_path);
                         }
                         value_str = value_path.generic_string();
                         if (value_str.size() >= 2 && value_str[0] == '.' && value_str[1] == '.')
@@ -293,8 +288,9 @@ namespace Pilot
 
             ImGui::DockBuilderAddNode(main_docking_id, dock_flags);
             ImGui::DockBuilderSetNodePos(main_docking_id,
-            ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y + 18.0f));
-            ImGui::DockBuilderSetNodeSize(main_docking_id, ImVec2((float)window_size[0], (float)window_size[1] - 18.0f));
+                                         ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y + 18.0f));
+            ImGui::DockBuilderSetNodeSize(main_docking_id,
+                                          ImVec2((float)window_size[0], (float)window_size[1] - 18.0f));
 
             ImGuiID center = main_docking_id;
             ImGuiID left;
@@ -323,12 +319,12 @@ namespace Pilot
             {
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
-                    WorldManager::getInstance().reloadCurrentLevel();
+                    g_runtime_global_context.m_world_manager->reloadCurrentLevel();
                     g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
                 {
-                    WorldManager::getInstance().saveCurrentLevel();
+                    g_runtime_global_context.m_world_manager->saveCurrentLevel();
                 }
                 if (ImGui::MenuItem("Exit"))
                 {
@@ -354,7 +350,8 @@ namespace Pilot
             return;
         }
 
-        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level =
+            g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
@@ -614,11 +611,11 @@ namespace Pilot
             float indent_val = 0.0f;
 
 #if defined(__GNUC__) && defined(__MACH__)
-            float indent_scale =1.0f;
+            float indent_scale = 1.0f;
 #else // Not tested on Linux
             float x_scale, y_scale;
             glfwGetWindowContentScale(g_editor_global_context.m_window_system->getWindow(), &x_scale, &y_scale);
-            float indent_scale= fmaxf(1.0f, fmaxf(x_scale, y_scale));
+            float indent_scale = fmaxf(1.0f, fmaxf(x_scale, y_scale));
 #endif
             indent_val = g_editor_global_context.m_input_manager->getEngineWindowSize().x - 100.0f * indent_scale;
 
@@ -643,8 +640,9 @@ namespace Pilot
                 {
                     g_is_editor_mode = true;
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
-                    InputSystem::getInstance().resetGameCommand();
-                    g_editor_global_context.m_render_system->getRenderCamera()->setMainViewMatrix(g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
+                    g_runtime_global_context.m_input_system->resetGameCommand();
+                    g_editor_global_context.m_render_system->getRenderCamera()->setMainViewMatrix(
+                        g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
                 }
             }
 
@@ -658,8 +656,9 @@ namespace Pilot
         }
         else
         {
-            ImGui::TextColored(
-                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", g_editor_global_context.m_input_manager->getCameraSpeed());
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
+                               "Current editor camera move speed: [%f]",
+                               g_editor_global_context.m_input_manager->getCameraSpeed());
         }
 
         auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
@@ -678,12 +677,13 @@ namespace Pilot
             // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
             // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
             float dpi_scale = main_viewport->DpiScale;
-            PilotEngine::getInstance().getRenderSystem()->updateEngineContentViewport(new_window_pos.x * dpi_scale,
-                new_window_pos.y * dpi_scale,
-                new_window_size.x * dpi_scale,
-                new_window_size.y * dpi_scale);
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(new_window_pos.x * dpi_scale,
+                                                                                  new_window_pos.y * dpi_scale,
+                                                                                  new_window_size.x * dpi_scale,
+                                                                                  new_window_size.y * dpi_scale);
 #else
-            PilotEngine::getInstance().getRenderSystem()->updateEngineContentViewport(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(
+                new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
 #endif
             g_editor_global_context.m_input_manager->setEngineWindowPos(new_window_pos);
             g_editor_global_context.m_input_manager->setEngineWindowSize(new_window_size);
@@ -755,7 +755,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -763,9 +763,9 @@ namespace Pilot
 
         ObjectInstanceRes new_object_instance_res;
         new_object_instance_res.m_name =
-            "New_" + Path::getInstance().getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
+            "New_" + Path::getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
         new_object_instance_res.m_definition =
-            AssetManager::getInstance().getFullPath(node->m_file_path).generic_string();
+            g_runtime_global_context.m_asset_manager->getFullPath(node->m_file_path).generic_string();
 
         size_t new_gobject_id = level->createObject(new_object_instance_res);
         if (new_gobject_id != k_invalid_gobject_id)
@@ -790,6 +790,9 @@ namespace Pilot
 
     void EditorUI::initialize(WindowUIInitInfo init_info)
     {
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
+        ASSERT(config_manager);
+
         // create imgui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -802,17 +805,15 @@ namespace Pilot
         glfwSetWindowContentScaleCallback(init_info.window_system->getWindow(), windowContentScaleCallback);
 
         // load font for imgui
-        ImGuiIO&    io    = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.ConfigDockingAlwaysTabBar         = true;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        io.Fonts->AddFontFromFileTTF(ConfigManager::getInstance().getEditorFontPath().generic_string().data(),
-                                     content_scale * 16,
-                                     nullptr,
-                                     nullptr);
+        io.Fonts->AddFontFromFileTTF(
+            config_manager->getEditorFontPath().generic_string().data(), content_scale * 16, nullptr, nullptr);
         io.Fonts->Build();
 
-        ImGuiStyle& style = ImGui::GetStyle();
+        ImGuiStyle& style     = ImGui::GetStyle();
         style.WindowPadding   = ImVec2(1.0, 0);
         style.FramePadding    = ImVec2(14.0, 2.0f);
         style.ChildBorderSize = 0.0f;
@@ -823,11 +824,13 @@ namespace Pilot
         setUIColorStyle();
 
         // setup window icon
-        GLFWimage window_icon[2];
-        std::string big_icon_path_string   = ConfigManager::getInstance().getEditorBigIconPath().generic_string();
-        std::string small_icon_path_string = ConfigManager::getInstance().getEditorSmallIconPath().generic_string();
-        window_icon[0].pixels = stbi_load(big_icon_path_string.data(), &window_icon[0].width, &window_icon[0].height, 0, 4);
-        window_icon[1].pixels = stbi_load(small_icon_path_string.data(), &window_icon[1].width, &window_icon[1].height, 0, 4);
+        GLFWimage   window_icon[2];
+        std::string big_icon_path_string   = config_manager->getEditorBigIconPath().generic_string();
+        std::string small_icon_path_string = config_manager->getEditorSmallIconPath().generic_string();
+        window_icon[0].pixels =
+            stbi_load(big_icon_path_string.data(), &window_icon[0].width, &window_icon[0].height, 0, 4);
+        window_icon[1].pixels =
+            stbi_load(small_icon_path_string.data(), &window_icon[1].width, &window_icon[1].height, 0, 4);
         glfwSetWindowIcon(init_info.window_system->getWindow(), 2, window_icon);
         stbi_image_free(window_icon[0].pixels);
         stbi_image_free(window_icon[1].pixels);
@@ -898,10 +901,7 @@ namespace Pilot
         colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
-    void EditorUI::preRender()
-    {
-        showEditorUI();
-    }
+    void EditorUI::preRender() { showEditorUI(); }
 
     void DrawVecControl(const std::string& label, Pilot::Vector3& values, float resetValue, float columnWidth)
     {

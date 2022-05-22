@@ -1,17 +1,17 @@
 #include "runtime/function/render/render_system.h"
-#include "runtime/function/render/render_camera.h"
-#include "runtime/function/render/render_resource_base.h"
-#include "runtime/function/render/render_scene.h"
-#include "runtime/function/render/window_system.h"
+
+#include "runtime/core/base/macro.h"
 
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_pipeline.h"
 #include "runtime/function/render/render_resource.h"
+#include "runtime/function/render/render_resource_base.h"
+#include "runtime/function/render/render_scene.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
-
-#include "runtime/core/base/macro.h"
+#include "runtime/function/render/window_system.h"
 
 namespace Pilot
 {
@@ -19,6 +19,11 @@ namespace Pilot
 
     void RenderSystem::initialize(RenderSystemInitInfo init_info)
     {
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
+        ASSERT(config_manager);
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
+        ASSERT(asset_manager);
+
         // render context initialize
         RHIInitInfo rhi_init_info;
         rhi_init_info.window_system = init_info.window_system;
@@ -28,8 +33,8 @@ namespace Pilot
 
         // global rendering resource
         GlobalRenderingRes global_rendering_res;
-        const std::string& global_rendering_res_url = ConfigManager::getInstance().getGlobalRenderingResUrl();
-        AssetManager::getInstance().loadAsset(global_rendering_res_url, global_rendering_res);
+        const std::string& global_rendering_res_url = config_manager->getGlobalRenderingResUrl();
+        asset_manager->loadAsset(global_rendering_res_url, global_rendering_res);
 
         // upload ibl, color grading textures
         LevelResourceDesc level_resource_desc;
@@ -181,6 +186,9 @@ namespace Pilot
     {
         RenderSwapData& swap_data = m_swap_context.getRenderSwapData();
 
+        std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
+        ASSERT(asset_manager);
+
         // TODO: update global resources if needed
         if (swap_data.level_resource_desc.has_value())
         {
@@ -247,13 +255,9 @@ namespace Pilot
                     {
                         // TODO: move to default material definition json file
                         material_source = {
-                            AssetManager::getInstance()
-                                .getFullPath("asset/texture/default/albedo.jpg")
-                                .generic_string(),
-                            AssetManager::getInstance().getFullPath("asset/texture/default/mr.jpg").generic_string(),
-                            AssetManager::getInstance()
-                                .getFullPath("asset/texture/default/normal.jpg")
-                                .generic_string(),
+                            asset_manager->getFullPath("asset/texture/default/albedo.jpg").generic_string(),
+                            asset_manager->getFullPath("asset/texture/default/mr.jpg").generic_string(),
+                            asset_manager->getFullPath("asset/texture/default/normal.jpg").generic_string(),
                             "",
                             ""};
                     }
