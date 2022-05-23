@@ -2,17 +2,14 @@
 
 #include "runtime/function/framework/component/motor/motor_component.h"
 #include "runtime/function/physics/physics_system.h"
+#include "runtime/function/global/global_context.h"
 
 namespace Pilot
 {
-    Controller::~Controller() = default;
-
-    CharacterController::~CharacterController() {}
-
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)
     {
         Vector3 desired_position = current_position + displacement;
-        if (PhysicsSystem::getInstance().overlapByCapsule(desired_position, m_capsule))
+        if (g_runtime_global_context.m_physics_system->overlapByCapsule(desired_position, m_capsule))
         {
             desired_position = current_position;
         }

@@ -2,14 +2,17 @@
 
 #include "runtime/platform/file_service/file_service.h"
 #include "runtime/platform/path/path.h"
+
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/config_manager/config_manager.h"
+
+#include "runtime/function/global/global_context.h"
 
 namespace Pilot
 {
     /// helper function: split the input string with separator, and filter the substring
     std::vector<std::string>
-        splitString(std::string input_string, std::string separator, std::string filter_string = "")
+    splitString(std::string input_string, const std::string& separator, const std::string& filter_string = "")
     {
         std::vector<std::string> output_string;
         int                      pos = input_string.find(separator);
@@ -42,23 +45,20 @@ namespace Pilot
 
     void EditorFileService::buildEngineFileTree()
     {
-        ConfigManager& config_manager = ConfigManager::getInstance();
-        Path& path_singleton = Path::getInstance();
-
-        std::string                              asset_folder = config_manager.getAssetFolder().generic_string();
-        const std::vector<std::filesystem::path> file_paths = FileService::getInstance().getFiles(asset_folder);
+        std::string                              asset_folder = g_runtime_global_context.m_config_manager->getAssetFolder().generic_string();
+        const std::vector<std::filesystem::path> file_paths = g_runtime_global_context.m_file_servcie->getFiles(asset_folder);
         std::vector<std::vector<std::string>>    all_file_segments;
         for (const auto& path : file_paths)
         {
-            const std::filesystem::path& relative_path = path_singleton.getRelativePath(asset_folder, path);
-            all_file_segments.emplace_back(path_singleton.getPathSegments(relative_path));
+            const std::filesystem::path& relative_path = Path::getRelativePath(asset_folder, path);
+            all_file_segments.emplace_back(Path::getPathSegments(relative_path));
         }
 
         std::vector<std::shared_ptr<EditorFileNode>> node_array;
 
         m_file_node_array.clear();
         auto root_node = std::make_shared<EditorFileNode>();
-        *root_node = m_root_node;
+        *root_node     = m_root_node;
         m_file_node_array.push_back(root_node);
 
         int all_file_segments_count = all_file_segments.size();
@@ -70,7 +70,7 @@ namespace Pilot
             int file_segment_count = all_file_segments[file_index].size();
             for (int file_segment_index = 0; file_segment_index < file_segment_count; file_segment_index++)
             {
-                auto file_node = std::make_shared<EditorFileNode>();
+                auto file_node         = std::make_shared<EditorFileNode>();
                 file_node->m_file_name = all_file_segments[file_index][file_segment_index];
                 if (depth < file_segment_count - 1)
                 {
@@ -78,7 +78,7 @@ namespace Pilot
                 }
                 else
                 {
-                    const auto& extensions = path_singleton.getFileExtensions(file_paths[file_index]);
+                    const auto& extensions = Path::getFileExtensions(file_paths[file_index]);
                     file_node->m_file_type = std::get<0>(extensions);
                     if (file_node->m_file_type.size() == 0)
                         continue;

@@ -1,32 +1,15 @@
 #pragma once
 
-#include "runtime/engine.h"
-
 #include <filesystem>
 
 namespace Pilot
 {
-    class ConfigManager final : public PublicSingleton<ConfigManager>
+    struct EngineInitParams;
+
+    class ConfigManager
     {
-        friend class PublicSingleton<ConfigManager>;
-
-    private:
-        std::filesystem::path m_root_folder;
-        std::filesystem::path m_asset_folder;
-        std::filesystem::path m_schema_folder;
-        std::filesystem::path m_editor_big_icon_path;
-        std::filesystem::path m_editor_small_icon_path;
-        std::filesystem::path m_editor_font_path;
-
-        std::string m_default_world_url;
-        std::string m_global_rendering_res_url;
-
-    protected:
-        ConfigManager() = default;
-
     public:
         void initialize(const EngineInitParams& init_param);
-
         void clear();
 
         const std::filesystem::path& getRootFolder() const;
@@ -38,5 +21,16 @@ namespace Pilot
 
         const std::string& getDefaultWorldUrl() const;
         const std::string& getGlobalRenderingResUrl() const;
+
+    private:
+        std::filesystem::path m_root_folder;
+        std::filesystem::path m_asset_folder;
+        std::filesystem::path m_schema_folder;
+        std::filesystem::path m_editor_big_icon_path;
+        std::filesystem::path m_editor_small_icon_path;
+        std::filesystem::path m_editor_font_path;
+
+        std::string m_default_world_url;
+        std::string m_global_rendering_res_url;
     };
 } // namespace Pilot

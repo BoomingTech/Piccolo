@@ -1,23 +1,28 @@
 #pragma once
-#include "runtime/function/render/include/render/framebuffer.h"
+
+#include "runtime/function/render/render_entity.h"
+#include "runtime/function/render/render_type.h"
 
 namespace Pilot
 {
-    class EditorTranslationAxis : public RenderMesh
+    class EditorTranslationAxis : public RenderEntity
     {
     public:
         EditorTranslationAxis();
+        RenderMeshData m_mesh_data;
     };
 
-    class EditorRotationAxis : public RenderMesh
+    class EditorRotationAxis : public RenderEntity
     {
     public:
         EditorRotationAxis();
+        RenderMeshData m_mesh_data;
     };
 
-    class EditorScaleAxis : public RenderMesh
+    class EditorScaleAxis : public RenderEntity
     {
     public:
         EditorScaleAxis();
+        RenderMeshData m_mesh_data;
     };
 } // namespace Pilot

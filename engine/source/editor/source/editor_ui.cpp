@@ -1,7 +1,7 @@
 #include "editor/include/editor_ui.h"
 
-#include "editor/include/editor.h"
 #include "editor/include/editor_global_context.h"
+#include "editor/include/editor_input_manager.h"
 #include "editor/include/editor_scene_manager.h"
 
 #include "runtime/core/base/macro.h"
@@ -16,36 +16,36 @@
 
 #include "runtime/function/framework/component/mesh/mesh_component.h"
 #include "runtime/function/framework/component/transform/transform_component.h"
-
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/world/world_manager.h"
+#include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/render/include/render/render.h"
-#include "runtime/function/scene/scene_manager.h"
-#include "runtime/function/ui/ui_system.h"
+#include "runtime/function/render/render_camera.h"
+#include "runtime/function/render/render_system.h"
+#include "runtime/function/render/window_system.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <stb_image.h>
 
 namespace Pilot
 {
     std::vector<std::pair<std::string, bool>> g_editor_node_state_array;
     int                                       g_node_depth = -1;
     void                                      DrawVecControl(const std::string& label,
-        Pilot::Vector3& values,
-        float              resetValue = 0.0f,
-        float              columnWidth = 100.0f);
+                                                             Pilot::Vector3&    values,
+                                                             float              resetValue  = 0.0f,
+                                                             float              columnWidth = 100.0f);
     void                                      DrawVecControl(const std::string& label,
-        Pilot::Quaternion& values,
-        float              resetValue = 0.0f,
-        float              columnWidth = 100.0f);
+                                                             Pilot::Quaternion& values,
+                                                             float              resetValue  = 0.0f,
+                                                             float              columnWidth = 100.0f);
 
-    EditorUI::EditorUI(PilotEditor* editor) : m_editor(editor)
+    EditorUI::EditorUI()
     {
-        Path& path_service = Path::getInstance();
-        const auto& asset_folder = ConfigManager::getInstance().getAssetFolder();
-        m_editor_ui_creator["TreeNodePush"] = [this](std::string name, void* value_ptr) -> void {
-            static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
+        const auto& asset_folder            = g_runtime_global_context.m_config_manager->getAssetFolder();
+        m_editor_ui_creator["TreeNodePush"] = [this](const std::string& name, void* value_ptr) -> void {
+            static ImGuiTableFlags flags      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
             bool                   node_state = false;
             g_node_depth++;
             if (g_node_depth > 0)
@@ -66,7 +66,7 @@ namespace Pilot
             }
             g_editor_node_state_array.emplace_back(std::pair(name.c_str(), node_state));
         };
-        m_editor_ui_creator["TreeNodePop"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["TreeNodePop"] = [this](const std::string& name, void* value_ptr) -> void {
             if (g_editor_node_state_array[g_node_depth].second)
             {
                 ImGui::TreePop();
@@ -74,7 +74,7 @@ namespace Pilot
             g_editor_node_state_array.pop_back();
             g_node_depth--;
         };
-        m_editor_ui_creator["Transform"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["Transform"] = [this](const std::string& name, void* value_ptr) -> void {
             if (g_editor_node_state_array[g_node_depth].second)
             {
                 Transform* trans_ptr = static_cast<Transform*>(value_ptr);
@@ -90,35 +90,35 @@ namespace Pilot
                 DrawVecControl("Scale", trans_ptr->m_scale);
 
                 trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-                    Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
                 trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
-                    Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
                 trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-                    Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.x / 2));
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
                 trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
-                    Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                    Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                    Math::cos(Math::degreesToRadians(degrees_val.x / 2));
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
+                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2));
                 trans_ptr->m_rotation.normalise();
 
                 g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
             }
         };
-        m_editor_ui_creator["int"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["int"] = [this](const std::string& name, void* value_ptr) -> void {
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -136,7 +136,7 @@ namespace Pilot
                 }
             }
         };
-        m_editor_ui_creator["float"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["float"] = [this](const std::string& name, void* value_ptr) -> void {
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -154,9 +154,9 @@ namespace Pilot
                 }
             }
         };
-        m_editor_ui_creator["Vector3"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["Vector3"] = [this](const std::string& name, void* value_ptr) -> void {
             Vector3* vec_ptr = static_cast<Vector3*>(value_ptr);
-            float    val[3] = { vec_ptr->x, vec_ptr->y, vec_ptr->z };
+            float    val[3]  = {vec_ptr->x, vec_ptr->y, vec_ptr->z};
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -177,9 +177,9 @@ namespace Pilot
             vec_ptr->y = val[1];
             vec_ptr->z = val[2];
         };
-        m_editor_ui_creator["Quaternion"] = [this](std::string name, void* value_ptr) -> void {
+        m_editor_ui_creator["Quaternion"] = [this](const std::string& name, void* value_ptr) -> void {
             Quaternion* qua_ptr = static_cast<Quaternion*>(value_ptr);
-            float       val[4] = { qua_ptr->x, qua_ptr->y, qua_ptr->z, qua_ptr->w };
+            float       val[4]  = {qua_ptr->x, qua_ptr->y, qua_ptr->z, qua_ptr->w};
             if (g_node_depth == -1)
             {
                 std::string label = "##" + name;
@@ -201,38 +201,37 @@ namespace Pilot
             qua_ptr->z = val[2];
             qua_ptr->w = val[3];
         };
-        m_editor_ui_creator["std::string"] = [this, &path_service, &asset_folder](std::string name,
-            void* value_ptr) -> void {
-                if (g_node_depth == -1)
+        m_editor_ui_creator["std::string"] = [this, &asset_folder](const std::string& name, void* value_ptr) -> void {
+            if (g_node_depth == -1)
+            {
+                std::string label = "##" + name;
+                ImGui::Text("%s", name.c_str());
+                ImGui::SameLine();
+                ImGui::Text("%s", (*static_cast<std::string*>(value_ptr)).c_str());
+            }
+            else
+            {
+                if (g_editor_node_state_array[g_node_depth].second)
                 {
-                    std::string label = "##" + name;
-                    ImGui::Text("%s", name.c_str());
-                    ImGui::SameLine();
-                    ImGui::Text("%s", (*static_cast<std::string*>(value_ptr)).c_str());
-                }
-                else
-                {
-                    if (g_editor_node_state_array[g_node_depth].second)
+                    std::string full_label = "##" + getLeafUINodeParentLabel() + name;
+                    ImGui::Text("%s", (name + ":").c_str());
+                    std::string value_str = *static_cast<std::string*>(value_ptr);
+                    if (value_str.find_first_of('/') != std::string::npos)
                     {
-                        std::string full_label = "##" + getLeafUINodeParentLabel() + name;
-                        ImGui::Text("%s", (name + ":").c_str());
-                        std::string value_str = *static_cast<std::string*>(value_ptr);
-                        if (value_str.find_first_of('/') != std::string::npos)
+                        std::filesystem::path value_path(value_str);
+                        if (value_path.is_absolute())
                         {
-                            std::filesystem::path value_path(value_str);
-                            if (value_path.is_absolute())
-                            {
-                                value_path = path_service.getRelativePath(asset_folder, value_path);
-                            }
-                            value_str = value_path.generic_string();
-                            if (value_str.size() >= 2 && value_str[0] == '.' && value_str[1] == '.')
-                            {
-                                value_str.clear();
-                            }
+                            value_path = Path::getRelativePath(asset_folder, value_path);
                         }
-                        ImGui::Text("%s", value_str.c_str());
+                        value_str = value_path.generic_string();
+                        if (value_str.size() >= 2 && value_str[0] == '.' && value_str[1] == '.')
+                        {
+                            value_str.clear();
+                        }
                     }
+                    ImGui::Text("%s", value_str.c_str());
                 }
+            }
         };
     }
 
@@ -247,26 +246,15 @@ namespace Pilot
         return parent_label;
     }
 
-    bool EditorUI::isCursorInRect(Vector2 pos, Vector2 size) const
-    {
-        return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
-    }
-
-    void EditorUI::onTick(UIState* uistate)
-    {
-        showEditorUI();
-        processEditorCommand();
-    }
-
     void EditorUI::showEditorUI()
     {
 
-        bool editor_menu_window_open = true;
-        bool asset_window_open = true;
-        bool game_engine_window_open = true;
-        bool file_content_window_open = true;
-        bool detail_window_open = true;
-        bool scene_lights_window_open = true;
+        bool editor_menu_window_open       = true;
+        bool asset_window_open             = true;
+        bool game_engine_window_open       = true;
+        bool file_content_window_open      = true;
+        bool detail_window_open            = true;
+        bool scene_lights_window_open      = true;
         bool scene_lights_data_window_open = true;
 
         showEditorMenu(&editor_menu_window_open);
@@ -278,15 +266,17 @@ namespace Pilot
 
     void EditorUI::showEditorMenu(bool* p_open)
     {
-        ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_DockSpace;
+        ImGuiDockNodeFlags dock_flags   = ImGuiDockNodeFlags_DockSpace;
         ImGuiWindowFlags   window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
-            ImGuiConfigFlags_NoMouseCursorChange | ImGuiWindowFlags_NoBringToFrontOnFocus;
+                                        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
+                                        ImGuiConfigFlags_NoMouseCursorChange | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(main_viewport->WorkPos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(m_io->m_width, m_io->m_height), ImGuiCond_Always);
+        std::array<int, 2> window_size = g_editor_global_context.m_window_system->getWindowSize();
+        ImGui::SetNextWindowSize(ImVec2((float)window_size[0], (float)window_size[1]), ImGuiCond_Always);
+
         ImGui::SetNextWindowViewport(main_viewport->ID);
 
         ImGui::Begin("Editor menu", p_open, window_flags);
@@ -298,8 +288,9 @@ namespace Pilot
 
             ImGui::DockBuilderAddNode(main_docking_id, dock_flags);
             ImGui::DockBuilderSetNodePos(main_docking_id,
-                ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y + 18.0f));
-            ImGui::DockBuilderSetNodeSize(main_docking_id, ImVec2(m_io->m_width, m_io->m_height - 18.0f));
+                                         ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y + 18.0f));
+            ImGui::DockBuilderSetNodeSize(main_docking_id,
+                                          ImVec2((float)window_size[0], (float)window_size[1] - 18.0f));
 
             ImGuiID center = main_docking_id;
             ImGuiID left;
@@ -328,15 +319,16 @@ namespace Pilot
             {
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
-                    WorldManager::getInstance().reloadCurrentLevel();
+                    g_runtime_global_context.m_world_manager->reloadCurrentLevel();
                     g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
                 {
-                    WorldManager::getInstance().saveCurrentLevel();
+                    g_runtime_global_context.m_world_manager->saveCurrentLevel();
                 }
                 if (ImGui::MenuItem("Exit"))
                 {
+                    g_editor_global_context.m_engine_runtime->shutdownEngine();
                     exit(0);
                 }
                 ImGui::EndMenu();
@@ -359,7 +351,8 @@ namespace Pilot
             return;
         }
 
-        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_active_level =
+            g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (current_active_level == nullptr)
             return;
 
@@ -367,11 +360,12 @@ namespace Pilot
         for (auto& id_object_pair : all_gobjects)
         {
             const GObjectID          object_id = id_object_pair.first;
-            std::shared_ptr<GObject> object = id_object_pair.second;
-            const std::string        name = object->getName();
+            std::shared_ptr<GObject> object    = id_object_pair.second;
+            const std::string        name      = object->getName();
             if (name.size() > 0)
             {
-                if (ImGui::Selectable(name.c_str(), g_editor_global_context.m_scene_manager->getSelectedObjectID() == object_id))
+                if (ImGui::Selectable(name.c_str(),
+                                      g_editor_global_context.m_scene_manager->getSelectedObjectID() == object_id))
                 {
                     if (g_editor_global_context.m_scene_manager->getSelectedObjectID() != object_id)
                     {
@@ -417,7 +411,7 @@ namespace Pilot
                 if (Reflection::TypeMeta::newArrayAccessorFromName(fields_count.getFieldTypeName(), array_accessor))
                 {
                     void* field_instance = fields_count.get(instance.m_instance);
-                    int   array_count = array_accessor.getSize(field_instance);
+                    int   array_count    = array_accessor.getSize(field_instance);
                     m_editor_ui_creator["TreeNodePush"](
                         std::string(fields_count.getFieldName()) + "[" + std::to_string(array_count) + "]", nullptr);
                     auto item_type_meta_item =
@@ -467,13 +461,13 @@ namespace Pilot
                         continue;
                     }
                     m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                        fields_count.get(instance.m_instance));
+                                                                         fields_count.get(instance.m_instance));
                 }
             }
             else
             {
                 m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                    fields_count.get(instance.m_instance));
+                                                                     fields_count.get(instance.m_instance));
             }
         }
         delete[] fields;
@@ -507,8 +501,8 @@ namespace Pilot
         ImGui::SameLine();
         ImGui::InputText("##Name", cname, IM_ARRAYSIZE(cname), ImGuiInputTextFlags_ReadOnly);
 
-        static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
-        auto&& selected_object_components = selected_object->getComponents();
+        static ImGuiTableFlags flags                      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
+        auto&&                 selected_object_components = selected_object->getComponents();
         for (auto component_ptr : selected_object_components)
         {
             m_editor_ui_creator["TreeNodePush"](("<" + component_ptr.getTypeName() + ">").c_str(), nullptr);
@@ -534,8 +528,8 @@ namespace Pilot
         }
 
         static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
-            ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_NoBordersInBody;
+                                       ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
+                                       ImGuiTableFlags_NoBordersInBody;
 
         if (ImGui::BeginTable("File Content", 2, flags))
         {
@@ -563,7 +557,7 @@ namespace Pilot
 
     void EditorUI::showEditorGameWindow(bool* p_open)
     {
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO&         io           = ImGui::GetIO();
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_MenuBar;
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -574,29 +568,29 @@ namespace Pilot
             return;
         }
 
-        static bool trans_button_ckecked = false;
+        static bool trans_button_ckecked  = false;
         static bool rotate_button_ckecked = false;
-        static bool scale_button_ckecked = false;
+        static bool scale_button_ckecked  = false;
 
         switch (g_editor_global_context.m_scene_manager->getEditorAxisMode())
         {
-        case EditorAxisMode::TranslateMode:
-            trans_button_ckecked = true;
-            rotate_button_ckecked = false;
-            scale_button_ckecked = false;
-            break;
-        case EditorAxisMode::RotateMode:
-            trans_button_ckecked = false;
-            rotate_button_ckecked = true;
-            scale_button_ckecked = false;
-            break;
-        case EditorAxisMode::ScaleMode:
-            trans_button_ckecked = false;
-            rotate_button_ckecked = false;
-            scale_button_ckecked = true;
-            break;
-        default:
-            break;
+            case EditorAxisMode::TranslateMode:
+                trans_button_ckecked  = true;
+                rotate_button_ckecked = false;
+                scale_button_ckecked  = false;
+                break;
+            case EditorAxisMode::RotateMode:
+                trans_button_ckecked  = false;
+                rotate_button_ckecked = true;
+                scale_button_ckecked  = false;
+                break;
+            case EditorAxisMode::ScaleMode:
+                trans_button_ckecked  = false;
+                rotate_button_ckecked = false;
+                scale_button_ckecked  = true;
+                break;
+            default:
+                break;
         }
 
         if (ImGui::BeginMenuBar())
@@ -616,7 +610,15 @@ namespace Pilot
             ImGui::SameLine();
 
             float indent_val = 0.0f;
-            indent_val = m_engine_window_size.x - 100.0f * getIndentScale();
+
+#if defined(__GNUC__) && defined(__MACH__)
+            float indent_scale = 1.0f;
+#else // Not tested on Linux
+            float x_scale, y_scale;
+            glfwGetWindowContentScale(g_editor_global_context.m_window_system->getWindow(), &x_scale, &y_scale);
+            float indent_scale = fmaxf(1.0f, fmaxf(x_scale, y_scale));
+#endif
+            indent_val = g_editor_global_context.m_input_manager->getEngineWindowSize().x - 100.0f * indent_scale;
 
             ImGui::Indent(indent_val);
             if (g_is_editor_mode)
@@ -625,9 +627,10 @@ namespace Pilot
                 ImGui::Button("Editor Mode");
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
-                    g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
                     g_is_editor_mode = false;
-                    m_io->setFocusMode(true);
+                    g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
+                    g_editor_global_context.m_input_manager->resetEditorCommand();
+                    g_editor_global_context.m_window_system->setFocusMode(true);
                 }
                 ImGui::PopID();
             }
@@ -636,11 +639,14 @@ namespace Pilot
                 ImGui::Button("Game Mode");
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
-                    g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
                     g_is_editor_mode = true;
-                    SceneManager::getInstance().setMainViewMatrix(g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
+                    g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
+                    g_runtime_global_context.m_input_system->resetGameCommand();
+                    g_editor_global_context.m_render_system->getRenderCamera()->setMainViewMatrix(
+                        g_editor_global_context.m_scene_manager->getEditorCamera()->getViewMatrix());
                 }
             }
+
             ImGui::Unindent();
             ImGui::EndMenuBar();
         }
@@ -651,18 +657,19 @@ namespace Pilot
         }
         else
         {
-            ImGui::TextColored(
-                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Current editor camera move speed: [%f]", m_camera_speed);
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
+                               "Current editor camera move speed: [%f]",
+                               g_editor_global_context.m_input_manager->getCameraSpeed());
         }
 
         auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
 
-        Vector2 new_window_pos = { 0.0f, 0.0f };
-        Vector2 new_window_size = { 0.0f, 0.0f };
-        new_window_pos.x = ImGui::GetWindowPos().x;
-        new_window_pos.y = ImGui::GetWindowPos().y + menu_bar_rect.Min.y;
-        new_window_size.x = ImGui::GetWindowSize().x;
-        new_window_size.y = ImGui::GetWindowSize().y - menu_bar_rect.Min.y;
+        Vector2 new_window_pos  = {0.0f, 0.0f};
+        Vector2 new_window_size = {0.0f, 0.0f};
+        new_window_pos.x        = ImGui::GetWindowPos().x;
+        new_window_pos.y        = ImGui::GetWindowPos().y + menu_bar_rect.Min.y;
+        new_window_size.x       = ImGui::GetWindowSize().x;
+        new_window_size.y       = ImGui::GetWindowSize().y - menu_bar_rect.Min.y;
 
         // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
@@ -671,17 +678,16 @@ namespace Pilot
             // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
             // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
             float dpi_scale = main_viewport->DpiScale;
-            m_editor->onWindowChanged(new_window_pos.x * dpi_scale,
-                new_window_pos.y * dpi_scale,
-                new_window_size.x * dpi_scale,
-                new_window_size.y * dpi_scale);
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(new_window_pos.x * dpi_scale,
+                                                                                  new_window_pos.y * dpi_scale,
+                                                                                  new_window_size.x * dpi_scale,
+                                                                                  new_window_size.y * dpi_scale);
 #else
-            m_editor->onWindowChanged(new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
+            g_runtime_global_context.m_render_system->updateEngineContentViewport(
+                new_window_pos.x, new_window_pos.y, new_window_size.x, new_window_size.y);
 #endif
-
-            m_engine_window_pos = new_window_pos;
-            m_engine_window_size = new_window_size;
-            SceneManager::getInstance().setWindowSize(m_engine_window_size);
+            g_editor_global_context.m_input_manager->setEngineWindowPos(new_window_pos);
+            g_editor_global_context.m_input_manager->setEngineWindowSize(new_window_size);
         }
 
         ImGui::End();
@@ -694,7 +700,7 @@ namespace Pilot
             ImGui::PushID(string_id);
             ImVec4 check_button_color = ImVec4(93.0f / 255.0f, 10.0f / 255.0f, 66.0f / 255.0f, 1.00f);
             ImGui::PushStyleColor(ImGuiCol_Button,
-                ImVec4(check_button_color.x, check_button_color.y, check_button_color.z, 0.40f));
+                                  ImVec4(check_button_color.x, check_button_color.y, check_button_color.z, 0.40f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, check_button_color);
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, check_button_color);
             ImGui::Button(string_id);
@@ -733,8 +739,8 @@ namespace Pilot
         else
         {
             ImGui::TreeNodeEx(node->m_file_name.c_str(),
-                ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
-                ImGuiTreeNodeFlags_SpanFullWidth);
+                              ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                                  ImGuiTreeNodeFlags_SpanFullWidth);
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             {
                 onFileContentItemClicked(node);
@@ -750,7 +756,7 @@ namespace Pilot
         if (node->m_file_type != "object")
             return;
 
-        std::shared_ptr<Level> level = WorldManager::getInstance().getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         if (level == nullptr)
             return;
 
@@ -758,9 +764,9 @@ namespace Pilot
 
         ObjectInstanceRes new_object_instance_res;
         new_object_instance_res.m_name =
-            "New_" + Path::getInstance().getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
+            "New_" + Path::getFilePureName(node->m_file_name) + "_" + std::to_string(new_object_index);
         new_object_instance_res.m_definition =
-            AssetManager::getInstance().getFullPath(node->m_file_path).generic_string();
+            g_runtime_global_context.m_asset_manager->getFullPath(node->m_file_path).generic_string();
 
         size_t new_gobject_id = level->createObject(new_object_instance_res);
         if (new_gobject_id != k_invalid_gobject_id)
@@ -769,170 +775,134 @@ namespace Pilot
         }
     }
 
-    void EditorUI::updateCursorOnAxis(Vector2 cursor_uv)
+    inline void windowContentScaleUpdate(float scale)
     {
-        if (g_editor_global_context.m_scene_manager->getEditorCamera())
-        {
-            Vector2 window_size(m_engine_window_size.x, m_engine_window_size.y);
-            m_cursor_on_axis = m_editor->onUpdateCursorOnAxis(cursor_uv, window_size);
-        }
+#if defined(__GNUC__) && defined(__MACH__)
+        float font_scale               = fmaxf(1.0f, scale);
+        ImGui::GetIO().FontGlobalScale = 1.0f / font_scale;
+#endif
+        // TOOD: Reload fonts if DPI scale is larger than previous font loading DPI scale
     }
 
-    void EditorUI::onReset()
+    inline void windowContentScaleCallback(GLFWwindow* window, float x_scale, float y_scale)
     {
-        // to do
+        windowContentScaleUpdate(fmaxf(x_scale, y_scale));
     }
 
-    void EditorUI::registerInput()
+    void EditorUI::initialize(WindowUIInitInfo init_info)
     {
-        m_io->registerOnResetFunc(std::bind(&EditorUI::onReset, this));
-        m_io->registerOnCursorPosFunc(
-            std::bind(&EditorUI::onCursorPos, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnCursorEnterFunc(std::bind(&EditorUI::onCursorEnter, this, std::placeholders::_1));
-        m_io->registerOnScrollFunc(std::bind(&EditorUI::onScroll, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnMouseButtonFunc(
-            std::bind(&EditorUI::onMouseButtonClicked, this, std::placeholders::_1, std::placeholders::_2));
-        m_io->registerOnWindowCloseFunc(std::bind(&EditorUI::onWindowClosed, this));
-        return;
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
+        ASSERT(config_manager);
+
+        // create imgui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        // set ui content scale
+        float x_scale, y_scale;
+        glfwGetWindowContentScale(init_info.window_system->getWindow(), &x_scale, &y_scale);
+        float content_scale = fmaxf(1.0f, fmaxf(x_scale, y_scale));
+        windowContentScaleUpdate(content_scale);
+        glfwSetWindowContentScaleCallback(init_info.window_system->getWindow(), windowContentScaleCallback);
+
+        // load font for imgui
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigDockingAlwaysTabBar         = true;
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+        io.Fonts->AddFontFromFileTTF(
+            config_manager->getEditorFontPath().generic_string().data(), content_scale * 16, nullptr, nullptr);
+        io.Fonts->Build();
+
+        ImGuiStyle& style     = ImGui::GetStyle();
+        style.WindowPadding   = ImVec2(1.0, 0);
+        style.FramePadding    = ImVec2(14.0, 2.0f);
+        style.ChildBorderSize = 0.0f;
+        style.FrameRounding   = 5.0f;
+        style.FrameBorderSize = 1.5f;
+
+        // set imgui color style
+        setUIColorStyle();
+
+        // setup window icon
+        GLFWimage   window_icon[2];
+        std::string big_icon_path_string   = config_manager->getEditorBigIconPath().generic_string();
+        std::string small_icon_path_string = config_manager->getEditorSmallIconPath().generic_string();
+        window_icon[0].pixels =
+            stbi_load(big_icon_path_string.data(), &window_icon[0].width, &window_icon[0].height, 0, 4);
+        window_icon[1].pixels =
+            stbi_load(small_icon_path_string.data(), &window_icon[1].width, &window_icon[1].height, 0, 4);
+        glfwSetWindowIcon(init_info.window_system->getWindow(), 2, window_icon);
+        stbi_image_free(window_icon[0].pixels);
+        stbi_image_free(window_icon[1].pixels);
+
+        // initialize imgui vulkan render backend
+        init_info.render_system->initializeUIRenderBackend(this);
     }
 
-    void EditorUI::processEditorCommand()
+    void EditorUI::setUIColorStyle()
     {
-        float      camera_speed = m_camera_speed;
-        std::shared_ptr editor_camera = g_editor_global_context.m_scene_manager->getEditorCamera();
-        Quaternion camera_rotate = editor_camera->rotation().inverse();
-        Vector3    camera_relative_pos(0, 0, 0);
+        ImGuiStyle* style  = &ImGui::GetStyle();
+        ImVec4*     colors = style->Colors;
 
-        unsigned int command = InputSystem::getInstance().getEditorCommand();
-        if ((unsigned int)EditorCommand::camera_foward & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3{ 0, camera_speed, 0 };
-        }
-        if ((unsigned int)EditorCommand::camera_back & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3{ 0, -camera_speed, 0 };
-        }
-        if ((unsigned int)EditorCommand::camera_left & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3{ -camera_speed, 0, 0 };
-        }
-        if ((unsigned int)EditorCommand::camera_right & command)
-        {
-            camera_relative_pos += camera_rotate * Vector3{ camera_speed, 0, 0 };
-        }
-        if ((unsigned int)EditorCommand::camera_up & command)
-        {
-            camera_relative_pos += Vector3{ 0, 0, camera_speed };
-        }
-        if ((unsigned int)EditorCommand::camera_down & command)
-        {
-            camera_relative_pos += Vector3{ 0, 0, -camera_speed };
-        }
-        if ((unsigned int)EditorCommand::delete_object & command)
-        {
-            g_editor_global_context.m_scene_manager->onDeleteSelectedGObject();
-        }
-
-        editor_camera->move(camera_relative_pos);
+        colors[ImGuiCol_Text]                  = ImVec4(0.4745f, 0.4745f, 0.4745f, 1.00f);
+        colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+        colors[ImGuiCol_WindowBg]              = ImVec4(0.0078f, 0.0078f, 0.0078f, 1.00f);
+        colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_PopupBg]               = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+        colors[ImGuiCol_Border]                = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+        colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_FrameBg]               = ImVec4(0.047f, 0.047f, 0.047f, 0.5411f);
+        colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.196f, 0.196f, 0.196f, 0.40f);
+        colors[ImGuiCol_FrameBgActive]         = ImVec4(0.294f, 0.294f, 0.294f, 0.67f);
+        colors[ImGuiCol_TitleBg]               = ImVec4(0.0039f, 0.0039f, 0.0039f, 1.00f);
+        colors[ImGuiCol_TitleBgActive]         = ImVec4(0.0039f, 0.0039f, 0.0039f, 1.00f);
+        colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+        colors[ImGuiCol_MenuBarBg]             = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+        colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+        colors[ImGuiCol_CheckMark]             = ImVec4(93.0f / 255.0f, 10.0f / 255.0f, 66.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_SliderGrab]            = colors[ImGuiCol_CheckMark];
+        colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.3647f, 0.0392f, 0.2588f, 0.50f);
+        colors[ImGuiCol_Button]                = ImVec4(0.0117f, 0.0117f, 0.0117f, 1.00f);
+        colors[ImGuiCol_ButtonHovered]         = ImVec4(0.0235f, 0.0235f, 0.0235f, 1.00f);
+        colors[ImGuiCol_ButtonActive]          = ImVec4(0.0353f, 0.0196f, 0.0235f, 1.00f);
+        colors[ImGuiCol_Header]                = ImVec4(0.1137f, 0.0235f, 0.0745f, 0.588f);
+        colors[ImGuiCol_HeaderHovered]         = ImVec4(5.0f / 255.0f, 5.0f / 255.0f, 5.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_HeaderActive]          = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_Separator]             = ImVec4(0.0f, 0.0f, 0.0f, 0.50f);
+        colors[ImGuiCol_SeparatorHovered]      = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_SeparatorActive]       = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_ResizeGrip]            = ImVec4(0.26f, 0.59f, 0.98f, 0.20f);
+        colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+        colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+        colors[ImGuiCol_Tab]                   = ImVec4(6.0f / 255.0f, 6.0f / 255.0f, 8.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_TabHovered]            = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 150.0f / 255.0f);
+        colors[ImGuiCol_TabActive]             = ImVec4(47.0f / 255.0f, 6.0f / 255.0f, 29.0f / 255.0f, 1.0f);
+        colors[ImGuiCol_TabUnfocused]          = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 25.0f / 255.0f);
+        colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(6.0f / 255.0f, 6.0f / 255.0f, 8.0f / 255.0f, 200.0f / 255.0f);
+        colors[ImGuiCol_DockingPreview]        = ImVec4(47.0f / 255.0f, 6.0f / 255.0f, 29.0f / 255.0f, 0.7f);
+        colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.20f, 0.20f, 0.20f, 0.00f);
+        colors[ImGuiCol_PlotLines]             = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+        colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+        colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_TableBorderStrong]     = ImVec4(2.0f / 255.0f, 2.0f / 255.0f, 2.0f / 255.0f, 1.0f);
+        colors[ImGuiCol_TableBorderLight]      = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+        colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+        colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+        colors[ImGuiCol_DragDropTarget]        = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+        colors[ImGuiCol_NavHighlight]          = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+        colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+        colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
 
-    void EditorUI::onCursorPos(double xpos, double ypos)
-    {
-        if (!g_is_editor_mode)
-            return;
-
-        float angularVelocity =
-            180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
-        if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
-        {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
-            {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                g_editor_global_context.m_scene_manager->getEditorCamera()->rotate(Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
-            }
-            else if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
-            {
-                g_editor_global_context.m_scene_manager->moveEntity(xpos, ypos, m_mouse_x, m_mouse_y, m_engine_window_pos, m_engine_window_size,
-                    m_cursor_on_axis, g_editor_global_context.m_scene_manager->getSelectedObjectMatrix());
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            }
-            else
-            {
-                glfwSetInputMode(m_io->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-                if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-                {
-                    Vector2 cursor_uv = Vector2((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                        (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
-                    updateCursorOnAxis(cursor_uv);
-                }
-            }
-        }
-        m_mouse_x = xpos;
-        m_mouse_y = ypos;
-    }
-
-    void EditorUI::onCursorEnter(int entered)
-    {
-        if (!entered) // lost focus
-        {
-            m_mouse_x = m_mouse_y = -1.0f;
-        }
-    }
-
-    void EditorUI::onScroll(double xoffset, double yoffset)
-    {
-        if (!g_is_editor_mode)
-        {
-            return;
-        }
-
-        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-        {
-            if (m_io->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
-            {
-                if (yoffset > 0)
-                {
-                    m_camera_speed *= 1.2f;
-                }
-                else
-                {
-                    m_camera_speed *= 0.8f;
-                }
-            }
-            else
-            {
-                g_editor_global_context.m_scene_manager->getEditorCamera()->zoom((float)yoffset *
-                    2.0f); // wheel scrolled up = zoom in by 2 extra degrees
-            }
-        }
-    }
-
-    void EditorUI::onMouseButtonClicked(int key, int action)
-    {
-        if (!g_is_editor_mode)
-            return;
-        if (m_cursor_on_axis != 3)
-            return;
-
-        std::shared_ptr<Level> current_active_level = WorldManager::getInstance().getCurrentActiveLevel().lock();
-        if (current_active_level == nullptr)
-            return;
-
-        if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
-        {
-            if (key == GLFW_MOUSE_BUTTON_LEFT)
-            {
-                Vector2 picked_uv((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                    (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
-                size_t  select_mesh_id = m_editor->getGuidOfPickedMesh(picked_uv);
-
-                size_t gobject_id = SceneManager::getInstance().getGObjectIDByMeshID(select_mesh_id);
-                g_editor_global_context.m_scene_manager->onGObjectSelected(gobject_id);
-            }
-        }
-    }
-    void EditorUI::onWindowClosed() { PilotEngine::getInstance().shutdownEngine(); }
+    void EditorUI::preRender() { showEditorUI(); }
 
     void DrawVecControl(const std::string& label, Pilot::Vector3& values, float resetValue, float columnWidth)
     {
@@ -944,14 +914,14 @@ namespace Pilot
         ImGui::NextColumn();
 
         ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
         float  lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-        ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+        ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
         if (ImGui::Button("X", buttonSize))
             values.x = resetValue;
         ImGui::PopStyleColor(3);
@@ -961,9 +931,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.45f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.55f, 0.3f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.45f, 0.2f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.55f, 0.3f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
         if (ImGui::Button("Y", buttonSize))
             values.y = resetValue;
         ImGui::PopStyleColor(3);
@@ -973,9 +943,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
         if (ImGui::Button("Z", buttonSize))
             values.z = resetValue;
         ImGui::PopStyleColor(3);
@@ -1000,14 +970,14 @@ namespace Pilot
         ImGui::NextColumn();
 
         ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2 {0, 0});
 
         float  lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-        ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+        ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.9f, 0.2f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.8f, 0.1f, 0.15f, 1.0f});
         if (ImGui::Button("X", buttonSize))
             values.x = resetValue;
         ImGui::PopStyleColor(3);
@@ -1017,9 +987,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.45f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.55f, 0.3f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.45f, 0.2f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.3f, 0.55f, 0.3f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.2f, 0.45f, 0.2f, 1.0f});
         if (ImGui::Button("Y", buttonSize))
             values.y = resetValue;
         ImGui::PopStyleColor(3);
@@ -1029,9 +999,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.2f, 0.35f, 0.9f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.1f, 0.25f, 0.8f, 1.0f});
         if (ImGui::Button("Z", buttonSize))
             values.z = resetValue;
         ImGui::PopStyleColor(3);
@@ -1041,9 +1011,9 @@ namespace Pilot
         ImGui::PopItemWidth();
         ImGui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.25f, 0.5f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.35f, 0.6f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.5f, 0.25f, 0.5f, 1.0f });
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4 {0.5f, 0.25f, 0.5f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4 {0.6f, 0.35f, 0.6f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4 {0.5f, 0.25f, 0.5f, 1.0f});
         if (ImGui::Button("W", buttonSize))
             values.w = resetValue;
         ImGui::PopStyleColor(3);

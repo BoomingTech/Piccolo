@@ -10,6 +10,11 @@ add_executable(${TARGET_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES} ${EDITOR_RESOU
 
 add_compile_definitions("PILOT_ROOT_DIR=${BINARY_ROOT_DIR}")
 
+target_include_directories(
+  ${TARGET_NAME} 
+  PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/stb>
+)
+
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "PilotEditor")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Engine")
 

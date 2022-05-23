@@ -1,7 +1,7 @@
 #pragma once
 
-#include "runtime/core/base/public_singleton.h"
 #include "runtime/core/math/transform.h"
+
 #include "runtime/function/physics/collision_detection.h"
 #include "runtime/function/physics/physics_actor.h"
 
@@ -11,7 +11,7 @@
 
 namespace Pilot
 {
-    class PhysicsSystem : public PublicSingleton<PhysicsSystem>
+    class PhysicsSystem
     {
     public:
         void tick(float delta_time);

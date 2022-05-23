@@ -1,5 +1,7 @@
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include "runtime/engine.h"
+
 #include <fstream>
 #include <string>
 

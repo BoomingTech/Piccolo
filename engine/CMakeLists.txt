@@ -4,7 +4,7 @@ set(THIRD_PARTY_DIR "${ENGINE_ROOT_DIR}/3rdparty")
 set(ENGINE_ASSET_DIR "/asset")
 set(ENGINE_SCHEMA_DIR "/schema")
 
-if(MSVC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/MP")
     set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PilotEditor)
 endif()
