@@ -328,6 +328,7 @@ namespace Pilot
                 }
                 if (ImGui::MenuItem("Exit"))
                 {
+                    g_editor_global_context.m_engine_runtime->shutdownEngine();
                     exit(0);
                 }
                 ImGui::EndMenu();
