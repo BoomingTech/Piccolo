@@ -31,10 +31,10 @@ namespace Pilot
 
         m_asset_manager = std::make_shared<AssetManager>();
 
+        m_physics_system = std::make_shared<PhysicsSystem>();
+
         m_world_manager = std::make_shared<WorldManager>();
         m_world_manager->initialize();
-
-        m_physics_system = std::make_shared<PhysicsSystem>();
 
         m_window_system = std::make_shared<WindowSystem>();
         WindowCreateInfo window_create_info;
@@ -58,15 +58,16 @@ namespace Pilot
 
         m_window_system.reset();
 
-        m_physics_system.reset();
-
         m_scene_manager.reset();
 
         m_world_manager.reset();
 
+        m_physics_system.reset();
+
         m_input_system.reset();
 
         m_asset_manager.reset();
+
 
         m_logger_system.reset();
 
