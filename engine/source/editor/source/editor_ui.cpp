@@ -320,6 +320,7 @@ namespace Pilot
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
                     g_runtime_global_context.m_world_manager->reloadCurrentLevel();
+                    g_runtime_global_context.m_render_system->clearForLevelReloading();
                     g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
