@@ -53,6 +53,8 @@ namespace Pilot
         GuidAllocator<GameObjectPartId>& getGOInstanceIdAllocator();
         GuidAllocator<MeshSourceDesc>&   getMeshAssetIdAllocator();
 
+        void clearForLevelReloading();
+
     private:
         RENDER_PIPELINE_TYPE m_render_pipeline_type {RENDER_PIPELINE_TYPE::DEFERRED_PIPELINE};
 
