@@ -4,13 +4,14 @@
 
 #include "runtime/resource/res_type/components/mesh.h"
 
-#include <vector>
+#include "runtime/function/render/render_object.h"
 
-// TODO PGameObjectComponentDesc should be converted to StaticMeshData
-#include "runtime/function/scene/scene_object.h"
+#include <vector>
 
 namespace Pilot
 {
+    class RenderSwapContext;
+
     REFLECTION_TYPE(MeshComponent)
     CLASS(MeshComponent : public Component, WhiteListFields)
     {
@@ -20,14 +21,16 @@ namespace Pilot
 
         void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
-        const std::vector<GameObjectComponentDesc>& getRawMeshes() const { return m_raw_meshes; }
+        const std::vector<GameObjectPartDesc>& getRawMeshes() const { return m_raw_meshes; }
 
         void tick(float delta_time) override;
+
+        static RenderSwapContext* m_swap_context;
 
     private:
         META(Enable)
         MeshComponentRes m_mesh_res;
 
-        std::vector<GameObjectComponentDesc> m_raw_meshes;
+        std::vector<GameObjectPartDesc> m_raw_meshes;
     };
 } // namespace Pilot

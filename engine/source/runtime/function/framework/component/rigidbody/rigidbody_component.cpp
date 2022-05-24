@@ -1,11 +1,11 @@
 #include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
 
 #include "runtime/core/base/macro.h"
-#include "runtime/core/base/public_singleton.h"
 
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/object/object.h"
 #include "runtime/function/physics/physics_system.h"
+#include "runtime/function/global/global_context.h"
 
 namespace Pilot
 {
@@ -20,7 +20,7 @@ namespace Pilot
             return;
         }
 
-        m_physics_actor = PhysicsSystem::getInstance().createPhysicsActor(
+        m_physics_actor = g_runtime_global_context.m_physics_system->createPhysicsActor(
             parent_object, parent_transform->getTransformConst(), m_rigidbody_res);
     }
 
@@ -28,7 +28,7 @@ namespace Pilot
     {
         if (m_physics_actor)
         {
-            PhysicsSystem::getInstance().removePhyicsActor(m_physics_actor);
+            g_runtime_global_context.m_physics_system->removePhyicsActor(m_physics_actor);
             m_physics_actor = nullptr;
         }
     }

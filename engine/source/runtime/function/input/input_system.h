@@ -1,6 +1,5 @@
 #pragma once
 
-#include "runtime/core/base/public_singleton.h"
 #include "runtime/core/math/math.h"
 
 namespace Pilot
@@ -20,14 +19,14 @@ namespace Pilot
 
     extern unsigned int k_complement_control_command;
 
-    class InputSystem : public PublicSingleton<InputSystem>
+    class InputSystem 
     {
-        friend class PublicSingleton<InputSystem>;
 
     public:
         void onKey(int key, int scancode, int action, int mods);
         void onCursorPos(double current_cursor_x, double current_cursor_y);
 
+        void initialize();
         void tick();
         void clear();
 
@@ -39,9 +38,6 @@ namespace Pilot
 
         void resetGameCommand() { m_game_command = 0; }
         unsigned int getGameCommand() const { return m_game_command; }
-
-    protected:
-        InputSystem() = default;
 
     private:
         void onKeyInGameMode(int key, int scancode, int action, int mods);

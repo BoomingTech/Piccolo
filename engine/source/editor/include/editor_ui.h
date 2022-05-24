@@ -5,8 +5,7 @@
 #include "runtime/core/math/vector2.h"
 
 #include "runtime/function/framework/object/object.h"
-#include "runtime/function/render/include/render/surface.h"
-#include "runtime/function/scene/scene_object.h"
+#include "runtime/function/ui/window_ui.h"
 
 #include "editor/include/editor_file_service.h"
 
@@ -17,12 +16,13 @@
 namespace Pilot
 {
     class PilotEditor;
+    class WindowSystem;
+    class RenderSystem;
 
-    class EditorUI : public SurfaceUI
+    class EditorUI : public WindowUI
     {
     public:
         EditorUI();
-        void onTick(UIState* uistate) override;
 
     private:
         void        onFileContentItemClicked(EditorFileNode* node);
@@ -38,6 +38,12 @@ namespace Pilot
         void showEditorFileContentWindow(bool* p_open);
         void showEditorGameWindow(bool* p_open);
         void showEditorDetailWindow(bool* p_open);
+
+        void setUIColorStyle();
+
+    public:
+        virtual void initialize(WindowUIInitInfo init_info) override final;
+        virtual void preRender() override final;
 
     private:
         std::unordered_map<std::string, std::function<void(std::string, void*)>> m_editor_ui_creator;

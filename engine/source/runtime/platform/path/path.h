@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/core/base/public_singleton.h"
-
 #include <filesystem>
 #include <string>
 #include <tuple>
@@ -9,7 +7,7 @@
 
 namespace Pilot
 {
-    class Path : public PublicSingleton<Path>
+    class Path
     {
     public:
         static const std::filesystem::path getRelativePath(const std::filesystem::path& directory,
@@ -17,9 +15,9 @@ namespace Pilot
 
         static const std::vector<std::string> getPathSegments(const std::filesystem::path& file_path) ;
 
-        const std::tuple<std::string, std::string, std::string>
-        getFileExtensions(const std::filesystem::path& file_path) const;
+        static const std::tuple<std::string, std::string, std::string>
+        getFileExtensions(const std::filesystem::path& file_path);
 
-        const std::string getFilePureName(const std::string) const;
+        static const std::string getFilePureName(const std::string);
     };
 } // namespace Pilot
