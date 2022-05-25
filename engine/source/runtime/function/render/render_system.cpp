@@ -172,6 +172,13 @@ namespace Pilot
 
     GuidAllocator<MeshSourceDesc>& RenderSystem::getMeshAssetIdAllocator() { return m_mesh_asset_id_allocator; }
 
+    void RenderSystem::clearForLevelReloading()
+    {
+        m_instance_id_allocator.clear();
+        m_mesh_object_id_map.clear();
+        m_render_scene->m_render_entities.clear();
+    }
+
     void RenderSystem::setRenderPipelineType(RENDER_PIPELINE_TYPE pipeline_type)
     {
         m_render_pipeline_type = pipeline_type;
