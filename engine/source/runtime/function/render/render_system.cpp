@@ -6,12 +6,16 @@
 #include "runtime/resource/config_manager/config_manager.h"
 
 #include "runtime/function/render/render_camera.h"
+#include "runtime/function/render/render_pass.h"
 #include "runtime/function/render/render_pipeline.h"
 #include "runtime/function/render/render_resource.h"
 #include "runtime/function/render/render_resource_base.h"
 #include "runtime/function/render/render_scene.h"
-#include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/window_system.h"
+
+#include "runtime/function/render/passes/main_camera_pass.h"
+
+#include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 
 namespace Pilot
 {
@@ -45,7 +49,6 @@ namespace Pilot
 
         m_render_resource = std::make_shared<RenderResource>();
         m_render_resource->uploadGlobalRenderResource(m_rhi, level_resource_desc);
-        m_render_resource->setVisibleNodesReference();
 
         // setup render camera
         const CameraPose& camera_pose = global_rendering_res.m_camera_config.m_pose;
@@ -62,6 +65,7 @@ namespace Pilot
         m_render_scene->m_directional_light.m_direction =
             global_rendering_res.m_directional_light.m_direction.normalisedCopy();
         m_render_scene->m_directional_light.m_color = global_rendering_res.m_directional_light.m_color.toVector3();
+        m_render_scene->setVisibleNodesReference();
 
         // initialize render pipeline
         RenderPipelineInitInfo pipeline_init_info;
@@ -71,9 +75,15 @@ namespace Pilot
         m_render_pipeline->m_rhi = m_rhi;
         m_render_pipeline->initialize(pipeline_init_info);
 
-        // descriptor layout in main camera pass will be used when uploading resource
-        std::static_pointer_cast<RenderResource>(m_render_resource)->m_main_camera_pass =
-            m_render_pipeline->m_main_camera_pass;
+        // descriptor set layout in main camera pass will be used when uploading resource
+        std::static_pointer_cast<RenderResource>(m_render_resource)->m_mesh_descriptor_set_layout =
+            &static_cast<RenderPass*>(m_render_pipeline->m_main_camera_pass.get())
+                 ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
+                 .layout;
+        std::static_pointer_cast<RenderResource>(m_render_resource)->m_material_descriptor_set_layout =
+            &static_cast<RenderPass*>(m_render_pipeline->m_main_camera_pass.get())
+                 ->m_descriptor_infos[MainCameraPass::LayoutType::_mesh_per_material]
+                 .layout;
     }
 
     void RenderSystem::tick()
@@ -88,7 +98,8 @@ namespace Pilot
         m_render_resource->updatePerFrameBuffer(m_render_scene, m_render_camera);
 
         // update per-frame visible objects
-        m_render_resource->updateVisibleObjects(m_render_scene, m_render_camera);
+        m_render_scene->updateVisibleObjects(std::static_pointer_cast<RenderResource>(m_render_resource),
+                                             m_render_camera);
 
         // prepare pipeline's render passes data
         m_render_pipeline->preparePassData(m_render_resource);
@@ -133,12 +144,7 @@ namespace Pilot
 
     GObjectID RenderSystem::getGObjectIDByMeshID(uint32_t mesh_id) const
     {
-        auto find_it = m_mesh_object_id_map.find(mesh_id);
-        if (find_it != m_mesh_object_id_map.end())
-        {
-            return find_it->second;
-        }
-        return GObjectID();
+        return m_render_scene->getGObjectIDByMeshID(mesh_id);
     }
 
     void RenderSystem::createAxis(std::array<RenderEntity, 3> axis_entities, std::array<RenderMeshData, 3> mesh_datas)
@@ -168,16 +174,17 @@ namespace Pilot
         std::static_pointer_cast<RenderPipeline>(m_render_pipeline)->setSelectedAxis(selected_axis);
     }
 
-    GuidAllocator<GameObjectPartId>& RenderSystem::getGOInstanceIdAllocator() { return m_instance_id_allocator; }
-
-    GuidAllocator<MeshSourceDesc>& RenderSystem::getMeshAssetIdAllocator() { return m_mesh_asset_id_allocator; }
-
-    void RenderSystem::clearForLevelReloading()
+    GuidAllocator<GameObjectPartId>& RenderSystem::getGOInstanceIdAllocator()
     {
-        m_instance_id_allocator.clear();
-        m_mesh_object_id_map.clear();
-        m_render_scene->m_render_entities.clear();
+        return m_render_scene->getInstanceIdAllocator();
     }
+
+    GuidAllocator<MeshSourceDesc>& RenderSystem::getMeshAssetIdAllocator()
+    {
+        return m_render_scene->getMeshAssetIdAllocator();
+    }
+
+    void RenderSystem::clearForLevelReloading() { m_render_scene->clearForLevelReloading(); }
 
     void RenderSystem::setRenderPipelineType(RENDER_PIPELINE_TYPE pipeline_type)
     {
@@ -217,17 +224,18 @@ namespace Pilot
                     const auto&      component = gobject.getObjectParts()[i];
                     GameObjectPartId part_id   = {gobject.getId(), i};
 
-                    bool is_entity_in_scene = m_instance_id_allocator.hasElement(part_id);
+                    bool is_entity_in_scene = m_render_scene->getInstanceIdAllocator().hasElement(part_id);
 
                     RenderEntity render_entity;
-                    render_entity.m_instance_id  = static_cast<uint32_t>(m_instance_id_allocator.allocGuid(part_id));
+                    render_entity.m_instance_id =
+                        static_cast<uint32_t>(m_render_scene->getInstanceIdAllocator().allocGuid(part_id));
                     render_entity.m_model_matrix = component.transform_desc.transform_matrix;
 
-                    addInstanceIdToMap(render_entity.m_instance_id, gobject.getId());
+                    m_render_scene->addInstanceIdToMap(render_entity.m_instance_id, gobject.getId());
 
                     // mesh properties
                     MeshSourceDesc mesh_source    = {component.mesh_desc.mesh_file};
-                    bool           is_mesh_loaded = m_mesh_asset_id_allocator.hasElement(mesh_source);
+                    bool           is_mesh_loaded = m_render_scene->getMeshAssetIdAllocator().hasElement(mesh_source);
 
                     RenderMeshData mesh_data;
                     if (!is_mesh_loaded)
@@ -239,7 +247,7 @@ namespace Pilot
                         render_entity.m_bounding_box = m_render_resource->getCachedBoudingBox(mesh_source);
                     }
 
-                    render_entity.m_mesh_asset_id = m_mesh_asset_id_allocator.allocGuid(mesh_source);
+                    render_entity.m_mesh_asset_id = m_render_scene->getMeshAssetIdAllocator().allocGuid(mesh_source);
                     render_entity.m_enable_vertex_blending =
                         component.skeleton_animation_result.transforms.size() > 1; // take care
                     render_entity.m_joint_matrices.resize(component.skeleton_animation_result.transforms.size());
@@ -268,7 +276,7 @@ namespace Pilot
                             "",
                             ""};
                     }
-                    bool is_material_loaded = m_material_asset_id_allocator.hasElement(material_source);
+                    bool is_material_loaded = m_render_scene->getMaterialAssetdAllocator().hasElement(material_source);
 
                     RenderMaterialData material_data;
                     if (!is_material_loaded)
@@ -276,7 +284,8 @@ namespace Pilot
                         material_data = m_render_resource->loadMaterialData(material_source);
                     }
 
-                    render_entity.m_material_asset_id = m_material_asset_id_allocator.allocGuid(material_source);
+                    render_entity.m_material_asset_id =
+                        m_render_scene->getMaterialAssetdAllocator().allocGuid(material_source);
 
                     // create game object on the graphics api side
                     if (!is_mesh_loaded)
@@ -320,42 +329,32 @@ namespace Pilot
             while (!swap_data.game_object_to_delete->isEmpty())
             {
                 GameObjectDesc gobject = swap_data.game_object_to_delete->getNextProcessObject();
-
-                for (auto it = m_mesh_object_id_map.begin(); it != m_mesh_object_id_map.end(); it++)
-                {
-                    if (it->second == gobject.getId())
-                    {
-                        m_mesh_object_id_map.erase(it);
-                        break;
-                    }
-                }
-
-                GameObjectPartId part_id = {gobject.getId(), 0};
-                size_t           find_guid;
-                if (m_instance_id_allocator.getElementGuid(part_id, find_guid))
-                {
-                    for (auto it = m_render_scene->m_render_entities.begin();
-                         it != m_render_scene->m_render_entities.end();
-                         it++)
-                    {
-                        if (it->m_instance_id == find_guid)
-                        {
-                            m_render_scene->m_render_entities.erase(it);
-                            break;
-                        }
-                    }
-                }
-
+                m_render_scene->deleteEntityByGObjectID(gobject.getId());
                 swap_data.game_object_to_delete->popProcessObject();
             }
 
             m_swap_context.resetGameObjectToDelete();
         }
-    }
 
-    void RenderSystem::addInstanceIdToMap(uint32_t instance_id, GObjectID go_id)
-    {
-        m_mesh_object_id_map[instance_id] = go_id;
-    }
+        // process camera swap data
+        if (swap_data.camera_swap_data.has_value())
+        {
+            if (swap_data.camera_swap_data->fov_x.has_value())
+            {
+                m_render_camera->setFOVx(*swap_data.camera_swap_data->fov_x);
+            }
 
+            if (swap_data.camera_swap_data->view_matrix.has_value())
+            {
+                m_render_camera->setMainViewMatrix(*swap_data.camera_swap_data->view_matrix);
+            }
+
+            if (swap_data.camera_swap_data->camera_type.has_value())
+            {
+                m_render_camera->setCurrentCameraType(*swap_data.camera_swap_data->camera_type);
+            }
+
+            m_swap_context.resetCameraSwapData();
+        }
+    }
 } // namespace Pilot

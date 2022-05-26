@@ -2404,7 +2404,7 @@ namespace Pilot
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (VulkanMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
@@ -2688,7 +2688,7 @@ namespace Pilot
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (VulkanMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
@@ -2998,7 +2998,7 @@ namespace Pilot
                 m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
             perframe_dynamic_offset)) = m_particlebillboard_perframe_storage_buffer_object;
 
-        for (VulkanParticleBillboardNode& node : *(m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes))
+        for (RenderParticleBillboardNode& node : *(m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes))
         {
             uint32_t total_instance_count = static_cast<uint32_t>(node.positions.size());
 

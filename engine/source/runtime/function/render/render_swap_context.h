@@ -1,5 +1,6 @@
 #pragma once
 
+#include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_object.h"
 #include "runtime/resource/res_type/global/global_rendering.h"
 
@@ -28,6 +29,13 @@ namespace Pilot
         LevelColorGradingResourceDesc color_grading_resource_desc;
     };
 
+    struct CameraSwapData
+    {
+        std::optional<float>            fov_x;
+        std::optional<RenderCameraType> camera_type;
+        std::optional<Matrix4x4>        view_matrix;
+    };
+
     struct GameObjectResourceDesc
     {
         std::deque<GameObjectDesc> game_object_descs;
@@ -42,6 +50,7 @@ namespace Pilot
         std::optional<LevelResourceDesc>      level_resource_desc;
         std::optional<GameObjectResourceDesc> game_object_resource_desc;
         std::optional<GameObjectResourceDesc> game_object_to_delete;
+        std::optional<CameraSwapData>         camera_swap_data;
 
         void addDirtyGameObject(GameObjectDesc desc);
         void addDeleteGameObject(GameObjectDesc desc);
@@ -63,6 +72,7 @@ namespace Pilot
         void            resetLevelRsourceSwapData();
         void            resetGameObjectResourceSwapData();
         void            resetGameObjectToDelete();
+        void            resetCameraSwapData();
 
     private:
         uint8_t        m_logic_swap_data_index {LogicSwapDataType};
