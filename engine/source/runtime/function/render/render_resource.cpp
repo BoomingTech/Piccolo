@@ -108,16 +108,6 @@ namespace Pilot
         getOrCreateVulkanMaterial(rhi, render_entity, material_data);
     }
 
-    void RenderResource::setVisibleNodesReference()
-    {
-        RenderPass::m_visiable_nodes.p_directional_light_visible_mesh_nodes = &m_directional_light_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_axis_node                            = &m_axis_node;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes =
-            &m_main_camera_visible_particlebillboard_nodes;
-    }
-
     void RenderResource::updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
                                               std::shared_ptr<RenderCamera> camera)
     {
@@ -166,16 +156,6 @@ namespace Pilot
         m_particlebillboard_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_particlebillboard_perframe_storage_buffer_object.eye_position     = GLMUtil::fromVec3(camera_position);
         m_particlebillboard_perframe_storage_buffer_object.up_direction     = GLMUtil::fromVec3(camera->up());
-    }
-
-    void RenderResource::updateVisibleObjects(std::shared_ptr<RenderScene>  render_scene,
-                                              std::shared_ptr<RenderCamera> camera)
-    {
-        updateVisibleObjectsDirectionalLight(render_scene, camera);
-        updateVisibleObjectsPointLight(render_scene);
-        updateVisibleObjectsMainCamera(render_scene, camera);
-        updateVisibleObjectsAxis(render_scene);
-        updateVisibleObjectsParticle(render_scene);
     }
 
     void RenderResource::createIBLSamplers(std::shared_ptr<RHI> rhi)
@@ -528,10 +508,7 @@ namespace Pilot
             material_descriptor_set_alloc_info.pNext              = NULL;
             material_descriptor_set_alloc_info.descriptorPool     = vulkan_context->_descriptor_pool;
             material_descriptor_set_alloc_info.descriptorSetCount = 1;
-            material_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_mesh_per_material]
-                     .layout;
+            material_descriptor_set_alloc_info.pSetLayouts        = m_material_descriptor_set_layout;
 
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
                                                        &material_descriptor_set_alloc_info,
@@ -845,10 +822,7 @@ namespace Pilot
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
-                     .layout;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
 
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
                                                        &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
@@ -1018,10 +992,8 @@ namespace Pilot
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
-                     .layout;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
+
             if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
                                                        &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
                                                        &now_mesh.mesh_vertex_blending_descriptor_set))
@@ -1158,167 +1130,6 @@ namespace Pilot
                                       texture_data.emissive_image_height,
                                       texture_data.emissive_image_pixels,
                                       texture_data.emissive_image_format);
-    }
-
-    void RenderResource::updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderScene>  render_scene,
-                                                              std::shared_ptr<RenderCamera> camera)
-    {
-        glm::mat4 directional_light_proj_view = CalculateDirectionalLightCamera(*render_scene, *camera);
-
-        m_mesh_perframe_storage_buffer_object.directional_light_proj_view              = directional_light_proj_view;
-        m_mesh_directional_light_shadow_perframe_storage_buffer_object.light_proj_view = directional_light_proj_view;
-
-        m_directional_light_visible_mesh_nodes.clear();
-
-        ClusterFrustum frustum =
-            CreateClusterFrustumFromMatrix(directional_light_proj_view, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            if (TiledFrustumIntersectBox(
-                    frustum, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
-            {
-                m_directional_light_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsPointLight(std::shared_ptr<RenderScene> render_scene)
-    {
-        m_point_lights_visible_mesh_nodes.clear();
-
-        std::vector<BoundingSphere> point_lights_bounding_spheres;
-        uint32_t point_light_num = static_cast<uint32_t>(render_scene->m_point_light_list.m_lights.size());
-        point_lights_bounding_spheres.resize(point_light_num);
-        for (size_t i = 0; i < point_light_num; i++)
-        {
-            point_lights_bounding_spheres[i].m_center =
-                GLMUtil::fromVec3(render_scene->m_point_light_list.m_lights[i].m_position);
-            point_lights_bounding_spheres[i].m_radius = render_scene->m_point_light_list.m_lights[i].calculateRadius();
-        }
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            bool intersect_with_point_lights = true;
-            for (size_t i = 0; i < point_light_num; i++)
-            {
-                if (!BoxIntersectsWithSphere(
-                        BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix)),
-                        point_lights_bounding_spheres[i]))
-                {
-                    intersect_with_point_lights = false;
-                    break;
-                }
-            }
-
-            if (intersect_with_point_lights)
-            {
-                m_point_lights_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_point_lights_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsMainCamera(std::shared_ptr<RenderScene>  render_scene,
-                                                        std::shared_ptr<RenderCamera> camera)
-    {
-        m_main_camera_visible_mesh_nodes.clear();
-
-        Matrix4x4 view_matrix      = camera->getViewMatrix();
-        Matrix4x4 proj_matrix      = camera->getPersProjMatrix();
-        Matrix4x4 proj_view_matrix = proj_matrix * view_matrix;
-
-        ClusterFrustum f =
-            CreateClusterFrustumFromMatrix(GLMUtil::fromMat4x4(proj_view_matrix), -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            if (TiledFrustumIntersectBox(
-                    f, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
-            {
-                m_main_camera_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsAxis(std::shared_ptr<RenderScene> render_scene)
-    {
-        if (render_scene->m_render_axis.has_value())
-        {
-            RenderEntity& axis = *render_scene->m_render_axis;
-
-            m_axis_node.model_matrix = GLMUtil::fromMat4x4(axis.m_model_matrix);
-            m_axis_node.node_id      = axis.m_instance_id;
-
-            VulkanMesh& mesh_asset             = getEntityMesh(axis);
-            m_axis_node.ref_mesh               = &mesh_asset;
-            m_axis_node.enable_vertex_blending = axis.m_enable_vertex_blending;
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsParticle(std::shared_ptr<RenderScene> render_scene)
-    {
-        // TODO
-        m_main_camera_visible_particlebillboard_nodes.clear();
     }
 
     VulkanMesh& RenderResource::getEntityMesh(RenderEntity entity)

@@ -504,7 +504,7 @@ namespace Pilot
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> point_lights_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (VulkanMeshNode& node : *(m_visiable_nodes.p_point_lights_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visiable_nodes.p_point_lights_visible_mesh_nodes))
         {
             auto& mesh_instanced = point_lights_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];

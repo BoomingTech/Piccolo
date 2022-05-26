@@ -38,7 +38,8 @@ namespace Pilot
     {
         return !(m_swap_data[m_render_swap_data_index].level_resource_desc.has_value() ||
                  m_swap_data[m_render_swap_data_index].game_object_resource_desc.has_value() ||
-                 m_swap_data[m_render_swap_data_index].game_object_to_delete.has_value());
+                 m_swap_data[m_render_swap_data_index].game_object_to_delete.has_value() ||
+                 m_swap_data[m_render_swap_data_index].camera_swap_data.has_value());
     }
 
     void RenderSwapContext::resetLevelRsourceSwapData()
@@ -56,11 +57,14 @@ namespace Pilot
         m_swap_data[m_render_swap_data_index].game_object_to_delete.reset();
     }
 
+    void RenderSwapContext::resetCameraSwapData() { m_swap_data[m_render_swap_data_index].camera_swap_data.reset(); }
+
     void RenderSwapContext::swap()
     {
         resetLevelRsourceSwapData();
         resetGameObjectResourceSwapData();
         resetGameObjectToDelete();
+        resetCameraSwapData();
         std::swap(m_logic_swap_data_index, m_render_swap_data_index);
     }
 

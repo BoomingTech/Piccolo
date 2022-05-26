@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/function/framework/object/object_id_allocator.h"
-
 #include "runtime/function/render/render_entity.h"
 #include "runtime/function/render/render_guid_allocator.h"
 #include "runtime/function/render/render_swap_context.h"
@@ -66,13 +64,6 @@ namespace Pilot
         std::shared_ptr<RenderResourceBase> m_render_resource;
         std::shared_ptr<RenderPipelineBase> m_render_pipeline;
 
-        GuidAllocator<GameObjectPartId>   m_instance_id_allocator;
-        GuidAllocator<MeshSourceDesc>     m_mesh_asset_id_allocator;
-        GuidAllocator<MaterialSourceDesc> m_material_asset_id_allocator;
-
-        std::unordered_map<uint32_t, GObjectID> m_mesh_object_id_map;
-
         void processSwapData();
-        void addInstanceIdToMap(uint32_t instance_id, GObjectID go_id);
     };
 } // namespace Pilot

@@ -9,11 +9,10 @@
 #include "runtime/function/global/global_context.h"
 
 #include "runtime/function/render/render_swap_context.h"
+#include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
-    RenderSwapContext* MeshComponent::m_swap_context = nullptr;
-
     void MeshComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
@@ -94,7 +93,7 @@ namespace Pilot
                 mesh_component.transform_desc.transform_matrix = object_transform_matrix;
             }
 
-            m_swap_context->getLogicSwapData().addDirtyGameObject(
+            g_runtime_global_context.m_render_system->getSwapContext().getLogicSwapData().addDirtyGameObject(
                 GameObjectDesc {m_parent_object.lock()->getID(), mesh_components});
 
             transform_component->setDirtyFlag(false);
