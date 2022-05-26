@@ -35,12 +35,6 @@ namespace Pilot
         virtual void updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
                                           std::shared_ptr<RenderCamera> camera) = 0;
 
-        virtual void updateVisibleObjects(std::shared_ptr<RenderScene>  render_scene,
-                                          std::shared_ptr<RenderCamera> camera) = 0;
-
-        // set visible nodes ptr in render pass
-        virtual void setVisibleNodesReference() = 0;
-
         // TODO: data caching
         std::shared_ptr<TextureData> loadTextureHDR(std::string file, int desired_channels = 4);
         std::shared_ptr<TextureData> loadTexture(std::string file, bool is_srgb = false);
