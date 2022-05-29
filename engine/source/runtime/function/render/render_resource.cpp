@@ -82,7 +82,8 @@ namespace Pilot
             color_grading_map->m_width,
             color_grading_map->m_height,
             color_grading_map->m_pixels,
-            color_grading_map->m_format);
+            color_grading_map->m_format,
+            1);
     }
 
     void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
