@@ -25,7 +25,7 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
     highp float light_attenuation = radius_attenuation * distance_attenuation * NoL;
     if (light_attenuation > 0.0)
     {
-        highp float shadow;
+        highp float shadowFactor = 0.0f;
         {
             // world space to light view space
             // identity rotation
@@ -53,19 +53,27 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
             highp float layer_index =
                 (0.5 + 0.5 * sign(position_spherical_function_domain.z)) + 2.0 * float(light_index);
 
-            highp float depth          = texture(point_lights_shadow, vec3(uv, layer_index)).r + 0.000075;
-            highp float closest_length = (depth)*point_light_radius;
+            for(int i = 0; i < 6; i++) {
+				for(int j = 0; j < 6; j++) {
+					highp vec2 offset = vec2(i-3, j-3) * 0.00048828;
 
-            highp float current_length = length(position_view_space);
+                    highp float depth          = texture(point_lights_shadow, vec3(uv + offset, layer_index)).r + 0.000075;
+                    highp float closest_length = (depth)*point_light_radius;
 
-            shadow = (closest_length >= current_length) ? 1.0f : -1.0f;
+                    highp float current_length = length(position_view_space);
+
+                    shadowFactor = shadowFactor + ((closest_length >= current_length) ? 1.0f : 0.0f);
+            
+                }
+            }
+
+            shadowFactor = shadowFactor / 36.0f;
         }
 
-        if (shadow > 0.0f)
-        {
-            highp vec3 En = scene_point_lights[light_index].intensity * light_attenuation;
-            Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
-        }
+      
+        highp vec3 En = scene_point_lights[light_index].intensity * light_attenuation * shadowFactor;
+        Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
+      
     }
 };
 
@@ -95,24 +103,32 @@ highp vec3 Libl = (kD * diffuse + specular);
 
     if (NoL > 0.0)
     {
-        highp float shadow;
+        highp float shadowFactor = 0.0f;
         {
             highp vec4 position_clip = directional_light_proj_view * vec4(in_world_position, 1.0);
             highp vec3 position_ndc  = position_clip.xyz / position_clip.w;
 
             highp vec2 uv = ndcxy_to_uv(position_ndc.xy);
 
-            highp float closest_depth = texture(directional_light_shadow, uv).r + 0.000075;
-            highp float current_depth = position_ndc.z;
+            for(int i = 0; i < 6; i++) {
+					for(int j = 0; j < 6; j++) {
+						highp vec2 offset = vec2(i-3, j-3) * 0.00024414;
 
-            shadow = (closest_depth >= current_depth) ? 1.0f : -1.0f;
+						highp float closest_depth = texture(directional_light_shadow, uv + offset).r + 0.000075;
+						highp float current_depth = position_ndc.z;
+
+						shadowFactor = shadowFactor + ((closest_depth >= current_depth) ? 1.0f : 0.0f);
+					}
+			}
+
+            shadowFactor = shadowFactor / 36.0f;
+
         }
 
-        if (shadow > 0.0f)
-        {
-            highp vec3 En = scene_directional_light.color * NoL;
-            Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
-        }
+       
+        highp vec3 En = scene_directional_light.color * NoL * shadowFactor;
+        Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
+        
     }
 }
 
