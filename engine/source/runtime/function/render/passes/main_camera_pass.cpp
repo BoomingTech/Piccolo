@@ -321,19 +321,21 @@ namespace Pilot
         tone_mapping_pass.pPreserveAttachments    = NULL;
 
         VkAttachmentReference color_grading_pass_input_attachment_reference {};
-        if (m_enable_fxaa) {
-            color_grading_pass_color_attachment_reference.attachment =
-                &post_process_odd_color_attachment_description - attachments;
-        }
-        else {
-            color_grading_pass_color_attachment_reference.attachment =
-                &backup_odd_color_attachment_description - attachments;
-        }
+        color_grading_pass_input_attachment_reference.attachment =
+            &backup_even_color_attachment_description - attachments;
         color_grading_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference color_grading_pass_color_attachment_reference {};
-        color_grading_pass_color_attachment_reference.attachment =
-            &post_process_odd_color_attachment_description - attachments;
+        if (m_enable_fxaa)
+        {
+            color_grading_pass_color_attachment_reference.attachment =
+                &post_process_odd_color_attachment_description - attachments;
+        }
+        else
+        {
+            color_grading_pass_color_attachment_reference.attachment =
+                &backup_odd_color_attachment_description - attachments;
+        }
         color_grading_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription& color_grading_pass   = subpasses[_main_camera_subpass_color_grading];
