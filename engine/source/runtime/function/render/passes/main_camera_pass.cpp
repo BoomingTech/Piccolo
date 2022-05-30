@@ -349,7 +349,16 @@ namespace Pilot
         color_grading_pass.pPreserveAttachments    = NULL;
 
         VkAttachmentReference fxaa_pass_input_attachment_reference {};
-        fxaa_pass_input_attachment_reference.attachment = &post_process_odd_color_attachment_description - attachments;
+        if (m_enable_fxaa)
+        {
+            fxaa_pass_input_attachment_reference.attachment =
+                &post_process_odd_color_attachment_description - attachments;
+        }
+        else
+        {
+            fxaa_pass_input_attachment_reference.attachment =
+                &backup_even_color_attachment_description - attachments;
+        }
         fxaa_pass_input_attachment_reference.layout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference fxaa_pass_color_attachment_reference {};
