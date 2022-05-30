@@ -22,7 +22,7 @@ namespace Pilot
         ShapeType getType() const { return m_type; }
         void      setType(ShapeType type) { m_type = type; }
 
-        Transform getLocalTransform() const { return m_local_transform; }
+        const Transform& getLocalTransform() const { return m_local_transform; }
 
     private:
         ShapeType  m_type {ShapeType::invalid};

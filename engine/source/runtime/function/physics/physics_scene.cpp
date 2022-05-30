@@ -55,7 +55,7 @@ namespace Pilot
         m_physics.m_jolt_physics_system->SetPhysicsSettings(JPH::PhysicsSettings());
 
         m_physics.m_jolt_physics_system->SetGravity(
-            JPH::Vec3(m_config.m_grivity.x, m_config.m_grivity.y, m_config.m_grivity.z));
+            JPH::Vec3(m_config.m_gravity.x, m_config.m_gravity.y, m_config.m_gravity.z));
     }
 
     PhysicsScene::~PhysicsScene()
@@ -223,7 +223,7 @@ namespace Pilot
 
     bool PhysicsScene::sweep(const RigidBodyShape&        shape,
                              const Matrix4x4&             shape_transform,
-                             Vector3                      sweep_directory,
+                             Vector3                      sweep_direction,
                              float                        sweep_length,
                              std::vector<PhysicsHitInfo>& out_hits)
     {
@@ -247,7 +247,7 @@ namespace Pilot
             JPH::ShapeCast::sFromWorldTransform(jph_shape,
                                                 JPH::Vec3::sReplicate(1.f),
                                                 toMat44(shape_global_transform),
-                                                toVec3(sweep_directory.normalisedCopy() * sweep_length));
+                                                toVec3(sweep_direction.normalisedCopy() * sweep_length));
 
         JPH::AllHitCollisionCollector<JPH::CastShapeCollector> collector;
         scene_query.CastShape(shape_cast, JPH::ShapeCastSettings(), collector);
