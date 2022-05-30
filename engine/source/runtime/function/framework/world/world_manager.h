@@ -8,6 +8,7 @@
 namespace Pilot
 {
     class Level;
+    class PhysicsScene;
 
     /// Manage all game worlds, it should be support multiple worlds, including game world and editor world.
     /// Currently, the implement just supports one active world and one active level
@@ -24,6 +25,8 @@ namespace Pilot
 
         void                 tick(float delta_time);
         std::weak_ptr<Level> getCurrentActiveLevel() const { return m_current_active_level; }
+
+        std::weak_ptr<PhysicsScene> getCurrentActivePhysicsScene() const;
 
     private:
         bool loadWorld(const std::string& world_url);

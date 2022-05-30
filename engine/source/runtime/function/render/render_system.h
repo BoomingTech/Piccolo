@@ -26,6 +26,14 @@ namespace Pilot
         std::shared_ptr<WindowSystem> window_system;
     };
 
+    struct EngineContentViewport
+    {
+        float x { 0.f};
+        float y { 0.f};
+        float width { 0.f};
+        float height { 0.f};
+    };
+
     class RenderSystem
     {
     public:
@@ -44,6 +52,8 @@ namespace Pilot
         void      updateEngineContentViewport(float offset_x, float offset_y, float width, float height);
         uint32_t  getGuidOfPickedMesh(const Vector2& picked_uv);
         GObjectID getGObjectIDByMeshID(uint32_t mesh_id) const;
+
+        EngineContentViewport getEngineContentViewport() const;
 
         void createAxis(std::array<RenderEntity, 3> axis_entities, std::array<RenderMeshData, 3> mesh_datas);
         void setVisibleAxis(std::optional<RenderEntity> axis);

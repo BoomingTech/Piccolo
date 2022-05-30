@@ -137,6 +137,15 @@ namespace Pilot
         m_render_camera->setAspect(width / height);
     }
 
+    EngineContentViewport RenderSystem::getEngineContentViewport() const
+    {
+        float x = std::static_pointer_cast<VulkanRHI>(m_rhi)->_viewport.x;
+        float y = std::static_pointer_cast<VulkanRHI>(m_rhi)->_viewport.y;
+        float width = std::static_pointer_cast<VulkanRHI>(m_rhi)->_viewport.width;
+        float height = std::static_pointer_cast<VulkanRHI>(m_rhi)->_viewport.height;
+        return {x, y, width, height};
+    }
+
     uint32_t RenderSystem::getGuidOfPickedMesh(const Vector2& picked_uv)
     {
         return m_render_pipeline->getGuidOfPickedMesh(picked_uv);
