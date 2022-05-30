@@ -377,7 +377,6 @@ namespace Pilot
         }
         
 #if defined(__MACH__)
-        //extensions.push_back("VK_KHR_portability_subset");
         extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #endif
 
