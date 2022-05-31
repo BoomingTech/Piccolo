@@ -37,8 +37,6 @@ namespace Pilot
     {
         if (m_physics_actor)
         {
-            g_runtime_global_context.m_legacy_physics_system->removePhyicsActor(m_physics_actor);
-
             const uint32_t body_id = m_physics_actor->getBodyID();
 
             std::shared_ptr<PhysicsScene> physics_scene =
@@ -47,6 +45,7 @@ namespace Pilot
 
             physics_scene->removeRigidBody(body_id);
 
+            g_runtime_global_context.m_legacy_physics_system->removePhyicsActor(m_physics_actor);
             m_physics_actor = nullptr;
         }
     }

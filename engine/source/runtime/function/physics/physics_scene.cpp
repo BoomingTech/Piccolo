@@ -8,7 +8,9 @@
 #include "runtime/function/physics/physics_config.h"
 
 #include "Jolt/Jolt.h"
+#include "Jolt/RegisterTypes.h"
 
+#include "Jolt/Core/Factory.h"
 #include "Jolt/Core/JobSystem.h"
 #include "Jolt/Core/JobSystemThreadPool.h"
 #include "Jolt/Core/TempAllocator.h"
@@ -20,8 +22,6 @@
 #include "Jolt/Physics/Collision/NarrowPhaseQuery.h"
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 #include "Jolt/Physics/Collision/ShapeCast.h"
 #include "Jolt/Physics/PhysicsSystem.h"
@@ -32,6 +32,9 @@ namespace Pilot
     {
 
         static_assert(k_invalid_rigidbody_id == JPH::BodyID::cInvalidBodyID);
+
+        JPH::Factory::sInstance = new JPH::Factory();
+        JPH::RegisterTypes();
 
         m_physics.m_jolt_physics_system              = new JPH::PhysicsSystem();
         m_physics.m_jolt_broad_phase_layer_interface = new BPLayerInterfaceImpl();
@@ -64,6 +67,9 @@ namespace Pilot
         delete m_physics.m_jolt_job_system;
         delete m_physics.m_temp_allocator;
         delete m_physics.m_jolt_broad_phase_layer_interface;
+
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
     }
 
     uint32_t PhysicsScene::createRigidBody(const Transform&             global_transform,
@@ -151,15 +157,12 @@ namespace Pilot
         }
 
         body_interface.AddBody(jph_body->GetID(), JPH::EActivation::Activate);
+        LOG_INFO("Add Body: {}", jph_body->GetID().GetIndexAndSequenceNumber());
 
         return jph_body->GetID().GetIndexAndSequenceNumber();
     }
 
-    void PhysicsScene::removeRigidBody(uint32_t body_id)
-    {
-        JPH::BodyInterface& body_interface = m_physics.m_jolt_physics_system->GetBodyInterface();
-        body_interface.RemoveBody(JPH::BodyID(body_id));
-    }
+    void PhysicsScene::removeRigidBody(uint32_t body_id) { m_pending_remove_bodies.push_back(body_id); }
 
     void PhysicsScene::tick(float delta_time)
     {
@@ -170,6 +173,15 @@ namespace Pilot
                                                 m_physics.m_integration_substeps,
                                                 m_physics.m_temp_allocator,
                                                 m_physics.m_jolt_job_system);
+
+        JPH::BodyInterface& body_interface = m_physics.m_jolt_physics_system->GetBodyInterface();
+        for (uint32_t body_id : m_pending_remove_bodies)
+        {
+            LOG_INFO("Remove Body {}", body_id)
+            body_interface.RemoveBody(JPH::BodyID(body_id));
+            body_interface.DestroyBody(JPH::BodyID(body_id));
+        }
+        m_pending_remove_bodies.clear();
     }
 
     bool PhysicsScene::raycast(Vector3                      ray_origin,

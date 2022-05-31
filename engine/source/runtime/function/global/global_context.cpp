@@ -59,14 +59,15 @@ namespace Pilot
 
         m_window_system.reset();
 
-        m_scene_manager.reset();
-
+        m_world_manager->clear();
         m_world_manager.reset();
 
         m_legacy_physics_system.reset();
 
+        m_physics_manager->clear();
         m_physics_manager.reset();
 
+        m_input_system->clear();
         m_input_system.reset();
 
         m_asset_manager.reset();
