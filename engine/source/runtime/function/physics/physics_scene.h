@@ -87,5 +87,7 @@ namespace Pilot
         JoltPhysics m_physics;
 
         PhysicsConfig m_config;
+
+        std::vector<uint32_t> m_pending_remove_bodies;
     };
 } // namespace Pilot
