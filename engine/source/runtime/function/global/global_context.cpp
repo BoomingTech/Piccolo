@@ -26,7 +26,7 @@ namespace Pilot
         m_config_manager = std::make_shared<ConfigManager>();
         m_config_manager->initialize(init_params);
 
-        m_file_servcie = std::make_shared<FileService>();
+        m_file_system = std::make_shared<FileSystem>();
 
         m_logger_system = std::make_shared<LogSystem>();
 
@@ -75,7 +75,7 @@ namespace Pilot
 
         m_logger_system.reset();
 
-        m_file_servcie.reset();
+        m_file_system.reset();
 
         m_config_manager.reset();
     }

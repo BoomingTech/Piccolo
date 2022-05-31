@@ -31,8 +31,8 @@ namespace Pilot
         bool m_enable_point_light_shadow {true};
 
         // used in descriptor pool creation
-        uint32_t _max_vertex_blending_mesh_count {256};
-        uint32_t _max_material_count {256};
+        uint32_t m_max_vertex_blending_mesh_count {256};
+        uint32_t m_max_material_count {256};
 
     private:
     };

@@ -64,13 +64,8 @@ namespace Pilot
         bool getFocusMode() const { return m_is_focus_mode; }
         void setFocusMode(bool mode);
 
-    private:
-        GLFWwindow* m_window {nullptr};
-        int         m_width {0};
-        int         m_height {0};
-
-        bool m_is_focus_mode {false};
-
+    protected:
+        // window event callbacks
         static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             WindowSystem* app = (WindowSystem*)glfwGetWindowUserPointer(window);
@@ -146,18 +141,6 @@ namespace Pilot
         }
         static void windowCloseCallback(GLFWwindow* window) { glfwSetWindowShouldClose(window, true); }
 
-        std::vector<onResetFunc>       m_onResetFunc;
-        std::vector<onKeyFunc>         m_onKeyFunc;
-        std::vector<onCharFunc>        m_onCharFunc;
-        std::vector<onCharModsFunc>    m_onCharModsFunc;
-        std::vector<onMouseButtonFunc> m_onMouseButtonFunc;
-        std::vector<onCursorPosFunc>   m_onCursorPosFunc;
-        std::vector<onCursorEnterFunc> m_onCursorEnterFunc;
-        std::vector<onScrollFunc>      m_onScrollFunc;
-        std::vector<onDropFunc>        m_onDropFunc;
-        std::vector<onWindowSizeFunc>  m_onWindowSizeFunc;
-        std::vector<onWindowCloseFunc> m_onWindowCloseFunc;
-
         void onReset()
         {
             for (auto& func : m_onResetFunc)
@@ -208,5 +191,26 @@ namespace Pilot
             for (auto& func : m_onWindowSizeFunc)
                 func(width, height);
         }
+
+    private:
+        GLFWwindow* m_window {nullptr};
+        int         m_width {0};
+        int         m_height {0};
+
+        bool m_is_focus_mode {false};
+
+        std::vector<onResetFunc>       m_onResetFunc;
+        std::vector<onKeyFunc>         m_onKeyFunc;
+        std::vector<onCharFunc>        m_onCharFunc;
+        std::vector<onCharModsFunc>    m_onCharModsFunc;
+        std::vector<onMouseButtonFunc> m_onMouseButtonFunc;
+        std::vector<onCursorPosFunc>   m_onCursorPosFunc;
+        std::vector<onCursorEnterFunc> m_onCursorEnterFunc;
+        std::vector<onScrollFunc>      m_onScrollFunc;
+        std::vector<onDropFunc>        m_onDropFunc;
+        std::vector<onWindowSizeFunc>  m_onWindowSizeFunc;
+        std::vector<onWindowCloseFunc> m_onWindowCloseFunc;
+
+
     };
 } // namespace Pilot
