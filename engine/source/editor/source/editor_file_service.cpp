@@ -46,7 +46,7 @@ namespace Pilot
     void EditorFileService::buildEngineFileTree()
     {
         std::string                              asset_folder = g_runtime_global_context.m_config_manager->getAssetFolder().generic_string();
-        const std::vector<std::filesystem::path> file_paths = g_runtime_global_context.m_file_servcie->getFiles(asset_folder);
+        const std::vector<std::filesystem::path> file_paths = g_runtime_global_context.m_file_system->getFiles(asset_folder);
         std::vector<std::vector<std::string>>    all_file_segments;
         for (const auto& path : file_paths)
         {

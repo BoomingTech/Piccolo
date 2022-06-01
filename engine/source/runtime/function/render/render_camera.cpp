@@ -80,10 +80,10 @@ namespace Pilot
         auto                        view_matrix = Matrix4x4::IDENTITY;
         switch (m_current_camera_type)
         {
-            case Pilot::RenderCameraType::Editor:
+            case RenderCameraType::Editor:
                 view_matrix = Math::makeLookAtMatrix(position(), position() + forward(), up());
                 break;
-            case Pilot::RenderCameraType::Motor:
+            case RenderCameraType::Motor:
                 view_matrix = m_view_matrices[MAIN_VIEW_MATRIX_INDEX];
                 break;
             default:

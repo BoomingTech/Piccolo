@@ -24,14 +24,14 @@ namespace Pilot
     {
         m_window_ui = window_ui;
 
-        ImGui_ImplGlfw_InitForVulkan(m_vulkan_rhi->_window, true);
+        ImGui_ImplGlfw_InitForVulkan(m_vulkan_rhi->m_window, true);
         ImGui_ImplVulkan_InitInfo init_info = {};
-        init_info.Instance                  = m_vulkan_rhi->_instance;
-        init_info.PhysicalDevice            = m_vulkan_rhi->_physical_device;
-        init_info.Device                    = m_vulkan_rhi->_device;
-        init_info.QueueFamily               = m_vulkan_rhi->_queue_indices.graphics_family.value();
-        init_info.Queue                     = m_vulkan_rhi->_graphics_queue;
-        init_info.DescriptorPool            = m_vulkan_rhi->_descriptor_pool;
+        init_info.Instance                  = m_vulkan_rhi->m_instance;
+        init_info.PhysicalDevice            = m_vulkan_rhi->m_physical_device;
+        init_info.Device                    = m_vulkan_rhi->m_device;
+        init_info.QueueFamily               = m_vulkan_rhi->m_queue_indices.m_graphics_family.value();
+        init_info.Queue                     = m_vulkan_rhi->m_graphics_queue;
+        init_info.DescriptorPool            = m_vulkan_rhi->m_descriptor_pool;
         init_info.Subpass                   = _main_camera_subpass_ui;
 
         // may be different from the real swapchain image count
@@ -48,11 +48,11 @@ namespace Pilot
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool                 = m_vulkan_rhi->_command_pool;
+        allocInfo.commandPool                 = m_vulkan_rhi->m_command_pool;
         allocInfo.commandBufferCount          = 1;
 
         VkCommandBuffer commandBuffer = {};
-        if (VK_SUCCESS != vkAllocateCommandBuffers(m_vulkan_rhi->_device, &allocInfo, &commandBuffer))
+        if (VK_SUCCESS != vkAllocateCommandBuffers(m_vulkan_rhi->m_device, &allocInfo, &commandBuffer))
         {
             throw std::runtime_error("failed to allocate command buffers!");
         }
@@ -78,10 +78,10 @@ namespace Pilot
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers    = &commandBuffer;
 
-        vkQueueSubmit(m_vulkan_rhi->_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(m_vulkan_rhi->_graphics_queue);
+        vkQueueSubmit(m_vulkan_rhi->m_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_vulkan_rhi->m_graphics_queue);
 
-        vkFreeCommandBuffers(m_vulkan_rhi->_device, m_vulkan_rhi->_command_pool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_vulkan_rhi->m_device, m_vulkan_rhi->m_command_pool, 1, &commandBuffer);
 
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
@@ -100,16 +100,16 @@ namespace Pilot
             {
                 VkDebugUtilsLabelEXT label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, "ImGUI", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer, &label_info);
+                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
             }
 
             ImGui::Render();
 
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_vulkan_rhi->_current_command_buffer);
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_vulkan_rhi->m_current_command_buffer);
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
-                m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer);
+                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
             }
         }
     }
