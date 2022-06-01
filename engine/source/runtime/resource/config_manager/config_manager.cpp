@@ -48,16 +48,14 @@ namespace Pilot
                 {
                     m_global_rendering_res_url = value;
                 }
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+                else if (name == "JoltAssetFolder")
+                {
+                    m_jolt_physics_asset_folder = m_root_folder / value;
+                }
+#endif
             }
         }
-    }
-
-    void ConfigManager::clear()
-    {
-        m_root_folder.clear();
-        m_asset_folder.clear();
-        m_schema_folder.clear();
-        m_default_world_url.clear();
     }
 
     const std::filesystem::path& ConfigManager::getRootFolder() const { return m_root_folder; }
@@ -75,4 +73,9 @@ namespace Pilot
     const std::string& ConfigManager::getDefaultWorldUrl() const { return m_default_world_url; }
 
     const std::string& ConfigManager::getGlobalRenderingResUrl() const { return m_global_rendering_res_url; }
+
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+    const std::filesystem::path& ConfigManager::getJoltPhysicsAssetFolder() const { return m_jolt_physics_asset_folder; }
+#endif
+
 } // namespace Pilot
