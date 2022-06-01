@@ -9,7 +9,7 @@ namespace Pilot
     class PhysicsAABBShape : public PhysicsShapeBase
     {
     public:
-        PhysicsAABBShape(Transform* transform, const Vector3 half_dimensions) :
+        PhysicsAABBShape(const Transform& transform, const Vector3 half_dimensions) :
             PhysicsShapeBase(transform), m_half_dimensions(half_dimensions)
         {}
 

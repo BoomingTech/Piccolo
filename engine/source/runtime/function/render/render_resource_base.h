@@ -17,6 +17,8 @@ namespace Pilot
     class RenderResourceBase
     {
     public:
+        virtual ~RenderResourceBase() {}
+
         virtual void uploadGlobalRenderResource(std::shared_ptr<RHI> rhi, LevelResourceDesc level_resource_desc) = 0;
 
         virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,

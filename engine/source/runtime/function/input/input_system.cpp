@@ -158,8 +158,5 @@ namespace Pilot
         {
             m_game_command |= (unsigned int)GameCommand::invalid;
         }
-        // components->getWritable<MotorInputDataT>(0)->move_type        = (Pilot::MotorMotivation)m_control_command;
-        // components->getWritable<MotorInputDataT>(0)->turn_angle_yaw   = m_turn_angle_yaw;
-        // components->getWritable<MotorInputDataT>(0)->turn_angle_pitch = m_trun_angle_pitch;
     }
 } // namespace Pilot
