@@ -1,9 +1,11 @@
 #include "runtime/function/framework/level/level.h"
 
 #include "runtime/core/base/macro.h"
+#include "runtime/core/job/job_system.h"
 
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/res_type/common/level.h"
+#include "runtime/function/global/global_context.h"
 
 #include "runtime/engine.h"
 #include "runtime/function/character/character.h"
@@ -70,10 +72,13 @@ namespace Pilot
         ASSERT(g_runtime_global_context.m_physics_manager);
         m_physics_scene = g_runtime_global_context.m_physics_manager->createPhysicsScene();
 
+        
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
-            createObject(object_instance_res);
+            Job job = {JobType::LOAD_ASSET, [&] { this->createObject(object_instance_res); }};
+            g_runtime_global_context.m_job_system->addJob(job);
         }
+        g_runtime_global_context.m_job_system->wait(JobType::LOAD_ASSET);
 
         // create active character
         for (const auto& object_pair : m_gobjects)
