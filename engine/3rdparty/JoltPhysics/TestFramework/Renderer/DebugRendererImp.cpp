@@ -16,7 +16,7 @@
 	#undef JPH_DEBUG_RENDERER
 #endif // !JPH_DEBUG_RENDERER
 
-DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont) :
+DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont, const std::filesystem::path& asset_folder) :
 	mRenderer(inRenderer),
 	mFont(inFont)
 {
@@ -28,8 +28,8 @@ DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont) :
 	};
 
 	// Lines
-	ComPtr<ID3DBlob> vtx_line = mRenderer->CreateVertexShader("Assets/Shaders/LineVertexShader.hlsl");
-	ComPtr<ID3DBlob> pix_line = mRenderer->CreatePixelShader("Assets/Shaders/LinePixelShader.hlsl");
+	ComPtr<ID3DBlob> vtx_line = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "LineVertexShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> pix_line = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "LinePixelShader.hlsl").generic_string().c_str());
 	mLineState = mRenderer->CreatePipelineState(vtx_line.Get(), line_vertex_desc, ARRAYSIZE(line_vertex_desc), pix_line.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 
 	// Create input layout for triangles
@@ -51,15 +51,15 @@ DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont) :
 	};
 
 	// Triangles
-	ComPtr<ID3DBlob> vtx_triangle = mRenderer->CreateVertexShader("Assets/Shaders/TriangleVertexShader.hlsl");
-	ComPtr<ID3DBlob> pix_triangle  = mRenderer->CreatePixelShader("Assets/Shaders/TrianglePixelShader.hlsl");
+	ComPtr<ID3DBlob> vtx_triangle = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "TriangleVertexShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> pix_triangle  = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "TrianglePixelShader.hlsl").generic_string().c_str());
 	mTriangleStateBF = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	mTriangleStateFF = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
 	mTriangleStateWire = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_WIREFRAME, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	
 	// Shadow pass
-	ComPtr<ID3DBlob> vtx_shadow = mRenderer->CreateVertexShader("Assets/Shaders/TriangleDepthVertexShader.hlsl");
-	ComPtr<ID3DBlob> pix_shadow = mRenderer->CreatePixelShader("Assets/Shaders/TriangleDepthPixelShader.hlsl");
+	ComPtr<ID3DBlob> vtx_shadow = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "TriangleDepthVertexShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> pix_shadow = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "TriangleDepthPixelShader.hlsl").generic_string().c_str());
 	mShadowStateBF = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	mShadowStateFF = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
 	mShadowStateWire = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_WIREFRAME, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
