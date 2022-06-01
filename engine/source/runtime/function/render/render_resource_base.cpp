@@ -89,14 +89,14 @@ namespace Pilot
 
         RenderMeshData ret;
 
-        if (std::filesystem::path(source.mesh_file).extension() == ".obj")
+        if (std::filesystem::path(source.m_mesh_file).extension() == ".obj")
         {
-            ret.m_static_mesh_data = loadStaticMesh(source.mesh_file, bounding_box);
+            ret.m_static_mesh_data = loadStaticMesh(source.m_mesh_file, bounding_box);
         }
-        else if (std::filesystem::path(source.mesh_file).extension() == ".json")
+        else if (std::filesystem::path(source.m_mesh_file).extension() == ".json")
         {
             std::shared_ptr<MeshData> bind_data = std::make_shared<MeshData>();
-            asset_manager->loadAsset<MeshData>(source.mesh_file, *bind_data);
+            asset_manager->loadAsset<MeshData>(source.m_mesh_file, *bind_data);
 
             // vertex buffer
             size_t vertex_size                     = bind_data->vertex_buffer.size() * sizeof(MeshVertexDataDefinition);
@@ -136,14 +136,14 @@ namespace Pilot
                 reinterpret_cast<MeshVertexBindingDataDefinition*>(ret.m_skeleton_binding_buffer->m_data);
             for (size_t i = 0; i < bind_data->bind.size(); i++)
             {
-                binding_data[i].index0  = bind_data->bind[i].index0;
-                binding_data[i].index1  = bind_data->bind[i].index1;
-                binding_data[i].index2  = bind_data->bind[i].index2;
-                binding_data[i].index3  = bind_data->bind[i].index3;
-                binding_data[i].weight0 = bind_data->bind[i].weight0;
-                binding_data[i].weight1 = bind_data->bind[i].weight1;
-                binding_data[i].weight2 = bind_data->bind[i].weight2;
-                binding_data[i].weight3 = bind_data->bind[i].weight3;
+                binding_data[i].m_index0  = bind_data->bind[i].index0;
+                binding_data[i].m_index1  = bind_data->bind[i].index1;
+                binding_data[i].m_index2  = bind_data->bind[i].index2;
+                binding_data[i].m_index3  = bind_data->bind[i].index3;
+                binding_data[i].m_weight0 = bind_data->bind[i].weight0;
+                binding_data[i].m_weight1 = bind_data->bind[i].weight1;
+                binding_data[i].m_weight2 = bind_data->bind[i].weight2;
+                binding_data[i].m_weight3 = bind_data->bind[i].weight3;
             }
         }
 
@@ -155,11 +155,11 @@ namespace Pilot
     RenderMaterialData RenderResourceBase::loadMaterialData(const MaterialSourceDesc& source)
     {
         RenderMaterialData ret;
-        ret.m_base_color_texture         = loadTexture(source.base_color_file, true);
-        ret.m_metallic_roughness_texture = loadTexture(source.metallic_roughness_file);
-        ret.m_normal_texture             = loadTexture(source.normal_file);
-        ret.m_occlusion_texture          = loadTexture(source.occlusion_file);
-        ret.m_emissive_texture           = loadTexture(source.emissive_file);
+        ret.m_base_color_texture         = loadTexture(source.m_base_color_file, true);
+        ret.m_metallic_roughness_texture = loadTexture(source.m_metallic_roughness_file);
+        ret.m_normal_texture             = loadTexture(source.m_normal_file);
+        ret.m_occlusion_texture          = loadTexture(source.m_occlusion_file);
+        ret.m_emissive_texture           = loadTexture(source.m_emissive_file);
         return ret;
     }
 

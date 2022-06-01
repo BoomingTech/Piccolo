@@ -41,8 +41,8 @@ namespace Pilot
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
-        camera_swap_data.fov_x                           = m_camera_res.m_parameter->m_fov;
-        swap_context.getLogicSwapData().camera_swap_data = camera_swap_data;
+        camera_swap_data.m_fov_x                           = m_camera_res.m_parameter->m_fov;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 
     void CameraComponent::tick(float delta_time)
@@ -96,9 +96,9 @@ namespace Pilot
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
-        camera_swap_data.camera_type                     = RenderCameraType::Motor;
-        camera_swap_data.view_matrix                     = desired_mat;
-        swap_context.getLogicSwapData().camera_swap_data = camera_swap_data;
+        camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix                     = desired_mat;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
 
         Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
@@ -139,8 +139,8 @@ namespace Pilot
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
-        camera_swap_data.camera_type                     = RenderCameraType::Motor;
-        camera_swap_data.view_matrix                     = desired_mat;
-        swap_context.getLogicSwapData().camera_swap_data = camera_swap_data;
+        camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix                     = desired_mat;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 } // namespace Pilot
