@@ -10,7 +10,7 @@ namespace Pilot
         backward = 1 << 1,                 // S
         left     = 1 << 2,                 // A
         right    = 1 << 3,                 // D
-        jump     = 1 << 4,                 // not implemented yet
+        jump     = 1 << 4,                 // SPACE
         squat    = 1 << 5,                 // not implemented yet
         sprint   = 1 << 6,                 // LEFT SHIFT
         fire     = 1 << 7,                 // not implemented yet

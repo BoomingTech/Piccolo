@@ -53,6 +53,12 @@ namespace Pilot
     void RigidBodyComponent::updateGlobalTransform(const Transform& transform)
     {
         m_physics_actor->setGlobalTransform(transform);
+
+        //std::shared_ptr<PhysicsScene> physics_scene =
+        //    g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        //ASSERT(physics_scene);
+
+        //physics_scene->updateRigidBodyGlobalTransform(m_physics_actor->getBodyID(), transform);
     }
 
 } // namespace Pilot

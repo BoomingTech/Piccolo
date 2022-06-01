@@ -35,7 +35,74 @@ namespace Pilot
             m_bones[i].initialize(std::make_shared<RawBone>(bone_definition), parent_bone);
         }
     }
+    // static std::vector<size_t>& calcBonePoseIndex(int bone_count, const std::vector<size_t>& pose_bone_index)
+    //{
+    //    std::vector<size_t> pose_index;
+    //    pose_index.resize(bone_count);
+    //    for (int i = 0; i < pose_index.size(); i++)
+    //    {
+    //        pose_index[i] = -1;
+    //    }
+    //    for (int i = 0; i < pose_bone_index.size(); i++)
+    //    {
+    //        if (pose_bone_index[i] < pose_index.size())
+    //        {
+    //            pose_index[pose_bone_index[i]] = i;
+    //        }
+    //    }
+    //    return pose_index;
+    //}
+    void Skeleton::applyPose(const AnimationPose& pose)
+    {
+        for (int i = 0; i < pose.m_bone_poses.size(); i++)
+        {
+            int bone_index = i;
+            if (pose.m_reorder)
+            {
+                bone_index = pose.m_bone_indexs[i];
+            }
+            Bone& bone = m_bones[bone_index];
+            bone.setOrientation(pose.m_bone_poses[i].m_rotation);
+            bone.setScale(pose.m_bone_poses[i].m_scale);
+            bone.setPosition(pose.m_bone_poses[i].m_position);
+        }
+        for (size_t i = 0; i < m_bone_count; i++)
+        {
+            m_bones[i].update();
+        }
+    }
+    void Skeleton::applyAdditivePose(const AnimationPose& pose)
+    {
+        for (int i = 0; i < pose.m_bone_poses.size() && i < m_bone_count; i++)
+        {
+            int bone_index = i;
+            if (pose.m_reorder)
+            {
+                bone_index = pose.m_bone_indexs[i];
+            }
+            Bone& bone = m_bones[bone_index];
+            bone.rotate(pose.m_bone_poses[i].m_rotation);
+            bone.scale(pose.m_bone_poses[i].m_scale);
+            bone.translate(pose.m_bone_poses[i].m_position);
+        }
+        for (size_t i = 0; i < m_bone_count; i++)
+        {
+            m_bones[i].update();
+        }
+    }
 
+    void Skeleton::extractPose(AnimationPose& pose)
+    {
+        pose.m_reorder = false;
+        pose.m_bone_poses.resize(m_bone_count);
+        for (int i = 0; i < m_bone_count; i++)
+        {
+            Bone& bone                      = m_bones[i];
+            pose.m_bone_poses[i].m_rotation = bone.getOrientation();
+            pose.m_bone_poses[i].m_scale    = bone.getScale();
+            pose.m_bone_poses[i].m_position = bone.getPosition();
+        }
+    }
     void Skeleton::applyAnimation(const BlendStateWithClipData& blend_state)
     {
         if (!m_bones)
@@ -45,15 +112,14 @@ namespace Pilot
         resetSkeleton();
         for (size_t clip_index = 0; clip_index < 1; clip_index++)
         {
-            const AnimationClip& animation_clip = blend_state.blend_clip[clip_index];
-            const float          phase          = blend_state.blend_ratio[clip_index];
-            const AnimSkelMap&   anim_skel_map  = blend_state.blend_anim_skel_map[clip_index];
+            const AnimationClip& animation_clip = blend_state.m_blend_clip[clip_index];
+            const float          phase          = blend_state.m_blend_ratio[clip_index];
+            const AnimSkelMap&   anim_skel_map  = blend_state.m_blend_anim_skel_map[clip_index];
 
             float exact_frame        = phase * (animation_clip.total_frame - 1);
             int   current_frame_low  = floor(exact_frame);
             int   current_frame_high = ceil(exact_frame);
             float lerp_ratio         = exact_frame - current_frame_low;
-            // for (size_t node_index = 0; node_index < 0; node_index++)
             for (size_t node_index = 0;
                  node_index < animation_clip.node_count && node_index < anim_skel_map.convert.size();
                  node_index++)
@@ -98,22 +164,13 @@ namespace Pilot
                     bone->rotate(rotation);
                     bone->scale(scaling);
                     bone->translate(position);
-
-                    // bone->rotate({ {},0.01,0,0,1 });
-                    // bone->scale({ {},0.9,0.9,0.9 });
                 }
             }
         }
-        // bones[77].rotate(Quaternion{ {},1,0,0,1 });
-        // bones[18].translate(Vector3{ {},0,1,0 });
-        // bones[0].setScale(Vector3{ {},0,1,0.01 });
         for (size_t i = 0; i < m_bone_count; i++)
         {
             m_bones[i].update();
         }
-#ifdef _DEBUG
-        // bones[107].m_derived_position += Vector3{ {},10, 0, 0 };
-#endif
     }
 
     AnimationResult Skeleton::outputAnimationResult()
@@ -124,33 +181,22 @@ namespace Pilot
             std::shared_ptr<AnimationResultElement> animation_result_element =
                 std::make_shared<AnimationResultElement>();
             Bone* bone                      = &m_bones[i];
-            animation_result_element->index = bone->getID() + 1;
+            animation_result_element->m_index = bone->getID() + 1;
             Vector3 temp_translation        = bone->_getDerivedPosition();
 
-            // TODO: the unit of the joint matrices is wrong
             Vector3 temp_scale = bone->_getDerivedScale();
 
             Quaternion temp_rotation = bone->_getDerivedOrientation();
 
-            // auto scale = bone->_getDerivedTScale();
-            // scale.x = 1.f / scale.x;
-            // scale.y = 1.f / scale.y;
-            // scale.z = 1.f / scale.z;
-
-            // auto revTmat = getMatrix(
-            //	-bone->_getDerivedTPosition(),
-            //	scale,
-            //	conjugate( bone->_getDerivedTOrientation())
-            //);
             auto objMat =
                 Transform(bone->_getDerivedPosition(), bone->_getDerivedOrientation(), bone->_getDerivedScale())
                     .getMatrix();
 
             auto resMat = objMat * bone->_getInverseTpose();
 
-            animation_result_element->transform = resMat.toMatrix4x4_();
+            animation_result_element->m_transform = resMat.toMatrix4x4_();
 
-            animation_result.node.push_back(*animation_result_element);
+            animation_result.m_node.push_back(*animation_result_element);
         }
         return animation_result;
     }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "runtime/core/math/vector3.h"
+
 #include <memory>
 #include <vector>
 
@@ -23,7 +25,7 @@ namespace Pilot
         void initialize();
         void clear();
 
-        std::weak_ptr<PhysicsScene> createPhysicsScene();
+        std::weak_ptr<PhysicsScene> createPhysicsScene(const Vector3& gravity);
         void                        deletePhysicsScene(std::weak_ptr<PhysicsScene> physics_scene);
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
