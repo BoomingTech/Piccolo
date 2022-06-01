@@ -7,11 +7,10 @@
 
 namespace Pilot
 {
-    void ConfigManager::initialize(const EngineInitParams& init_param)
+    void ConfigManager::initialize(const std::string& config_file_path)
     {
-        m_root_folder = init_param.m_root_folder;
         // read configs
-        std::ifstream config_file(init_param.m_config_file_path);
+        std::ifstream config_file(config_file_path);
         std::string   config_line;
         while (std::getline(config_file, config_line))
         {
@@ -20,7 +19,11 @@ namespace Pilot
             {
                 std::string name  = config_line.substr(0, seperate_pos);
                 std::string value = config_line.substr(seperate_pos + 1, config_line.length() - seperate_pos - 1);
-                if (name == "AssetFolder")
+                if (name == "BinaryRootFolder")
+                {
+                    m_root_folder = value;
+                }
+                else if (name == "AssetFolder")
                 {
                     m_asset_folder = m_root_folder / value;
                 }

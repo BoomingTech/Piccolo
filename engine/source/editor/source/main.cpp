@@ -13,24 +13,22 @@
 
 int main(int argc, char** argv)
 {
-    Pilot::EngineInitParams params;
-    params.m_root_folder      = ".";
-    params.m_config_file_path = "./PilotEditor.ini";
+	std::string config_file_path = "./PilotEditor.ini";
 
-    Pilot::PilotEngine* engine = new Pilot::PilotEngine();
+	Pilot::PilotEngine* engine = new Pilot::PilotEngine();
 
-    engine->startEngine(params);
-    engine->initialize();
+	engine->startEngine(config_file_path);
+	engine->initialize();
 
-    Pilot::PilotEditor* editor = new Pilot::PilotEditor();
-    editor->initialize(engine);
+	Pilot::PilotEditor* editor = new Pilot::PilotEditor();
+	editor->initialize(engine);
 
-    editor->run();
+	editor->run();
 
-    editor->clear();
+	editor->clear();
 
-    engine->clear();
-    engine->shutdownEngine();
+	engine->clear();
+	engine->shutdownEngine();
 
-    return 0;
+	return 0;
 }
