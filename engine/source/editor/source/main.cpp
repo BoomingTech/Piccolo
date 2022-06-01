@@ -13,11 +13,9 @@
 
 int main(int argc, char** argv)
 {
-    std::filesystem::path pilot_root_folder = std::filesystem::path(PILOT_XSTR(PILOT_ROOT_DIR));
-
     Pilot::EngineInitParams params;
-    params.m_root_folder      = pilot_root_folder;
-    params.m_config_file_path = pilot_root_folder / "PilotEditor.ini";
+    params.m_root_folder      = ".";
+    params.m_config_file_path = "./PilotEditor.ini";
 
     Pilot::PilotEngine* engine = new Pilot::PilotEngine();
 
