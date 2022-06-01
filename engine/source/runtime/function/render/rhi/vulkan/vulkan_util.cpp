@@ -236,8 +236,8 @@ namespace Pilot
         // use staging buffer
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        VulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->_physical_device,
-                                 static_cast<VulkanRHI*>(rhi)->_device,
+        VulkanUtil::createBuffer(static_cast<VulkanRHI*>(rhi)->m_physical_device,
+                                 static_cast<VulkanRHI*>(rhi)->m_device,
                                  texture_byte_size,
                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -246,9 +246,9 @@ namespace Pilot
 
         void* data;
         vkMapMemory(
-            static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
+            static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
         memcpy(data, texture_image_pixels, static_cast<size_t>(texture_byte_size));
-        vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory);
+        vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
 
         // generate mipmapped image
         uint32_t mip_levels =
@@ -275,7 +275,7 @@ namespace Pilot
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->_assets_allocator,
+        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
                        &image_create_info,
                        &allocInfo,
                        &image,
@@ -301,13 +301,13 @@ namespace Pilot
                               1,
                               VK_IMAGE_ASPECT_COLOR_BIT);
 
-        vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer, nullptr);
-        vkFreeMemory(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory, nullptr);
+        vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
+        vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
 
         // generate mipmapped image
         genMipmappedImage(rhi, image, texture_image_width, texture_image_height, mip_levels);
 
-        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->_device,
+        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->m_device,
                                      image,
                                      vulkan_image_format,
                                      VK_IMAGE_ASPECT_COLOR_BIT,
@@ -390,7 +390,7 @@ namespace Pilot
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->_assets_allocator,
+        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
                        &image_create_info,
                        &allocInfo,
                        &image,
@@ -399,8 +399,8 @@ namespace Pilot
 
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        createBuffer(static_cast<VulkanRHI*>(rhi)->_physical_device,
-                     static_cast<VulkanRHI*>(rhi)->_device,
+        createBuffer(static_cast<VulkanRHI*>(rhi)->m_physical_device,
+                     static_cast<VulkanRHI*>(rhi)->m_device,
                      cube_byte_size,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -409,14 +409,14 @@ namespace Pilot
 
         void* data = NULL;
         vkMapMemory(
-            static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory, 0, cube_byte_size, 0, &data);
+            static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, cube_byte_size, 0, &data);
         for (int i = 0; i < 6; i++)
         {
             memcpy((void*)(static_cast<char*>(data) + texture_layer_byte_size * i),
                    texture_image_pixels[i],
                    static_cast<size_t>(texture_layer_byte_size));
         }
-        vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory);
+        vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
 
         // layout transitions -- image layout is set from none to destination
         transitionImageLayout(rhi,
@@ -434,13 +434,13 @@ namespace Pilot
                           static_cast<uint32_t>(texture_image_height),
                           6);
 
-        vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer, nullptr);
-        vkFreeMemory(static_cast<VulkanRHI*>(rhi)->_device, inefficient_staging_buffer_memory, nullptr);
+        vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
+        vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
 
         generateTextureMipMaps(
             rhi, image, vulkan_image_format, texture_image_width, texture_image_height, 6, miplevels);
 
-        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->_device,
+        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->m_device,
                                      image,
                                      vulkan_image_format,
                                      VK_IMAGE_ASPECT_COLOR_BIT,
@@ -459,7 +459,7 @@ namespace Pilot
     {
         VkFormatProperties format_properties;
         vkGetPhysicalDeviceFormatProperties(
-            static_cast<VulkanRHI*>(rhi)->_physical_device, image_format, &format_properties);
+            static_cast<VulkanRHI*>(rhi)->m_physical_device, image_format, &format_properties);
         if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
         {
             throw std::runtime_error("generateTextureMipMaps() : linear bliting not supported!");

@@ -106,7 +106,6 @@ namespace Pilot
         {
             friend class FieldAccessor;
             friend class ArrayAccessor;
-            ;
             friend class TypeMetaRegisterinterface;
 
         public:
@@ -175,13 +174,13 @@ namespace Pilot
 
         private:
             FieldFunctionTuple* m_functions;
-            const char*           m_field_name;
-            const char*           m_field_type_name;
+            const char*         m_field_name;
+            const char*         m_field_type_name;
         };
 
         /**
-        *  Function reflection is not implemented, so use this as an std::vector accessor
-        */
+         *  Function reflection is not implemented, so use this as an std::vector accessor
+         */
         class ArrayAccessor
         {
             friend class TypeMeta;
@@ -202,8 +201,8 @@ namespace Pilot
 
         private:
             ArrayFunctionTuple* m_func;
-            const char*           m_array_type_name;
-            const char*           m_element_type_name;
+            const char*         m_array_type_name;
+            const char*         m_element_type_name;
         };
 
         class ReflectionInstance
