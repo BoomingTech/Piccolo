@@ -142,6 +142,7 @@
 	JPH_GCC_SUPPRESS_WARNING("-Wclass-memaccess")												\
 																								\
 	JPH_MSVC_SUPPRESS_WARNING(4514) /* 'X' : unreferenced inline function has been removed */	\
+	JPH_MSVC_SUPPRESS_WARNING(4619) /* #pragma warning: there is no warning number 'X'*/		\
 	JPH_MSVC_SUPPRESS_WARNING(4710) /* 'X' : function not inlined */							\
 	JPH_MSVC_SUPPRESS_WARNING(4711) /* function 'X' selected for automatic inline expansion */	\
 	JPH_MSVC_SUPPRESS_WARNING(4820) /* 'X': 'Y' bytes padding added after data member 'Z' */	\

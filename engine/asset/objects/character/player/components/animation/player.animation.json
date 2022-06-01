@@ -1,0 +1,167 @@
+{
+  "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json",
+  "blend_states": [
+    {
+      "$context": {
+        "clip_count": 3,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/idle.animation_clip.json",
+          "asset/objects/character/player/components/animation/data/walk.animation_clip.json",
+          "asset/objects/character/player/components/animation/data/run.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          3.36667,
+          1.26667,
+          0.76667
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "blend_ratio": [
+          0,
+          0,
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ],
+        "key": "speed",
+        "values": [
+          0.0,
+          2.0,
+          4.0
+        ]
+      },
+      "$typeName": "BlendState1D"
+    },
+    {
+      "$context": {
+        "clip_count": 1,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/walk_forward_start.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          1.46667
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0
+        ],
+        "blend_ratio": [
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ]
+      },
+      "$typeName": "BlendState"
+    },
+    {
+      "$context": {
+        "clip_count": 1,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/walk_forward_end.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          1.30
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0
+        ],
+        "blend_ratio": [
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ]
+      },
+      "$typeName": "BlendState"
+    },
+    {
+      "$context": {
+        "clip_count": 1,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/jump_start.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          0.6
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0
+        ],
+        "blend_ratio": [
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ]
+      },
+      "$typeName": "BlendState"
+    },
+    {
+      "$context": {
+        "clip_count": 1,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/jump_loop.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          1.86667
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0
+        ],
+        "blend_ratio": [
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ]
+      },
+      "$typeName": "BlendState"
+    },
+    {
+      "$context": {
+        "clip_count": 1,
+        "blend_clip_file_path": [
+          "asset/objects/character/player/components/animation/data/jump_end.animation_clip.json"
+        ],
+        "blend_clip_file_length": [
+          0.8
+        ],
+        "blend_anim_skel_map_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+        ],
+        "blend_weight": [
+          1.0
+        ],
+        "blend_ratio": [
+          0
+        ],
+        "blend_mask_file_path": [
+          "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+        ]
+      },
+      "$typeName": "BlendState"
+    }
+  ]
+}

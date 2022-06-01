@@ -9,6 +9,7 @@ namespace Pilot
     {
         if (res.m_geometry.getTypeName() == "Box")
         {
+            m_type     = RigidBodyShapeType::box;
             m_geometry = PILOT_REFLECTION_NEW(Box);
             PILOT_REFLECTION_DEEP_COPY(Box, m_geometry, res.m_geometry);
         }

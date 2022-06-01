@@ -11,7 +11,7 @@ namespace Pilot
         REFLECTION_BODY(LevelRes);
 
     public:
-        float m_gravity {9.8f};
+        Vector3 m_gravity {0.f, 0.f, -9.8f};
         std::string m_character_name;
 
         std::vector<ObjectInstanceRes> m_objects;

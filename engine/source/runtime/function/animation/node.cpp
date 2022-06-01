@@ -108,11 +108,11 @@ namespace Pilot
     {
         switch (relativeTo)
         {
-            case TransformSpace::LOCAL:
+            case TransformSpace::_local:
                 // position is relative to parent so transform downwards
                 m_position = m_position + m_orientation * d;
                 break;
-            case TransformSpace::OBJECT:
+            case TransformSpace::_object:
                 // position is relative to parent so transform upwards
                 if (m_parent)
                 {
@@ -124,7 +124,7 @@ namespace Pilot
                     m_position = m_position + d;
                 }
                 break;
-            case TransformSpace::AREN:
+            case TransformSpace::_aren:
                 m_position = m_position + d;
                 break;
         }
@@ -140,15 +140,15 @@ namespace Pilot
 
         switch (relativeTo)
         {
-            case TransformSpace::AREN:
+            case TransformSpace::_aren:
                 // Rotations are normally relative to local axes, transform up
                 m_orientation = qnorm * m_orientation;
                 break;
-            case TransformSpace::OBJECT:
+            case TransformSpace::_object:
                 // Rotations are normally relative to local axes, transform up
                 m_orientation = m_orientation * _getDerivedOrientation().inverse() * qnorm * _getDerivedOrientation();
                 break;
-            case TransformSpace::LOCAL:
+            case TransformSpace::_local:
                 // Note the order of the mult, i.e. q comes after
                 m_orientation = m_orientation * qnorm;
                 break;
@@ -196,9 +196,6 @@ namespace Pilot
     //-----------------------------------------------------------------------
     void Node::resetToInitialPose(void)
     {
-        // m_position = {};// m_initial_position;
-        // m_orientation = { {},0,0,0,1 };// m_initial_orientation;
-        // m_scale = { {},1,1,1 };//m_initial_scale;
         m_position    = m_initial_position;
         m_orientation = m_initial_orientation;
         m_scale       = m_initial_scale;
