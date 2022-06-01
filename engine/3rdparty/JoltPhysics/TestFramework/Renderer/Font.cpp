@@ -17,7 +17,7 @@ Font::Font(Renderer *inRenderer) :
 }
 
 bool
-Font::Create(const char *inFontName, int inCharHeight)
+Font::Create(const char *inFontName, int inCharHeight, const std::filesystem::path& asset_folder)
 {
 	JPH_PROFILE("Create");
 
@@ -203,10 +203,10 @@ Font::Create(const char *inFontName, int inCharHeight)
 	};
 
 	// Load vertex shader
-	ComPtr<ID3DBlob> vtx = mRenderer->CreateVertexShader("Assets/Shaders/FontVertexShader.hlsl");
+	ComPtr<ID3DBlob> vtx = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "FontVertexShader.hlsl").generic_string().c_str());
 
 	// Load pixel shader
-	ComPtr<ID3DBlob> pix = mRenderer->CreatePixelShader("Assets/Shaders/FontPixelShader.hlsl");
+	ComPtr<ID3DBlob> pix = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "FontPixelShader.hlsl").generic_string().c_str());
 
 	mPipelineState = mRenderer->CreatePipelineState(vtx.Get(), vertex_desc, ARRAYSIZE(vertex_desc), pix.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::Off, PipelineState::EBlendMode::AlphaTest, PipelineState::ECullMode::Backface);
 

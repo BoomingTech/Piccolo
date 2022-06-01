@@ -10,6 +10,8 @@
 #include <Renderer/Texture.h>
 #include <Renderer/PipelineState.h>
 
+#include <filesystem>
+
 class Renderer;
 class Texture;
 
@@ -26,7 +28,7 @@ public:
 								Font(Renderer *inRenderer);
 							
 	/// Create a font
-	bool						Create(const char *inFontName, int inCharHeight);
+	bool						Create(const char *inFontName, int inCharHeight, const std::filesystem::path& asset_folder);
 
 	/// Properties
 	const string &				GetFontName() const									{ return mFontName; }

@@ -1,5 +1,7 @@
 #include "runtime/function/physics/physics_manager.h"
 
+#include "runtime/resource/config_manager/config_manager.h"
+
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/physics/jolt/utils.h"
@@ -20,15 +22,18 @@ namespace Pilot
     void PhysicsManager::initialize()
     {
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
+        ASSERT(config_manager);
+
         Trace = TraceImpl;
 
         m_renderer = new Renderer;
         m_renderer->Initialize();
 
         m_font = new Font(m_renderer);
-        m_font->Create("Arial", 24);
+        m_font->Create("Arial", 24, config_manager->getJoltPhysicsAssetFolder());
 
-        m_debug_renderer = new DebugRendererImp(m_renderer, m_font);
+        m_debug_renderer = new DebugRendererImp(m_renderer, m_font, config_manager->getJoltPhysicsAssetFolder());
 #endif
     }
 
@@ -38,7 +43,7 @@ namespace Pilot
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
         delete m_debug_renderer;
-        delete m_font;
+        m_font = nullptr;
         delete m_renderer;
 #endif
     }
@@ -96,11 +101,11 @@ namespace Pilot
         }
 
         CameraState world_camera;
-        world_camera.mPos      = toVec3(render_camera->position());
-        world_camera.mForward  = toVec3(render_camera->forward());
-        world_camera.mUp       = toVec3(render_camera->up());
-        world_camera.mFOVY     = fov.y;
-        world_camera.mFarPlane = render_camera->m_zfar;
+        world_camera.mPos       = toVec3(render_camera->position());
+        world_camera.mForward   = toVec3(render_camera->forward());
+        world_camera.mUp        = toVec3(render_camera->up());
+        world_camera.mFOVY      = fov.y;
+        world_camera.mFarPlane  = render_camera->m_zfar;
         world_camera.mNearPlane = render_camera->m_znear;
 
         m_renderer->BeginFrame(world_camera, 1.f);
@@ -108,6 +113,7 @@ namespace Pilot
         physics_scene->drawPhysicsScene(m_debug_renderer);
 
         static_cast<DebugRendererImp*>(m_debug_renderer)->Draw();
+        static_cast<DebugRendererImp*>(m_debug_renderer)->Clear();
 
         m_renderer->EndFrame();
     }

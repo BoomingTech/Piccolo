@@ -50,11 +50,11 @@ Application::Application() :
 
 	// Create font
 	Font *font = new Font(mRenderer);
-	font->Create("Arial", 24);
+	font->Create("Arial", 24, "Assets");
 	mFont = font;
 
 	// Init debug renderer
-	mDebugRenderer = new DebugRendererImp(mRenderer, mFont);
+	mDebugRenderer = new DebugRendererImp(mRenderer, mFont, "Assets");
 
 	// Init keyboard
 	mKeyboard = new Keyboard;
