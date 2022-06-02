@@ -4,7 +4,7 @@
 #include <cfloat>
 #include <random>
 
-namespace Chaos
+namespace Pilot
 {
     template<typename NumericType>
     using uniform_distribution = typename std::conditional<std::is_integral<NumericType>::value,
