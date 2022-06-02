@@ -15,7 +15,9 @@ target_include_directories(
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "PilotEditor")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Engine")
-set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${BINARY_ROOT_DIR}")
+if(MSVC)
+	set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${BINARY_ROOT_DIR}")
+endif()
 
 target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/WX->")
 
