@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv)
 {
-    std::filesystem::path pilot_root_folder = std::filesystem::path(PILOT_XSTR(PILOT_ROOT_DIR));
+    std::filesystem::path pilot_root_folder = std::filesystem::current_path();
 
     Pilot::EngineInitParams params;
     params.m_root_folder      = pilot_root_folder;

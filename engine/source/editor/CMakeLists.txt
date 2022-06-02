@@ -8,8 +8,6 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${EDITOR_HEADERS} ${EDITOR
 
 add_executable(${TARGET_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES} ${EDITOR_RESOURCE})
 
-add_compile_definitions("PILOT_ROOT_DIR=${BINARY_ROOT_DIR}")
-
 target_include_directories(
   ${TARGET_NAME} 
   PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/stb>
@@ -17,6 +15,7 @@ target_include_directories(
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "PilotEditor")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Engine")
+set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${BINARY_ROOT_DIR}")
 
 target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/WX->")
 
