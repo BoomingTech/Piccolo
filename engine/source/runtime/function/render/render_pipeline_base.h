@@ -22,6 +22,8 @@ namespace Pilot
         friend class RenderSystem;
 
     public:
+        virtual ~RenderPipelineBase() {}
+
         virtual void initialize(RenderPipelineInitInfo init_info) = 0;
 
         virtual void preparePassData(std::shared_ptr<RenderResourceBase> render_resource);

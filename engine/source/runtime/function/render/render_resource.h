@@ -119,12 +119,7 @@ namespace Pilot
                                                     RenderEntity         render_entity,
                                                     RenderMaterialData   material_data) override final;
 
-        virtual void setVisibleNodesReference() override final;
-
         virtual void updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
-                                          std::shared_ptr<RenderCamera> camera) override final;
-
-        virtual void updateVisibleObjects(std::shared_ptr<RenderScene>  render_scene,
                                           std::shared_ptr<RenderCamera> camera) override final;
 
         VulkanMesh& getEntityMesh(RenderEntity entity);
@@ -149,15 +144,9 @@ namespace Pilot
         std::map<size_t, VulkanMesh>        m_vulkan_meshes;
         std::map<size_t, VulkanPBRMaterial> m_vulkan_pbr_materials;
 
-        // visible objects (updated per frame)
-        std::vector<VulkanMeshNode>              m_directional_light_visible_mesh_nodes;
-        std::vector<VulkanMeshNode>              m_point_lights_visible_mesh_nodes;
-        std::vector<VulkanMeshNode>              m_main_camera_visible_mesh_nodes;
-        std::vector<VulkanParticleBillboardNode> m_main_camera_visible_particlebillboard_nodes;
-        VulkanAxisNode                           m_axis_node;
-
-        // descriptor layout in main camera pass will be used when uploading resource
-        std::shared_ptr<RenderPassBase> m_main_camera_pass;
+        // descriptor set layout in main camera pass will be used when uploading resource
+        const VkDescriptorSetLayout* m_mesh_descriptor_set_layout {nullptr};
+        const VkDescriptorSetLayout* m_material_descriptor_set_layout {nullptr};
 
     private:
         void createAndMapStorageBuffer(std::shared_ptr<RHI> rhi);
@@ -193,13 +182,5 @@ namespace Pilot
                                void*                index_buffer_data,
                                VulkanMesh&          now_mesh);
         void updateTextureImageData(std::shared_ptr<RHI> rhi, const TextureDataToUpdate& texture_data);
-
-        void updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderScene>  render_scene,
-                                                  std::shared_ptr<RenderCamera> camera);
-        void updateVisibleObjectsPointLight(std::shared_ptr<RenderScene> render_scene);
-        void updateVisibleObjectsMainCamera(std::shared_ptr<RenderScene>  render_scene,
-                                            std::shared_ptr<RenderCamera> camera);
-        void updateVisibleObjectsAxis(std::shared_ptr<RenderScene> render_scene);
-        void updateVisibleObjectsParticle(std::shared_ptr<RenderScene> render_scene);
     };
 } // namespace Pilot

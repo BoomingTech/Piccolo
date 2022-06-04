@@ -4,15 +4,15 @@
 
 namespace Pilot
 {
-    void GameObjectResourceDesc::add(GameObjectDesc desc) { game_object_descs.push_back(desc); }
+    void GameObjectResourceDesc::add(GameObjectDesc desc) { m_game_object_descs.push_back(desc); }
 
-    bool GameObjectResourceDesc::isEmpty() const { return game_object_descs.empty(); }
+    bool GameObjectResourceDesc::isEmpty() const { return m_game_object_descs.empty(); }
 
     GameObjectDesc GameObjectResourceDesc::getNextProcessObject()
     {
-        if (!game_object_descs.empty())
+        if (!m_game_object_descs.empty())
         {
-            return game_object_descs.front();
+            return m_game_object_descs.front();
         }
         else
         {
@@ -20,7 +20,7 @@ namespace Pilot
         }
     }
 
-    void GameObjectResourceDesc::popProcessObject() { game_object_descs.pop_front(); }
+    void GameObjectResourceDesc::popProcessObject() { m_game_object_descs.pop_front(); }
 
     RenderSwapData& RenderSwapContext::getLogicSwapData() { return m_swap_data[m_logic_swap_data_index]; }
 
@@ -36,59 +36,63 @@ namespace Pilot
 
     bool RenderSwapContext::isReadyToSwap() const
     {
-        return !(m_swap_data[m_render_swap_data_index].level_resource_desc.has_value() ||
-                 m_swap_data[m_render_swap_data_index].game_object_resource_desc.has_value() ||
-                 m_swap_data[m_render_swap_data_index].game_object_to_delete.has_value());
+        return !(m_swap_data[m_render_swap_data_index].m_level_resource_desc.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_game_object_resource_desc.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_game_object_to_delete.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_camera_swap_data.has_value());
     }
 
     void RenderSwapContext::resetLevelRsourceSwapData()
     {
-        m_swap_data[m_render_swap_data_index].level_resource_desc.reset();
+        m_swap_data[m_render_swap_data_index].m_level_resource_desc.reset();
     }
 
     void RenderSwapContext::resetGameObjectResourceSwapData()
     {
-        m_swap_data[m_render_swap_data_index].game_object_resource_desc.reset();
+        m_swap_data[m_render_swap_data_index].m_game_object_resource_desc.reset();
     }
 
     void RenderSwapContext::resetGameObjectToDelete()
     {
-        m_swap_data[m_render_swap_data_index].game_object_to_delete.reset();
+        m_swap_data[m_render_swap_data_index].m_game_object_to_delete.reset();
     }
+
+    void RenderSwapContext::resetCameraSwapData() { m_swap_data[m_render_swap_data_index].m_camera_swap_data.reset(); }
 
     void RenderSwapContext::swap()
     {
         resetLevelRsourceSwapData();
         resetGameObjectResourceSwapData();
         resetGameObjectToDelete();
+        resetCameraSwapData();
         std::swap(m_logic_swap_data_index, m_render_swap_data_index);
     }
 
     void RenderSwapData::addDirtyGameObject(GameObjectDesc desc)
     {
-        if (game_object_resource_desc.has_value())
+        if (m_game_object_resource_desc.has_value())
         {
-            game_object_resource_desc->add(desc);
+            m_game_object_resource_desc->add(desc);
         }
         else
         {
             GameObjectResourceDesc go_descs;
             go_descs.add(desc);
-            game_object_resource_desc = go_descs;
+            m_game_object_resource_desc = go_descs;
         }
     }
 
     void RenderSwapData::addDeleteGameObject(GameObjectDesc desc)
     {
-        if (game_object_to_delete.has_value())
+        if (m_game_object_to_delete.has_value())
         {
-            game_object_to_delete->add(desc);
+            m_game_object_to_delete->add(desc);
         }
         else
         {
             GameObjectResourceDesc go_descs;
             go_descs.add(desc);
-            game_object_to_delete = go_descs;
+            m_game_object_to_delete = go_descs;
         }
     }
 } // namespace Pilot

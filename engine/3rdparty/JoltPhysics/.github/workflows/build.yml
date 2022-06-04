@@ -1,0 +1,125 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'Docs/**'
+      - '**.md'
+      - '**.txt'
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'Docs/**'
+      - '**.md'
+      - '**.txt'
+
+jobs:
+  linux-clang:
+    runs-on: ubuntu-latest
+    name: Linux Clang
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release, Distribution, ReleaseASAN, ReleaseUBSAN]
+            clang_version: [clang++-10, clang++-12]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} Build
+    - name: Build
+      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+    - name: Test
+      working-directory: ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}}
+      run: ctest --output-on-failure
+
+  linux-gcc:
+    runs-on: ubuntu-latest
+    name: Linux GCC
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release, Distribution]
+            clang_version: [g++]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} Build
+    - name: Build
+      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+    - name: Test
+      working-directory: ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}}
+      run: ctest --output-on-failure
+
+  msvc_cl:
+    runs-on: windows-latest
+    name: Visual Studio CL
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release, Distribution]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/VS2022_CL -G "Visual Studio 17 2022" -A x64 Build
+    - name: Build
+      run: msbuild Build\VS2022_CL\JoltPhysics.sln /property:Configuration=${{matrix.build_type}}
+    - name: Test
+      working-directory: ${{github.workspace}}/Build/VS2022_CL/${{matrix.build_type}}
+      run: ./UnitTests.exe
+
+  macos:
+    runs-on: macos-latest
+    name: MacOS
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release, Distribution]
+            clang_version: [clang++]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Configure CMake
+      # github macos-latest runs on a 2013 Ivy Bridge CPU so doesn't have AVX2, LZCNT, TZCNT or FMADD
+      run: cmake -B ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} -DUSE_AVX2=OFF -DUSE_LZCNT=OFF -DUSE_TZCNT=OFF -DUSE_FMADD=OFF Build
+    - name: Build
+      run: cmake --build ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+    - name: Test
+      working-directory: ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}}
+      run: ctest --output-on-failure
+
+  android:
+    runs-on: ubuntu-latest
+    name: Android
+    strategy:
+        fail-fast: false
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Gradle Build
+      working-directory: ${{github.workspace}}/Build/Android
+      run: ./gradlew build
+
+  ios:
+    runs-on: macos-latest
+    name: iOS
+    strategy:
+        fail-fast: false
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/XCode_iOS -DTARGET_HELLO_WORLD=OFF -DTARGET_PERFORMANCE_TEST=OFF -DCMAKE_SYSTEM_NAME=iOS -GXcode Build
+    - name: Build
+      run: cmake --build ${{github.workspace}}/Build/XCode_iOS -- -sdk iphonesimulator -arch x86_64

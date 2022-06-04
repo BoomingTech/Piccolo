@@ -25,8 +25,6 @@ namespace Pilot
 
         void tick(float delta_time) override;
 
-        static RenderSwapContext* m_swap_context;
-
     private:
         META(Enable)
         MeshComponentRes m_mesh_res;

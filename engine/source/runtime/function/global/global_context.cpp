@@ -13,6 +13,7 @@
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
 #include "runtime/function/physics/physics_system.h"
+#include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
@@ -25,13 +26,16 @@ namespace Pilot
         m_config_manager = std::make_shared<ConfigManager>();
         m_config_manager->initialize(init_params);
 
-        m_file_servcie = std::make_shared<FileService>();
+        m_file_system = std::make_shared<FileSystem>();
 
         m_logger_system = std::make_shared<LogSystem>();
 
         m_asset_manager = std::make_shared<AssetManager>();
 
-        m_physics_system = std::make_shared<PhysicsSystem>();
+        m_legacy_physics_system = std::make_shared<PhysicsSystem>();
+
+        m_physics_manager = std::make_shared<PhysicsManager>();
+        m_physics_manager->initialize();
 
         m_world_manager = std::make_shared<WorldManager>();
         m_world_manager->initialize();
@@ -47,9 +51,6 @@ namespace Pilot
         RenderSystemInitInfo render_init_info;
         render_init_info.window_system = m_window_system;
         m_render_system->initialize(render_init_info);
-
-        MeshComponent::m_swap_context    = &(m_render_system->getSwapContext());
-        CameraComponent::m_render_camera = &(*m_render_system->getRenderCamera());
     }
 
     void RuntimeGlobalContext::shutdownSystems()
@@ -58,12 +59,15 @@ namespace Pilot
 
         m_window_system.reset();
 
-        m_scene_manager.reset();
-
+        m_world_manager->clear();
         m_world_manager.reset();
 
-        m_physics_system.reset();
+        m_legacy_physics_system.reset();
 
+        m_physics_manager->clear();
+        m_physics_manager.reset();
+
+        m_input_system->clear();
         m_input_system.reset();
 
         m_asset_manager.reset();
@@ -71,7 +75,7 @@ namespace Pilot
 
         m_logger_system.reset();
 
-        m_file_servcie.reset();
+        m_file_system.reset();
 
         m_config_manager.reset();
     }

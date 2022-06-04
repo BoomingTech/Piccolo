@@ -30,8 +30,6 @@ namespace Pilot
 
         void tick(float delta_time) override;
 
-        static RenderCamera* m_render_camera;
-
     private:
         void tickFirstPersonCamera(float delta_time);
         void tickThirdPersonCamera(float delta_time);

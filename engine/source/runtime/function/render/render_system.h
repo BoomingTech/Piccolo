@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/function/framework/object/object_id_allocator.h"
-
 #include "runtime/function/render/render_entity.h"
 #include "runtime/function/render/render_guid_allocator.h"
 #include "runtime/function/render/render_swap_context.h"
@@ -10,8 +8,6 @@
 #include <array>
 #include <memory>
 #include <optional>
-#include <unordered_map>
-#include <vector>
 
 namespace Pilot
 {
@@ -26,6 +22,14 @@ namespace Pilot
     struct RenderSystemInitInfo
     {
         std::shared_ptr<WindowSystem> window_system;
+    };
+
+    struct EngineContentViewport
+    {
+        float x { 0.f};
+        float y { 0.f};
+        float width { 0.f};
+        float height { 0.f};
     };
 
     class RenderSystem
@@ -47,11 +51,15 @@ namespace Pilot
         uint32_t  getGuidOfPickedMesh(const Vector2& picked_uv);
         GObjectID getGObjectIDByMeshID(uint32_t mesh_id) const;
 
+        EngineContentViewport getEngineContentViewport() const;
+
         void createAxis(std::array<RenderEntity, 3> axis_entities, std::array<RenderMeshData, 3> mesh_datas);
         void setVisibleAxis(std::optional<RenderEntity> axis);
         void setSelectedAxis(size_t selected_axis);
         GuidAllocator<GameObjectPartId>& getGOInstanceIdAllocator();
         GuidAllocator<MeshSourceDesc>&   getMeshAssetIdAllocator();
+
+        void clearForLevelReloading();
 
     private:
         RENDER_PIPELINE_TYPE m_render_pipeline_type {RENDER_PIPELINE_TYPE::DEFERRED_PIPELINE};
@@ -64,13 +72,6 @@ namespace Pilot
         std::shared_ptr<RenderResourceBase> m_render_resource;
         std::shared_ptr<RenderPipelineBase> m_render_pipeline;
 
-        GuidAllocator<GameObjectPartId>   m_instance_id_allocator;
-        GuidAllocator<MeshSourceDesc>     m_mesh_asset_id_allocator;
-        GuidAllocator<MaterialSourceDesc> m_material_asset_id_allocator;
-
-        std::unordered_map<uint32_t, GObjectID> m_mesh_object_id_map;
-
         void processSwapData();
-        void addInstanceIdToMap(uint32_t instance_id, GObjectID go_id);
     };
 } // namespace Pilot

@@ -52,7 +52,7 @@ namespace Pilot
 
         if (VK_SUCCESS !=
             vkCreateDescriptorSetLayout(
-                m_vulkan_rhi->_device, &post_process_global_layout_create_info, NULL, &m_descriptor_infos[0].layout))
+                m_vulkan_rhi->m_device, &post_process_global_layout_create_info, NULL, &m_descriptor_infos[0].layout))
         {
             throw std::runtime_error("create post process global layout");
         }
@@ -69,14 +69,14 @@ namespace Pilot
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
+                m_vulkan_rhi->m_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create post process pipeline layout");
         }
 
-        VkShaderModule vert_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->_device, FXAA_VERT);
-        VkShaderModule frag_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->_device, FXAA_FRAG);
+        VkShaderModule vert_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, FXAA_VERT);
+        VkShaderModule frag_shader_module = VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, FXAA_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -108,9 +108,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_vulkan_rhi->_viewport;
+        viewport_state_create_info.pViewports    = &m_vulkan_rhi->m_viewport;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_vulkan_rhi->_scissor;
+        viewport_state_create_info.pScissors     = &m_vulkan_rhi->m_scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -185,14 +185,14 @@ namespace Pilot
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
         if (vkCreateGraphicsPipelines(
-                m_vulkan_rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
+                m_vulkan_rhi->m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_vulkan_rhi->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_vulkan_rhi->_device, frag_shader_module, nullptr);
+        vkDestroyShaderModule(m_vulkan_rhi->m_device, vert_shader_module, nullptr);
+        vkDestroyShaderModule(m_vulkan_rhi->m_device, frag_shader_module, nullptr);
     }
 
     void FXAAPass::setupDescriptorSet()
@@ -200,11 +200,11 @@ namespace Pilot
         VkDescriptorSetAllocateInfo post_process_global_descriptor_set_alloc_info;
         post_process_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         post_process_global_descriptor_set_alloc_info.pNext          = NULL;
-        post_process_global_descriptor_set_alloc_info.descriptorPool = m_vulkan_rhi->_descriptor_pool;
+        post_process_global_descriptor_set_alloc_info.descriptorPool = m_vulkan_rhi->m_descriptor_pool;
         post_process_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         post_process_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_rhi->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_rhi->m_device,
                                                    &post_process_global_descriptor_set_alloc_info,
                                                    &m_descriptor_infos[0].descriptor_set))
         {
@@ -216,7 +216,7 @@ namespace Pilot
     {
         VkDescriptorImageInfo post_process_per_frame_input_attachment_info = {};
         post_process_per_frame_input_attachment_info.sampler =
-            VulkanUtil::getOrCreateLinearSampler(m_vulkan_rhi->_physical_device, m_vulkan_rhi->_device);
+            VulkanUtil::getOrCreateLinearSampler(m_vulkan_rhi->m_physical_device, m_vulkan_rhi->m_device);
         post_process_per_frame_input_attachment_info.imageView   = input_attachment;
         post_process_per_frame_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -233,7 +233,7 @@ namespace Pilot
         post_process_descriptor_input_attachment_write_info.descriptorCount = 1;
         post_process_descriptor_input_attachment_write_info.pImageInfo = &post_process_per_frame_input_attachment_info;
 
-        vkUpdateDescriptorSets(m_vulkan_rhi->_device,
+        vkUpdateDescriptorSets(m_vulkan_rhi->m_device,
                                sizeof(post_process_descriptor_writes_info) /
                                    sizeof(post_process_descriptor_writes_info[0]),
                                post_process_descriptor_writes_info,
@@ -247,26 +247,26 @@ namespace Pilot
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "FXAA", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer, &label_info);
+            m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
 
         VkViewport viewport = {0.0,
                                0.0,
-                               static_cast<float>(m_vulkan_rhi->_swapchain_extent.width),
-                               static_cast<float>(m_vulkan_rhi->_swapchain_extent.height),
+                               static_cast<float>(m_vulkan_rhi->m_swapchain_extent.width),
+                               static_cast<float>(m_vulkan_rhi->m_swapchain_extent.height),
                                0.0,
                                1.0};
-        int32_t    x        = static_cast<int32_t>(m_vulkan_rhi->_viewport.x);
-        int32_t    y        = static_cast<int32_t>(m_vulkan_rhi->_viewport.y);
-        uint32_t   width    = static_cast<uint32_t>(m_vulkan_rhi->_viewport.width);
-        uint32_t   height   = static_cast<uint32_t>(m_vulkan_rhi->_viewport.height);
+        int32_t    x        = static_cast<int32_t>(m_vulkan_rhi->m_viewport.x);
+        int32_t    y        = static_cast<int32_t>(m_vulkan_rhi->m_viewport.y);
+        uint32_t   width    = static_cast<uint32_t>(m_vulkan_rhi->m_viewport.width);
+        uint32_t   height   = static_cast<uint32_t>(m_vulkan_rhi->m_viewport.height);
         VkRect2D   scissor  = {x, y, width, height};
 
-        m_vulkan_rhi->_vkCmdBindPipeline(
-            m_vulkan_rhi->_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
-        m_vulkan_rhi->_vkCmdSetViewport(m_vulkan_rhi->_current_command_buffer, 0, 1, &viewport);
-        m_vulkan_rhi->_vkCmdSetScissor(m_vulkan_rhi->_current_command_buffer, 0, 1, &scissor);
-        m_vulkan_rhi->_vkCmdBindDescriptorSets(m_vulkan_rhi->_current_command_buffer,
+        m_vulkan_rhi->m_vk_cmd_bind_pipeline(
+            m_vulkan_rhi->m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
+        m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &viewport);
+        m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &scissor);
+        m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                m_render_pipelines[0].layout,
                                                0,
@@ -275,11 +275,11 @@ namespace Pilot
                                                0,
                                                NULL);
 
-        vkCmdDraw(m_vulkan_rhi->_current_command_buffer, 3, 1, 0, 0);
+        vkCmdDraw(m_vulkan_rhi->m_current_command_buffer, 3, 1, 0, 0);
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
-            m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer);
+            m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
         }
     }
 

@@ -6,7 +6,7 @@
 
 namespace Pilot
 {
-    enum class CurrentCameraType : int
+    enum class RenderCameraType : int
     {
         Editor,
         Motor
@@ -14,14 +14,8 @@ namespace Pilot
 
     class RenderCamera
     {
-        float m_aspect;
-        float m_fovx {Degree(89.f).valueDegrees()};
-        float m_fovy;
-
-        std::mutex m_view_matrix_mutex;
-
     public:
-        CurrentCameraType m_current_camera_type {CurrentCameraType::Editor};
+        RenderCameraType m_current_camera_type {RenderCameraType::Editor};
 
         static const Vector3 X, Y, Z;
 
@@ -34,12 +28,12 @@ namespace Pilot
 
         static constexpr float MIN_FOV {10.0f};
         static constexpr float MAX_FOV {89.0f};
-        static const int       MAIN_VIEW_MATRIX_INDEX {0};
+        static constexpr int   MAIN_VIEW_MATRIX_INDEX {0};
 
         std::vector<Matrix4x4> m_view_matrices {Matrix4x4::IDENTITY};
 
-        void setCurrentCameraType(CurrentCameraType type);
-        void setMainViewMatrix(const Matrix4x4& view_matrix, CurrentCameraType type = CurrentCameraType::Editor);
+        void setCurrentCameraType(RenderCameraType type);
+        void setMainViewMatrix(const Matrix4x4& view_matrix, RenderCameraType type = RenderCameraType::Editor);
 
         void move(Vector3 delta);
         void rotate(Vector2 delta);
@@ -52,14 +46,21 @@ namespace Pilot
         Vector3    position() const { return m_position; }
         Quaternion rotation() const { return m_rotation; }
 
-        Vector3       forward() const { return (m_invRotation * Y); }
-        Vector3       up() const { return (m_invRotation * Z); }
-        Vector3       right() const { return (m_invRotation * X); }
-        const Vector2 getFOV() const { return Vector2(m_fovx, m_fovy); }
-        Matrix4x4     getViewMatrix();
-        Matrix4x4     getPersProjMatrix() const;
+        Vector3   forward() const { return (m_invRotation * Y); }
+        Vector3   up() const { return (m_invRotation * Z); }
+        Vector3   right() const { return (m_invRotation * X); }
+        Vector2   getFOV() const { return {m_fovx, m_fovy}; }
+        Matrix4x4 getViewMatrix();
+        Matrix4x4 getPersProjMatrix() const;
         Matrix4x4 getLookAtMatrix() const { return Math::makeLookAtMatrix(position(), position() + forward(), up()); }
         float     getFovYDeprecated() const { return m_fovy; }
+
+    protected:
+        float m_aspect {0.f};
+        float m_fovx {Degree(89.f).valueDegrees()};
+        float m_fovy {0.f};
+
+        std::mutex m_view_matrix_mutex;
     };
 
     inline const Vector3 RenderCamera::X = {1.0f, 0.0f, 0.0f};

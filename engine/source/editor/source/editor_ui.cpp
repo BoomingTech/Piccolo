@@ -248,20 +248,11 @@ namespace Pilot
 
     void EditorUI::showEditorUI()
     {
-
-        bool editor_menu_window_open       = true;
-        bool asset_window_open             = true;
-        bool game_engine_window_open       = true;
-        bool file_content_window_open      = true;
-        bool detail_window_open            = true;
-        bool scene_lights_window_open      = true;
-        bool scene_lights_data_window_open = true;
-
-        showEditorMenu(&editor_menu_window_open);
-        showEditorWorldObjectsWindow(&asset_window_open);
-        showEditorGameWindow(&game_engine_window_open);
-        showEditorFileContentWindow(&file_content_window_open);
-        showEditorDetailWindow(&detail_window_open);
+        showEditorMenu(&m_editor_menu_window_open);
+        showEditorWorldObjectsWindow(&m_asset_window_open);
+        showEditorGameWindow(&m_game_engine_window_open);
+        showEditorFileContentWindow(&m_file_content_window_open);
+        showEditorDetailWindow(&m_detail_window_open);
     }
 
     void EditorUI::showEditorMenu(bool* p_open)
@@ -320,6 +311,7 @@ namespace Pilot
                 if (ImGui::MenuItem("Reload Current Level"))
                 {
                     g_runtime_global_context.m_world_manager->reloadCurrentLevel();
+                    g_runtime_global_context.m_render_system->clearForLevelReloading();
                     g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
                 }
                 if (ImGui::MenuItem("Save Current Level"))
@@ -333,6 +325,14 @@ namespace Pilot
                 }
                 ImGui::EndMenu();
             }
+            if (ImGui::BeginMenu("Window"))
+            {
+                ImGui::MenuItem("World Objects", nullptr, &m_asset_window_open);
+                ImGui::MenuItem("Game", nullptr, &m_game_engine_window_open);
+                ImGui::MenuItem("File Content", nullptr, &m_file_content_window_open);
+                ImGui::MenuItem("Detail", nullptr, &m_detail_window_open);
+                ImGui::EndMenu();
+            }
             ImGui::EndMenuBar();
         }
 
@@ -344,6 +344,9 @@ namespace Pilot
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+
+        if (!*p_open)
+            return;
 
         if (!ImGui::Begin("World Objects", p_open, window_flags))
         {
@@ -479,6 +482,9 @@ namespace Pilot
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 
+        if (!*p_open)
+            return;
+
         if (!ImGui::Begin("Components Details", p_open, window_flags))
         {
             ImGui::End();
@@ -521,6 +527,9 @@ namespace Pilot
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
 
+        if (!*p_open)
+            return;
+
         if (!ImGui::Begin("File Content", p_open, window_flags))
         {
             ImGui::End();
@@ -561,6 +570,9 @@ namespace Pilot
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_MenuBar;
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+
+        if (!*p_open)
+            return;
 
         if (!ImGui::Begin("Game Engine", p_open, window_flags))
         {
@@ -624,8 +636,7 @@ namespace Pilot
             if (g_is_editor_mode)
             {
                 ImGui::PushID("Editor Mode");
-                ImGui::Button("Editor Mode");
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                if (ImGui::Button("Editor Mode"))
                 {
                     g_is_editor_mode = false;
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
@@ -636,8 +647,7 @@ namespace Pilot
             }
             else
             {
-                ImGui::Button("Game Mode");
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                if (ImGui::Button("Game Mode"))
                 {
                     g_is_editor_mode = true;
                     g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();

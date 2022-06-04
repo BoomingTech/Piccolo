@@ -82,12 +82,12 @@ namespace Pilot
 
     void VulkanRHI::initialize(RHIInitInfo init_info)
     {
-        _window = init_info.window_system->getWindow();
+        m_window = init_info.window_system->getWindow();
 
         std::array<int, 2> window_size = init_info.window_system->getWindowSize();
 
-        _viewport = {0.0f, 0.0f, (float)window_size[0], (float)window_size[1], 0.0f, 1.0f};
-        _scissor  = {{0, 0}, {(uint32_t)window_size[0], (uint32_t)window_size[1]}};
+        m_viewport = {0.0f, 0.0f, (float)window_size[0], (float)window_size[1], 0.0f, 1.0f};
+        m_scissor  = {{0, 0}, {(uint32_t)window_size[0], (uint32_t)window_size[1]}};
 
 #ifndef NDEBUG
         m_enable_validation_Layers = true;
@@ -155,24 +155,24 @@ namespace Pilot
 
     void VulkanRHI::prepareContext()
     {
-        _p_current_frame_index  = &_current_frame_index;
-        _current_command_buffer = _command_buffers[_current_frame_index];
-        _p_command_buffers      = _command_buffers;
-        _p_command_pools        = _command_pools;
+        m_p_current_frame_index  = &m_current_frame_index;
+        m_current_command_buffer = m_command_buffers[m_current_frame_index];
+        m_p_command_buffers      = m_command_buffers;
+        m_p_command_pools        = m_command_pools;
     }
 
     void VulkanRHI::clear()
     {
         if (m_enable_validation_Layers)
         {
-            destroyDebugUtilsMessengerEXT(_instance, m_debug_messenger, nullptr);
+            destroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
         }
     }
 
     void VulkanRHI::waitForFences()
     {
         VkResult res_wait_for_fences =
-            _vkWaitForFences(_device, 1, &_is_frame_in_flight_fences[_current_frame_index], VK_TRUE, UINT64_MAX);
+            m_vk_wait_for_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index], VK_TRUE, UINT64_MAX);
         if (VK_SUCCESS != res_wait_for_fences)
         {
             throw std::runtime_error("failed to synchronize");
@@ -181,7 +181,7 @@ namespace Pilot
 
     void VulkanRHI::resetCommandPool()
     {
-        VkResult res_reset_command_pool = _vkResetCommandPool(_device, _command_pools[_current_frame_index], 0);
+        VkResult res_reset_command_pool = m_vk_reset_command_pool(m_device, m_command_pools[m_current_frame_index], 0);
         if (VK_SUCCESS != res_reset_command_pool)
         {
             throw std::runtime_error("failed to synchronize");
@@ -191,12 +191,12 @@ namespace Pilot
     bool VulkanRHI::prepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)
     {
         VkResult acquire_image_result =
-            vkAcquireNextImageKHR(_device,
-                                  _swapchain,
+            vkAcquireNextImageKHR(m_device,
+                                  m_swapchain,
                                   UINT64_MAX,
-                                  _image_available_for_render_semaphores[_current_frame_index],
+                                  m_image_available_for_render_semaphores[m_current_frame_index],
                                   VK_NULL_HANDLE,
-                                  &_current_swapchain_image_index);
+                                  &m_current_swapchain_image_index);
 
         if (VK_ERROR_OUT_OF_DATE_KHR == acquire_image_result)
         {
@@ -214,21 +214,21 @@ namespace Pilot
             VkSubmitInfo         submit_info   = {};
             submit_info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submit_info.waitSemaphoreCount     = 1;
-            submit_info.pWaitSemaphores        = &_image_available_for_render_semaphores[_current_frame_index];
+            submit_info.pWaitSemaphores        = &m_image_available_for_render_semaphores[m_current_frame_index];
             submit_info.pWaitDstStageMask      = wait_stages;
             submit_info.commandBufferCount     = 0;
             submit_info.pCommandBuffers        = NULL;
             submit_info.signalSemaphoreCount   = 0;
             submit_info.pSignalSemaphores      = NULL;
 
-            VkResult res_reset_fences = _vkResetFences(_device, 1, &_is_frame_in_flight_fences[_current_frame_index]);
+            VkResult res_reset_fences = m_vk_reset_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
             assert(VK_SUCCESS == res_reset_fences);
 
             VkResult res_queue_submit =
-                vkQueueSubmit(_graphics_queue, 1, &submit_info, _is_frame_in_flight_fences[_current_frame_index]);
+                vkQueueSubmit(m_graphics_queue, 1, &submit_info, m_is_frame_in_flight_fences[m_current_frame_index]);
             assert(VK_SUCCESS == res_queue_submit);
 
-            _current_frame_index = (_current_frame_index + 1) % _max_frames_in_flight;
+            m_current_frame_index = (m_current_frame_index + 1) % m_max_frames_in_flight;
             return true;
         }
         else
@@ -243,7 +243,7 @@ namespace Pilot
         command_buffer_begin_info.pInheritanceInfo = nullptr;
 
         VkResult res_begin_command_buffer =
-            _vkBeginCommandBuffer(_command_buffers[_current_frame_index], &command_buffer_begin_info);
+            m_vk_begin_command_buffer(m_command_buffers[m_current_frame_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
 
         return false;
@@ -252,7 +252,7 @@ namespace Pilot
     void VulkanRHI::submitRendering(std::function<void()> passUpdateAfterRecreateSwapchain)
     {
         // end command buffer
-        VkResult res_end_command_buffer = _vkEndCommandBuffer(_command_buffers[_current_frame_index]);
+        VkResult res_end_command_buffer = m_vk_end_command_buffer(m_command_buffers[m_current_frame_index]);
         assert(VK_SUCCESS == res_end_command_buffer);
 
         // submit command buffer
@@ -260,30 +260,30 @@ namespace Pilot
         VkSubmitInfo         submit_info   = {};
         submit_info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.waitSemaphoreCount     = 1;
-        submit_info.pWaitSemaphores        = &_image_available_for_render_semaphores[_current_frame_index];
+        submit_info.pWaitSemaphores        = &m_image_available_for_render_semaphores[m_current_frame_index];
         submit_info.pWaitDstStageMask      = wait_stages;
         submit_info.commandBufferCount     = 1;
-        submit_info.pCommandBuffers        = &_command_buffers[_current_frame_index];
+        submit_info.pCommandBuffers        = &m_command_buffers[m_current_frame_index];
         submit_info.signalSemaphoreCount   = 1;
-        submit_info.pSignalSemaphores      = &_image_finished_for_presentation_semaphores[_current_frame_index];
+        submit_info.pSignalSemaphores      = &m_image_finished_for_presentation_semaphores[m_current_frame_index];
 
-        VkResult res_reset_fences = _vkResetFences(_device, 1, &_is_frame_in_flight_fences[_current_frame_index]);
+        VkResult res_reset_fences = m_vk_reset_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
         assert(VK_SUCCESS == res_reset_fences);
 
         VkResult res_queue_submit =
-            vkQueueSubmit(_graphics_queue, 1, &submit_info, _is_frame_in_flight_fences[_current_frame_index]);
+            vkQueueSubmit(m_graphics_queue, 1, &submit_info, m_is_frame_in_flight_fences[m_current_frame_index]);
         assert(VK_SUCCESS == res_queue_submit);
 
         // present swapchain
         VkPresentInfoKHR present_info   = {};
         present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores    = &_image_finished_for_presentation_semaphores[_current_frame_index];
+        present_info.pWaitSemaphores    = &m_image_finished_for_presentation_semaphores[m_current_frame_index];
         present_info.swapchainCount     = 1;
-        present_info.pSwapchains        = &_swapchain;
-        present_info.pImageIndices      = &_current_swapchain_image_index;
+        present_info.pSwapchains        = &m_swapchain;
+        present_info.pImageIndices      = &m_current_swapchain_image_index;
 
-        VkResult present_result = vkQueuePresentKHR(_present_queue, &present_info);
+        VkResult present_result = vkQueuePresentKHR(m_present_queue, &present_info);
         if (VK_ERROR_OUT_OF_DATE_KHR == present_result || VK_SUBOPTIMAL_KHR == present_result)
         {
             recreateSwapchain();
@@ -294,7 +294,7 @@ namespace Pilot
             assert(VK_SUCCESS == present_result);
         }
 
-        _current_frame_index = (_current_frame_index + 1) % _max_frames_in_flight;
+        m_current_frame_index = (m_current_frame_index + 1) % m_max_frames_in_flight;
     }
 
     VkCommandBuffer VulkanRHI::beginSingleTimeCommands()
@@ -302,34 +302,34 @@ namespace Pilot
         VkCommandBufferAllocateInfo allocInfo {};
         allocInfo.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool        = _command_pool;
+        allocInfo.commandPool        = m_command_pool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer command_buffer;
-        vkAllocateCommandBuffers(_device, &allocInfo, &command_buffer);
+        vkAllocateCommandBuffers(m_device, &allocInfo, &command_buffer);
 
         VkCommandBufferBeginInfo beginInfo {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-        _vkBeginCommandBuffer(command_buffer, &beginInfo);
+        m_vk_begin_command_buffer(command_buffer, &beginInfo);
 
         return command_buffer;
     }
 
     void VulkanRHI::endSingleTimeCommands(VkCommandBuffer command_buffer)
     {
-        _vkEndCommandBuffer(command_buffer);
+        m_vk_end_command_buffer(command_buffer);
 
         VkSubmitInfo submitInfo {};
         submitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers    = &command_buffer;
 
-        vkQueueSubmit(_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(_graphics_queue);
+        vkQueueSubmit(m_graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_graphics_queue);
 
-        vkFreeCommandBuffers(_device, _command_pool, 1, &command_buffer);
+        vkFreeCommandBuffers(m_device, m_command_pool, 1, &command_buffer);
     }
 
     // validation layers
@@ -375,6 +375,10 @@ namespace Pilot
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
+        
+#if defined(__MACH__)
+        extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
 
         return extensions;
     }
@@ -444,7 +448,7 @@ namespace Pilot
         }
 
         // create m_vulkan_context._instance
-        if (vkCreateInstance(&instance_create_info, nullptr, &_instance) != VK_SUCCESS)
+        if (vkCreateInstance(&instance_create_info, nullptr, &m_instance) != VK_SUCCESS)
         {
             throw std::runtime_error("vk create instance");
         }
@@ -456,7 +460,7 @@ namespace Pilot
         {
             VkDebugUtilsMessengerCreateInfoEXT createInfo;
             populateDebugMessengerCreateInfo(createInfo);
-            if (VK_SUCCESS != createDebugUtilsMessengerEXT(_instance, &createInfo, nullptr, &m_debug_messenger))
+            if (VK_SUCCESS != createDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debug_messenger))
             {
                 throw std::runtime_error("failed to set up debug messenger!");
             }
@@ -464,16 +468,16 @@ namespace Pilot
 
         if (m_enable_debug_utils_label)
         {
-            _vkCmdBeginDebugUtilsLabelEXT =
-                (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(_instance, "vkCmdBeginDebugUtilsLabelEXT");
-            _vkCmdEndDebugUtilsLabelEXT =
-                (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(_instance, "vkCmdEndDebugUtilsLabelEXT");
+            m_vk_cmd_begin_debug_utils_label_ext =
+                (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdBeginDebugUtilsLabelEXT");
+            m_vk_cmd_end_debug_utils_label_ext =
+                (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdEndDebugUtilsLabelEXT");
         }
     }
 
     void VulkanRHI::createWindowSurface()
     {
-        if (glfwCreateWindowSurface(_instance, _window, nullptr, &_surface) != VK_SUCCESS)
+        if (glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surface) != VK_SUCCESS)
         {
             throw std::runtime_error("glfwCreateWindowSurface");
         }
@@ -482,7 +486,7 @@ namespace Pilot
     void VulkanRHI::initializePhysicalDevice()
     {
         uint32_t physical_device_count;
-        vkEnumeratePhysicalDevices(_instance, &physical_device_count, nullptr);
+        vkEnumeratePhysicalDevices(m_instance, &physical_device_count, nullptr);
         if (physical_device_count == 0)
         {
             throw std::runtime_error("enumerate physical devices");
@@ -492,7 +496,7 @@ namespace Pilot
             // find one device that matches our requirement
             // or find which is the best
             std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
-            vkEnumeratePhysicalDevices(_instance, &physical_device_count, physical_devices.data());
+            vkEnumeratePhysicalDevices(m_instance, &physical_device_count, physical_devices.data());
 
             std::vector<std::pair<int, VkPhysicalDevice>> ranked_physical_devices;
             for (const auto& device : physical_devices)
@@ -523,12 +527,12 @@ namespace Pilot
             {
                 if (isDeviceSuitable(device.second))
                 {
-                    _physical_device = device.second;
+                    m_physical_device = device.second;
                     break;
                 }
             }
 
-            if (_physical_device == VK_NULL_HANDLE)
+            if (m_physical_device == VK_NULL_HANDLE)
             {
                 throw std::runtime_error("failed to find suitable physical device");
             }
@@ -539,11 +543,11 @@ namespace Pilot
     // feature:samplerAnisotropy)
     void VulkanRHI::createLogicalDevice()
     {
-        _queue_indices = findQueueFamilies(_physical_device);
+        m_queue_indices = findQueueFamilies(m_physical_device);
 
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos; // all queues that need to be created
-        std::set<uint32_t>                   queue_families = {_queue_indices.graphics_family.value(),
-                                             _queue_indices.present_family.value()};
+        std::set<uint32_t>                   queue_families = {m_queue_indices.m_graphics_family.value(),
+                                             m_queue_indices.m_present_family.value()};
 
         float queue_priority = 1.0f;
         for (uint32_t queue_family : queue_families) // for every queue family
@@ -584,34 +588,34 @@ namespace Pilot
         device_create_info.ppEnabledExtensionNames = m_device_extensions.data();
         device_create_info.enabledLayerCount       = 0;
 
-        if (vkCreateDevice(_physical_device, &device_create_info, nullptr, &_device) != VK_SUCCESS)
+        if (vkCreateDevice(m_physical_device, &device_create_info, nullptr, &m_device) != VK_SUCCESS)
         {
             throw std::runtime_error("vk create device");
         }
 
         // initialize queues of this device
-        vkGetDeviceQueue(_device, _queue_indices.graphics_family.value(), 0, &_graphics_queue);
-        vkGetDeviceQueue(_device, _queue_indices.present_family.value(), 0, &_present_queue);
+        vkGetDeviceQueue(m_device, m_queue_indices.m_graphics_family.value(), 0, &m_graphics_queue);
+        vkGetDeviceQueue(m_device, m_queue_indices.m_present_family.value(), 0, &m_present_queue);
 
         // more efficient pointer
-        _vkWaitForFences         = (PFN_vkWaitForFences)vkGetDeviceProcAddr(_device, "vkWaitForFences");
-        _vkResetFences           = (PFN_vkResetFences)vkGetDeviceProcAddr(_device, "vkResetFences");
-        _vkResetCommandPool      = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(_device, "vkResetCommandPool");
-        _vkBeginCommandBuffer    = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(_device, "vkBeginCommandBuffer");
-        _vkEndCommandBuffer      = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(_device, "vkEndCommandBuffer");
-        _vkCmdBeginRenderPass    = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(_device, "vkCmdBeginRenderPass");
-        _vkCmdNextSubpass        = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(_device, "vkCmdNextSubpass");
-        _vkCmdEndRenderPass      = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(_device, "vkCmdEndRenderPass");
-        _vkCmdBindPipeline       = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(_device, "vkCmdBindPipeline");
-        _vkCmdSetViewport        = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(_device, "vkCmdSetViewport");
-        _vkCmdSetScissor         = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(_device, "vkCmdSetScissor");
-        _vkCmdBindVertexBuffers  = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(_device, "vkCmdBindVertexBuffers");
-        _vkCmdBindIndexBuffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(_device, "vkCmdBindIndexBuffer");
-        _vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(_device, "vkCmdBindDescriptorSets");
-        _vkCmdDrawIndexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
-        _vkCmdClearAttachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(_device, "vkCmdClearAttachments");
+        m_vk_wait_for_fences         = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
+        m_vk_reset_fences           = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
+        m_vk_reset_command_pool      = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
+        m_vk_begin_command_buffer    = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
+        m_vk_end_command_buffer      = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
+        m_vk_cmd_begin_render_pass    = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
+        m_vk_cmd_next_subpass        = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
+        m_vk_cmd_end_render_pass      = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
+        m_vk_cmd_bind_pipeline       = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
+        m_vk_cmd_set_viewport        = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
+        m_vk_cmd_set_scissor         = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
+        m_vk_cmd_bind_vertex_buffers  = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
+        m_vk_cmd_bind_index_buffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
+        m_vk_cmd_bind_descriptor_sets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
+        m_vk_cmd_draw_indexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
+        m_vk_cmd_clear_attachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
 
-        _depth_image_format = findDepthFormat();
+        m_depth_image_format = findDepthFormat();
     }
 
     void VulkanRHI::createCommandPool()
@@ -622,9 +626,9 @@ namespace Pilot
             command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             command_pool_create_info.pNext            = NULL;
             command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-            command_pool_create_info.queueFamilyIndex = _queue_indices.graphics_family.value();
+            command_pool_create_info.queueFamilyIndex = m_queue_indices.m_graphics_family.value();
 
-            if (vkCreateCommandPool(_device, &command_pool_create_info, nullptr, &_command_pool) != VK_SUCCESS)
+            if (vkCreateCommandPool(m_device, &command_pool_create_info, nullptr, &m_command_pool) != VK_SUCCESS)
             {
                 throw std::runtime_error("vk create command pool");
             }
@@ -636,11 +640,11 @@ namespace Pilot
             command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             command_pool_create_info.pNext            = NULL;
             command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-            command_pool_create_info.queueFamilyIndex = _queue_indices.graphics_family.value();
+            command_pool_create_info.queueFamilyIndex = m_queue_indices.m_graphics_family.value();
 
-            for (uint32_t i = 0; i < _max_frames_in_flight; ++i)
+            for (uint32_t i = 0; i < m_max_frames_in_flight; ++i)
             {
-                if (vkCreateCommandPool(_device, &command_pool_create_info, NULL, &_command_pools[i]) != VK_SUCCESS)
+                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_command_pools[i]) != VK_SUCCESS)
                 {
                     throw std::runtime_error("vk create command pool");
                 }
@@ -655,11 +659,11 @@ namespace Pilot
         command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        for (uint32_t i = 0; i < _max_frames_in_flight; ++i)
+        for (uint32_t i = 0; i < m_max_frames_in_flight; ++i)
         {
-            command_buffer_allocate_info.commandPool = _command_pools[i];
+            command_buffer_allocate_info.commandPool = m_command_pools[i];
 
-            if (vkAllocateCommandBuffers(_device, &command_buffer_allocate_info, &_command_buffers[i]) != VK_SUCCESS)
+            if (vkAllocateCommandBuffers(m_device, &command_buffer_allocate_info, &m_command_buffers[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("vk allocate command buffers");
             }
@@ -676,11 +680,11 @@ namespace Pilot
         pool_sizes[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         pool_sizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3;
         pool_sizes[1].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        pool_sizes[1].descriptorCount = 1 + 1 + 1 * _max_vertex_blending_mesh_count;
+        pool_sizes[1].descriptorCount = 1 + 1 + 1 * m_max_vertex_blending_mesh_count;
         pool_sizes[2].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        pool_sizes[2].descriptorCount = 1 * _max_material_count;
+        pool_sizes[2].descriptorCount = 1 * m_max_material_count;
         pool_sizes[3].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_sizes[3].descriptorCount = 3 + 5 * _max_material_count + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
+        pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
         pool_sizes[4].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2;
 
@@ -689,10 +693,10 @@ namespace Pilot
         pool_info.poolSizeCount = sizeof(pool_sizes) / sizeof(pool_sizes[0]);
         pool_info.pPoolSizes    = pool_sizes;
         pool_info.maxSets =
-            1 + 1 + 1 + _max_material_count + _max_vertex_blending_mesh_count + 1 + 1; // +skybox + axis descriptor set
+            1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 + 1; // +skybox + axis descriptor set
         pool_info.flags = 0U;
 
-        if (vkCreateDescriptorPool(_device, &pool_info, nullptr, &_descriptor_pool) != VK_SUCCESS)
+        if (vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_descriptor_pool) != VK_SUCCESS)
         {
             throw std::runtime_error("create descriptor pool");
         }
@@ -709,15 +713,15 @@ namespace Pilot
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // the fence is initialized as signaled
 
-        for (uint32_t i = 0; i < _max_frames_in_flight; i++)
+        for (uint32_t i = 0; i < m_max_frames_in_flight; i++)
         {
             if (vkCreateSemaphore(
-                    _device, &semaphore_create_info, nullptr, &_image_available_for_render_semaphores[i]) !=
+                    m_device, &semaphore_create_info, nullptr, &m_image_available_for_render_semaphores[i]) !=
                     VK_SUCCESS ||
                 vkCreateSemaphore(
-                    _device, &semaphore_create_info, nullptr, &_image_finished_for_presentation_semaphores[i]) !=
+                    m_device, &semaphore_create_info, nullptr, &m_image_finished_for_presentation_semaphores[i]) !=
                     VK_SUCCESS ||
-                vkCreateFence(_device, &fence_create_info, nullptr, &_is_frame_in_flight_fences[i]) != VK_SUCCESS)
+                vkCreateFence(m_device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("vk create semaphore & fence");
             }
@@ -726,35 +730,35 @@ namespace Pilot
 
     void VulkanRHI::createFramebufferImageAndView()
     {
-        VulkanUtil::createImage(_physical_device,
-                                _device,
-                                _swapchain_extent.width,
-                                _swapchain_extent.height,
-                                _depth_image_format,
+        VulkanUtil::createImage(m_physical_device,
+                                m_device,
+                                m_swapchain_extent.width,
+                                m_swapchain_extent.height,
+                                m_depth_image_format,
                                 VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                                     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                _depth_image,
-                                _depth_image_memory,
+                                m_depth_image,
+                                m_depth_image_memory,
                                 0,
                                 1,
                                 1);
 
-        _depth_image_view = VulkanUtil::createImageView(
-            _device, _depth_image, _depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
+        m_depth_image_view = VulkanUtil::createImageView(
+            m_device, m_depth_image, m_depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
     }
 
     void VulkanRHI::createSwapchainImageViews()
     {
-        _swapchain_imageviews.resize(_swapchain_images.size());
+        m_swapchain_imageviews.resize(m_swapchain_images.size());
 
         // create imageview (one for each this time) for all swapchain images
-        for (size_t i = 0; i < _swapchain_images.size(); i++)
+        for (size_t i = 0; i < m_swapchain_images.size(); i++)
         {
-            _swapchain_imageviews[i] = VulkanUtil::createImageView(_device,
-                                                                   _swapchain_images[i],
-                                                                   _swapchain_image_format,
+            m_swapchain_imageviews[i] = VulkanUtil::createImageView(m_device,
+                                                                   m_swapchain_images[i],
+                                                                   m_swapchain_image_format,
                                                                    VK_IMAGE_ASPECT_COLOR_BIT,
                                                                    VK_IMAGE_VIEW_TYPE_2D,
                                                                    1,
@@ -770,38 +774,38 @@ namespace Pilot
 
         VmaAllocatorCreateInfo allocatorCreateInfo = {};
         allocatorCreateInfo.vulkanApiVersion       = m_vulkan_api_version;
-        allocatorCreateInfo.physicalDevice         = _physical_device;
-        allocatorCreateInfo.device                 = _device;
-        allocatorCreateInfo.instance               = _instance;
+        allocatorCreateInfo.physicalDevice         = m_physical_device;
+        allocatorCreateInfo.device                 = m_device;
+        allocatorCreateInfo.instance               = m_instance;
         allocatorCreateInfo.pVulkanFunctions       = &vulkanFunctions;
 
-        vmaCreateAllocator(&allocatorCreateInfo, &_assets_allocator);
+        vmaCreateAllocator(&allocatorCreateInfo, &m_assets_allocator);
     }
 
     void VulkanRHI::createSwapchain()
     {
         // query all supports of this physical device
-        SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(_physical_device);
+        SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(m_physical_device);
 
         // choose the best or fitting format
         VkSurfaceFormatKHR chosen_surface_format =
-            chooseSwapchainSurfaceFormatFromDetails(swapchain_support_details.formats);
+            chooseSwapchainSurfaceFormatFromDetails(swapchain_support_details.m_formats);
         // choose the best or fitting present mode
         VkPresentModeKHR chosen_presentMode =
-            chooseSwapchainPresentModeFromDetails(swapchain_support_details.presentModes);
+            chooseSwapchainPresentModeFromDetails(swapchain_support_details.m_presentModes);
         // choose the best or fitting extent
-        VkExtent2D chosen_extent = chooseSwapchainExtentFromDetails(swapchain_support_details.capabilities);
+        VkExtent2D chosen_extent = chooseSwapchainExtentFromDetails(swapchain_support_details.m_capabilities);
 
-        uint32_t image_count = swapchain_support_details.capabilities.minImageCount + 1;
-        if (swapchain_support_details.capabilities.maxImageCount > 0 &&
-            image_count > swapchain_support_details.capabilities.maxImageCount)
+        uint32_t image_count = swapchain_support_details.m_capabilities.minImageCount + 1;
+        if (swapchain_support_details.m_capabilities.maxImageCount > 0 &&
+            image_count > swapchain_support_details.m_capabilities.maxImageCount)
         {
-            image_count = swapchain_support_details.capabilities.maxImageCount;
+            image_count = swapchain_support_details.m_capabilities.maxImageCount;
         }
 
         VkSwapchainCreateInfoKHR createInfo {};
         createInfo.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = _surface;
+        createInfo.surface = m_surface;
 
         createInfo.minImageCount    = image_count;
         createInfo.imageFormat      = chosen_surface_format.format;
@@ -810,9 +814,9 @@ namespace Pilot
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        uint32_t queueFamilyIndices[] = {_queue_indices.graphics_family.value(), _queue_indices.present_family.value()};
+        uint32_t queueFamilyIndices[] = {m_queue_indices.m_graphics_family.value(), m_queue_indices.m_present_family.value()};
 
-        if (_queue_indices.graphics_family != _queue_indices.present_family)
+        if (m_queue_indices.m_graphics_family != m_queue_indices.m_present_family)
         {
             createInfo.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
@@ -823,61 +827,61 @@ namespace Pilot
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
-        createInfo.preTransform   = swapchain_support_details.capabilities.currentTransform;
+        createInfo.preTransform   = swapchain_support_details.m_capabilities.currentTransform;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         createInfo.presentMode    = chosen_presentMode;
         createInfo.clipped        = VK_TRUE;
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapchain) != VK_SUCCESS)
+        if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
         {
             throw std::runtime_error("vk create swapchain khr");
         }
 
-        vkGetSwapchainImagesKHR(_device, _swapchain, &image_count, nullptr);
-        _swapchain_images.resize(image_count);
-        vkGetSwapchainImagesKHR(_device, _swapchain, &image_count, _swapchain_images.data());
+        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, nullptr);
+        m_swapchain_images.resize(image_count);
+        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, m_swapchain_images.data());
 
-        _swapchain_image_format = chosen_surface_format.format;
-        _swapchain_extent       = chosen_extent;
+        m_swapchain_image_format = chosen_surface_format.format;
+        m_swapchain_extent       = chosen_extent;
 
-        _scissor = {{0, 0}, {_swapchain_extent.width, _swapchain_extent.height}};
+        m_scissor = {{0, 0}, {m_swapchain_extent.width, m_swapchain_extent.height}};
     }
 
     void VulkanRHI::clearSwapchain()
     {
-        for (auto imageview : _swapchain_imageviews)
+        for (auto imageview : m_swapchain_imageviews)
         {
-            vkDestroyImageView(_device, imageview, NULL);
+            vkDestroyImageView(m_device, imageview, NULL);
         }
-        vkDestroySwapchainKHR(_device, _swapchain, NULL); // also swapchain images
+        vkDestroySwapchainKHR(m_device, m_swapchain, NULL); // also swapchain images
     }
 
     void VulkanRHI::recreateSwapchain()
     {
         int width  = 0;
         int height = 0;
-        glfwGetFramebufferSize(_window, &width, &height);
+        glfwGetFramebufferSize(m_window, &width, &height);
         while (width == 0 || height == 0) // minimized 0,0, pause for now
         {
-            glfwGetFramebufferSize(_window, &width, &height);
+            glfwGetFramebufferSize(m_window, &width, &height);
             glfwWaitEvents();
         }
 
         VkResult res_wait_for_fences =
-            _vkWaitForFences(_device, _max_frames_in_flight, _is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+            m_vk_wait_for_fences(m_device, m_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
-        vkDestroyImageView(_device, _depth_image_view, NULL);
-        vkDestroyImage(_device, _depth_image, NULL);
-        vkFreeMemory(_device, _depth_image_memory, NULL);
+        vkDestroyImageView(m_device, m_depth_image_view, NULL);
+        vkDestroyImage(m_device, m_depth_image, NULL);
+        vkFreeMemory(m_device, m_depth_image_memory, NULL);
 
-        for (auto imageview : _swapchain_imageviews)
+        for (auto imageview : m_swapchain_imageviews)
         {
-            vkDestroyImageView(_device, imageview, NULL);
+            vkDestroyImageView(m_device, imageview, NULL);
         }
-        vkDestroySwapchainKHR(_device, _swapchain, NULL);
+        vkDestroySwapchainKHR(m_device, m_swapchain, NULL);
 
         createSwapchain();
         createSwapchainImageViews();
@@ -926,17 +930,17 @@ namespace Pilot
         {
             if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) // if support graphics command queue
             {
-                indices.graphics_family = i;
+                indices.m_graphics_family = i;
             }
 
             VkBool32 is_present_support = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(physical_device,
                                                  i,
-                                                 _surface,
+                                                 m_surface,
                                                  &is_present_support); // if support surface presentation
             if (is_present_support)
             {
-                indices.present_family = i;
+                indices.m_present_family = i;
             }
 
             if (indices.isComplete())
@@ -974,7 +978,7 @@ namespace Pilot
         {
             SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(physical_device);
             is_swapchain_adequate =
-                !swapchain_support_details.formats.empty() && !swapchain_support_details.presentModes.empty();
+                !swapchain_support_details.m_formats.empty() && !swapchain_support_details.m_presentModes.empty();
         }
 
         VkPhysicalDeviceFeatures physical_device_features;
@@ -993,26 +997,26 @@ namespace Pilot
         SwapChainSupportDetails details_result;
 
         // capabilities
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, _surface, &details_result.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, m_surface, &details_result.m_capabilities);
 
         // formats
         uint32_t format_count;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, _surface, &format_count, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, m_surface, &format_count, nullptr);
         if (format_count != 0)
         {
-            details_result.formats.resize(format_count);
+            details_result.m_formats.resize(format_count);
             vkGetPhysicalDeviceSurfaceFormatsKHR(
-                physical_device, _surface, &format_count, details_result.formats.data());
+                physical_device, m_surface, &format_count, details_result.m_formats.data());
         }
 
         // present modes
         uint32_t presentmode_count;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, _surface, &presentmode_count, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, m_surface, &presentmode_count, nullptr);
         if (presentmode_count != 0)
         {
-            details_result.presentModes.resize(presentmode_count);
+            details_result.m_presentModes.resize(presentmode_count);
             vkGetPhysicalDeviceSurfacePresentModesKHR(
-                physical_device, _surface, &presentmode_count, details_result.presentModes.data());
+                physical_device, m_surface, &presentmode_count, details_result.m_presentModes.data());
         }
 
         return details_result;
@@ -1032,7 +1036,7 @@ namespace Pilot
         for (VkFormat format : candidates)
         {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(_physical_device, format, &props);
+            vkGetPhysicalDeviceFormatProperties(m_physical_device, format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
             {
@@ -1086,7 +1090,7 @@ namespace Pilot
         else
         {
             int width, height;
-            glfwGetFramebufferSize(_window, &width, &height);
+            glfwGetFramebufferSize(m_window, &width, &height);
 
             VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 

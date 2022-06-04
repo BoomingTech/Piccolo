@@ -9,11 +9,10 @@
 #include "runtime/function/global/global_context.h"
 
 #include "runtime/function/render/render_swap_context.h"
+#include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
-    RenderSwapContext* MeshComponent::m_swap_context = nullptr;
-
     void MeshComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
@@ -27,29 +26,31 @@ namespace Pilot
         for (const SubMeshRes& sub_mesh : m_mesh_res.m_sub_meshes)
         {
             GameObjectPartDesc& meshComponent = m_raw_meshes[raw_mesh_count];
-            meshComponent.mesh_desc.mesh_file = asset_manager->getFullPath(sub_mesh.m_obj_file_ref).generic_string();
+            meshComponent.m_mesh_desc.m_mesh_file =
+                asset_manager->getFullPath(sub_mesh.m_obj_file_ref).generic_string();
 
-            meshComponent.material_desc.with_texture = sub_mesh.m_material.empty() == false;
+            meshComponent.m_material_desc.m_with_texture = sub_mesh.m_material.empty() == false;
 
-            if (meshComponent.material_desc.with_texture)
+            if (meshComponent.m_material_desc.m_with_texture)
             {
                 MaterialRes material_res;
                 asset_manager->loadAsset(sub_mesh.m_material, material_res);
 
-                meshComponent.material_desc.baseColorTextureFile =
+                meshComponent.m_material_desc.m_base_color_texture_file =
                     asset_manager->getFullPath(material_res.m_base_colour_texture_file).generic_string();
-                meshComponent.material_desc.metallicRoughnessTextureFile =
+                meshComponent.m_material_desc.m_metallic_roughness_texture_file =
                     asset_manager->getFullPath(material_res.m_metallic_roughness_texture_file).generic_string();
-                meshComponent.material_desc.normalTextureFile =
+                meshComponent.m_material_desc.m_normal_texture_file =
                     asset_manager->getFullPath(material_res.m_normal_texture_file).generic_string();
-                meshComponent.material_desc.occlusionTextureFile =
+                meshComponent.m_material_desc.m_occlusion_texture_file =
                     asset_manager->getFullPath(material_res.m_occlusion_texture_file).generic_string();
-                meshComponent.material_desc.emissiveTextureFile =
+                meshComponent.m_material_desc.m_emissive_texture_file =
                     asset_manager->getFullPath(material_res.m_emissive_texture_file).generic_string();
             }
 
-            auto object_space_transform                   = sub_mesh.m_transform.getMatrix();
-            meshComponent.transform_desc.transform_matrix = object_space_transform;
+            auto object_space_transform = sub_mesh.m_transform.getMatrix();
+
+            meshComponent.m_transform_desc.m_transform_matrix = object_space_transform;
 
             ++raw_mesh_count;
         }
@@ -66,36 +67,37 @@ namespace Pilot
 
         if (transform_component->isDirty())
         {
-            std::vector<GameObjectPartDesc> mesh_components;
-            Pilot::SkeletonAnimationResult  animResult;
-            animResult.transforms.push_back({Matrix4x4::IDENTITY});
+            std::vector<GameObjectPartDesc> dirty_mesh_parts;
+            SkeletonAnimationResult         animation_result;
+            animation_result.m_transforms.push_back({Matrix4x4::IDENTITY});
             if (animation_component != nullptr)
             {
                 for (auto& node : animation_component->getResult().node)
                 {
-                    Pilot::SkeletonAnimationResultTransform tmp {Matrix4x4(node.transform)};
-                    animResult.transforms.push_back(tmp);
+                    animation_result.m_transforms.push_back({Matrix4x4(node.transform)});
                 }
             }
-            for (GameObjectPartDesc& mesh_component : m_raw_meshes)
+            for (GameObjectPartDesc& mesh_part : m_raw_meshes)
             {
                 if (animation_component)
                 {
-                    mesh_component.with_animation                              = true;
-                    mesh_component.skeleton_animation_result                   = animResult;
-                    mesh_component.skeleton_binding_desc.skeleton_binding_file = mesh_component.mesh_desc.mesh_file;
+                    mesh_part.m_with_animation                                = true;
+                    mesh_part.m_skeleton_animation_result                     = animation_result;
+                    mesh_part.m_skeleton_binding_desc.m_skeleton_binding_file = mesh_part.m_mesh_desc.m_mesh_file;
                 }
-                Matrix4x4 object_transform_matrix = mesh_component.transform_desc.transform_matrix;
+                Matrix4x4 object_transform_matrix = mesh_part.m_transform_desc.m_transform_matrix;
 
-                mesh_component.transform_desc.transform_matrix =
+                mesh_part.m_transform_desc.m_transform_matrix =
                     transform_component->getMatrix() * object_transform_matrix;
-                mesh_components.push_back(mesh_component);
+                dirty_mesh_parts.push_back(mesh_part);
 
-                mesh_component.transform_desc.transform_matrix = object_transform_matrix;
+                mesh_part.m_transform_desc.m_transform_matrix = object_transform_matrix;
             }
 
-            m_swap_context->getLogicSwapData().addDirtyGameObject(
-                GameObjectDesc {m_parent_object.lock()->getID(), mesh_components});
+            RenderSwapContext& render_swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+            RenderSwapData&    logic_swap_data     = render_swap_context.getLogicSwapData();
+
+            logic_swap_data.addDirtyGameObject(GameObjectDesc {m_parent_object.lock()->getID(), dirty_mesh_parts});
 
             transform_component->setDirtyFlag(false);
         }

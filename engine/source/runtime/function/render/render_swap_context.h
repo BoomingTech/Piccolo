@@ -1,5 +1,6 @@
 #pragma once
 
+#include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_object.h"
 #include "runtime/resource/res_type/global/global_rendering.h"
 
@@ -12,25 +13,33 @@ namespace Pilot
 {
     struct LevelIBLResourceDesc
     {
-        SkyBoxIrradianceMap skybox_irradiance_map;
-        SkyBoxSpecularMap   skybox_specular_map;
-        std::string         brdf_map;
+        SkyBoxIrradianceMap m_skybox_irradiance_map;
+        SkyBoxSpecularMap   m_skybox_specular_map;
+        std::string         m_brdf_map;
     };
 
     struct LevelColorGradingResourceDesc
     {
-        std::string color_grading_map;
+        std::string m_color_grading_map;
     };
 
     struct LevelResourceDesc
     {
-        LevelIBLResourceDesc          ibl_resource_desc;
-        LevelColorGradingResourceDesc color_grading_resource_desc;
+        LevelIBLResourceDesc          m_ibl_resource_desc;
+        LevelColorGradingResourceDesc m_color_grading_resource_desc;
+    };
+
+    struct CameraSwapData
+    {
+        std::optional<float>            m_fov_x;
+        std::optional<RenderCameraType> m_camera_type;
+        std::optional<Matrix4x4>        m_view_matrix;
     };
 
     struct GameObjectResourceDesc
     {
-        std::deque<GameObjectDesc> game_object_descs;
+        std::deque<GameObjectDesc> m_game_object_descs;
+
         void                       add(GameObjectDesc desc);
         bool                       isEmpty() const;
         GameObjectDesc             getNextProcessObject();
@@ -39,9 +48,10 @@ namespace Pilot
 
     struct RenderSwapData
     {
-        std::optional<LevelResourceDesc>      level_resource_desc;
-        std::optional<GameObjectResourceDesc> game_object_resource_desc;
-        std::optional<GameObjectResourceDesc> game_object_to_delete;
+        std::optional<LevelResourceDesc>      m_level_resource_desc;
+        std::optional<GameObjectResourceDesc> m_game_object_resource_desc;
+        std::optional<GameObjectResourceDesc> m_game_object_to_delete;
+        std::optional<CameraSwapData>         m_camera_swap_data;
 
         void addDirtyGameObject(GameObjectDesc desc);
         void addDeleteGameObject(GameObjectDesc desc);
@@ -63,6 +73,7 @@ namespace Pilot
         void            resetLevelRsourceSwapData();
         void            resetGameObjectResourceSwapData();
         void            resetGameObjectToDelete();
+        void            resetCameraSwapData();
 
     private:
         uint8_t        m_logic_swap_data_index {LogicSwapDataType};

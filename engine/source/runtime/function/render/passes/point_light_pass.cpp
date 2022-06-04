@@ -44,14 +44,14 @@ namespace Pilot
         {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Point Light Shadow", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer, &label_info);
+            m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
 
         drawModel();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
-            m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer);
+            m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
         }
     }
     void PointLightShadowPass::setupAttachments()
@@ -61,8 +61,8 @@ namespace Pilot
 
         // color
         m_framebuffer.attachments[0].format = VK_FORMAT_R32_SFLOAT;
-        VulkanUtil::createImage(m_vulkan_rhi->_physical_device,
-                                m_vulkan_rhi->_device,
+        VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
+                                m_vulkan_rhi->m_device,
                                 m_point_light_shadow_map_dimension,
                                 m_point_light_shadow_map_dimension,
                                 m_framebuffer.attachments[0].format,
@@ -74,7 +74,7 @@ namespace Pilot
                                 0,
                                 2 * m_max_point_light_count,
                                 1);
-        m_framebuffer.attachments[0].view = VulkanUtil::createImageView(m_vulkan_rhi->_device,
+        m_framebuffer.attachments[0].view = VulkanUtil::createImageView(m_vulkan_rhi->m_device,
                                                                         m_framebuffer.attachments[0].image,
                                                                         m_framebuffer.attachments[0].format,
                                                                         VK_IMAGE_ASPECT_COLOR_BIT,
@@ -83,9 +83,9 @@ namespace Pilot
                                                                         1);
 
         // depth
-        m_framebuffer.attachments[1].format = m_vulkan_rhi->_depth_image_format;
-        VulkanUtil::createImage(m_vulkan_rhi->_physical_device,
-                                m_vulkan_rhi->_device,
+        m_framebuffer.attachments[1].format = m_vulkan_rhi->m_depth_image_format;
+        VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
+                                m_vulkan_rhi->m_device,
                                 m_point_light_shadow_map_dimension,
                                 m_point_light_shadow_map_dimension,
                                 m_framebuffer.attachments[1].format,
@@ -97,7 +97,7 @@ namespace Pilot
                                 0,
                                 2 * m_max_point_light_count,
                                 1);
-        m_framebuffer.attachments[1].view = VulkanUtil::createImageView(m_vulkan_rhi->_device,
+        m_framebuffer.attachments[1].view = VulkanUtil::createImageView(m_vulkan_rhi->m_device,
                                                                         m_framebuffer.attachments[1].image,
                                                                         m_framebuffer.attachments[1].format,
                                                                         VK_IMAGE_ASPECT_DEPTH_BIT,
@@ -167,7 +167,7 @@ namespace Pilot
         renderpass_create_info.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));
         renderpass_create_info.pDependencies   = dependencies;
 
-        if (vkCreateRenderPass(m_vulkan_rhi->_device, &renderpass_create_info, nullptr, &m_framebuffer.render_pass) !=
+        if (vkCreateRenderPass(m_vulkan_rhi->m_device, &renderpass_create_info, nullptr, &m_framebuffer.render_pass) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create point light shadow render pass");
@@ -187,7 +187,7 @@ namespace Pilot
         framebuffer_create_info.height          = m_point_light_shadow_map_dimension;
         framebuffer_create_info.layers          = 2 * m_max_point_light_count;
 
-        if (vkCreateFramebuffer(m_vulkan_rhi->_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) !=
+        if (vkCreateFramebuffer(m_vulkan_rhi->m_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create point light shadow framebuffer");
@@ -236,7 +236,7 @@ namespace Pilot
              sizeof(mesh_point_light_shadow_global_layout_bindings[0]));
         mesh_point_light_shadow_global_layout_create_info.pBindings = mesh_point_light_shadow_global_layout_bindings;
 
-        if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_vulkan_rhi->_device,
+        if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_vulkan_rhi->m_device,
                                                       &mesh_point_light_shadow_global_layout_create_info,
                                                       NULL,
                                                       &m_descriptor_infos[0].layout))
@@ -258,18 +258,18 @@ namespace Pilot
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
         if (vkCreatePipelineLayout(
-                m_vulkan_rhi->_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
+                m_vulkan_rhi->m_device, &pipeline_layout_create_info, nullptr, &m_render_pipelines[0].layout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create mesh point light shadow pipeline layout");
         }
 
         VkShaderModule vert_shader_module =
-            VulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_POINT_LIGHT_SHADOW_VERT);
+            VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, MESH_POINT_LIGHT_SHADOW_VERT);
         VkShaderModule geom_shader_module =
-            VulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_POINT_LIGHT_SHADOW_GEOM);
+            VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, MESH_POINT_LIGHT_SHADOW_GEOM);
         VkShaderModule frag_shader_module =
-            VulkanUtil::createShaderModule(m_vulkan_rhi->_device, MESH_POINT_LIGHT_SHADOW_FRAG);
+            VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, MESH_POINT_LIGHT_SHADOW_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -313,9 +313,9 @@ namespace Pilot
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_state_create_info.viewportCount = 1;
-        viewport_state_create_info.pViewports    = &m_vulkan_rhi->_viewport;
+        viewport_state_create_info.pViewports    = &m_vulkan_rhi->m_viewport;
         viewport_state_create_info.scissorCount  = 1;
-        viewport_state_create_info.pScissors     = &m_vulkan_rhi->_scissor;
+        viewport_state_create_info.pScissors     = &m_vulkan_rhi->m_scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
         rasterization_state_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -389,26 +389,26 @@ namespace Pilot
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
         if (vkCreateGraphicsPipelines(
-                m_vulkan_rhi->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
+                m_vulkan_rhi->m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_render_pipelines[0].pipeline) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("create mesh point light shadow graphics pipeline");
         }
 
-        vkDestroyShaderModule(m_vulkan_rhi->_device, vert_shader_module, nullptr);
-        vkDestroyShaderModule(m_vulkan_rhi->_device, geom_shader_module, nullptr);
-        vkDestroyShaderModule(m_vulkan_rhi->_device, frag_shader_module, nullptr);
+        vkDestroyShaderModule(m_vulkan_rhi->m_device, vert_shader_module, nullptr);
+        vkDestroyShaderModule(m_vulkan_rhi->m_device, geom_shader_module, nullptr);
+        vkDestroyShaderModule(m_vulkan_rhi->m_device, frag_shader_module, nullptr);
     }
     void PointLightShadowPass::setupDescriptorSet()
     {
         VkDescriptorSetAllocateInfo mesh_point_light_shadow_global_descriptor_set_alloc_info;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.pNext = NULL;
-        mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorPool     = m_vulkan_rhi->_descriptor_pool;
+        mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorPool     = m_vulkan_rhi->m_descriptor_pool;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_rhi->_device,
+        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_rhi->m_device,
                                                    &mesh_point_light_shadow_global_descriptor_set_alloc_info,
                                                    &m_descriptor_infos[0].descriptor_set))
         {
@@ -486,7 +486,7 @@ namespace Pilot
         mesh_point_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pBufferInfo =
             &mesh_point_light_shadow_per_drawcall_vertex_blending_storage_buffer_info;
 
-        vkUpdateDescriptorSets(m_vulkan_rhi->_device,
+        vkUpdateDescriptorSets(m_vulkan_rhi->m_device,
                                (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
                                descriptor_writes,
                                0,
@@ -504,7 +504,7 @@ namespace Pilot
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> point_lights_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (VulkanMeshNode& node : *(m_visiable_nodes.p_point_lights_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visiable_nodes.p_point_lights_visible_mesh_nodes))
         {
             auto& mesh_instanced = point_lights_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
@@ -537,8 +537,8 @@ namespace Pilot
         renderpass_begin_info.clearValueCount = (sizeof(clear_values) / sizeof(clear_values[0]));
         renderpass_begin_info.pClearValues    = clear_values;
 
-        m_vulkan_rhi->_vkCmdBeginRenderPass(
-            m_vulkan_rhi->_current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        m_vulkan_rhi->m_vk_cmd_begin_render_pass(
+            m_vulkan_rhi->m_current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
         if (m_vulkan_rhi->isPointLightShadowEnabled())
         {
@@ -546,26 +546,26 @@ namespace Pilot
             {
                 VkDebugUtilsLabelEXT label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Mesh", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_vulkan_rhi->_vkCmdBeginDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer, &label_info);
+                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
             }
 
-            m_vulkan_rhi->_vkCmdBindPipeline(
-                m_vulkan_rhi->_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
+            m_vulkan_rhi->m_vk_cmd_bind_pipeline(
+                m_vulkan_rhi->m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
 
             // perframe storage buffer
             uint32_t perframe_dynamic_offset =
                 roundUp(m_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index],
+                            ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index],
                         m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
             m_global_render_resource->_storage_buffer
-                ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] =
+                ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] =
                 perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
             assert(m_global_render_resource->_storage_buffer
-                       ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] <=
+                       ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] <=
                    (m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_begin[m_vulkan_rhi->_current_frame_index] +
+                        ._global_upload_ringbuffers_begin[m_vulkan_rhi->m_current_frame_index] +
                     m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_size[m_vulkan_rhi->_current_frame_index]));
+                        ._global_upload_ringbuffers_size[m_vulkan_rhi->m_current_frame_index]));
 
             MeshPointLightShadowPerframeStorageBufferObject& perframe_storage_buffer_object =
                 (*reinterpret_cast<MeshPointLightShadowPerframeStorageBufferObject*>(
@@ -590,7 +590,7 @@ namespace Pilot
                     if (total_instance_count > 0)
                     {
                         // bind per mesh
-                        m_vulkan_rhi->_vkCmdBindDescriptorSets(m_vulkan_rhi->_current_command_buffer,
+                        m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
                                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                                m_render_pipelines[0].layout,
                                                                1,
@@ -601,10 +601,10 @@ namespace Pilot
 
                         VkBuffer     vertex_buffers[] = {mesh.mesh_vertex_position_buffer};
                         VkDeviceSize offsets[]        = {0};
-                        m_vulkan_rhi->_vkCmdBindVertexBuffers(
-                            m_vulkan_rhi->_current_command_buffer, 0, 1, vertex_buffers, offsets);
-                        m_vulkan_rhi->_vkCmdBindIndexBuffer(
-                            m_vulkan_rhi->_current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+                        m_vulkan_rhi->m_vk_cmd_bind_vertex_buffers(
+                            m_vulkan_rhi->m_current_command_buffer, 0, 1, vertex_buffers, offsets);
+                        m_vulkan_rhi->m_vk_cmd_bind_index_buffer(
+                            m_vulkan_rhi->m_current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         uint32_t drawcall_max_instance_count =
                             (sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
@@ -623,17 +623,17 @@ namespace Pilot
                             // perdrawcall storage buffer
                             uint32_t perdrawcall_dynamic_offset =
                                 roundUp(m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index],
+                                            ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index],
                                         m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
                             m_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] =
+                                ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] =
                                 perdrawcall_dynamic_offset + sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject);
                             assert(m_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] <=
+                                       ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] <=
                                    (m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_vulkan_rhi->_current_frame_index] +
+                                        ._global_upload_ringbuffers_begin[m_vulkan_rhi->m_current_frame_index] +
                                     m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_vulkan_rhi->_current_frame_index]));
+                                        ._global_upload_ringbuffers_size[m_vulkan_rhi->m_current_frame_index]));
 
                             MeshPointLightShadowPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
                                 (*reinterpret_cast<MeshPointLightShadowPerdrawcallStorageBufferObject*>(
@@ -667,18 +667,18 @@ namespace Pilot
                             {
                                 per_drawcall_vertex_blending_dynamic_offset = roundUp(
                                     m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index],
+                                        ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index],
                                     m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
                                 m_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] =
+                                    ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] =
                                     per_drawcall_vertex_blending_dynamic_offset +
                                     sizeof(MeshPointLightShadowPerdrawcallVertexBlendingStorageBufferObject);
                                 assert(m_global_render_resource->_storage_buffer
-                                           ._global_upload_ringbuffers_end[m_vulkan_rhi->_current_frame_index] <=
+                                           ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] <=
                                        (m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_begin[m_vulkan_rhi->_current_frame_index] +
+                                            ._global_upload_ringbuffers_begin[m_vulkan_rhi->m_current_frame_index] +
                                         m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_size[m_vulkan_rhi->_current_frame_index]));
+                                            ._global_upload_ringbuffers_size[m_vulkan_rhi->m_current_frame_index]));
 
                                 MeshPointLightShadowPerdrawcallVertexBlendingStorageBufferObject&
                                     per_drawcall_vertex_blending_storage_buffer_object =
@@ -711,8 +711,8 @@ namespace Pilot
                             uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
                                                            perdrawcall_dynamic_offset,
                                                            per_drawcall_vertex_blending_dynamic_offset};
-                            m_vulkan_rhi->_vkCmdBindDescriptorSets(
-                                m_vulkan_rhi->_current_command_buffer,
+                            m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(
+                                m_vulkan_rhi->m_current_command_buffer,
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 m_render_pipelines[0].layout,
                                 0,
@@ -721,7 +721,7 @@ namespace Pilot
                                 (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
                                 dynamic_offsets);
 
-                            m_vulkan_rhi->_vkCmdDrawIndexed(m_vulkan_rhi->_current_command_buffer,
+                            m_vulkan_rhi->m_vk_cmd_draw_indexed(m_vulkan_rhi->m_current_command_buffer,
                                                             mesh.mesh_index_count,
                                                             current_instance_count,
                                                             0,
@@ -734,11 +734,11 @@ namespace Pilot
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
-                m_vulkan_rhi->_vkCmdEndDebugUtilsLabelEXT(m_vulkan_rhi->_current_command_buffer);
+                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
             }
         }
 
-        m_vulkan_rhi->_vkCmdEndRenderPass(m_vulkan_rhi->_current_command_buffer);
+        m_vulkan_rhi->m_vk_cmd_end_render_pass(m_vulkan_rhi->m_current_command_buffer);
     }
 
 } // namespace Pilot

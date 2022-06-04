@@ -21,7 +21,7 @@ namespace Pilot
         createAndMapStorageBuffer(rhi);
 
         // sky box irradiance
-        SkyBoxIrradianceMap skybox_irradiance_map        = level_resource_desc.ibl_resource_desc.skybox_irradiance_map;
+        SkyBoxIrradianceMap skybox_irradiance_map        = level_resource_desc.m_ibl_resource_desc.m_skybox_irradiance_map;
         std::shared_ptr<TextureData> irradiace_pos_x_map = loadTextureHDR(skybox_irradiance_map.m_positive_x_map);
         std::shared_ptr<TextureData> irradiace_neg_x_map = loadTextureHDR(skybox_irradiance_map.m_negative_x_map);
         std::shared_ptr<TextureData> irradiace_pos_y_map = loadTextureHDR(skybox_irradiance_map.m_positive_y_map);
@@ -30,7 +30,7 @@ namespace Pilot
         std::shared_ptr<TextureData> irradiace_neg_z_map = loadTextureHDR(skybox_irradiance_map.m_negative_z_map);
 
         // sky box specular
-        SkyBoxSpecularMap            skybox_specular_map = level_resource_desc.ibl_resource_desc.skybox_specular_map;
+        SkyBoxSpecularMap            skybox_specular_map = level_resource_desc.m_ibl_resource_desc.m_skybox_specular_map;
         std::shared_ptr<TextureData> specular_pos_x_map  = loadTextureHDR(skybox_specular_map.m_positive_x_map);
         std::shared_ptr<TextureData> specular_neg_x_map  = loadTextureHDR(skybox_specular_map.m_negative_x_map);
         std::shared_ptr<TextureData> specular_pos_y_map  = loadTextureHDR(skybox_specular_map.m_positive_y_map);
@@ -39,7 +39,7 @@ namespace Pilot
         std::shared_ptr<TextureData> specular_neg_z_map  = loadTextureHDR(skybox_specular_map.m_negative_z_map);
 
         // brdf
-        std::shared_ptr<TextureData> brdf_map = loadTextureHDR(level_resource_desc.ibl_resource_desc.brdf_map);
+        std::shared_ptr<TextureData> brdf_map = loadTextureHDR(level_resource_desc.m_ibl_resource_desc.m_brdf_map);
 
         // create IBL samplers
         createIBLSamplers(rhi);
@@ -71,7 +71,7 @@ namespace Pilot
 
         // color grading
         std::shared_ptr<TextureData> color_grading_map =
-            loadTexture(level_resource_desc.color_grading_resource_desc.color_grading_map);
+            loadTexture(level_resource_desc.m_color_grading_resource_desc.m_color_grading_map);
 
         // create color grading texture
         VulkanUtil::createGlobalImage(
@@ -82,7 +82,8 @@ namespace Pilot
             color_grading_map->m_width,
             color_grading_map->m_height,
             color_grading_map->m_pixels,
-            color_grading_map->m_format);
+            color_grading_map->m_format,
+            1);
     }
 
     void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
@@ -106,16 +107,6 @@ namespace Pilot
                                                         RenderMaterialData   material_data)
     {
         getOrCreateVulkanMaterial(rhi, render_entity, material_data);
-    }
-
-    void RenderResource::setVisibleNodesReference()
-    {
-        RenderPass::m_visiable_nodes.p_directional_light_visible_mesh_nodes = &m_directional_light_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_axis_node                            = &m_axis_node;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes =
-            &m_main_camera_visible_particlebillboard_nodes;
     }
 
     void RenderResource::updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
@@ -168,22 +159,12 @@ namespace Pilot
         m_particlebillboard_perframe_storage_buffer_object.up_direction     = GLMUtil::fromVec3(camera->up());
     }
 
-    void RenderResource::updateVisibleObjects(std::shared_ptr<RenderScene>  render_scene,
-                                              std::shared_ptr<RenderCamera> camera)
-    {
-        updateVisibleObjectsDirectionalLight(render_scene, camera);
-        updateVisibleObjectsPointLight(render_scene);
-        updateVisibleObjectsMainCamera(render_scene, camera);
-        updateVisibleObjectsAxis(render_scene);
-        updateVisibleObjectsParticle(render_scene);
-    }
-
     void RenderResource::createIBLSamplers(std::shared_ptr<RHI> rhi)
     {
         VulkanRHI* raw_rhi = static_cast<VulkanRHI*>(rhi.get());
 
         VkPhysicalDeviceProperties physical_device_properties {};
-        vkGetPhysicalDeviceProperties(raw_rhi->_physical_device, &physical_device_properties);
+        vkGetPhysicalDeviceProperties(raw_rhi->m_physical_device, &physical_device_properties);
 
         VkSamplerCreateInfo samplerInfo {};
         samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -204,10 +185,10 @@ namespace Pilot
         if (m_global_render_resource._ibl_resource._brdfLUT_texture_sampler != VK_NULL_HANDLE)
         {
             vkDestroySampler(
-                raw_rhi->_device, m_global_render_resource._ibl_resource._brdfLUT_texture_sampler, nullptr);
+                raw_rhi->m_device, m_global_render_resource._ibl_resource._brdfLUT_texture_sampler, nullptr);
         }
 
-        if (vkCreateSampler(raw_rhi->_device,
+        if (vkCreateSampler(raw_rhi->m_device,
                             &samplerInfo,
                             nullptr,
                             &m_global_render_resource._ibl_resource._brdfLUT_texture_sampler) != VK_SUCCESS)
@@ -222,10 +203,10 @@ namespace Pilot
         if (m_global_render_resource._ibl_resource._irradiance_texture_sampler != VK_NULL_HANDLE)
         {
             vkDestroySampler(
-                raw_rhi->_device, m_global_render_resource._ibl_resource._irradiance_texture_sampler, nullptr);
+                raw_rhi->m_device, m_global_render_resource._ibl_resource._irradiance_texture_sampler, nullptr);
         }
 
-        if (vkCreateSampler(raw_rhi->_device,
+        if (vkCreateSampler(raw_rhi->m_device,
                             &samplerInfo,
                             nullptr,
                             &m_global_render_resource._ibl_resource._irradiance_texture_sampler) != VK_SUCCESS)
@@ -236,10 +217,10 @@ namespace Pilot
         if (m_global_render_resource._ibl_resource._specular_texture_sampler != VK_NULL_HANDLE)
         {
             vkDestroySampler(
-                raw_rhi->_device, m_global_render_resource._ibl_resource._specular_texture_sampler, nullptr);
+                raw_rhi->m_device, m_global_render_resource._ibl_resource._specular_texture_sampler, nullptr);
         }
 
-        if (vkCreateSampler(raw_rhi->_device,
+        if (vkCreateSampler(raw_rhi->m_device,
                             &samplerInfo,
                             nullptr,
                             &m_global_render_resource._ibl_resource._specular_texture_sampler) != VK_SUCCESS)
@@ -441,8 +422,8 @@ namespace Pilot
 
                 VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
                 VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-                VulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                         vulkan_context->_device,
+                VulkanUtil::createBuffer(vulkan_context->m_physical_device,
+                                         vulkan_context->m_device,
                                          buffer_size,
                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -452,7 +433,7 @@ namespace Pilot
                 // memory transfer operation
 
                 void* staging_buffer_data = nullptr;
-                vkMapMemory(vulkan_context->_device,
+                vkMapMemory(vulkan_context->m_device,
                             inefficient_staging_buffer_memory,
                             0,
                             buffer_size,
@@ -470,7 +451,7 @@ namespace Pilot
                 material_uniform_buffer_info.occlusionStrength = entity.m_occlusion_strength;
                 material_uniform_buffer_info.emissiveFactor    = entity.m_emissive_factor;
 
-                vkUnmapMemory(vulkan_context->_device, inefficient_staging_buffer_memory);
+                vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
 
                 // use the vmaAllocator to allocate asset uniform buffer
                 VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -481,7 +462,7 @@ namespace Pilot
                 allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
                 vmaCreateBufferWithAlignment(
-                    vulkan_context->_assets_allocator,
+                    vulkan_context->m_assets_allocator,
                     &bufferInfo,
                     &allocInfo,
                     m_global_render_resource._storage_buffer._min_uniform_buffer_offset_alignment,
@@ -494,8 +475,8 @@ namespace Pilot
                     rhi.get(), inefficient_staging_buffer, now_material.material_uniform_buffer, 0, 0, buffer_size);
 
                 // release staging buffer
-                vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
-                vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
+                vkDestroyBuffer(vulkan_context->m_device, inefficient_staging_buffer, nullptr);
+                vkFreeMemory(vulkan_context->m_device, inefficient_staging_buffer_memory, nullptr);
             }
 
             TextureDataToUpdate update_texture_data;
@@ -526,14 +507,11 @@ namespace Pilot
             VkDescriptorSetAllocateInfo material_descriptor_set_alloc_info;
             material_descriptor_set_alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             material_descriptor_set_alloc_info.pNext              = NULL;
-            material_descriptor_set_alloc_info.descriptorPool     = vulkan_context->_descriptor_pool;
+            material_descriptor_set_alloc_info.descriptorPool     = vulkan_context->m_descriptor_pool;
             material_descriptor_set_alloc_info.descriptorSetCount = 1;
-            material_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_mesh_per_material]
-                     .layout;
+            material_descriptor_set_alloc_info.pSetLayouts        = m_material_descriptor_set_layout;
 
-            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
+            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->m_device,
                                                        &material_descriptor_set_alloc_info,
                                                        &now_material.material_descriptor_set))
             {
@@ -548,8 +526,8 @@ namespace Pilot
             VkDescriptorImageInfo base_color_image_info = {};
             base_color_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             base_color_image_info.imageView             = now_material.base_color_image_view;
-            base_color_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                                                 vulkan_context->_device,
+            base_color_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->m_physical_device,
+                                                                                 vulkan_context->m_device,
                                                                                  base_color_image_width,
                                                                                  base_color_image_height);
 
@@ -557,24 +535,24 @@ namespace Pilot
             metallic_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             metallic_roughness_image_info.imageView             = now_material.metallic_roughness_image_view;
             metallic_roughness_image_info.sampler =
-                VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                     vulkan_context->_device,
+                VulkanUtil::getOrCreateMipmapSampler(vulkan_context->m_physical_device,
+                                                     vulkan_context->m_device,
                                                      metallic_roughness_width,
                                                      metallic_roughness_height);
 
             VkDescriptorImageInfo normal_roughness_image_info = {};
             normal_roughness_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             normal_roughness_image_info.imageView             = now_material.normal_image_view;
-            normal_roughness_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                                                       vulkan_context->_device,
+            normal_roughness_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->m_physical_device,
+                                                                                       vulkan_context->m_device,
                                                                                        normal_roughness_width,
                                                                                        normal_roughness_height);
 
             VkDescriptorImageInfo occlusion_image_info = {};
             occlusion_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             occlusion_image_info.imageView             = now_material.occlusion_image_view;
-            occlusion_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->_physical_device,
-                                                                                vulkan_context->_device,
+            occlusion_image_info.sampler = VulkanUtil::getOrCreateMipmapSampler(vulkan_context->m_physical_device,
+                                                                                vulkan_context->m_device,
                                                                                 occlusion_image_width,
                                                                                 occlusion_image_height);
 
@@ -582,7 +560,7 @@ namespace Pilot
             emissive_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             emissive_image_info.imageView             = now_material.emissive_image_view;
             emissive_image_info.sampler               = VulkanUtil::getOrCreateMipmapSampler(
-                vulkan_context->_physical_device, vulkan_context->_device, emissive_image_width, emissive_image_height);
+                vulkan_context->m_physical_device, vulkan_context->m_device, emissive_image_width, emissive_image_height);
 
             VkWriteDescriptorSet mesh_descriptor_writes_info[6];
 
@@ -620,7 +598,7 @@ namespace Pilot
             mesh_descriptor_writes_info[5].dstBinding = 5;
             mesh_descriptor_writes_info[5].pImageInfo = &emissive_image_info;
 
-            vkUpdateDescriptorSets(vulkan_context->_device, 6, mesh_descriptor_writes_info, 0, nullptr);
+            vkUpdateDescriptorSets(vulkan_context->m_device, 6, mesh_descriptor_writes_info, 0, nullptr);
 
             return now_material;
         }
@@ -692,8 +670,8 @@ namespace Pilot
                 vertex_joint_binding_buffer_size;
             VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
             VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-            VulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                     vulkan_context->_device,
+            VulkanUtil::createBuffer(vulkan_context->m_physical_device,
+                                     vulkan_context->m_device,
                                      inefficient_staging_buffer_size,
                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -701,7 +679,7 @@ namespace Pilot
                                      inefficient_staging_buffer_memory);
 
             void* inefficient_staging_buffer_data;
-            vkMapMemory(vulkan_context->_device,
+            vkMapMemory(vulkan_context->m_device,
                         inefficient_staging_buffer_memory,
                         0,
                         VK_WHOLE_SIZE,
@@ -749,26 +727,26 @@ namespace Pilot
                 // TODO: move to assets loading process
 
                 mesh_vertex_joint_binding[index_index].indices =
-                    glm::ivec4(joint_binding_buffer_data[vertex_buffer_index].index0,
-                               joint_binding_buffer_data[vertex_buffer_index].index1,
-                               joint_binding_buffer_data[vertex_buffer_index].index2,
-                               joint_binding_buffer_data[vertex_buffer_index].index3);
+                    glm::ivec4(joint_binding_buffer_data[vertex_buffer_index].m_index0,
+                               joint_binding_buffer_data[vertex_buffer_index].m_index1,
+                               joint_binding_buffer_data[vertex_buffer_index].m_index2,
+                               joint_binding_buffer_data[vertex_buffer_index].m_index3);
 
-                float inv_total_weight = joint_binding_buffer_data[vertex_buffer_index].weight0 +
-                                         joint_binding_buffer_data[vertex_buffer_index].weight1 +
-                                         joint_binding_buffer_data[vertex_buffer_index].weight2 +
-                                         joint_binding_buffer_data[vertex_buffer_index].weight3;
+                float inv_total_weight = joint_binding_buffer_data[vertex_buffer_index].m_weight0 +
+                                         joint_binding_buffer_data[vertex_buffer_index].m_weight1 +
+                                         joint_binding_buffer_data[vertex_buffer_index].m_weight2 +
+                                         joint_binding_buffer_data[vertex_buffer_index].m_weight3;
 
                 inv_total_weight = (inv_total_weight != 0.0) ? 1 / inv_total_weight : 1.0;
 
                 mesh_vertex_joint_binding[index_index].weights =
-                    glm::vec4(joint_binding_buffer_data[vertex_buffer_index].weight0 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].weight1 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].weight2 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].weight3 * inv_total_weight);
+                    glm::vec4(joint_binding_buffer_data[vertex_buffer_index].m_weight0 * inv_total_weight,
+                              joint_binding_buffer_data[vertex_buffer_index].m_weight1 * inv_total_weight,
+                              joint_binding_buffer_data[vertex_buffer_index].m_weight2 * inv_total_weight,
+                              joint_binding_buffer_data[vertex_buffer_index].m_weight3 * inv_total_weight);
             }
 
-            vkUnmapMemory(vulkan_context->_device, inefficient_staging_buffer_memory);
+            vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
 
             // use the vmaAllocator to allocate asset vertex buffer
             VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -778,21 +756,21 @@ namespace Pilot
 
             bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             bufferInfo.size  = vertex_position_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_position_buffer,
                             &now_mesh.mesh_vertex_position_buffer_allocation,
                             NULL);
             bufferInfo.size = vertex_varying_enable_blending_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_varying_enable_blending_buffer,
                             &now_mesh.mesh_vertex_varying_enable_blending_buffer_allocation,
                             NULL);
             bufferInfo.size = vertex_varying_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_varying_buffer,
@@ -801,7 +779,7 @@ namespace Pilot
 
             bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             bufferInfo.size  = vertex_joint_binding_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_joint_binding_buffer,
@@ -835,22 +813,19 @@ namespace Pilot
                                    vertex_joint_binding_buffer_size);
 
             // release staging buffer
-            vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
-            vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
+            vkDestroyBuffer(vulkan_context->m_device, inefficient_staging_buffer, nullptr);
+            vkFreeMemory(vulkan_context->m_device, inefficient_staging_buffer_memory, nullptr);
 
             // update descriptor set
             VkDescriptorSetAllocateInfo mesh_vertex_blending_per_mesh_descriptor_set_alloc_info;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType =
                 VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->_descriptor_pool;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->m_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
-                     .layout;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
 
-            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
+            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->m_device,
                                                        &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
                                                        &now_mesh.mesh_vertex_blending_descriptor_set))
             {
@@ -882,7 +857,7 @@ namespace Pilot
             mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo =
                 &mesh_vertex_Joint_binding_storage_buffer_info;
 
-            vkUpdateDescriptorSets(vulkan_context->_device,
+            vkUpdateDescriptorSets(vulkan_context->m_device,
                                    (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
                                    descriptor_writes,
                                    0,
@@ -909,8 +884,8 @@ namespace Pilot
                 vertex_position_buffer_size + vertex_varying_enable_blending_buffer_size + vertex_varying_buffer_size;
             VkBuffer       inefficient_staging_buffer        = VK_NULL_HANDLE;
             VkDeviceMemory inefficient_staging_buffer_memory = VK_NULL_HANDLE;
-            VulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                     vulkan_context->_device,
+            VulkanUtil::createBuffer(vulkan_context->m_physical_device,
+                                     vulkan_context->m_device,
                                      inefficient_staging_buffer_size,
                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -918,7 +893,7 @@ namespace Pilot
                                      inefficient_staging_buffer_memory);
 
             void* inefficient_staging_buffer_data;
-            vkMapMemory(vulkan_context->_device,
+            vkMapMemory(vulkan_context->m_device,
                         inefficient_staging_buffer_memory,
                         0,
                         VK_WHOLE_SIZE,
@@ -956,7 +931,7 @@ namespace Pilot
                     glm::vec2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
             }
 
-            vkUnmapMemory(vulkan_context->_device, inefficient_staging_buffer_memory);
+            vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
 
             // use the vmaAllocator to allocate asset vertex buffer
             VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -966,21 +941,21 @@ namespace Pilot
             allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
             bufferInfo.size = vertex_position_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_position_buffer,
                             &now_mesh.mesh_vertex_position_buffer_allocation,
                             NULL);
             bufferInfo.size = vertex_varying_enable_blending_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_varying_enable_blending_buffer,
                             &now_mesh.mesh_vertex_varying_enable_blending_buffer_allocation,
                             NULL);
             bufferInfo.size = vertex_varying_buffer_size;
-            vmaCreateBuffer(vulkan_context->_assets_allocator,
+            vmaCreateBuffer(vulkan_context->m_assets_allocator,
                             &bufferInfo,
                             &allocInfo,
                             &now_mesh.mesh_vertex_varying_buffer,
@@ -1008,21 +983,19 @@ namespace Pilot
                                    vertex_varying_buffer_size);
 
             // release staging buffer
-            vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
-            vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
+            vkDestroyBuffer(vulkan_context->m_device, inefficient_staging_buffer, nullptr);
+            vkFreeMemory(vulkan_context->m_device, inefficient_staging_buffer_memory, nullptr);
 
             // update descriptor set
             VkDescriptorSetAllocateInfo mesh_vertex_blending_per_mesh_descriptor_set_alloc_info;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType =
                 VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->_descriptor_pool;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->m_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts =
-                &static_cast<RenderPass*>(m_main_camera_pass.get())
-                     ->m_descriptor_infos[MainCameraPass::LayoutType::_per_mesh]
-                     .layout;
-            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->_device,
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
+
+            if (VK_SUCCESS != vkAllocateDescriptorSets(vulkan_context->m_device,
                                                        &mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
                                                        &now_mesh.mesh_vertex_blending_descriptor_set))
             {
@@ -1055,7 +1028,7 @@ namespace Pilot
             mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo =
                 &mesh_vertex_Joint_binding_storage_buffer_info;
 
-            vkUpdateDescriptorSets(vulkan_context->_device,
+            vkUpdateDescriptorSets(vulkan_context->m_device,
                                    (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
                                    descriptor_writes,
                                    0,
@@ -1075,8 +1048,8 @@ namespace Pilot
 
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
-        VulkanUtil::createBuffer(vulkan_context->_physical_device,
-                                 vulkan_context->_device,
+        VulkanUtil::createBuffer(vulkan_context->m_physical_device,
+                                 vulkan_context->m_device,
                                  buffer_size,
                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1085,9 +1058,9 @@ namespace Pilot
 
         void* staging_buffer_data;
         vkMapMemory(
-            vulkan_context->_device, inefficient_staging_buffer_memory, 0, buffer_size, 0, &staging_buffer_data);
+            vulkan_context->m_device, inefficient_staging_buffer_memory, 0, buffer_size, 0, &staging_buffer_data);
         memcpy(staging_buffer_data, index_buffer_data, (size_t)buffer_size);
-        vkUnmapMemory(vulkan_context->_device, inefficient_staging_buffer_memory);
+        vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
 
         // use the vmaAllocator to allocate asset index buffer
         VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -1097,7 +1070,7 @@ namespace Pilot
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateBuffer(vulkan_context->_assets_allocator,
+        vmaCreateBuffer(vulkan_context->m_assets_allocator,
                         &bufferInfo,
                         &allocInfo,
                         &now_mesh.mesh_index_buffer,
@@ -1108,8 +1081,8 @@ namespace Pilot
         VulkanUtil::copyBuffer(rhi.get(), inefficient_staging_buffer, now_mesh.mesh_index_buffer, 0, 0, buffer_size);
 
         // release temp staging buffer
-        vkDestroyBuffer(vulkan_context->_device, inefficient_staging_buffer, nullptr);
-        vkFreeMemory(vulkan_context->_device, inefficient_staging_buffer_memory, nullptr);
+        vkDestroyBuffer(vulkan_context->m_device, inefficient_staging_buffer, nullptr);
+        vkFreeMemory(vulkan_context->m_device, inefficient_staging_buffer_memory, nullptr);
     }
 
     void RenderResource::updateTextureImageData(std::shared_ptr<RHI> rhi, const TextureDataToUpdate& texture_data)
@@ -1160,167 +1133,6 @@ namespace Pilot
                                       texture_data.emissive_image_format);
     }
 
-    void RenderResource::updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderScene>  render_scene,
-                                                              std::shared_ptr<RenderCamera> camera)
-    {
-        glm::mat4 directional_light_proj_view = CalculateDirectionalLightCamera(*render_scene, *camera);
-
-        m_mesh_perframe_storage_buffer_object.directional_light_proj_view              = directional_light_proj_view;
-        m_mesh_directional_light_shadow_perframe_storage_buffer_object.light_proj_view = directional_light_proj_view;
-
-        m_directional_light_visible_mesh_nodes.clear();
-
-        ClusterFrustum frustum =
-            CreateClusterFrustumFromMatrix(directional_light_proj_view, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            if (TiledFrustumIntersectBox(
-                    frustum, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
-            {
-                m_directional_light_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsPointLight(std::shared_ptr<RenderScene> render_scene)
-    {
-        m_point_lights_visible_mesh_nodes.clear();
-
-        std::vector<BoundingSphere> point_lights_bounding_spheres;
-        uint32_t point_light_num = static_cast<uint32_t>(render_scene->m_point_light_list.m_lights.size());
-        point_lights_bounding_spheres.resize(point_light_num);
-        for (size_t i = 0; i < point_light_num; i++)
-        {
-            point_lights_bounding_spheres[i].m_center =
-                GLMUtil::fromVec3(render_scene->m_point_light_list.m_lights[i].m_position);
-            point_lights_bounding_spheres[i].m_radius = render_scene->m_point_light_list.m_lights[i].calculateRadius();
-        }
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            bool intersect_with_point_lights = true;
-            for (size_t i = 0; i < point_light_num; i++)
-            {
-                if (!BoxIntersectsWithSphere(
-                        BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix)),
-                        point_lights_bounding_spheres[i]))
-                {
-                    intersect_with_point_lights = false;
-                    break;
-                }
-            }
-
-            if (intersect_with_point_lights)
-            {
-                m_point_lights_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_point_lights_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsMainCamera(std::shared_ptr<RenderScene>  render_scene,
-                                                        std::shared_ptr<RenderCamera> camera)
-    {
-        m_main_camera_visible_mesh_nodes.clear();
-
-        Matrix4x4 view_matrix      = camera->getViewMatrix();
-        Matrix4x4 proj_matrix      = camera->getPersProjMatrix();
-        Matrix4x4 proj_view_matrix = proj_matrix * view_matrix;
-
-        ClusterFrustum f =
-            CreateClusterFrustumFromMatrix(GLMUtil::fromMat4x4(proj_view_matrix), -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
-
-        for (const RenderEntity& entity : render_scene->m_render_entities)
-        {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
-
-            if (TiledFrustumIntersectBox(
-                    f, BoundingBoxTransform(mesh_asset_bounding_box, GLMUtil::fromMat4x4(entity.m_model_matrix))))
-            {
-                m_main_camera_visible_mesh_nodes.emplace_back();
-                VulkanMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
-
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
-
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
-                {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
-                }
-                temp_node.node_id = entity.m_instance_id;
-
-                VulkanMesh& mesh_asset           = getEntityMesh(entity);
-                temp_node.ref_mesh               = &mesh_asset;
-                temp_node.enable_vertex_blending = entity.m_enable_vertex_blending;
-
-                VulkanPBRMaterial& material_asset = getEntityMaterial(entity);
-                temp_node.ref_material            = &material_asset;
-            }
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsAxis(std::shared_ptr<RenderScene> render_scene)
-    {
-        if (render_scene->m_render_axis.has_value())
-        {
-            RenderEntity& axis = *render_scene->m_render_axis;
-
-            m_axis_node.model_matrix = GLMUtil::fromMat4x4(axis.m_model_matrix);
-            m_axis_node.node_id      = axis.m_instance_id;
-
-            VulkanMesh& mesh_asset             = getEntityMesh(axis);
-            m_axis_node.ref_mesh               = &mesh_asset;
-            m_axis_node.enable_vertex_blending = axis.m_enable_vertex_blending;
-        }
-    }
-
-    void RenderResource::updateVisibleObjectsParticle(std::shared_ptr<RenderScene> render_scene)
-    {
-        // TODO
-        m_main_camera_visible_particlebillboard_nodes.clear();
-    }
-
     VulkanMesh& RenderResource::getEntityMesh(RenderEntity entity)
     {
         size_t assetid = entity.m_mesh_asset_id;
@@ -1361,10 +1173,10 @@ namespace Pilot
     {
         VulkanRHI*     raw_rhi          = static_cast<VulkanRHI*>(rhi.get());
         StorageBuffer& _storage_buffer  = m_global_render_resource._storage_buffer;
-        uint32_t       frames_in_flight = raw_rhi->_max_frames_in_flight;
+        uint32_t       frames_in_flight = raw_rhi->m_max_frames_in_flight;
 
         VkPhysicalDeviceProperties properties;
-        vkGetPhysicalDeviceProperties(raw_rhi->_physical_device, &properties);
+        vkGetPhysicalDeviceProperties(raw_rhi->m_physical_device, &properties);
 
         _storage_buffer._min_uniform_buffer_offset_alignment =
             static_cast<uint32_t>(properties.limits.minUniformBufferOffsetAlignment);
@@ -1377,8 +1189,8 @@ namespace Pilot
         // The size is 128MB in NVIDIA D3D11
         // driver(https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0).
         uint32_t global_storage_buffer_size = 1024 * 1024 * 128;
-        VulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                 raw_rhi->_device,
+        VulkanUtil::createBuffer(raw_rhi->m_physical_device,
+                                 raw_rhi->m_device,
                                  global_storage_buffer_size,
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1397,8 +1209,8 @@ namespace Pilot
         }
 
         // axis
-        VulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                 raw_rhi->_device,
+        VulkanUtil::createBuffer(raw_rhi->m_physical_device,
+                                 raw_rhi->m_device,
                                  sizeof(AxisStorageBufferObject),
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1406,8 +1218,8 @@ namespace Pilot
                                  _storage_buffer._axis_inefficient_storage_buffer_memory);
 
         // null descriptor
-        VulkanUtil::createBuffer(raw_rhi->_physical_device,
-                                 raw_rhi->_device,
+        VulkanUtil::createBuffer(raw_rhi->m_physical_device,
+                                 raw_rhi->m_device,
                                  64,
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                  0,
@@ -1415,14 +1227,14 @@ namespace Pilot
                                  _storage_buffer._global_null_descriptor_storage_buffer_memory);
 
         // TODO: Unmap when program terminates
-        vkMapMemory(raw_rhi->_device,
+        vkMapMemory(raw_rhi->m_device,
                     _storage_buffer._global_upload_ringbuffer_memory,
                     0,
                     VK_WHOLE_SIZE,
                     0,
                     &_storage_buffer._global_upload_ringbuffer_memory_pointer);
 
-        vkMapMemory(raw_rhi->_device,
+        vkMapMemory(raw_rhi->m_device,
                     _storage_buffer._axis_inefficient_storage_buffer_memory,
                     0,
                     VK_WHOLE_SIZE,

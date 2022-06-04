@@ -33,7 +33,8 @@ namespace Pilot
         m_engine_runtime = engine_runtime;
 
         EditorGlobalContextInitInfo init_info = {g_runtime_global_context.m_window_system.get(),
-                                                 g_runtime_global_context.m_render_system.get()};
+                                                 g_runtime_global_context.m_render_system.get(),
+                                                 engine_runtime};
         g_editor_global_context.initialize(init_info);
         g_editor_global_context.m_scene_manager->setEditorCamera(
             g_runtime_global_context.m_render_system->getRenderCamera());

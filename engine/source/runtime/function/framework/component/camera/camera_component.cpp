@@ -12,11 +12,11 @@
 #include "runtime/function/input/input_system.h"
 
 #include "runtime/function/render/render_camera.h"
+#include "runtime/function/render/render_swap_context.h"
+#include "runtime/function/render/render_system.h"
 
 namespace Pilot
 {
-    RenderCamera* CameraComponent::m_render_camera = nullptr;
-
     void CameraComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
         m_parent_object = parent_object;
@@ -39,10 +39,10 @@ namespace Pilot
             LOG_ERROR("invalid camera type");
         }
 
-        if (m_render_camera)
-        {
-            m_render_camera->setFOVx(m_camera_res.m_parameter->m_fov);
-        }
+        RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+        CameraSwapData     camera_swap_data;
+        camera_swap_data.m_fov_x                           = m_camera_res.m_parameter->m_fov;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 
     void CameraComponent::tick(float delta_time)
@@ -94,10 +94,11 @@ namespace Pilot
 
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, m_foward, m_up);
 
-        if (m_render_camera)
-        {
-            m_render_camera->setMainViewMatrix(desired_mat, CurrentCameraType::Motor);
-        }
+        RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+        CameraSwapData     camera_swap_data;
+        camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix                     = desired_mat;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
 
         Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
@@ -136,9 +137,10 @@ namespace Pilot
 
         Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
 
-        if (m_render_camera)
-        {
-            m_render_camera->setMainViewMatrix(desired_mat, CurrentCameraType::Motor);
-        }
+        RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+        CameraSwapData     camera_swap_data;
+        camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix                     = desired_mat;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 } // namespace Pilot
