@@ -1,8 +1,8 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-
 #include <cstdint>
+#include <filesystem>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace Pilot
@@ -25,7 +25,7 @@ namespace Pilot
             const char* file = path;
             while (*path)
             {
-                if (*path++ == '/')
+                if (*path++ == std::filesystem::path::preferred_separator)
                 {
                     file = path;
                 }
