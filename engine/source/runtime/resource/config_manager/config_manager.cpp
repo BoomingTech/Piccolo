@@ -1,12 +1,12 @@
 #include "runtime/resource/config_manager/config_manager.h"
 
-#include "runtime/engine.h"
-
 #include <fstream>
 #include <sstream>
 #include <string>
 
 #include "_generated/serializer/all_serializer.h"
+#include "runtime/core/base/macro.h"
+#include "runtime/engine.h"
 
 namespace Pilot
 {
@@ -21,7 +21,7 @@ namespace Pilot
 
         std::string error;
         auto        config_json = PJson::parse(config_file_text, error);
-        assert(error.empty());
+        ASSERT(error.empty());
 
         PSerializer::read(config_json, m_config);
 
