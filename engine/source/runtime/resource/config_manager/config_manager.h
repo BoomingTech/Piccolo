@@ -10,7 +10,6 @@ namespace Pilot
     {
     public:
         void initialize(const EngineInitParams& init_param);
-        void clear();
 
         const std::filesystem::path& getRootFolder() const;
         const std::filesystem::path& getAssetFolder() const;
@@ -18,6 +17,10 @@ namespace Pilot
         const std::filesystem::path& getEditorBigIconPath() const;
         const std::filesystem::path& getEditorSmallIconPath() const;
         const std::filesystem::path& getEditorFontPath() const;
+
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        const std::filesystem::path& getJoltPhysicsAssetFolder() const;
+#endif
 
         const std::string& getDefaultWorldUrl() const;
         const std::string& getGlobalRenderingResUrl() const;
@@ -29,6 +32,10 @@ namespace Pilot
         std::filesystem::path m_editor_big_icon_path;
         std::filesystem::path m_editor_small_icon_path;
         std::filesystem::path m_editor_font_path;
+
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        std::filesystem::path m_jolt_physics_asset_folder;
+#endif
 
         std::string m_default_world_url;
         std::string m_global_rendering_res_url;

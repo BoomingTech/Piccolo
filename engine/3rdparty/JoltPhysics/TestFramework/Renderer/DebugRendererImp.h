@@ -16,6 +16,7 @@
 #include <Renderer/RenderInstances.h>
 #include <Jolt/Core/Mutex.h>
 #include <unordered_map>
+#include <filesystem>
 
 class Renderer;
 class Font;
@@ -25,7 +26,7 @@ class DebugRendererImp final : public DebugRenderer
 {
 public:
 	/// Constructor
-										DebugRendererImp(Renderer *inRenderer, const Font *inFont);
+										DebugRendererImp(Renderer *inRenderer, const Font *inFont, const std::filesystem::path& asset_folder);
 
 	/// Implementation of DebugRenderer interface
 	virtual void						DrawLine(const Float3 &inFrom, const Float3 &inTo, ColorArg inColor) override;
