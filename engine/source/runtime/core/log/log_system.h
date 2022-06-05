@@ -34,7 +34,7 @@ namespace Pilot
         }
 
     public:
-        LogSystem();
+        LogSystem(const std::string& log_pattern);
         ~LogSystem();
 
         template<typename... TARGS>

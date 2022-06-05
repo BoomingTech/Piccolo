@@ -7,11 +7,11 @@
 
 namespace Pilot
 {
-    LogSystem::LogSystem()
+    LogSystem::LogSystem(const std::string& log_pattern)
     {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         console_sink->set_level(spdlog::level::trace);
-        console_sink->set_pattern("[%^%l%$] %!@%s+%# %v");
+        console_sink->set_pattern(log_pattern);
 
         const spdlog::sinks_init_list sink_list = {console_sink};
 

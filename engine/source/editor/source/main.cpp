@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
     Pilot::EngineInitParams params;
     params.m_root_folder      = pilot_root_folder;
-    params.m_config_file_path = pilot_root_folder / "PilotEditor.ini";
+    params.m_config_file_path = pilot_root_folder / "PilotEditor.json";
 
     Pilot::PilotEngine* engine = new Pilot::PilotEngine();
 
