@@ -14,7 +14,7 @@ namespace Pilot
 
     struct RenderPipelineInitInfo
     {
-        bool enable_fxaa;
+        bool                                enable_fxaa {false};
         std::shared_ptr<RenderResourceBase> render_resource;
     };
 

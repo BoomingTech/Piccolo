@@ -76,7 +76,7 @@ namespace Pilot
         VkImageView m_directional_light_shadow_color_image_view;
 
         bool                                         m_is_show_axis {false};
-        bool                                         m_enable_fxaa {true};
+        bool                                         m_enable_fxaa {false};
         size_t                                       m_selected_axis {3};
         MeshPerframeStorageBufferObject              m_mesh_perframe_storage_buffer_object;
         AxisStorageBufferObject                      m_axis_storage_buffer_object;
