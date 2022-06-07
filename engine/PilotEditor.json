@@ -1,0 +1,11 @@
+{
+    "asset_folder": "asset",
+    "schema_folder": "schema",
+    "big_icon": "resource/PilotEditorBigIcon.png",
+    "small_icon": "resource/PilotEditorSmallIcon.png",
+    "font_file": "resource/PilotEditorFont.TTF",
+    "default_world_url": "asset/world/hello.world.json",
+    "global_rendering_res": "asset/global/rendering.global.json",
+    "jolt_asset_folder": "jolt-asset",
+    "log_pattern": "[%^%l%$] %!@%s+%# %v"
+}

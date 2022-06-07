@@ -12,8 +12,8 @@
 #include "runtime/engine.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
-#include "runtime/function/physics/physics_system.h"
 #include "runtime/function/physics/physics_manager.h"
+#include "runtime/function/physics/physics_system.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
@@ -28,7 +28,7 @@ namespace Pilot
 
         m_file_system = std::make_shared<FileSystem>();
 
-        m_logger_system = std::make_shared<LogSystem>();
+        m_logger_system = std::make_shared<LogSystem>(m_config_manager->getLogPattern());
 
         m_asset_manager = std::make_shared<AssetManager>();
 
@@ -71,7 +71,6 @@ namespace Pilot
         m_input_system.reset();
 
         m_asset_manager.reset();
-
 
         m_logger_system.reset();
 

@@ -2,9 +2,31 @@
 
 #include <filesystem>
 
+#include "runtime/core/meta/reflection/reflection.h"
+
 namespace Pilot
 {
     struct EngineInitParams;
+
+    REFLECTION_TYPE(Config)
+    CLASS(Config, Fields)
+    {
+        REFLECTION_BODY(Config);
+
+    public:
+        std::string asset_folder;
+        std::string schema_folder;
+        std::string default_world_url;
+        std::string big_icon;
+        std::string small_icon;
+        std::string font_file;
+        std::string global_rendering_res;
+        std::string log_pattern;
+
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        std::string jolt_asset_folder;
+#endif
+    };
 
     class ConfigManager
     {
@@ -24,6 +46,7 @@ namespace Pilot
 
         const std::string& getDefaultWorldUrl() const;
         const std::string& getGlobalRenderingResUrl() const;
+        const std::string& getLogPattern() const;
 
     private:
         std::filesystem::path m_root_folder;
@@ -37,7 +60,6 @@ namespace Pilot
         std::filesystem::path m_jolt_physics_asset_folder;
 #endif
 
-        std::string m_default_world_url;
-        std::string m_global_rendering_res_url;
+        Config m_config;
     };
 } // namespace Pilot
