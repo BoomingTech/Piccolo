@@ -6,6 +6,7 @@
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
+#include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
@@ -42,23 +43,10 @@ namespace Pilot
         std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
         ASSERT(window_system);
 
-        float delta_time;
         while (!window_system->shouldClose())
         {
-            delta_time = calculateDeltaTime();
-
-            logicalTick(delta_time);
-            calculateFPS(delta_time);
-
-            // single thread
-            // exchange data between logic and render contexts
-            g_runtime_global_context.m_render_system->swapLogicRenderData();
-
-            rendererTick();
-
-            window_system->pollEvents();
-
-            window_system->setTile(std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+            const float delta_time = calculateDeltaTime();
+            tickOneFrame(delta_time);
         }
     }
 
@@ -88,7 +76,12 @@ namespace Pilot
 
         rendererTick();
 
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        g_runtime_global_context.m_physics_manager->renderPhysicsWorld(delta_time);
+#endif
+
         g_runtime_global_context.m_window_system->pollEvents();
+
 
         g_runtime_global_context.m_window_system->setTile(
             std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());

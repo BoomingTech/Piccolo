@@ -104,7 +104,7 @@ namespace Pilot
         VulkanRHI*      vulkan_rhi      = static_cast<VulkanRHI*>(rhi.get());
         RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
 
-        vulkan_resource->resetRingBufferOffset(vulkan_rhi->_current_frame_index);
+        vulkan_resource->resetRingBufferOffset(vulkan_rhi->m_current_frame_index);
 
         vulkan_rhi->waitForFences();
 
@@ -133,7 +133,7 @@ namespace Pilot
                           tone_mapping_pass,
                           ui_pass,
                           combine_ui_pass,
-                          vulkan_rhi->_current_swapchain_image_index);
+                          vulkan_rhi->m_current_swapchain_image_index);
 
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
     }
@@ -143,7 +143,7 @@ namespace Pilot
         VulkanRHI*      vulkan_rhi      = static_cast<VulkanRHI*>(rhi.get());
         RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
 
-        vulkan_resource->resetRingBufferOffset(vulkan_rhi->_current_frame_index);
+        vulkan_resource->resetRingBufferOffset(vulkan_rhi->m_current_frame_index);
 
         vulkan_rhi->waitForFences();
 
@@ -172,7 +172,7 @@ namespace Pilot
                    tone_mapping_pass,
                    ui_pass,
                    combine_ui_pass,
-                   vulkan_rhi->_current_swapchain_image_index);
+                   vulkan_rhi->m_current_swapchain_image_index);
 
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
     }

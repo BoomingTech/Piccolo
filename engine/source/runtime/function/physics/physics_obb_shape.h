@@ -9,7 +9,7 @@ namespace Pilot
     class PhysicsOBBShape : public PhysicsShapeBase
     {
     public:
-        PhysicsOBBShape(Transform* transform, const Vector3 half_dimensions) :
+        PhysicsOBBShape(const Transform& transform, const Vector3 half_dimensions) :
             PhysicsShapeBase(transform), m_half_dimensions(half_dimensions)
         {}
         ~PhysicsOBBShape() override {}

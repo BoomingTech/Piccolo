@@ -11,6 +11,7 @@
 
 namespace Pilot
 {
+    /// This Physics System is legacy, will be removed lated
     class PhysicsSystem
     {
     public:

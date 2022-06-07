@@ -11,6 +11,7 @@ namespace Pilot
     class Character;
     class GObject;
     class ObjectInstanceRes;
+    class PhysicsScene;
 
     using LevelObjectsMap = std::unordered_map<GObjectID, std::shared_ptr<GObject>>;
 
@@ -37,6 +38,8 @@ namespace Pilot
         GObjectID createObject(const ObjectInstanceRes& object_instance_res);
         void      deleteGObjectByID(GObjectID go_id);
 
+        std::weak_ptr<PhysicsScene> getPhysicsScene() const { return m_physics_scene; }
+
     protected:
         void clear();
 
@@ -47,5 +50,7 @@ namespace Pilot
         LevelObjectsMap m_gobjects;
 
         std::shared_ptr<Character> m_current_active_character;
+
+        std::weak_ptr<PhysicsScene> m_physics_scene;
     };
 } // namespace Pilot

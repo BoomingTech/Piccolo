@@ -53,6 +53,42 @@
                 }
             },
             "$typeName": "MeshComponent"
+        },
+        {
+            "$typeName": "RigidBodyComponent",
+            "$context": {
+                "rigidbody_res": {
+                    "actor_type": 1,
+                    "inverse_mass": 0,
+                    "shapes": [
+                        {
+                            "geometry": {
+                                "$context": {
+                                    "half_extents": {
+                                        "x": 43,
+                                        "y": 24,
+                                        "z": 0.5
+                                    }
+                                },
+                                "$typeName": "Box"
+                            },
+                            "local_transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": -0.5
+                                },
+                                "rotate": {},
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
         }
     ]
 }

@@ -7,7 +7,7 @@ namespace Pilot
     class PhysicsSphereShape : public PhysicsShapeBase
     {
     public:
-        PhysicsSphereShape(Transform* transform, float radius) : PhysicsShapeBase(transform), m_radius(radius)
+        PhysicsSphereShape(const Transform& transform, float radius) : PhysicsShapeBase(transform), m_radius(radius)
         {
             // PhysicsShapeBase::PhysicsShapeBase(transform);
         }
