@@ -2,12 +2,13 @@
 
 #include "runtime/engine.h"
 
+#include <filesystem>
 #include <fstream>
 #include <string>
 
 namespace Pilot
 {
-    void ConfigManager::initialize(const std::string& config_file_path)
+    void ConfigManager::initialize(const std::filesystem::path& config_file_path)
     {
         // read configs
         std::ifstream config_file(config_file_path);
@@ -21,7 +22,7 @@ namespace Pilot
                 std::string value = config_line.substr(seperate_pos + 1, config_line.length() - seperate_pos - 1);
                 if (name == "BinaryRootFolder")
                 {
-                    m_root_folder = value;
+                    m_root_folder = config_file_path.parent_path() / value;
                 }
                 else if (name == "AssetFolder")
                 {

@@ -9,7 +9,7 @@ namespace Pilot
     class ConfigManager
     {
     public:
-        void initialize(const std::string& config_file_path);
+        void initialize(const std::filesystem::path& config_file_path);
 
         const std::filesystem::path& getRootFolder() const;
         const std::filesystem::path& getAssetFolder() const;
