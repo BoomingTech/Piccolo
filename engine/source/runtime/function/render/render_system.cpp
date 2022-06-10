@@ -108,11 +108,11 @@ namespace Pilot
         // render one frame
         if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::FORWARD_PIPELINE)
         {
-            m_render_pipeline->forwardRender(m_rhi, m_render_resource);
+            m_render_pipeline->forwardRender(*m_rhi.get(), *m_render_resource.get());
         }
         else if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::DEFERRED_PIPELINE)
         {
-            m_render_pipeline->deferredRender(m_rhi, m_render_resource);
+            m_render_pipeline->deferredRender(*m_rhi.get(), *m_render_resource.get());
         }
         else
         {

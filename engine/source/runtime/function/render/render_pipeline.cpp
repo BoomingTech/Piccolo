@@ -97,10 +97,10 @@ namespace Pilot
         m_fxaa_pass->initialize(&fxaa_init_info);
     }
 
-    void RenderPipeline::forwardRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource)
+    void RenderPipeline::forwardRender(const RHI& rhi, const RenderResourceBase& render_resource)
     {
-        VulkanRHI*      vulkan_rhi      = static_cast<VulkanRHI*>(rhi.get());
-        RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
+        VulkanRHI*      vulkan_rhi      = (VulkanRHI*)(&rhi);
+        RenderResource* vulkan_resource = (RenderResource*)(&render_resource);
 
         vulkan_resource->resetRingBufferOffset(vulkan_rhi->m_current_frame_index);
 
@@ -136,10 +136,10 @@ namespace Pilot
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
     }
 
-    void RenderPipeline::deferredRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource)
+    void RenderPipeline::deferredRender(const RHI& rhi, const RenderResourceBase& render_resource)
     {
-        VulkanRHI*      vulkan_rhi      = static_cast<VulkanRHI*>(rhi.get());
-        RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
+        VulkanRHI*      vulkan_rhi      = (VulkanRHI*)(&rhi);
+        RenderResource* vulkan_resource = (RenderResource*)(&render_resource);
 
         vulkan_resource->resetRingBufferOffset(vulkan_rhi->m_current_frame_index);
 

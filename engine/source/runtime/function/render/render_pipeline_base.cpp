@@ -11,11 +11,9 @@ namespace Pilot
         m_directional_light_pass->preparePassData(render_resource);
         m_point_light_shadow_pass->preparePassData(render_resource);
     }
-    void RenderPipelineBase::forwardRender(std::shared_ptr<RHI>                rhi,
-                                           std::shared_ptr<RenderResourceBase> render_resource)
+    void RenderPipelineBase::forwardRender(const RHI& rhi, const RenderResourceBase& render_resource)
     {}
-    void RenderPipelineBase::deferredRender(std::shared_ptr<RHI>                rhi,
-                                            std::shared_ptr<RenderResourceBase> render_resource)
+    void RenderPipelineBase::deferredRender(const RHI& rhi, const RenderResourceBase& render_resource)
     {}
     void RenderPipelineBase::initializeUIRenderBackend(WindowUI* window_ui)
     {

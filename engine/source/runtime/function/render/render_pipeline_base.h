@@ -27,8 +27,8 @@ namespace Pilot
         virtual void initialize(RenderPipelineInitInfo init_info) = 0;
 
         virtual void preparePassData(std::shared_ptr<RenderResourceBase> render_resource);
-        virtual void forwardRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource);
-        virtual void deferredRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource);
+        virtual void forwardRender(const RHI& rhi, const RenderResourceBase& render_resource);
+        virtual void deferredRender(const RHI& rhi, const RenderResourceBase& render_resource);
 
         void             initializeUIRenderBackend(WindowUI* window_ui);
         virtual uint32_t getGuidOfPickedMesh(const Vector2& picked_uv) = 0;
