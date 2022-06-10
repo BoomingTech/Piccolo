@@ -80,7 +80,7 @@ namespace Pilot
         /// overlap test
         /// @shape: rigidbody shape
         /// @return: true if overlapped with any rigidbodies
-        bool isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform);
+        bool isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform, float& out_High);
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
         void drawPhysicsScene(JPH::DebugRenderer* debug_renderer);

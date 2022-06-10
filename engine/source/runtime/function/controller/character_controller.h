@@ -23,6 +23,8 @@ namespace Pilot
 
         bool isTouchGround() const { return m_is_touch_ground; }
 
+        float MIN_STEP = 0.3f;
+
     protected:
         bool m_is_touch_ground {false};
     };

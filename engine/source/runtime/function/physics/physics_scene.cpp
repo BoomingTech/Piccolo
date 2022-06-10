@@ -302,7 +302,7 @@ namespace Pilot
         return true;
     }
 
-    bool PhysicsScene::isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform)
+    bool PhysicsScene::isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform, float& out_High)
     {
         const JPH::NarrowPhaseQuery& scene_query = m_physics.m_jolt_physics_system->GetNarrowPhaseQuery();
 
@@ -323,6 +323,8 @@ namespace Pilot
         JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
         scene_query.CollideShape(
             jph_shape, JPH::Vec3::sReplicate(1.0f), toMat44(global_transform), JPH::CollideShapeSettings(), collector);
+
+        out_High = collector.mHit.mPenetrationDepth;
 
         return collector.HadHit();
     }
