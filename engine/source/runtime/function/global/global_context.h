@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 namespace Pilot
 {
@@ -22,7 +23,7 @@ namespace Pilot
     {
     public:
         // create all global systems and initialize these systems
-        void startSystems(const EngineInitParams& init_params);
+        void startSystems(const std::string& config_file_path);
         // destroy all global systems
         void shutdownSystems();
 

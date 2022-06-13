@@ -15,13 +15,11 @@ namespace Pilot
     bool                            g_is_editor_mode {false};
     std::unordered_set<std::string> g_editor_tick_component_types {};
 
-    void PilotEngine::startEngine(const EngineInitParams& param)
+    void PilotEngine::startEngine(const std::string& config_file_path)
     {
-        m_init_params = param;
-
         Reflection::TypeMetaRegister::Register();
 
-        g_runtime_global_context.startSystems(param);
+        g_runtime_global_context.startSystems(config_file_path);
 
         LOG_INFO("engine start");
     }
