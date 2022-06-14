@@ -1,6 +1,8 @@
 highp vec3 V = normalize(camera_position - in_world_position);
 highp vec3 R = reflect(-V, N);
 
+highp float to_camera_distance = length(camera_position - in_world_position);
+
 highp vec3 origin_samplecube_N = vec3(N.x, N.z, N.y);
 highp vec3 origin_samplecube_R = vec3(R.x, R.z, R.y);
 
@@ -25,7 +27,7 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
     highp float light_attenuation = radius_attenuation * distance_attenuation * NoL;
     if (light_attenuation > 0.0)
     {
-        highp float shadow;
+        highp float shadow_factor = 0.0f;
         {
             // world space to light view space
             // identity rotation
@@ -53,19 +55,42 @@ for (highp int light_index = 0; light_index < int(point_light_num) && light_inde
             highp float layer_index =
                 (0.5 + 0.5 * sign(position_spherical_function_domain.z)) + 2.0 * float(light_index);
 
-            highp float depth          = texture(point_lights_shadow, vec3(uv, layer_index)).r + 0.000075;
-            highp float closest_length = (depth)*point_light_radius;
+            highp float current_depth = length(position_view_space);
 
-            highp float current_length = length(position_view_space);
+            if(to_camera_distance < 5.0f) {
+		      
+		        highp float shadow_map_size = float(textureSize(point_lights_shadow, 0).x);
 
-            shadow = (closest_length >= current_length) ? 1.0f : -1.0f;
+		        highp vec2 base_point = floor(uv * shadow_map_size) - 2.0f;
+
+		        for(int i = 0; i < 2; i++) {
+			        for(int j = 0; j < 2; j++) {
+
+                        highp vec2 current_uv = (base_point + vec2(i,j) * 2.0f) / shadow_map_size;
+
+                        highp vec4 closest_depth = textureGather(point_lights_shadow, vec3(current_uv, layer_index)) + 0.000075;
+
+                        closest_depth = closest_depth * point_light_radius;
+
+                        shadow_factor = shadow_factor + (closest_depth.x > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.y > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.z > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.w > current_depth ? 1.0f : 0.0f);
+			        }
+		        }
+
+		        shadow_factor = shadow_factor / 16.0f;
+	        } else {
+		        highp float closest_depth = texture(point_lights_shadow, vec3(uv, layer_index)).r + 0.000075;
+
+		        shadow_factor = closest_depth > current_depth ? 1.0f : 0.0f;
+	        }
         }
 
-        if (shadow > 0.0f)
-        {
-            highp vec3 En = scene_point_lights[light_index].intensity * light_attenuation;
-            Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
-        }
+      
+        highp vec3 En = scene_point_lights[light_index].intensity * light_attenuation * shadow_factor;
+        Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
+      
     }
 };
 
@@ -95,24 +120,46 @@ highp vec3 Libl = (kD * diffuse + specular);
 
     if (NoL > 0.0)
     {
-        highp float shadow;
+        highp float shadow_factor = 0.0f;
         {
             highp vec4 position_clip = directional_light_proj_view * vec4(in_world_position, 1.0);
             highp vec3 position_ndc  = position_clip.xyz / position_clip.w;
-
-            highp vec2 uv = ndcxy_to_uv(position_ndc.xy);
-
-            highp float closest_depth = texture(directional_light_shadow, uv).r + 0.000075;
             highp float current_depth = position_ndc.z;
+            highp vec2 uv = ndcxy_to_uv(position_ndc.xy);
+            
+            // use the pcf only when the pixel is close enought to camera
+            if(to_camera_distance < 5.0f) {
+		      
+		        highp float shadow_map_size = float(textureSize(directional_light_shadow, 0).x);
 
-            shadow = (closest_depth >= current_depth) ? 1.0f : -1.0f;
-        }
+		        highp vec2 base_point = floor(uv * shadow_map_size) - 2.0f;
 
-        if (shadow > 0.0f)
-        {
-            highp vec3 En = scene_directional_light.color * NoL;
-            Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
+		        for(int i = 0; i < 2; i++) {
+			        for(int j = 0; j < 2; j++) {
+
+                        highp vec2 current_uv = (base_point + vec2(i,j) * 2.0f) / shadow_map_size;
+
+                        highp vec4 closest_depth = textureGather(directional_light_shadow, current_uv) + 0.000075;
+
+                        shadow_factor = shadow_factor + (closest_depth.x > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.y > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.z > current_depth ? 1.0f : 0.0f);
+                        shadow_factor = shadow_factor + (closest_depth.w > current_depth ? 1.0f : 0.0f);
+			        }
+		        }
+
+		        shadow_factor = shadow_factor / 16.0f;
+	        } else {
+		        highp float closest_depth = texture(directional_light_shadow, uv).r + 0.000075;
+
+		        shadow_factor = closest_depth > current_depth ? 1.0f : 0.0f;
+	        }
+
         }
+       
+        highp vec3 En = scene_directional_light.color * NoL * shadow_factor;
+        Lo += BRDF(L, V, N, F0, basecolor, metallic, roughness) * En;
+        
     }
 }
 
