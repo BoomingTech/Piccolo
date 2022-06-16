@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -13,15 +14,12 @@
 
 int main(int argc, char** argv)
 {
-    std::filesystem::path pilot_root_folder = std::filesystem::path(PILOT_XSTR(PILOT_ROOT_DIR));
-
-    Pilot::EngineInitParams params;
-    params.m_root_folder      = pilot_root_folder;
-    params.m_config_file_path = pilot_root_folder / "PilotEditor.ini";
+    std::filesystem::path executable_path(argv[0]);
+    std::filesystem::path config_file_path = executable_path.parent_path() / "PilotEditor.ini";
 
     Pilot::PilotEngine* engine = new Pilot::PilotEngine();
 
-    engine->startEngine(params);
+    engine->startEngine(config_file_path.generic_string());
     engine->initialize();
 
     Pilot::PilotEditor* editor = new Pilot::PilotEditor();
