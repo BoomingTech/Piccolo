@@ -54,6 +54,7 @@ add_subdirectory(3rdparty)
 
 add_subdirectory(source/runtime)
 add_subdirectory(source/editor)
+add_subdirectory(source/metaParser)
 #add_subdirectory(source/test)
 
 set(CODEGEN_TARGET "PilotPreCompile")
@@ -61,3 +62,4 @@ include(source/precompile/precompile.cmake)
 set_target_properties("${CODEGEN_TARGET}" PROPERTIES FOLDER "Engine" )
 
 add_dependencies(PilotRuntime "${CODEGEN_TARGET}")
+add_dependencies("${CODEGEN_TARGET}" "PilotParser")
