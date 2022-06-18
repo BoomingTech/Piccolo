@@ -27,6 +27,9 @@ namespace Pilot
     {
         RenderPass::initialize(nullptr);
 
+        const MainCameraPassInitInfo* _init_info = static_cast<const MainCameraPassInitInfo*>(init_info);
+        m_enable_fxaa                            = _init_info->enble_fxaa;
+
         setupAttachments();
         setupRenderPass();
         setupDescriptorSetLayout();
@@ -323,8 +326,16 @@ namespace Pilot
         color_grading_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference color_grading_pass_color_attachment_reference {};
-        color_grading_pass_color_attachment_reference.attachment =
-            &post_process_odd_color_attachment_description - attachments;
+        if (m_enable_fxaa)
+        {
+            color_grading_pass_color_attachment_reference.attachment =
+                &post_process_odd_color_attachment_description - attachments;
+        }
+        else
+        {
+            color_grading_pass_color_attachment_reference.attachment =
+                &backup_odd_color_attachment_description - attachments;
+        }
         color_grading_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription& color_grading_pass   = subpasses[_main_camera_subpass_color_grading];
@@ -338,11 +349,20 @@ namespace Pilot
         color_grading_pass.pPreserveAttachments    = NULL;
 
         VkAttachmentReference fxaa_pass_input_attachment_reference {};
-        fxaa_pass_input_attachment_reference.attachment = &post_process_odd_color_attachment_description - attachments;
+        if (m_enable_fxaa)
+        {
+            fxaa_pass_input_attachment_reference.attachment =
+                &post_process_odd_color_attachment_description - attachments;
+        }
+        else
+        {
+            fxaa_pass_input_attachment_reference.attachment =
+                &backup_even_color_attachment_description - attachments;
+        }
         fxaa_pass_input_attachment_reference.layout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference fxaa_pass_color_attachment_reference {};
-        fxaa_pass_color_attachment_reference.attachment = &backup_even_color_attachment_description - attachments;
+        fxaa_pass_color_attachment_reference.attachment = &backup_odd_color_attachment_description - attachments;
         fxaa_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription& fxaa_pass   = subpasses[_main_camera_subpass_fxaa];
@@ -356,10 +376,10 @@ namespace Pilot
         fxaa_pass.pPreserveAttachments    = NULL;
 
         VkAttachmentReference ui_pass_color_attachment_reference {};
-        ui_pass_color_attachment_reference.attachment = &backup_odd_color_attachment_description - attachments;
+        ui_pass_color_attachment_reference.attachment = &backup_even_color_attachment_description - attachments;
         ui_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        uint32_t ui_pass_preserve_attachment = &backup_even_color_attachment_description - attachments;
+        uint32_t ui_pass_preserve_attachment = &backup_odd_color_attachment_description - attachments;
 
         VkSubpassDescription& ui_pass   = subpasses[_main_camera_subpass_ui];
         ui_pass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -373,10 +393,10 @@ namespace Pilot
 
         VkAttachmentReference combine_ui_pass_input_attachments_reference[2] = {};
         combine_ui_pass_input_attachments_reference[0].attachment =
-            &backup_even_color_attachment_description - attachments;
+            &backup_odd_color_attachment_description - attachments;
         combine_ui_pass_input_attachments_reference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         combine_ui_pass_input_attachments_reference[1].attachment =
-            &backup_odd_color_attachment_description - attachments;
+            &backup_even_color_attachment_description - attachments;
         combine_ui_pass_input_attachments_reference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference combine_ui_pass_color_attachment_reference {};
@@ -2262,7 +2282,7 @@ namespace Pilot
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        fxaa_pass.draw();
+        if (m_enable_fxaa) fxaa_pass.draw();
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -2357,7 +2377,7 @@ namespace Pilot
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        fxaa_pass.draw();
+        if (m_enable_fxaa) fxaa_pass.draw();
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
