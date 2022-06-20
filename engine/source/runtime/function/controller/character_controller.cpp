@@ -4,7 +4,7 @@
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/physics/physics_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)
     {
@@ -22,4 +22,4 @@ namespace Pilot
 
         return desired_position;
     }
-} // namespace Pilot
+} // namespace Piccolo

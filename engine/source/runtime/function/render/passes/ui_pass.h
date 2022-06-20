@@ -2,7 +2,7 @@
 
 #include "runtime/function/render/render_pass.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class WindowUI;
 
@@ -24,4 +24,4 @@ namespace Pilot
     private:
         WindowUI* m_window_ui;
     };
-} // namespace Pilot
+} // namespace Piccolo

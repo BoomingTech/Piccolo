@@ -13,7 +13,7 @@ namespace JPH
 }
 #endif
 
-namespace Pilot
+namespace Piccolo
 {
     class PhysicsScene;
 
@@ -42,4 +42,4 @@ namespace Pilot
 #endif
 
     };
-} // namespace Pilot
+} // namespace Piccolo

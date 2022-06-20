@@ -8,7 +8,7 @@
 #include "runtime/function/render/passes/tone_mapping_pass.h"
 #include "runtime/function/render/passes/ui_pass.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class RenderResourceBase;
 
@@ -109,4 +109,4 @@ namespace Pilot
     private:
         std::vector<VkFramebuffer> m_swapchain_framebuffers;
     };
-} // namespace Pilot
+} // namespace Piccolo

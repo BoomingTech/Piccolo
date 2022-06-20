@@ -9,7 +9,7 @@
 #include "runtime/function/physics/physics_scene.h"
 #include "runtime/function/physics/physics_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RigidBodyComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
@@ -55,4 +55,4 @@ namespace Pilot
         m_physics_actor->setGlobalTransform(transform);
     }
 
-} // namespace Pilot
+} // namespace Piccolo

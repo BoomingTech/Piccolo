@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     class Level;
     class PhysicsScene;
@@ -41,4 +41,4 @@ namespace Pilot
         // active level, currently we just support one active level
         std::weak_ptr<Level> m_current_active_level;
     };
-} // namespace Pilot
+} // namespace Piccolo

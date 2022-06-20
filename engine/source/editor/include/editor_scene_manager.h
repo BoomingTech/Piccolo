@@ -7,9 +7,9 @@
 
 #include <memory>
 
-namespace Pilot
+namespace Piccolo
 {
-    class PilotEditor;
+    class PiccoloEditor;
     class RenderCamera;
     class RenderEntity;
 

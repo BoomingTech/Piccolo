@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     struct QueueFamilyIndices
     {
@@ -178,4 +178,4 @@ namespace Pilot
 
         VkDebugUtilsMessengerEXT m_debug_messenger {VK_NULL_HANDLE};
     };
-} // namespace Pilot
+} // namespace Piccolo

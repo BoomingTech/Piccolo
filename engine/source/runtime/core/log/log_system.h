@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace Pilot
+namespace Piccolo
 {
 
     class LogSystem final
@@ -61,4 +61,4 @@ namespace Pilot
         std::shared_ptr<spdlog::logger> m_logger;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

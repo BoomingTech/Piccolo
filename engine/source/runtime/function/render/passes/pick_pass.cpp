@@ -15,7 +15,7 @@
 #include <map>
 #include <stdexcept>
 
-namespace Pilot
+namespace Piccolo
 {
     void PickPass::initialize(const RenderPassInitInfo* init_info)
     {
@@ -852,4 +852,4 @@ namespace Pilot
 
         return node_id;
     }
-} // namespace Pilot
+} // namespace Piccolo

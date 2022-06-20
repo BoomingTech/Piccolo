@@ -26,7 +26,7 @@
 #include "Jolt/Physics/Collision/ShapeCast.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-namespace Pilot
+namespace Piccolo
 {
     PhysicsScene::PhysicsScene()
     {
@@ -324,4 +324,4 @@ namespace Pilot
     }
 #endif
 
-} // namespace Pilot
+} // namespace Piccolo

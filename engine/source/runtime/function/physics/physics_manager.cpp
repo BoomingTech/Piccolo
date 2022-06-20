@@ -17,7 +17,7 @@
 #include "TestFramework/Utils/Log.h"
 #endif
 
-namespace Pilot
+namespace Piccolo
 {
     void PhysicsManager::initialize()
     {
@@ -118,4 +118,4 @@ namespace Pilot
         m_renderer->EndFrame();
     }
 #endif
-} // namespace Pilot
+} // namespace Piccolo

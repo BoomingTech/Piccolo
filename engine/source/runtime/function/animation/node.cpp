@@ -2,7 +2,7 @@
 
 #include "runtime/core/math/math.h"
 
-namespace Pilot
+namespace Piccolo
 {
     //-----------------------------------------------------------------------
     Node::Node(const std::string name) { m_name = name; }
@@ -242,4 +242,4 @@ namespace Pilot
         }
         return std::numeric_limits<size_t>().max();
     }
-} // namespace Pilot
+} // namespace Piccolo

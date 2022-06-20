@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(AnimSkelMap)
@@ -15,4 +15,4 @@ namespace Pilot
         std::vector<int> convert;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

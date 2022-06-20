@@ -1,12 +1,12 @@
 #pragma once
 
-namespace Pilot
+namespace Piccolo
 {
     struct EditorGlobalContextInitInfo
     {
         class WindowSystem* window_system;
         class RenderSystem* render_system;
-        class PilotEngine*  engine_runtime;
+        class PiccoloEngine*  engine_runtime;
     };
 
     class EditorGlobalContext
@@ -16,7 +16,7 @@ namespace Pilot
         class EditorInputManager* m_input_manager {nullptr};
         class RenderSystem*       m_render_system {nullptr};
         class WindowSystem*       m_window_system {nullptr};
-        class PilotEngine*        m_engine_runtime {nullptr};
+        class PiccoloEngine*        m_engine_runtime {nullptr};
 
     public:
         void initialize(const EditorGlobalContextInitInfo& init_info);
@@ -24,4 +24,4 @@ namespace Pilot
     };
 
     extern EditorGlobalContext g_editor_global_context;
-} // namespace Pilot
+} // namespace Piccolo

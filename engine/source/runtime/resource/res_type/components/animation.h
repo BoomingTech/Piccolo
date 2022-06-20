@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(AnimationResultElement)
@@ -43,4 +43,4 @@ namespace Pilot
         AnimationResult animation_result;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

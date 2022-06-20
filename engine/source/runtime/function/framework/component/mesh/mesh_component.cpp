@@ -11,7 +11,7 @@
 #include "runtime/function/render/render_swap_context.h"
 #include "runtime/function/render/render_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void MeshComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
@@ -102,4 +102,4 @@ namespace Pilot
             transform_component->setDirtyFlag(false);
         }
     }
-} // namespace Pilot
+} // namespace Piccolo

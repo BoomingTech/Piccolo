@@ -1,5 +1,5 @@
 #pragma once
-namespace Pilot
+namespace Piccolo
 {
     namespace Reflection
     {
@@ -10,4 +10,4 @@ namespace Pilot
             static void Unregister();
         };
     } // namespace Reflection
-} // namespace Pilot
+} // namespace Piccolo

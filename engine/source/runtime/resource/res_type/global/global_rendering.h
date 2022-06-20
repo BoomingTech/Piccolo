@@ -6,7 +6,7 @@
 
 #include "runtime/resource/res_type/data/camera_config.h"
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(SkyBoxIrradianceMap)
     CLASS(SkyBoxIrradianceMap, Fields)
@@ -63,4 +63,4 @@ namespace Pilot
         CameraConfig     m_camera_config;
         DirectionalLight m_directional_light;
     };
-} // namespace Pilot
+} // namespace Piccolo

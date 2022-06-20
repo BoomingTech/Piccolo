@@ -14,7 +14,7 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void EditorInputManager::initialize() { registerInput(); }
 
@@ -297,4 +297,4 @@ namespace Pilot
     {
         return pos.x <= m_mouse_x && m_mouse_x <= pos.x + size.x && pos.y <= m_mouse_y && m_mouse_y <= pos.y + size.y;
     }
-} // namespace Pilot
+} // namespace Piccolo

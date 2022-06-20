@@ -6,7 +6,7 @@
 #include "runtime/function/physics/physics_actor.h"
 #include "runtime/function/physics/ray.h"
 
-namespace Pilot
+namespace Piccolo
 {
     struct ContactPoint
     {
@@ -109,4 +109,4 @@ namespace Pilot
                                           float            sphere_radius,
                                           RayCollision&    collision);
     };
-} // namespace Pilot
+} // namespace Piccolo

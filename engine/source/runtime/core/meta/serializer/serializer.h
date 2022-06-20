@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-namespace Pilot
+namespace Piccolo
 {
     template<typename...>
     inline constexpr bool always_false = false;
@@ -166,4 +166,4 @@ namespace Pilot
 
     //
     ////////////////////////////////////
-} // namespace Pilot
+} // namespace Piccolo

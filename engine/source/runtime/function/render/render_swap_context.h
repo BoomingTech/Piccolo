@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     struct LevelIBLResourceDesc
     {
@@ -83,4 +83,4 @@ namespace Pilot
         bool isReadyToSwap() const;
         void swap();
     };
-} // namespace Pilot
+} // namespace Piccolo

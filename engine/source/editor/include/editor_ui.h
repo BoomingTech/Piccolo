@@ -13,9 +13,9 @@
 #include <map>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
-    class PilotEditor;
+    class PiccoloEditor;
     class WindowSystem;
     class RenderSystem;
 
@@ -59,4 +59,4 @@ namespace Pilot
         bool m_scene_lights_window_open      = true;
         bool m_scene_lights_data_window_open = true;
     };
-} // namespace Pilot
+} // namespace Piccolo

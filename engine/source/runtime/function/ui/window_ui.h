@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace Pilot
+namespace Piccolo
 {
     class WindowSystem;
     class RenderSystem;
@@ -19,4 +19,4 @@ namespace Pilot
         virtual void initialize(WindowUIInitInfo init_info) = 0;
         virtual void preRender() = 0;
     };
-} // namespace Pilot
+} // namespace Piccolo

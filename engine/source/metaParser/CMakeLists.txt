@@ -1,5 +1,5 @@
 #cmake_policy(SET CMP0074 OLD)
-set(TARGET_NAME PilotParser)
+set(TARGET_NAME PiccoloParser)
 
 #set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../CMake")
 

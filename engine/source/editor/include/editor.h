@@ -4,26 +4,26 @@
 
 #include <memory>
 
-namespace Pilot
+namespace Piccolo
 {
     class EditorUI;
-    class PilotEngine;
+    class PiccoloEngine;
 
-    class PilotEditor 
+    class PiccoloEditor 
     {
         friend class EditorUI;
 
     public:
-        PilotEditor();
-        virtual ~PilotEditor();
+        PiccoloEditor();
+        virtual ~PiccoloEditor();
 
-        void initialize(PilotEngine* engine_runtime);
+        void initialize(PiccoloEngine* engine_runtime);
         void clear();
 
         void run();
 
     protected:
         std::shared_ptr<EditorUI> m_editor_ui;
-        PilotEngine* m_engine_runtime{ nullptr };
+        PiccoloEngine* m_engine_runtime{ nullptr };
     };
-} // namespace Pilot
+} // namespace Piccolo

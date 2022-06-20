@@ -6,7 +6,7 @@
 #include "runtime/core/math/transform.h"
 #include "runtime/core/meta/reflection/reflection.h"
 
-namespace Pilot
+namespace Piccolo
 {
     enum class RigidBodyShapeType : unsigned char
     {
@@ -47,4 +47,4 @@ namespace Pilot
         float                       m_inverse_mass;
         int                         m_actor_type;
     };
-} // namespace Pilot
+} // namespace Piccolo

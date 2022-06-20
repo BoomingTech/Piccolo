@@ -2,7 +2,7 @@
 #include "runtime/core/meta/reflection/reflection.h"
 #include <string>
 #include <vector>
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(BoneBlendMask)
@@ -15,4 +15,4 @@ namespace Pilot
         std::vector<int> enabled;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

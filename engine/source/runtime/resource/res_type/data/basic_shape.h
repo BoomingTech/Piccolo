@@ -2,7 +2,7 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/meta/reflection/reflection.h"
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(Geometry)
     CLASS(Geometry, Fields)
@@ -44,4 +44,4 @@ namespace Pilot
         float m_radius {0.3f};
         float m_half_height {0.7f};
     };
-} // namespace Pilot
+} // namespace Piccolo

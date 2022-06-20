@@ -3,7 +3,7 @@
 #include "runtime/engine.h"
 #include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void TransformComponent::postLoadResource(std::weak_ptr<GObject> parent_gobject)
     {
@@ -62,4 +62,4 @@ namespace Pilot
         }
     }
 
-} // namespace Pilot
+} // namespace Piccolo

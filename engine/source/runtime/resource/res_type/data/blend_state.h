@@ -4,7 +4,7 @@
 #include "runtime/resource/res_type/data/animation_skeleton_node_map.h"
 #include <string>
 #include <vector>
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(BoneBlendWeight)
@@ -44,4 +44,4 @@ namespace Pilot
         std::vector<float>       blend_ratio;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

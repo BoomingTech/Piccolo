@@ -10,7 +10,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace Pilot
+namespace Piccolo
 {
     unsigned int k_complement_control_command = 0xFFFFFFFF;
 
@@ -159,4 +159,4 @@ namespace Pilot
             m_game_command |= (unsigned int)GameCommand::invalid;
         }
     }
-} // namespace Pilot
+} // namespace Piccolo

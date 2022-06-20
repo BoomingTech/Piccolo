@@ -4,7 +4,7 @@
 #include "runtime/core/meta/reflection/reflection.h"
 #include "runtime/resource/res_type/data/basic_shape.h"
 
-namespace Pilot
+namespace Piccolo
 {
     enum class ControllerType : unsigned char
     {
@@ -51,4 +51,4 @@ namespace Pilot
 
         Reflection::ReflectionPtr<ControllerConfig> m_controller_config;
     };
-} // namespace Pilot
+} // namespace Piccolo

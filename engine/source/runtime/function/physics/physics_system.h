@@ -9,7 +9,7 @@
 
 #include <set>
 
-namespace Pilot
+namespace Piccolo
 {
     /// This Physics System is legacy, will be removed lated
     class PhysicsSystem
@@ -55,4 +55,4 @@ namespace Pilot
         Vector3 m_gravity {0.0f, 0.0f, -9.8f};
         bool    m_is_use_gravity {true};
     };
-} // namespace Pilot
+} // namespace Piccolo

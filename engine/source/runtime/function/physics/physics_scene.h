@@ -13,7 +13,7 @@ namespace JPH
 #endif
 } // namespace JPH
 
-namespace Pilot
+namespace Piccolo
 {
     class Transform;
     class RigidBodyComponentRes;
@@ -90,4 +90,4 @@ namespace Pilot
 
         std::vector<uint32_t> m_pending_remove_bodies;
     };
-} // namespace Pilot
+} // namespace Piccolo

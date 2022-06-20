@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     void PointLightShadowPass::initialize(const RenderPassInitInfo* init_info)
     {
@@ -741,4 +741,4 @@ namespace Pilot
         m_vulkan_rhi->m_vk_cmd_end_render_pass(m_vulkan_rhi->m_current_command_buffer);
     }
 
-} // namespace Pilot
+} // namespace Piccolo

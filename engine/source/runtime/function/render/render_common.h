@@ -17,7 +17,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-namespace Pilot
+namespace Piccolo
 {
     static const uint32_t m_point_light_shadow_map_dimension       = 2048;
     static const uint32_t m_directional_light_shadow_map_dimension = 4096;
@@ -252,23 +252,23 @@ namespace Pilot
         void*              base_color_image_pixels;
         uint32_t           base_color_image_width;
         uint32_t           base_color_image_height;
-        PILOT_PIXEL_FORMAT base_color_image_format;
+        PICCOLO_PIXEL_FORMAT base_color_image_format;
         void*              metallic_roughness_image_pixels;
         uint32_t           metallic_roughness_image_width;
         uint32_t           metallic_roughness_image_height;
-        PILOT_PIXEL_FORMAT metallic_roughness_image_format;
+        PICCOLO_PIXEL_FORMAT metallic_roughness_image_format;
         void*              normal_roughness_image_pixels;
         uint32_t           normal_roughness_image_width;
         uint32_t           normal_roughness_image_height;
-        PILOT_PIXEL_FORMAT normal_roughness_image_format;
+        PICCOLO_PIXEL_FORMAT normal_roughness_image_format;
         void*              occlusion_image_pixels;
         uint32_t           occlusion_image_width;
         uint32_t           occlusion_image_height;
-        PILOT_PIXEL_FORMAT occlusion_image_format;
+        PICCOLO_PIXEL_FORMAT occlusion_image_format;
         void*              emissive_image_pixels;
         uint32_t           emissive_image_width;
         uint32_t           emissive_image_height;
-        PILOT_PIXEL_FORMAT emissive_image_format;
+        PICCOLO_PIXEL_FORMAT emissive_image_format;
         VulkanPBRMaterial* now_material;
     };
-} // namespace Pilot
+} // namespace Piccolo

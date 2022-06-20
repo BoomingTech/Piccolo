@@ -24,7 +24,7 @@
 //           0       0       1
 // where t > 0 indicates a counterclockwise rotation in the xy-plane.
 
-namespace Pilot
+namespace Piccolo
 {
     /** A 3x3 matrix which can represent rotations around axes.
     @note
@@ -365,4 +365,4 @@ namespace Pilot
         static const Matrix3x3 ZERO;
         static const Matrix3x3 IDENTITY;
     };
-} // namespace Pilot
+} // namespace Piccolo

@@ -17,7 +17,7 @@
 
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 
-namespace Pilot
+namespace Piccolo
 {
     RenderSystem::~RenderSystem() {}
 
@@ -370,4 +370,4 @@ namespace Pilot
             m_swap_context.resetCameraSwapData();
         }
     }
-} // namespace Pilot
+} // namespace Piccolo

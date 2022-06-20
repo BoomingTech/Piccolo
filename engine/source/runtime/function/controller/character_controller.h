@@ -3,7 +3,7 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/resource/res_type/data/basic_shape.h"
 
-namespace Pilot
+namespace Piccolo
 {
     enum SweepPass
     {
@@ -31,4 +31,4 @@ namespace Pilot
     private:
         Capsule m_capsule;
     };
-} // namespace Pilot
+} // namespace Piccolo

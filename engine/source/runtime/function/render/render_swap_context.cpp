@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace Pilot
+namespace Piccolo
 {
     void GameObjectResourceDesc::add(GameObjectDesc desc) { m_game_object_descs.push_back(desc); }
 
@@ -95,4 +95,4 @@ namespace Pilot
             m_game_object_to_delete = go_descs;
         }
     }
-} // namespace Pilot
+} // namespace Piccolo

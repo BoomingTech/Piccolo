@@ -2,7 +2,7 @@
 
 #include "runtime/core/base/macro.h"
 
-namespace Pilot
+namespace Piccolo
 {
     WindowSystem::~WindowSystem()
     {
@@ -61,4 +61,4 @@ namespace Pilot
         m_is_focus_mode = mode;
         glfwSetInputMode(m_window, GLFW_CURSOR, m_is_focus_mode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
-} // namespace Pilot
+} // namespace Piccolo
