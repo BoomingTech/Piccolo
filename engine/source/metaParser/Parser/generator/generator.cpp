@@ -1,6 +1,6 @@
 #include "common/Precompiled.h"
 #include "generator/generator.h"
-#include "languageTypes/Class.h"
+#include "LanguageTypes/Class.h"
 
 namespace Generator
 {

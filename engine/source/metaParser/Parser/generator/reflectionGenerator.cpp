@@ -4,7 +4,7 @@
 #include "common/Precompiled.h"
 #include "generator/reflectionGenerator.h"
 
-#include "languageTypes/Class.h"
+#include "LanguageTypes/Class.h"
 #include "templateManager/TemplateManager.h"
 
 namespace Generator

@@ -1,6 +1,6 @@
 #include "common/Precompiled.h"
 
-#include "languageTypes/Class.h"
+#include "LanguageTypes/Class.h"
 
 #include "generator/serializerGenerator.h"
 #include "generator/reflectionGenerator.h"
