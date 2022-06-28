@@ -454,7 +454,7 @@ namespace Piccolo
                     auto child_instance =
                         Reflection::ReflectionInstance(field_meta, fields_count.get(instance.m_instance));
                     m_editor_ui_creator["TreeNodePush"](field_meta.getTypeName(), nullptr);
-                    createLeafNodeUI(child_instance);
+                    createComponentUI(child_instance);
                     m_editor_ui_creator["TreeNodePop"](field_meta.getTypeName(), nullptr);
                 }
                 else
