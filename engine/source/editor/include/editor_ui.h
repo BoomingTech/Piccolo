@@ -28,7 +28,7 @@ namespace Piccolo
         void        onFileContentItemClicked(EditorFileNode* node);
         void        buildEditorFileAssetsUITree(EditorFileNode* node);
         void        drawAxisToggleButton(const char* string_id, bool check_state, int axis_mode);
-        void        createComponentUI(Reflection::ReflectionInstance& instance);
+        void        createClasstUI(Reflection::ReflectionInstance& instance);
         void        createLeafNodeUI(Reflection::ReflectionInstance& instance);
         std::string getLeafUINodeParentLabel();
 

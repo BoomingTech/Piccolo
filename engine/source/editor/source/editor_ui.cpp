@@ -385,13 +385,13 @@ namespace Piccolo
         ImGui::End();
     }
 
-    void EditorUI::createComponentUI(Reflection::ReflectionInstance& instance)
+    void EditorUI::createClasstUI(Reflection::ReflectionInstance& instance)
     {
         Reflection::ReflectionInstance* reflection_instance;
         int count = instance.m_meta.getBaseClassReflectionInstanceList(reflection_instance, instance.m_instance);
         for (int index = 0; index < count; index++)
         {
-            createComponentUI(reflection_instance[index]);
+            createClasstUI(reflection_instance[index]);
         }
         createLeafNodeUI(instance);
 
@@ -406,17 +406,16 @@ namespace Piccolo
 
         for (size_t index = 0; index < fields_count; index++)
         {
-            auto fields_count = fields[index];
-            if (fields_count.isArrayType())
+            auto field = fields[index];
+            if (field.isArrayType())
             {
-
                 Reflection::ArrayAccessor array_accessor;
-                if (Reflection::TypeMeta::newArrayAccessorFromName(fields_count.getFieldTypeName(), array_accessor))
+                if (Reflection::TypeMeta::newArrayAccessorFromName(field.getFieldTypeName(), array_accessor))
                 {
-                    void* field_instance = fields_count.get(instance.m_instance);
+                    void* field_instance = field.get(instance.m_instance);
                     int   array_count    = array_accessor.getSize(field_instance);
                     m_editor_ui_creator["TreeNodePush"](
-                        std::string(fields_count.getFieldName()) + "[" + std::to_string(array_count) + "]", nullptr);
+                        std::string(field.getFieldName()) + "[" + std::to_string(array_count) + "]", nullptr);
                     auto item_type_meta_item =
                         Reflection::TypeMeta::newMetaFromName(array_accessor.getElementTypeName());
                     auto item_ui_creator_iterator = m_editor_ui_creator.find(item_type_meta_item.getTypeName());
@@ -428,7 +427,7 @@ namespace Piccolo
                             auto object_instance = Reflection::ReflectionInstance(
                                 Piccolo::Reflection::TypeMeta::newMetaFromName(item_type_meta_item.getTypeName().c_str()),
                                 array_accessor.get(index, field_instance));
-                            createComponentUI(object_instance);
+                            createClasstUI(object_instance);
                             m_editor_ui_creator["TreeNodePop"]("[" + std::to_string(index) + "]", nullptr);
                         }
                         else
@@ -441,20 +440,20 @@ namespace Piccolo
                                 "[" + std::to_string(index) + "]", array_accessor.get(index, field_instance));
                         }
                     }
-                    m_editor_ui_creator["TreeNodePop"](fields_count.getFieldName(), nullptr);
+                    m_editor_ui_creator["TreeNodePop"](field.getFieldName(), nullptr);
                 }
             }
-            auto ui_creator_iterator = m_editor_ui_creator.find(fields_count.getFieldTypeName());
+            auto ui_creator_iterator = m_editor_ui_creator.find(field.getFieldTypeName());
             if (ui_creator_iterator == m_editor_ui_creator.end())
             {
                 Reflection::TypeMeta field_meta =
-                    Reflection::TypeMeta::newMetaFromName(fields_count.getFieldTypeName());
-                if (fields_count.getTypeMeta(field_meta))
+                    Reflection::TypeMeta::newMetaFromName(field.getFieldTypeName());
+                if (field.getTypeMeta(field_meta))
                 {
                     auto child_instance =
-                        Reflection::ReflectionInstance(field_meta, fields_count.get(instance.m_instance));
+                        Reflection::ReflectionInstance(field_meta, field.get(instance.m_instance));
                     m_editor_ui_creator["TreeNodePush"](field_meta.getTypeName(), nullptr);
-                    createComponentUI(child_instance);
+                    createClasstUI(child_instance);
                     m_editor_ui_creator["TreeNodePop"](field_meta.getTypeName(), nullptr);
                 }
                 else
@@ -463,14 +462,14 @@ namespace Piccolo
                     {
                         continue;
                     }
-                    m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                                                                         fields_count.get(instance.m_instance));
+                    m_editor_ui_creator[field.getFieldTypeName()](field.getFieldName(),
+                                                                         field.get(instance.m_instance));
                 }
             }
             else
             {
-                m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                                                                     fields_count.get(instance.m_instance));
+                m_editor_ui_creator[field.getFieldTypeName()](field.getFieldName(),
+                                                                     field.get(instance.m_instance));
             }
         }
         delete[] fields;
@@ -515,7 +514,7 @@ namespace Piccolo
             auto object_instance = Reflection::ReflectionInstance(
                 Piccolo::Reflection::TypeMeta::newMetaFromName(component_ptr.getTypeName().c_str()),
                 component_ptr.operator->());
-            createComponentUI(object_instance);
+            createClasstUI(object_instance);
             m_editor_ui_creator["TreeNodePop"](("<" + component_ptr.getTypeName() + ">").c_str(), nullptr);
         }
         ImGui::End();
