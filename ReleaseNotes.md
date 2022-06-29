@@ -1,3 +1,44 @@
+# Pilot引擎 0.0.7 版本发布说明
+✨ 大家好！Pilot引擎自4月4日发布以来，我们很高兴得到很多开发者朋友们的关注，非常感谢社区开发者们的贡献！
+在整合了开发者社区贡献的更改和我们内部开发更改之后，在此我们激动地发布**Pilot引擎0.0.7版本**！
+
+## 版本信息
+- 发布版本：v0.0.7
+- 发布时间：2022年6月29日
+
+## 更新内容
+### 新特性
+#### 编辑器
+- 允许关闭面板 #242
+
+#### 引擎
+- 运行时不再依赖硬编码的路径，bin目录可以整体打包拷贝到其他目录运行 #262
+- 可以在render.global.json配置文件中通过配置开关FXAA #218
+- Motor系统加入跳跃功能 #276
+- Character Controller改用JoltPhysics的isOverlap实现 #276
+
+### 修复的bug
+#### 编辑器
+- 修复了Components Details面板修改变换无法移动模型的问题 #251
+#### 引擎
+- 修复了macOS下Vulkan验证层报错的bug #249
+- 修复了macOS某些版本下std::aligned_alloc编译报错的问题 #276
+- 修复了面板反射函数调用错误 #276
+
+## What's Changed
+* Fix namespace typo by @kwbm in https://github.com/BoomingTech/Piccolo/pull/230
+* Editor GUI improved. by @sselecirPyM in https://github.com/BoomingTech/Piccolo/pull/242
+* set transform component of selected object dirty by @OlorinMedas in https://github.com/BoomingTech/Piccolo/pull/251
+* FIX bug : macos validation layer error message by @rocketman123456 in https://github.com/BoomingTech/Piccolo/pull/249
+* Relative root path by @OlorinMedas in https://github.com/BoomingTech/Piccolo/pull/262
+* add "enable_fxaa" in rendering.global.json to enable/disable fxaa pass by @jiangdunchun in https://github.com/BoomingTech/Piccolo/pull/218
+* MetaParser, RHI, some render bugfixes by @BoomingTechDev in https://github.com/BoomingTech/Piccolo/pull/276
+
+## New Contributors
+* @sselecirPyM made their first contribution in https://github.com/BoomingTech/Piccolo/pull/242
+
+**Full Changelog**: https://github.com/BoomingTech/Piccolo/compare/v0.0.6...v0.0.7
+
 # Pilot引擎 0.0.6 版本发布说明
 ✨ 大家好！Pilot引擎自4月4日发布以来，我们很高兴得到很多开发者朋友们的关注，非常感谢社区开发者们的贡献！
 在整合了开发者社区贡献的更改和我们内部开发更改之后，在此我们激动地发布**Pilot引擎0.0.6版本**！
