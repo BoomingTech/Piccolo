@@ -2,7 +2,7 @@
 
 #include "runtime/function/render/render_pass.h"
 
-namespace Pilot
+namespace Piccolo
 {
     struct ColorGradingPassInitInfo : RenderPassInitInfo
     {
@@ -23,4 +23,4 @@ namespace Pilot
         void setupPipelines();
         void setupDescriptorSet();
     };
-} // namespace Pilot
+} // namespace Piccolo

@@ -6,7 +6,7 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
 
-namespace Pilot
+namespace Piccolo
 {
     /** Class encapsulating a standard 4x4 homogeneous matrix.
     @remarks
@@ -972,4 +972,4 @@ namespace Pilot
     };
 
     Vector4 operator*(const Vector4& v, const Matrix4x4& mat);
-} // namespace Pilot
+} // namespace Piccolo

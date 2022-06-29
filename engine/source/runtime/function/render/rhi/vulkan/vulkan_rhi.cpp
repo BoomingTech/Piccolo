@@ -7,8 +7,8 @@
 #include <cassert>
 
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
-#define PILOT_XSTR(s) PILOT_STR(s)
-#define PILOT_STR(s) #s
+#define PICCOLO_XSTR(s) PICCOLO_STR(s)
+#define PICCOLO_STR(s) #s
 
 #if defined(__GNUC__)
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -73,7 +73,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     VulkanRHI::~VulkanRHI()
     {
@@ -106,12 +106,12 @@ namespace Pilot
 #if defined(__GNUC__)
         // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__linux__)
-        char const* vk_layer_path = PILOT_XSTR(PILOT_VK_LAYER_PATH);
+        char const* vk_layer_path = PICCOLO_XSTR(PICCOLO_VK_LAYER_PATH);
         setenv("VK_LAYER_PATH", vk_layer_path, 1);
 #elif defined(__MACH__)
         // https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
-        char const* vk_layer_path    = PILOT_XSTR(PILOT_VK_LAYER_PATH);
-        char const* vk_icd_filenames = PILOT_XSTR(PILOT_VK_ICD_FILENAMES);
+        char const* vk_layer_path    = PICCOLO_XSTR(PICCOLO_VK_LAYER_PATH);
+        char const* vk_icd_filenames = PICCOLO_XSTR(PICCOLO_VK_ICD_FILENAMES);
         setenv("VK_LAYER_PATH", vk_layer_path, 1);
         setenv("VK_ICD_FILENAMES", vk_icd_filenames, 1);
 #else
@@ -119,7 +119,7 @@ namespace Pilot
 #endif
 #elif defined(_MSC_VER)
         // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
-        char const* vk_layer_path = PILOT_XSTR(PILOT_VK_LAYER_PATH);
+        char const* vk_layer_path = PICCOLO_XSTR(PICCOLO_VK_LAYER_PATH);
         SetEnvironmentVariableA("VK_LAYER_PATH", vk_layer_path);
         SetEnvironmentVariableA("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
 #else
@@ -419,7 +419,7 @@ namespace Pilot
         appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName   = "pilot_renderer";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName        = "Pilot";
+        appInfo.pEngineName        = "Piccolo";
         appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion         = m_vulkan_api_version;
 
@@ -917,7 +917,7 @@ namespace Pilot
         }
     }
 
-    Pilot::QueueFamilyIndices VulkanRHI::findQueueFamilies(VkPhysicalDevice physical_device) // for device and surface
+    Piccolo::QueueFamilyIndices VulkanRHI::findQueueFamilies(VkPhysicalDevice physical_device) // for device and surface
     {
         QueueFamilyIndices indices;
         uint32_t           queue_family_count = 0;
@@ -992,7 +992,7 @@ namespace Pilot
         return true;
     }
 
-    Pilot::SwapChainSupportDetails VulkanRHI::querySwapChainSupport(VkPhysicalDevice physical_device)
+    Piccolo::SwapChainSupportDetails VulkanRHI::querySwapChainSupport(VkPhysicalDevice physical_device)
     {
         SwapChainSupportDetails details_result;
 
@@ -1103,4 +1103,4 @@ namespace Pilot
         }
     }
 
-} // namespace Pilot
+} // namespace Piccolo

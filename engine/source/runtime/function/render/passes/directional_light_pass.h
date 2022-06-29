@@ -2,7 +2,7 @@
 
 #include "runtime/function/render/render_pass.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class RenderResourceBase;
 
@@ -30,4 +30,4 @@ namespace Pilot
         MeshDirectionalLightShadowPerframeStorageBufferObject
             m_mesh_directional_light_shadow_perframe_storage_buffer_object;
     };
-} // namespace Pilot
+} // namespace Piccolo

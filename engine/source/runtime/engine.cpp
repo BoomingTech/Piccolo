@@ -10,12 +10,12 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     bool                            g_is_editor_mode {false};
     std::unordered_set<std::string> g_editor_tick_component_types {};
 
-    void PilotEngine::startEngine(const std::string& config_file_path)
+    void PiccoloEngine::startEngine(const std::string& config_file_path)
     {
         Reflection::TypeMetaRegister::Register();
 
@@ -24,7 +24,7 @@ namespace Pilot
         LOG_INFO("engine start");
     }
 
-    void PilotEngine::shutdownEngine()
+    void PiccoloEngine::shutdownEngine()
     {
         LOG_INFO("engine shutdown");
 
@@ -33,10 +33,10 @@ namespace Pilot
         Reflection::TypeMetaRegister::Unregister();
     }
 
-    void PilotEngine::initialize() {}
-    void PilotEngine::clear() {}
+    void PiccoloEngine::initialize() {}
+    void PiccoloEngine::clear() {}
 
-    void PilotEngine::run()
+    void PiccoloEngine::run()
     {
         std::shared_ptr<WindowSystem> window_system = g_runtime_global_context.m_window_system;
         ASSERT(window_system);
@@ -48,7 +48,7 @@ namespace Pilot
         }
     }
 
-    float PilotEngine::calculateDeltaTime()
+    float PiccoloEngine::calculateDeltaTime()
     {
         float delta_time;
         {
@@ -63,7 +63,7 @@ namespace Pilot
         return delta_time;
     }
 
-    bool PilotEngine::tickOneFrame(float delta_time)
+    bool PiccoloEngine::tickOneFrame(float delta_time)
     {
         logicalTick(delta_time);
         calculateFPS(delta_time);
@@ -82,26 +82,26 @@ namespace Pilot
 
 
         g_runtime_global_context.m_window_system->setTile(
-            std::string("Pilot - " + std::to_string(getFPS()) + " FPS").c_str());
+            std::string("Piccolo - " + std::to_string(getFPS()) + " FPS").c_str());
 
         const bool should_window_close = g_runtime_global_context.m_window_system->shouldClose();
         return !should_window_close;
     }
 
-    void PilotEngine::logicalTick(float delta_time)
+    void PiccoloEngine::logicalTick(float delta_time)
     {
         g_runtime_global_context.m_world_manager->tick(delta_time);
         g_runtime_global_context.m_input_system->tick();
     }
 
-    bool PilotEngine::rendererTick()
+    bool PiccoloEngine::rendererTick()
     {
         g_runtime_global_context.m_render_system->tick();
         return true;
     }
 
-    const float PilotEngine::k_fps_alpha = 1.f / 100;
-    void        PilotEngine::calculateFPS(float delta_time)
+    const float PiccoloEngine::k_fps_alpha = 1.f / 100;
+    void        PiccoloEngine::calculateFPS(float delta_time)
     {
         m_frame_count++;
 
@@ -116,4 +116,4 @@ namespace Pilot
 
         m_fps = static_cast<int>(1.f / m_average_duration);
     }
-} // namespace Pilot
+} // namespace Piccolo

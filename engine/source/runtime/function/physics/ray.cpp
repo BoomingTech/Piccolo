@@ -1,6 +1,6 @@
 #include "runtime/function/physics/ray.h"
 
-namespace Pilot
+namespace Piccolo
 {
     Ray::Ray(Vector3 start_point, Vector3 direction)
     {
@@ -14,4 +14,4 @@ namespace Pilot
 
     Vector3 Ray::getDirection() const { return m_direction; }
 
-} // namespace Pilot
+} // namespace Piccolo

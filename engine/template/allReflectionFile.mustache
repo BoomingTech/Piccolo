@@ -1,0 +1,15 @@
+#pragma once
+#include "runtime/core/meta/reflection/reflection.h"
+#include "_generated/serializer/all_serializer.h"
+{{#include_headfiles}}
+#include "{{headfile_name}}"
+{{/include_headfiles}}
+
+namespace Piccolo{
+namespace Reflection{
+    void TypeMetaRegister::Register(){
+    {{#class_defines}}TypeWrappersRegister::{{class_name}}();
+    {{/class_defines}}
+    }
+}
+}

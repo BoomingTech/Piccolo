@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(Vector3)
     CLASS(Vector3, Fields)
@@ -450,4 +450,4 @@ namespace Pilot
         static const Vector3 NEGATIVE_UNIT_Z;
         static const Vector3 UNIT_SCALE;
     };
-} // namespace Pilot
+} // namespace Piccolo

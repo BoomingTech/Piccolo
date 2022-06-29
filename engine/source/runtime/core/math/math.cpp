@@ -1,7 +1,7 @@
 #include "runtime/core/math/math.h"
 #include "runtime/core/math/matrix4.h"
 
-namespace Pilot
+namespace Piccolo
 {
     Math::AngleUnit Math::k_AngleUnit;
 
@@ -192,4 +192,4 @@ namespace Pilot
         return proj_matrix;
     }
 
-} // namespace Pilot
+} // namespace Piccolo

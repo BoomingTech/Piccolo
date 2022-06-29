@@ -5,7 +5,7 @@
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/framework/object/object.h"
 
-namespace Pilot
+namespace Piccolo
 {
     PhysicsActor::PhysicsActor(std::weak_ptr<GObject> gobject, const Transform& global_transform) :
         m_parent_object {gobject}, m_global_transform {global_transform}
@@ -143,4 +143,4 @@ namespace Pilot
         }
     }
 
-} // namespace Pilot
+} // namespace Piccolo

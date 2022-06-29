@@ -3,7 +3,7 @@
 #include "runtime/core/meta/reflection/reflection.h"
 #include <string>
 #include <vector>
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(AnimNodeMap)
@@ -49,4 +49,4 @@ namespace Pilot
         std::string   skeleton_file_path;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

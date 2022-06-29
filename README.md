@@ -12,9 +12,9 @@
 
 |    Build Type     |                                                                                      Status                                                                                      |
 | :---------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| **Build Windows** | [![Build Windows](https://github.com/BoomingTech/Pilot/actions/workflows/build_windows.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_windows.yml) |
-|  **Build Linux**  |    [![Build Linux](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml)    |
-|  **Build macOS**  |    [![Build macOS](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml)    |
+| **Build Windows** | [![Build Windows](https://github.com/BoomingTech/Piccolo/actions/workflows/build_windows.yml/badge.svg)](https://github.com/BoomingTech/Piccolo/actions/workflows/build_windows.yml) |
+|  **Build Linux**  |    [![Build Linux](https://github.com/BoomingTech/Piccolo/actions/workflows/build_linux.yml/badge.svg)](https://github.com/BoomingTech/Piccolo/actions/workflows/build_linux.yml)    |
+|  **Build macOS**  |    [![Build macOS](https://github.com/BoomingTech/Piccolo/actions/workflows/build_macos.yml/badge.svg)](https://github.com/BoomingTech/Piccolo/actions/workflows/build_macos.yml)    |
 
 ## Prerequisites
 
@@ -96,3 +96,14 @@ For Windows:
 cmake -DCMAKE_TRY_COMPILE_TARGET_TYPE="STATIC_LIBRARY" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B compile_db_temp -G "Unix Makefiles"
 copy compile_db_temp\compile_commands.json .
 ```
+
+### Using Physics Debug Renderer
+Currently Physics Debug Renderer is only available on Windows. You can use the following command to generate the solution with the debugger project.
+
+``` powershell
+cmake -S . -B build -DENABLE_PHYSICS_DEBUG_RENDERER=ON
+```
+
+Note:
+1. Please clean the build directory before regenerating the solution. We've encountered building problems in regenerating directly with previous CMakeCache.
+2. Physics Debug Renderer will run when you start PiccoloEditor. We've synced the camera position between both scenes. But the initial camera mode in Physics Debug Renderer is wrong. Scrolling down the mouse wheel once will change the camera of Physics Debug Renderer to the correct mode.

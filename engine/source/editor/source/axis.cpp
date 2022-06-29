@@ -1,6 +1,6 @@
 #include "editor/include/axis.h"
 
-namespace Pilot
+namespace Piccolo
 {
     EditorTranslationAxis::EditorTranslationAxis()
     {
@@ -652,4 +652,4 @@ namespace Pilot
         index_data[start_index + 11 * 3 + 2] = (uint16_t)(start_vertex_index + 2);
     }
 
-} // namespace Pilot
+} // namespace Piccolo

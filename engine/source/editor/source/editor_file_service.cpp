@@ -8,7 +8,7 @@
 
 #include "runtime/function/global/global_context.h"
 
-namespace Pilot
+namespace Piccolo
 {
     /// helper function: split the input string with separator, and filter the substring
     std::vector<std::string>
@@ -139,4 +139,4 @@ namespace Pilot
         }
         return nullptr;
     }
-} // namespace Pilot
+} // namespace Piccolo

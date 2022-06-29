@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-namespace Pilot
+namespace Piccolo
 {
     class Matrix3x3;
     class Vector3;
@@ -215,4 +215,4 @@ namespace Pilot
 
         static const float k_epsilon;
     };
-} // namespace Pilot
+} // namespace Piccolo

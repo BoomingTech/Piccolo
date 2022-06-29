@@ -2,7 +2,7 @@
 
 #include "runtime/core/base/macro.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderPipelineBase::preparePassData(std::shared_ptr<RenderResourceBase> render_resource)
     {
@@ -21,4 +21,4 @@ namespace Pilot
     {
         m_ui_pass->initializeUIRenderBackend(window_ui);
     }
-} // namespace Pilot
+} // namespace Piccolo

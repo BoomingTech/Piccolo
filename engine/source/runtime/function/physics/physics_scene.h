@@ -13,7 +13,7 @@ namespace JPH
 #endif
 } // namespace JPH
 
-namespace Pilot
+namespace Piccolo
 {
     class Transform;
     class RigidBodyComponentRes;
@@ -43,33 +43,37 @@ namespace Pilot
         };
 
     public:
-        PhysicsScene();
+        PhysicsScene(const Vector3& gravity);
         virtual ~PhysicsScene();
+
+        const Vector3& getGravity() const { return m_config.m_gravity; }
 
         uint32_t createRigidBody(const Transform& global_transform, const RigidBodyComponentRes& rigidbody_actor_res);
         void     removeRigidBody(uint32_t body_id);
+
+        void updateRigidBodyGlobalTransform(uint32_t body_id, const Transform& global_transform);
 
         void tick(float delta_time);
 
         /// cast a ray and find the hits
         /// @ray_origin: origin of ray
-        /// @ray_directory: ray directory
+        /// @ray_direction: ray direction
         /// @ray_length: ray length, anything beyond this length will not be reported as a hit
         /// @out_hits: the found hits, sorted by distance
         /// @return: true if any hits found, else false
         bool
-        raycast(Vector3 ray_origin, Vector3 ray_directory, float ray_length, std::vector<PhysicsHitInfo>& out_hits);
+        raycast(Vector3 ray_origin, Vector3 ray_direction, float ray_length, std::vector<PhysicsHitInfo>& out_hits);
 
         /// cast a shape and find the hits
         /// @shape: the casted rigidbody shape
         /// @shape_transform: the initial global transform of the casted shape
-        /// @sweep_directory: sweep directory
+        /// @sweep_direction: sweep direction
         /// @sweep_length: sweep length, anything beyond this length will not be reported as a hit
         /// @out_hits: the found hits, sorted by distance
         /// @return: true if any hits found, else false
         bool sweep(const RigidBodyShape&        shape,
                    const Matrix4x4&             shape_transform,
-                   Vector3                      sweep_directory,
+                   Vector3                      sweep_direction,
                    float                        sweep_length,
                    std::vector<PhysicsHitInfo>& out_hits);
 
@@ -90,4 +94,4 @@ namespace Pilot
 
         std::vector<uint32_t> m_pending_remove_bodies;
     };
-} // namespace Pilot
+} // namespace Piccolo

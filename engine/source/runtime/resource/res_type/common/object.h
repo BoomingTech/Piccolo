@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     class Component;
 
@@ -39,4 +39,4 @@ namespace Pilot
 
         std::vector<Reflection::ReflectionPtr<Component>> m_instanced_components;
     };
-} // namespace Pilot
+} // namespace Piccolo

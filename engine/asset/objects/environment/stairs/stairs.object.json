@@ -1,58 +1,269 @@
 {
-    "components": [
-        {
-            "$context": {
-                "transform": {
-                    "position": {
-                        "x": 5.8713598251342773,
-                        "y": -1.5180200338363647,
-                        "z": 0
-                    },
-                    "rotation": {
-                        "w": 1,
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                    },
-                    "scale": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                    }
-                }
-            },
-            "$typeName": "TransformComponent"
-        },
-        {
-            "$context": {
-                "mesh_res": {
-                    "sub_meshes": [
-                        {
-                            "material": "asset/objects/environment/_material/gold.material.json",
-                            "obj_file_ref": "asset/objects/environment/stairs/components/mesh/stairs.obj",
-                            "transform": {
-                                "position": {
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "scale": {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            "$typeName": "MeshComponent"
+  "components": [
+    {
+      "$context": {
+        "transform": {
+          "position": {
+            "x": 5.8713598251342773,
+            "y": -1.5180200338363647,
+            "z": 0
+          },
+          "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         }
-    ]
+      },
+      "$typeName": "TransformComponent"
+    },
+    {
+      "$context": {
+        "mesh_res": {
+          "sub_meshes": [
+            {
+              "material": "asset/objects/environment/_material/gold.material.json",
+              "obj_file_ref": "asset/objects/environment/stairs/components/mesh/stairs.obj",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "$typeName": "MeshComponent"
+    },
+    {
+      "$typeName": "RigidBodyComponent",
+      "$context": {
+        "rigidbody_res": {
+          "actor_type": 1,
+          "inverse_mass": 0,
+          "shapes": [
+            {
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.125
+                  }
+                },
+                "$typeName": "Box"
+              },
+              "local_transform": {
+                "position": {
+                  "x": 0.875,
+                  "y": 0,
+                  "z": 0.125
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": 0.625,
+                  "y": 0,
+                  "z": 0.25
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.25
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": 0.375,
+                  "y": 0,
+                  "z": 0.375
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.375
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": 0.125,
+                  "y": 0,
+                  "z": 0.5
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.5
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": -0.125,
+                  "y": 0,
+                  "z": 0.625
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.625
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": -0.375,
+                  "y": 0,
+                  "z": 0.75
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.75
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": -0.625,
+                  "y": 0,
+                  "z": 0.875
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 0.875
+                  }
+                },
+                "$typeName": "Box"
+              }
+            },
+            {
+              "local_transform": {
+                "position": {
+                  "x": -0.875,
+                  "y": 0,
+                  "z": 1
+                },
+                "rotate": {},
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              "geometry": {
+                "$context": {
+                  "half_extents": {
+                    "x": 0.125,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "$typeName": "Box"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
 }

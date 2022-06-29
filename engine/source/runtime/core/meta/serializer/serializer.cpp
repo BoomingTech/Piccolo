@@ -1,6 +1,6 @@
 #include "serializer.h"
 #include <assert.h>
-namespace Pilot
+namespace Piccolo
 {
 
     template<>
@@ -149,4 +149,4 @@ namespace Pilot
     }*/
 
     ////////////////////////////////////
-} // namespace Pilot
+} // namespace Piccolo

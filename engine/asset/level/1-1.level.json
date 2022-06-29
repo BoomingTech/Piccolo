@@ -1,5 +1,9 @@
 {
-  "gravity": 15,
+  "gravity": {
+    "x": 0,
+    "y": 0,
+    "z": -15
+  },
   "character_name": "Player",
   "objects": [
     {

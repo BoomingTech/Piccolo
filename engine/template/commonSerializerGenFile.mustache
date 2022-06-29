@@ -1,0 +1,12 @@
+#pragma once
+{{#include_headfiles}}
+#include "{{headfile_name}}"
+{{/include_headfiles}}
+
+namespace Piccolo{
+    {{#class_defines}}template<>
+    PJson PSerializer::write(const {{class_name}}& instance);
+    template<>
+    {{class_name}}& PSerializer::read(const PJson& json_context, {{class_name}}& instance);
+    {{/class_defines}}
+}//namespace

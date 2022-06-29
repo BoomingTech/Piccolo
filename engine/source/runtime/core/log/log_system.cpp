@@ -5,7 +5,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-namespace Pilot
+namespace Piccolo
 {
     LogSystem::LogSystem()
     {
@@ -33,4 +33,4 @@ namespace Pilot
         spdlog::drop_all();
     }
 
-} // namespace Pilot
+} // namespace Piccolo

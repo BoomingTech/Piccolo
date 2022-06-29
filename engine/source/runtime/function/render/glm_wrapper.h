@@ -13,7 +13,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace Pilot
+namespace Piccolo
 {
     class GLMUtil
     {
@@ -70,4 +70,4 @@ namespace Pilot
                             m[2][3],
                             m[3][3]};
     }
-} // namespace Pilot
+} // namespace Piccolo

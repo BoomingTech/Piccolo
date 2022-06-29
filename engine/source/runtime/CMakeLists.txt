@@ -1,6 +1,6 @@
 
 # PackageProject.cmake will be used to make our target installable
-set(TARGET_NAME PilotRuntime)
+set(TARGET_NAME PiccoloRuntime)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -106,4 +106,4 @@ string(TOLOWER ${TARGET_NAME}/version.h VERSION_HEADER_LOCATION)
 
 ### precompile
 # set global vari used by precompile
-set(PILOT_RUNTIME_HEADS "${HEADER_FILES}" PARENT_SCOPE)
+set(PICCOLO_RUNTIME_HEADS "${HEADER_FILES}" PARENT_SCOPE)

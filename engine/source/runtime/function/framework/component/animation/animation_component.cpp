@@ -3,7 +3,7 @@
 #include "runtime/function/animation/animation_system.h"
 #include "runtime/function/framework/object/object.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void AnimationComponent::postLoadResource(std::weak_ptr<GObject> parent_object)
     {
@@ -25,4 +25,4 @@ namespace Pilot
     }
 
     const AnimationResult& AnimationComponent::getResult() const { return m_animation_res.animation_result; }
-} // namespace Pilot
+} // namespace Piccolo
