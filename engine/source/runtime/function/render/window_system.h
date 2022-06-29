@@ -7,13 +7,13 @@
 #include <functional>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     struct WindowCreateInfo
     {
         int         width {1280};
         int         height {720};
-        const char* title {"Pilot"};
+        const char* title {"Piccolo"};
         bool        is_fullscreen {false};
     };
 
@@ -213,4 +213,4 @@ namespace Pilot
 
 
     };
-} // namespace Pilot
+} // namespace Piccolo

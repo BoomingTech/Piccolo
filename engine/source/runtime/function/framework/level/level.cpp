@@ -13,7 +13,7 @@
 
 #include <limits>
 
-namespace Pilot
+namespace Piccolo
 {
     Level::~Level() { clear(); }
 
@@ -68,7 +68,7 @@ namespace Pilot
         }
 
         ASSERT(g_runtime_global_context.m_physics_manager);
-        m_physics_scene = g_runtime_global_context.m_physics_manager->createPhysicsScene();
+        m_physics_scene = g_runtime_global_context.m_physics_manager->createPhysicsScene(level_res.m_gravity);
 
         for (const ObjectInstanceRes& object_instance_res : level_res.m_objects)
         {
@@ -192,4 +192,4 @@ namespace Pilot
         m_gobjects.erase(go_id);
     }
 
-} // namespace Pilot
+} // namespace Piccolo

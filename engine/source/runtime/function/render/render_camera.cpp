@@ -1,6 +1,6 @@
 #include "runtime/function/render/render_camera.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderCamera::setCurrentCameraType(RenderCameraType type)
     {
@@ -110,4 +110,4 @@ namespace Pilot
 
         m_fovy = Radian(Math::atan(Math::tan(Radian(Degree(m_fovx) * 0.5f)) / m_aspect) * 2.0f).valueDegrees();
     }
-} // namespace Pilot
+} // namespace Piccolo

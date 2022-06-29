@@ -12,5 +12,5 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
 
-namespace Pilot
-{} // namespace Pilot
+namespace Piccolo
+{} // namespace Piccolo

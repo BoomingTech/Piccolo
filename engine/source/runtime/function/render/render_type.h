@@ -4,24 +4,24 @@
 #include <memory>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
-    enum class PILOT_PIXEL_FORMAT : uint8_t
+    enum class PICCOLO_PIXEL_FORMAT : uint8_t
     {
-        PILOT_PIXEL_FORMAT_UNKNOWN = 0,
-        PILOT_PIXEL_FORMAT_R8G8B8_UNORM,
-        PILOT_PIXEL_FORMAT_R8G8B8_SRGB,
-        PILOT_PIXEL_FORMAT_R8G8B8A8_UNORM,
-        PILOT_PIXEL_FORMAT_R8G8B8A8_SRGB,
-        PILOT_PIXEL_FORMAT_R32G32_FLOAT,
-        PILOT_PIXEL_FORMAT_R32G32B32_FLOAT,
-        PILOT_PIXEL_FORMAT_R32G32B32A32_FLOAT
+        PICCOLO_PIXEL_FORMAT_UNKNOWN = 0,
+        PICCOLO_PIXEL_FORMAT_R8G8B8_UNORM,
+        PICCOLO_PIXEL_FORMAT_R8G8B8_SRGB,
+        PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM,
+        PICCOLO_PIXEL_FORMAT_R8G8B8A8_SRGB,
+        PICCOLO_PIXEL_FORMAT_R32G32_FLOAT,
+        PICCOLO_PIXEL_FORMAT_R32G32B32_FLOAT,
+        PICCOLO_PIXEL_FORMAT_R32G32B32A32_FLOAT
     };
 
-    enum class PILOT_IMAGE_TYPE : uint8_t
+    enum class PICCOLO_IMAGE_TYPE : uint8_t
     {
-        PILOT_IMAGE_TYPE_UNKNOWM = 0,
-        PILOT_IMAGE_TYPE_2D
+        PICCOLO_IMAGE_TYPE_UNKNOWM = 0,
+        PICCOLO_IMAGE_TYPE_2D
     };
 
     enum class RENDER_PIPELINE_TYPE : uint8_t
@@ -63,8 +63,8 @@ namespace Pilot
         uint32_t m_array_layers {0};
         void*    m_pixels {nullptr};
 
-        PILOT_PIXEL_FORMAT m_format {PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_UNKNOWN};
-        PILOT_IMAGE_TYPE   m_type {PILOT_IMAGE_TYPE::PILOT_IMAGE_TYPE_UNKNOWM};
+        PICCOLO_PIXEL_FORMAT m_format {PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_UNKNOWN};
+        PICCOLO_IMAGE_TYPE   m_type {PICCOLO_IMAGE_TYPE::PICCOLO_IMAGE_TYPE_UNKNOWM};
 
         TextureData() = default;
         ~TextureData()
@@ -151,15 +151,15 @@ namespace Pilot
         std::shared_ptr<TextureData> m_occlusion_texture;
         std::shared_ptr<TextureData> m_emissive_texture;
     };
-} // namespace Pilot
+} // namespace Piccolo
 
 template<>
-struct std::hash<Pilot::MeshSourceDesc>
+struct std::hash<Piccolo::MeshSourceDesc>
 {
-    size_t operator()(const Pilot::MeshSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
+    size_t operator()(const Piccolo::MeshSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
 };
 template<>
-struct std::hash<Pilot::MaterialSourceDesc>
+struct std::hash<Piccolo::MaterialSourceDesc>
 {
-    size_t operator()(const Pilot::MaterialSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
+    size_t operator()(const Piccolo::MaterialSourceDesc& rhs) const noexcept { return rhs.getHashValue(); }
 };

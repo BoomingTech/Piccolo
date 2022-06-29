@@ -4,7 +4,7 @@
 #include "runtime/function/framework/component/component.h"
 #include "runtime/resource/res_type/components/animation.h"
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(AnimationComponent)
     CLASS(AnimationComponent : public Component, WhiteListFields)
@@ -26,4 +26,4 @@ namespace Pilot
 
         Skeleton m_skeleton;
     };
-} // namespace Pilot
+} // namespace Piccolo

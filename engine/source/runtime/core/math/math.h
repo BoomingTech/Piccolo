@@ -8,7 +8,7 @@
 
 #define CMP(x, y) (fabsf(x - y) < FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
-namespace Pilot
+namespace Piccolo
 {
     static const float Math_POS_INFINITY = std::numeric_limits<float>::infinity();
     static const float Math_NEG_INFINITY = -std::numeric_limits<float>::infinity();
@@ -307,4 +307,4 @@ namespace Pilot
     inline Degree operator*(float a, const Degree& b) { return Degree(a * b.valueDegrees()); }
 
     inline Degree operator/(float a, const Degree& b) { return Degree(a / b.valueDegrees()); }
-} // namespace Pilot
+} // namespace Piccolo

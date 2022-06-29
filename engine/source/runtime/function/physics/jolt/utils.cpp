@@ -7,7 +7,7 @@
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 
-namespace Pilot
+namespace Piccolo
 {
     BPLayerInterfaceImpl::BPLayerInterfaceImpl()
     {
@@ -154,4 +154,4 @@ namespace Pilot
         return jph_shape;
     }
 
-} // namespace Pilot
+} // namespace Piccolo

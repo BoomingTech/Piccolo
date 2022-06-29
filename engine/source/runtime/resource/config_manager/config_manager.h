@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace Pilot
+namespace Piccolo
 {
     struct EngineInitParams;
 
@@ -40,4 +40,4 @@ namespace Pilot
         std::string m_default_world_url;
         std::string m_global_rendering_res_url;
     };
-} // namespace Pilot
+} // namespace Piccolo

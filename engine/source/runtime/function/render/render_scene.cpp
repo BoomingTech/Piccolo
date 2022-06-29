@@ -4,7 +4,7 @@
 #include "runtime/function/render/render_pass.h"
 #include "runtime/function/render/render_resource.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderScene::updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
                                            std::shared_ptr<RenderCamera>   camera)
@@ -244,4 +244,4 @@ namespace Pilot
         // TODO
         m_main_camera_visible_particlebillboard_nodes.clear();
     }
-} // namespace Pilot
+} // namespace Piccolo

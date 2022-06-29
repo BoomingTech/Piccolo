@@ -2,15 +2,16 @@
 
 #include "runtime/core/base/macro.h"
 
-namespace Pilot
+namespace Piccolo
 {
     RigidBodyShape::RigidBodyShape(const RigidBodyShape& res) :
         m_local_transform(res.m_local_transform)
     {
         if (res.m_geometry.getTypeName() == "Box")
         {
-            m_geometry = PILOT_REFLECTION_NEW(Box);
-            PILOT_REFLECTION_DEEP_COPY(Box, m_geometry, res.m_geometry);
+            m_type     = RigidBodyShapeType::box;
+            m_geometry = PICCOLO_REFLECTION_NEW(Box);
+            PICCOLO_REFLECTION_DEEP_COPY(Box, m_geometry, res.m_geometry);
         }
         else
         {
@@ -20,6 +21,6 @@ namespace Pilot
 
     RigidBodyShape::~RigidBodyShape()
     {
-        PILOT_REFLECTION_DELETE(m_geometry);
+        PICCOLO_REFLECTION_DELETE(m_geometry);
     }
-}
+} // namespace Piccolo

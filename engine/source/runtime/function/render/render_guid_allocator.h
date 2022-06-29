@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-namespace Pilot
+namespace Piccolo
 {
     static const size_t k_invalid_guid = 0;
 
@@ -101,4 +101,4 @@ namespace Pilot
         std::unordered_map<size_t, T> m_guid_elements_map;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

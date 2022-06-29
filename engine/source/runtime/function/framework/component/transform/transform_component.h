@@ -6,7 +6,7 @@
 #include "runtime/function/framework/component/component.h"
 #include "runtime/function/framework/object/object.h"
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(TransformComponent)
     CLASS(TransformComponent : public Component, WhiteListFields)
@@ -45,4 +45,4 @@ namespace Pilot
         size_t    m_current_index {0};
         size_t    m_next_index {1};
     };
-} // namespace Pilot
+} // namespace Piccolo

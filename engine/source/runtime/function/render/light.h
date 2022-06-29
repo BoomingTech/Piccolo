@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     struct PointLight
     {
@@ -68,4 +68,4 @@ namespace Pilot
         std::shared_ptr<BufferData> m_buffer;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

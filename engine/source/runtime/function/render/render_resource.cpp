@@ -13,7 +13,7 @@
 
 #include <stdexcept>
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderResource::uploadGlobalRenderResource(std::shared_ptr<RHI> rhi, LevelResourceDesc level_resource_desc)
     {
@@ -354,7 +354,7 @@ namespace Pilot
             void*              base_color_image_pixels = empty_image;
             uint32_t           base_color_image_width  = 1;
             uint32_t           base_color_image_height = 1;
-            PILOT_PIXEL_FORMAT base_color_image_format = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R8G8B8A8_SRGB;
+            PICCOLO_PIXEL_FORMAT base_color_image_format = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_SRGB;
             if (material_data.m_base_color_texture)
             {
                 base_color_image_pixels = material_data.m_base_color_texture->m_pixels;
@@ -366,7 +366,7 @@ namespace Pilot
             void*              metallic_roughness_image_pixels = empty_image;
             uint32_t           metallic_roughness_width        = 1;
             uint32_t           metallic_roughness_height       = 1;
-            PILOT_PIXEL_FORMAT metallic_roughness_format       = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R8G8B8A8_UNORM;
+            PICCOLO_PIXEL_FORMAT metallic_roughness_format       = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM;
             if (material_data.m_metallic_roughness_texture)
             {
                 metallic_roughness_image_pixels = material_data.m_metallic_roughness_texture->m_pixels;
@@ -378,7 +378,7 @@ namespace Pilot
             void*              normal_roughness_image_pixels = empty_image;
             uint32_t           normal_roughness_width        = 1;
             uint32_t           normal_roughness_height       = 1;
-            PILOT_PIXEL_FORMAT normal_roughness_format       = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R8G8B8A8_UNORM;
+            PICCOLO_PIXEL_FORMAT normal_roughness_format       = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM;
             if (material_data.m_normal_texture)
             {
                 normal_roughness_image_pixels = material_data.m_normal_texture->m_pixels;
@@ -390,7 +390,7 @@ namespace Pilot
             void*              occlusion_image_pixels = empty_image;
             uint32_t           occlusion_image_width  = 1;
             uint32_t           occlusion_image_height = 1;
-            PILOT_PIXEL_FORMAT occlusion_image_format = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R8G8B8A8_UNORM;
+            PICCOLO_PIXEL_FORMAT occlusion_image_format = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM;
             if (material_data.m_occlusion_texture)
             {
                 occlusion_image_pixels = material_data.m_occlusion_texture->m_pixels;
@@ -402,7 +402,7 @@ namespace Pilot
             void*              emissive_image_pixels = empty_image;
             uint32_t           emissive_image_width  = 1;
             uint32_t           emissive_image_height = 1;
-            PILOT_PIXEL_FORMAT emissive_image_format = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R8G8B8A8_UNORM;
+            PICCOLO_PIXEL_FORMAT emissive_image_format = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM;
             if (material_data.m_emissive_texture)
             {
                 emissive_image_pixels = material_data.m_emissive_texture->m_pixels;
@@ -1243,4 +1243,4 @@ namespace Pilot
 
         static_assert(64 >= sizeof(MeshVertex::VulkanMeshVertexJointBinding), "");
     }
-} // namespace Pilot
+} // namespace Piccolo

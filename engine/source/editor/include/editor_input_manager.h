@@ -6,9 +6,9 @@
 
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
-    class PilotEditor;
+    class PiccoloEditor;
 
     enum class EditorCommand : unsigned int
     {
@@ -66,4 +66,4 @@ namespace Pilot
         size_t       m_cursor_on_axis {3};
         unsigned int m_editor_command {0};
     };
-} // namespace Pilot
+} // namespace Piccolo

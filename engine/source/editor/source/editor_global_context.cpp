@@ -6,7 +6,7 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     EditorGlobalContext g_editor_global_context;
 
@@ -27,4 +27,4 @@ namespace Pilot
         delete (m_scene_manager);
         delete (m_input_manager);
     }
-} // namespace Pilot
+} // namespace Piccolo

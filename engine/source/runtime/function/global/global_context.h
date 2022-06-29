@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     class LogSystem;
     class InputSystem;
@@ -41,4 +41,4 @@ namespace Pilot
     };
 
     extern RuntimeGlobalContext g_runtime_global_context;
-} // namespace Pilot
+} // namespace Piccolo

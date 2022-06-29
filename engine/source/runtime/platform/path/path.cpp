@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace Pilot
+namespace Piccolo
 {
     const filesystem::path Path::getRelativePath(const filesystem::path& directory,
                                                  const filesystem::path& file_path)
@@ -38,4 +38,4 @@ namespace Pilot
 
         return file_pure_name;
     }
-} // namespace Pilot
+} // namespace Piccolo

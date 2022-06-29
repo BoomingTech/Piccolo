@@ -6,7 +6,7 @@
 #include <fstream>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     void ConfigManager::initialize(const std::filesystem::path& config_file_path)
     {
@@ -82,4 +82,4 @@ namespace Pilot
     const std::filesystem::path& ConfigManager::getJoltPhysicsAssetFolder() const { return m_jolt_physics_asset_folder; }
 #endif
 
-} // namespace Pilot
+} // namespace Piccolo
