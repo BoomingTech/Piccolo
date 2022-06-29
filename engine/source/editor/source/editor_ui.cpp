@@ -385,13 +385,13 @@ namespace Piccolo
         ImGui::End();
     }
 
-    void EditorUI::createClasstUI(Reflection::ReflectionInstance& instance)
+    void EditorUI::createClassUI(Reflection::ReflectionInstance& instance)
     {
         Reflection::ReflectionInstance* reflection_instance;
         int count = instance.m_meta.getBaseClassReflectionInstanceList(reflection_instance, instance.m_instance);
         for (int index = 0; index < count; index++)
         {
-            createClasstUI(reflection_instance[index]);
+            createClassUI(reflection_instance[index]);
         }
         createLeafNodeUI(instance);
 
@@ -427,7 +427,7 @@ namespace Piccolo
                             auto object_instance = Reflection::ReflectionInstance(
                                 Piccolo::Reflection::TypeMeta::newMetaFromName(item_type_meta_item.getTypeName().c_str()),
                                 array_accessor.get(index, field_instance));
-                            createClasstUI(object_instance);
+                            createClassUI(object_instance);
                             m_editor_ui_creator["TreeNodePop"]("[" + std::to_string(index) + "]", nullptr);
                         }
                         else
@@ -453,7 +453,7 @@ namespace Piccolo
                     auto child_instance =
                         Reflection::ReflectionInstance(field_meta, field.get(instance.m_instance));
                     m_editor_ui_creator["TreeNodePush"](field_meta.getTypeName(), nullptr);
-                    createClasstUI(child_instance);
+                    createClassUI(child_instance);
                     m_editor_ui_creator["TreeNodePop"](field_meta.getTypeName(), nullptr);
                 }
                 else
@@ -514,7 +514,7 @@ namespace Piccolo
             auto object_instance = Reflection::ReflectionInstance(
                 Piccolo::Reflection::TypeMeta::newMetaFromName(component_ptr.getTypeName().c_str()),
                 component_ptr.operator->());
-            createClasstUI(object_instance);
+            createClassUI(object_instance);
             m_editor_ui_creator["TreeNodePop"](("<" + component_ptr.getTypeName() + ">").c_str(), nullptr);
         }
         ImGui::End();

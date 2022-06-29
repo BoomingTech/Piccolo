@@ -48,10 +48,9 @@ namespace Piccolo
 #endif
     }
 
-    std::weak_ptr<PhysicsScene> PhysicsManager::createPhysicsScene()
+    std::weak_ptr<PhysicsScene> PhysicsManager::createPhysicsScene(const Vector3& gravity)
     {
-
-        std::shared_ptr<PhysicsScene> physics_scene = std::make_shared<PhysicsScene>();
+        std::shared_ptr<PhysicsScene> physics_scene = std::make_shared<PhysicsScene>(gravity);
 
         m_scenes.push_back(physics_scene);
 

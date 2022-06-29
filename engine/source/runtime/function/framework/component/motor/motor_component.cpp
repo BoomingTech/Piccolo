@@ -12,6 +12,7 @@
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
+#include "runtime/function/physics/physics_scene.h"
 
 namespace Piccolo
 {
@@ -53,7 +54,7 @@ namespace Piccolo
         if (!m_parent_object.lock())
             return;
 
-        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -114,7 +115,39 @@ namespace Piccolo
         m_move_speed_ratio = std::clamp(m_move_speed_ratio, min_speed_ratio, max_speed_ratio);
     }
 
-    void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time) {}
+    void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time)
+    {
+        std::shared_ptr<PhysicsScene> physics_scene =
+            g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        ASSERT(physics_scene);
+
+        if (m_motor_res.m_jump_height == 0.f)
+            return;
+
+        const float gravity = physics_scene->getGravity().length();
+
+        if (m_jump_state == JumpState::idle)
+        {
+            if ((unsigned int)GameCommand::jump & command)
+            {
+                m_jump_state                  = JumpState::rising;
+                m_vertical_move_speed         = Math::sqrt(m_motor_res.m_jump_height * 2 * gravity);
+                m_jump_horizontal_speed_ratio = m_move_speed_ratio;
+            }
+            else
+            {
+                m_vertical_move_speed = 0.f;
+            }
+        }
+        else if (m_jump_state == JumpState::rising || m_jump_state == JumpState::falling)
+        {
+            m_vertical_move_speed -= gravity * delta_time;
+            if (m_vertical_move_speed <= 0.f)
+            {
+                m_jump_state = JumpState::falling;
+            }
+        }
+    }
 
     void MotorComponent::calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation)
     {
@@ -163,22 +196,23 @@ namespace Piccolo
 
     void MotorComponent::calculateTargetPosition(const Vector3&& current_position)
     {
-        Vector3 final_position = current_position;
+        Vector3 final_position;
 
         switch (m_controller_type)
         {
             case ControllerType::none:
-                final_position += m_desired_displacement;
+                final_position = current_position + m_desired_displacement;
                 break;
             case ControllerType::physics:
-                final_position = m_controller->move(final_position, m_desired_displacement);
+                final_position = m_controller->move(current_position, m_desired_displacement);
                 break;
             default:
+                final_position = current_position;
                 break;
         }
 
         // Piccolo-hack: motor level simulating jump, character always above z-plane
-        if (m_jump_state == JumpState::falling && m_target_position.z <= 0.f)
+        if (m_jump_state == JumpState::falling && final_position.z + m_desired_displacement.z <= 0.f)
         {
             final_position.z = 0.f;
             m_jump_state     = JumpState::idle;

@@ -9,6 +9,7 @@ namespace Piccolo
     {
         if (res.m_geometry.getTypeName() == "Box")
         {
+            m_type     = RigidBodyShapeType::box;
             m_geometry = PICCOLO_REFLECTION_NEW(Box);
             PICCOLO_REFLECTION_DEEP_COPY(Box, m_geometry, res.m_geometry);
         }
@@ -22,4 +23,4 @@ namespace Piccolo
     {
         PICCOLO_REFLECTION_DELETE(m_geometry);
     }
-}
+} // namespace Piccolo
