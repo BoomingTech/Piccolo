@@ -1,5 +1,7 @@
 #pragma once
 
+#include "runtime/core/base/hash.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -117,17 +119,22 @@ namespace Piccolo
         bool operator==(const MaterialSourceDesc& rhs) const
         {
             return m_base_color_file == rhs.m_base_color_file &&
-                   m_metallic_roughness_file == rhs.m_metallic_roughness_file && m_normal_file == rhs.m_normal_file &&
-                   m_occlusion_file == rhs.m_occlusion_file && m_emissive_file == rhs.m_emissive_file;
+                   m_metallic_roughness_file == rhs.m_metallic_roughness_file &&
+                   m_normal_file == rhs.m_normal_file &&
+                   m_occlusion_file == rhs.m_occlusion_file &&
+                   m_emissive_file == rhs.m_emissive_file;
         }
+
         size_t getHashValue() const
         {
-            size_t h0 = std::hash<std::string> {}(m_base_color_file);
-            size_t h1 = std::hash<std::string> {}(m_metallic_roughness_file);
-            size_t h2 = std::hash<std::string> {}(m_normal_file);
-            size_t h3 = std::hash<std::string> {}(m_occlusion_file);
-            size_t h4 = std::hash<std::string> {}(m_emissive_file);
-            return (((h0 ^ (h1 << 1)) ^ (h2 << 1)) ^ (h3 << 1)) ^ (h4 << 1);
+            size_t hash = 0;
+            hash_combine(hash,
+                         m_base_color_file,
+                         m_metallic_roughness_file,
+                         m_normal_file,
+                         m_occlusion_file,
+                         m_emissive_file);
+            return hash;
         }
     };
 
