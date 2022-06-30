@@ -5,6 +5,7 @@
 
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
+#include "runtime/function/utils/profiler.h"
 
 #include <map>
 #include <stdexcept>
@@ -2232,8 +2233,9 @@ namespace Piccolo
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "BasePass", {1.0f, 1.0f, 1.0f, 1.0f}};
             m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
-
+        Profiler::begin("drawMeshGbuffer");
         drawMeshGbuffer();
+        Profiler::end();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -2248,8 +2250,9 @@ namespace Piccolo
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Deferred Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
             m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
-
+        Profiler::begin("drawDeferredLighting");
         drawDeferredLighting();
+        Profiler::end();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -2264,8 +2267,9 @@ namespace Piccolo
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Forward Lighting", {1.0f, 1.0f, 1.0f, 1.0f}};
             m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
-
+        Profiler::begin("drawBillboardParticle");
         drawBillboardParticle();
+        Profiler::end();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -2273,13 +2277,14 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
-
+        Profiler::begin("tone_mapping_pass");
         tone_mapping_pass.draw();
+        Profiler::end();
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
-
+        Profiler::begin("color_grading_pass");
         color_grading_pass.draw();
-
+        Profiler::end();
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         if (m_enable_fxaa) fxaa_pass.draw();
@@ -2305,15 +2310,18 @@ namespace Piccolo
                                              clear_attachments,
                                              sizeof(clear_rects) / sizeof(clear_rects[0]),
                                              clear_rects);
-
+        Profiler::begin("drawAxis");
         drawAxis();
-
+        Profiler::end();
+        
+        Profiler::begin("ui draw");
         ui_pass.draw();
+        
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
         combine_ui_pass.draw();
-
+        Profiler::end();
         m_vulkan_rhi->m_vk_cmd_end_render_pass(m_vulkan_rhi->m_current_command_buffer);
     }
 

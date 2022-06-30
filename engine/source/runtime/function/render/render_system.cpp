@@ -16,6 +16,7 @@
 #include "runtime/function/render/passes/main_camera_pass.h"
 
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
+#include "runtime/function/utils/profiler.h"
 
 namespace Piccolo
 {
@@ -91,29 +92,43 @@ namespace Piccolo
     void RenderSystem::tick()
     {
         // process swap data between logic and render contexts
+        Profiler::begin("processSwapData");
         processSwapData();
+        Profiler::end();
 
+        Profiler::begin("prepareContext");
         // prepare render command context
         m_rhi->prepareContext();
+        Profiler::end();
 
+        Profiler::begin("updatePerFrameBuffer");
         // update per-frame buffer
         m_render_resource->updatePerFrameBuffer(m_render_scene, m_render_camera);
+        Profiler::end();
 
+        Profiler::begin("updateVisibleObjects");
         // update per-frame visible objects
         m_render_scene->updateVisibleObjects(std::static_pointer_cast<RenderResource>(m_render_resource),
                                              m_render_camera);
+        Profiler::end();
 
+        Profiler::begin("preparePassData");
         // prepare pipeline's render passes data
         m_render_pipeline->preparePassData(m_render_resource);
+        Profiler::end();
 
         // render one frame
         if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::FORWARD_PIPELINE)
         {
+            Profiler::begin("forwardRender");
             m_render_pipeline->forwardRender(m_rhi, m_render_resource);
+            Profiler::end();
         }
         else if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::DEFERRED_PIPELINE)
         {
+            Profiler::begin("deferredRender");
             m_render_pipeline->deferredRender(m_rhi, m_render_resource);
+            Profiler::end();
         }
         else
         {

@@ -9,7 +9,7 @@
 #include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
-
+#include "runtime/function/utils/profiler.h"
 namespace Piccolo
 {
     bool                            g_is_editor_mode {false};
@@ -33,8 +33,13 @@ namespace Piccolo
         Reflection::TypeMetaRegister::Unregister();
     }
 
-    void PiccoloEngine::initialize() {}
-    void PiccoloEngine::clear() {}
+    void PiccoloEngine::initialize() {
+        Profiler::init();
+    }
+    void PiccoloEngine::clear() {
+        ChromeProfilingResultOutput output("profiling.json");
+        Profiler::output(&output);
+    }
 
     void PiccoloEngine::run()
     {
@@ -65,33 +70,47 @@ namespace Piccolo
 
     bool PiccoloEngine::tickOneFrame(float delta_time)
     {
+        Profiler::begin("tickOneFrame");
+
+        Profiler::begin("logicalTick");
         logicalTick(delta_time);
+        Profiler::end();
+        
         calculateFPS(delta_time);
 
         // single thread
         // exchange data between logic and render contexts
         g_runtime_global_context.m_render_system->swapLogicRenderData();
 
+        Profiler::begin("rendererTick");
         rendererTick();
-
+        Profiler::end();
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        Profiler::begin("renderPhysicsWorld");
         g_runtime_global_context.m_physics_manager->renderPhysicsWorld(delta_time);
+        Profiler::end();
 #endif
-
+        Profiler::begin("pollEvents");
         g_runtime_global_context.m_window_system->pollEvents();
-
+        Profiler::end();
 
         g_runtime_global_context.m_window_system->setTile(
             std::string("Piccolo - " + std::to_string(getFPS()) + " FPS").c_str());
 
         const bool should_window_close = g_runtime_global_context.m_window_system->shouldClose();
+        Profiler::end();
         return !should_window_close;
     }
 
     void PiccoloEngine::logicalTick(float delta_time)
     {
+        Profiler::begin("world_manager tick");
         g_runtime_global_context.m_world_manager->tick(delta_time);
+        Profiler::end();
+
+        Profiler::begin("input_system tick");
         g_runtime_global_context.m_input_system->tick();
+        Profiler::end();
     }
 
     bool PiccoloEngine::rendererTick()

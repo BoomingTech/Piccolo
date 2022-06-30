@@ -4,6 +4,7 @@
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
 
 #include "runtime/function/render/passes/directional_light_pass.h"
+#include "runtime/function/utils/profiler.h"
 
 #include <mesh_directional_light_shadow_frag.h>
 #include <mesh_directional_light_shadow_vert.h>
@@ -480,6 +481,7 @@ namespace Piccolo
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>>
             directional_light_mesh_drawcall_batch;
 
+        Profiler::begin("reorganize mesh");
         // reorganize mesh
         for (RenderMeshNode& node : *(m_visiable_nodes.p_directional_light_visible_mesh_nodes))
         {
@@ -499,6 +501,7 @@ namespace Piccolo
 
             mesh_nodes.push_back(temp);
         }
+        Profiler::end();
 
         // Directional Light Shadow begin pass
         {
@@ -529,6 +532,7 @@ namespace Piccolo
             }
         }
 
+        Profiler::begin("draw mesh");
         // Mesh
         if (m_vulkan_rhi->isPointLightShadowEnabled())
         {
@@ -722,6 +726,7 @@ namespace Piccolo
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
             }
         }
+        Profiler::end();
 
         // Directional Light Shadow end pass
         {

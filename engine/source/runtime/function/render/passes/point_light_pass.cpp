@@ -4,6 +4,7 @@
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
 
 #include "runtime/function/render/passes/point_light_pass.h"
+#include "runtime/function/utils/profiler.h"
 
 #include <mesh_point_light_shadow_frag.h>
 #include <mesh_point_light_shadow_geom.h>
@@ -502,7 +503,7 @@ namespace Piccolo
         };
 
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> point_lights_mesh_drawcall_batch;
-
+        Profiler::begin("reorganize mesh");
         // reorganize mesh
         for (RenderMeshNode& node : *(m_visiable_nodes.p_point_lights_visible_mesh_nodes))
         {
@@ -522,7 +523,9 @@ namespace Piccolo
 
             mesh_nodes.push_back(temp);
         }
+        Profiler::end();
 
+        Profiler::begin("draw");
         VkRenderPassBeginInfo renderpass_begin_info {};
         renderpass_begin_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderpass_begin_info.renderPass        = m_framebuffer.render_pass;
@@ -739,6 +742,7 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_end_render_pass(m_vulkan_rhi->m_current_command_buffer);
+        Profiler::end();
     }
 
 } // namespace Piccolo

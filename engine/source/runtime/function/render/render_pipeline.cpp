@@ -9,7 +9,7 @@
 #include "runtime/function/render/passes/point_light_pass.h"
 #include "runtime/function/render/passes/tone_mapping_pass.h"
 #include "runtime/function/render/passes/ui_pass.h"
-
+#include "runtime/function/utils/profiler.h"
 #include "runtime/core/base/macro.h"
 
 namespace Piccolo
@@ -140,6 +140,7 @@ namespace Piccolo
 
     void RenderPipeline::deferredRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource)
     {
+        Profiler::begin("prepar RHI and Resource");
         VulkanRHI*      vulkan_rhi      = static_cast<VulkanRHI*>(rhi.get());
         RenderResource* vulkan_resource = static_cast<RenderResource*>(render_resource.get());
 
@@ -148,6 +149,7 @@ namespace Piccolo
         vulkan_rhi->waitForFences();
 
         vulkan_rhi->resetCommandPool();
+        Profiler::end();
 
         bool recreate_swapchain =
             vulkan_rhi->prepareBeforePass(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
@@ -155,10 +157,13 @@ namespace Piccolo
         {
             return;
         }
-
+        Profiler::begin("DirectionalLightShadowPass");
         static_cast<DirectionalLightShadowPass*>(m_directional_light_pass.get())->draw();
+        Profiler::end();
 
+        Profiler::begin("PointLightShadowPass");
         static_cast<PointLightShadowPass*>(m_point_light_shadow_pass.get())->draw();
+        Profiler::end();
 
         ColorGradingPass& color_grading_pass = *(static_cast<ColorGradingPass*>(m_color_grading_pass.get()));
         FXAAPass&         fxaa_pass          = *(static_cast<FXAAPass*>(m_fxaa_pass.get()));
@@ -166,6 +171,7 @@ namespace Piccolo
         UIPass&           ui_pass            = *(static_cast<UIPass*>(m_ui_pass.get()));
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
 
+        Profiler::begin("MainCameraPass");
         static_cast<MainCameraPass*>(m_main_camera_pass.get())
             ->draw(color_grading_pass,
                    fxaa_pass,
@@ -173,8 +179,11 @@ namespace Piccolo
                    ui_pass,
                    combine_ui_pass,
                    vulkan_rhi->m_current_swapchain_image_index);
+        Profiler::end();
 
+        Profiler::begin("submitRendering");
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
+        Profiler::end();
     }
 
     void RenderPipeline::passUpdateAfterRecreateSwapchain()
