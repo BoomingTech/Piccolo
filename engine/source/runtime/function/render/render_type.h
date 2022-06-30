@@ -1,6 +1,7 @@
 #pragma once
 
 #include "runtime/core/base/hash.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
