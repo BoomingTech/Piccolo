@@ -42,15 +42,7 @@ namespace Pilot
             return this_hash < other_hash;
         }
 
-        bool operator==(const CollisionInfo& other_info) const
-        {
-            if (other_info.m_id_a == m_id_a && other_info.m_id_b == m_id_b)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        bool operator==(const CollisionInfo& rhs) const { return rhs.m_id_a == m_id_a && rhs.m_id_b == m_id_b; }
     };
 
     class CollisionDetection
