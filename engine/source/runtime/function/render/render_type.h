@@ -118,15 +118,21 @@ namespace Pilot
         bool operator==(const MaterialSourceDesc& rhs) const
         {
             return m_base_color_file == rhs.m_base_color_file &&
-                   m_metallic_roughness_file == rhs.m_metallic_roughness_file && m_normal_file == rhs.m_normal_file &&
-                   m_occlusion_file == rhs.m_occlusion_file && m_emissive_file == rhs.m_emissive_file;
+                   m_metallic_roughness_file == rhs.m_metallic_roughness_file &&
+                   m_normal_file == rhs.m_normal_file &&
+                   m_occlusion_file == rhs.m_occlusion_file &&
+                   m_emissive_file == rhs.m_emissive_file;
         }
 
         size_t getHashValue() const
         {
             size_t hash = 0;
-            hash_combine(
-                hash, m_base_color_file, m_metallic_roughness_file, m_normal_file, m_occlusion_file, m_emissive_file);
+            hash_combine(hash,
+                         m_base_color_file,
+                         m_metallic_roughness_file,
+                         m_normal_file,
+                         m_occlusion_file,
+                         m_emissive_file);
             return hash;
         }
     };
