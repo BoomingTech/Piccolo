@@ -16,7 +16,7 @@
 
 ## 坐标系定义
 
-1. [PPT](https://games-1312234642.cos.ap-guangzhou.myqcloud.com/course/GAMES104/GAMES104_Lecture08.pdf)中`欧拉角`的坐标系定义是按照：$\left\{\begin{array}{lc}\color{#f66}\phi(Roll)&\Rightarrow&\color{#f33}X^+(面朝方向)\\\color{#6f6}\theta(Pitch)&\Rightarrow&\color{#3f3}Y^+(物体右侧)\\\color{#66f}\Psi(Yaw)&\Rightarrow&\color{#33f}Z^+(物体下方)\end{array}\right.$，属于`右手坐标系`
+1. [PPT](https://games-1312234642.cos.ap-guangzhou.myqcloud.com/course/GAMES104/GAMES104_Lecture08.pdf)中`欧拉角`的坐标系定义是按照：$\left\{\begin{array}{lc}\color{\#f66}\phi(Roll)&\Rightarrow&\color{\#f33}X^+(面朝方向)\\\color{\#6f6}\theta(Pitch)&\Rightarrow&\color{\#3f3}Y^+(物体右侧)\\\color{\#66f}\Psi(Yaw)&\Rightarrow&\color{\#33f}Z^+(物体下方)\end{array}\right.$，属于`右手坐标系`
 
 2. `Piccolo引擎`的坐标系定义(以UI中显示的为准)：$\left\{\begin{array}{lc}\color{#f66}\phi(Roll)&\Rightarrow&\color{#3f3}Y^+(面朝方向)\\\color{#6f6}\theta(Pitch)&\Rightarrow&\color{#f33}X^+(物体右侧)\\\color{#66f}\Psi(Yaw)&\Rightarrow&\color{#33f}Z^+(物体上方)\end{array}\right.$，同属`右手坐标系`。
 
