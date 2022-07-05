@@ -245,7 +245,7 @@ namespace Piccolo
         return v + uv + uuv;
     }
 
-    Radian Quaternion::getRoll(bool reproject_axis) const
+    Radian Quaternion::getYaw(bool reproject_axis) const
     {
         if (reproject_axis)
         {
@@ -290,7 +290,7 @@ namespace Piccolo
         }
     }
     //-----------------------------------------------------------------------
-    Radian Quaternion::getYaw(bool reproject_axis) const
+    Radian Quaternion::getRoll(bool reproject_axis) const
     {
         if (reproject_axis)
         {
