@@ -472,8 +472,8 @@ namespace Piccolo
     {
         struct MeshNode
         {
-            glm::mat4 model_matrix;
-            glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
+            Matrix4x4 model_matrix;
+            Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
             bool      enable_vertex_blending;
         };
 

@@ -439,9 +439,9 @@ namespace Piccolo
 
         struct MeshNode
         {
-            glm::mat4 model_matrix;
+            Matrix4x4 model_matrix;
             uint32_t  node_id;
-            glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
+            Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
         };
 
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
