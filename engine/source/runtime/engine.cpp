@@ -10,6 +10,8 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 
+#include "runtime/core/profile/instrumentor.h"
+
 namespace Piccolo
 {
     bool                            g_is_editor_mode {false};
@@ -43,6 +45,7 @@ namespace Piccolo
 
         while (!window_system->shouldClose())
         {
+            PICCOLO_PROFILE_SCOPE("PiccoloEngine::run()");
             const float delta_time = calculateDeltaTime();
             tickOneFrame(delta_time);
         }
@@ -50,6 +53,8 @@ namespace Piccolo
 
     float PiccoloEngine::calculateDeltaTime()
     {
+        PICCOLO_PROFILE_FUNCTION();
+
         float delta_time;
         {
             using namespace std::chrono;
@@ -65,6 +70,7 @@ namespace Piccolo
 
     bool PiccoloEngine::tickOneFrame(float delta_time)
     {
+        PICCOLO_PROFILE_FUNCTION();
         logicalTick(delta_time);
         calculateFPS(delta_time);
 
@@ -90,12 +96,14 @@ namespace Piccolo
 
     void PiccoloEngine::logicalTick(float delta_time)
     {
+        PICCOLO_PROFILE_FUNCTION();
         g_runtime_global_context.m_world_manager->tick(delta_time);
         g_runtime_global_context.m_input_system->tick();
     }
 
     bool PiccoloEngine::rendererTick()
     {
+        PICCOLO_PROFILE_FUNCTION();
         g_runtime_global_context.m_render_system->tick();
         return true;
     }
