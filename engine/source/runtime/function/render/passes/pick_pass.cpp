@@ -3,6 +3,7 @@
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
 
 #include "runtime/function/render/render_helper.h"
+#include "runtime/function/render/glm_wrapper.h"
 
 #include "runtime/function/render/passes/pick_pass.h"
 
@@ -439,9 +440,10 @@ namespace Piccolo
 
         struct MeshNode
         {
-            glm::mat4 model_matrix;
-            uint32_t  node_id;
-            glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count];
+            const Matrix4x4* model_matrix {nullptr};
+            const Matrix4x4* joint_matrices {nullptr};
+            uint32_t         joint_count {0};
+            uint32_t         node_id;
         };
 
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
@@ -454,13 +456,11 @@ namespace Piccolo
 
             MeshNode temp;
             temp.model_matrix = node.model_matrix;
-            temp.node_id      = node.node_id;
+            temp.node_id = node.node_id;
             if (node.ref_mesh->enable_vertex_blending)
             {
-                for (uint32_t i = 0; i < m_mesh_vertex_blending_max_joint_count; ++i)
-                {
-                    temp.joint_matrices[i] = node.joint_matrices[i];
-                }
+                temp.joint_matrices = node.joint_matrices;
+                temp.joint_count = node.joint_count;
             }
 
             model_nodes.push_back(temp);
@@ -651,7 +651,7 @@ namespace Piccolo
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
                             perdrawcall_storage_buffer_object.model_matrices[i] =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
+                                GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
                             perdrawcall_storage_buffer_object.node_ids[i] =
                                 mesh_nodes[drawcall_max_instance_count * drawcall_index + i].node_id;
                         }
@@ -684,11 +684,11 @@ namespace Piccolo
                                         per_drawcall_vertex_blending_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                for (uint32_t j = 0; j < m_mesh_vertex_blending_max_joint_count; ++j)
+                                for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
                                 {
                                     per_drawcall_vertex_blending_storage_buffer_object
                                         .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                        mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
+                                        GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j]);
                                 }
                             }
                         }
