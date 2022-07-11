@@ -226,12 +226,13 @@ namespace Piccolo
     // nodes
     struct RenderMeshNode
     {
-        glm::mat4          model_matrix;
-        glm::mat4          joint_matrices[m_mesh_vertex_blending_max_joint_count];
-        VulkanMesh*        ref_mesh     = nullptr;
-        VulkanPBRMaterial* ref_material = nullptr;
+        const Matrix4x4*   model_matrix {nullptr};
+        const Matrix4x4*   joint_matrices {nullptr};
+        uint32_t           joint_count {0};
+        VulkanMesh*        ref_mesh {nullptr};
+        VulkanPBRMaterial* ref_material {nullptr};
         uint32_t           node_id;
-        bool               enable_vertex_blending = false;
+        bool               enable_vertex_blending {false};
     };
 
     struct RenderAxisNode
