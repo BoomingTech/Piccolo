@@ -25,7 +25,7 @@ namespace Piccolo
         void               initialize(WindowCreateInfo create_info);
         void               pollEvents() const;
         bool               shouldClose() const;
-        void               setTile(const char* title);
+        void               setTitle(const char* title);
         GLFWwindow*        getWindow() const;
         std::array<int, 2> getWindowSize() const;
 
