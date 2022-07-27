@@ -50,7 +50,7 @@ namespace Piccolo
 
     bool WindowSystem::shouldClose() const { return glfwWindowShouldClose(m_window); }
 
-    void WindowSystem::setTile(const char* title) { glfwSetWindowTitle(m_window, title); }
+    void WindowSystem::setTitle(const char* title) { glfwSetWindowTitle(m_window, title); }
 
     GLFWwindow* WindowSystem::getWindow() const { return m_window; }
 
