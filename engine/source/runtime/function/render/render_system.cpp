@@ -220,7 +220,7 @@ namespace Piccolo
             m_render_resource->uploadGlobalRenderResource(m_rhi, *swap_data.m_level_resource_desc);
 
             // reset level resource swap data to a clean state
-            m_swap_context.resetLevelRsourceSwapData();
+            m_swap_context.resetLevelResourceSwapData();
         }
 
         // update game object if needed

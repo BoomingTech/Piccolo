@@ -42,7 +42,7 @@ namespace Piccolo
                  m_swap_data[m_render_swap_data_index].m_camera_swap_data.has_value());
     }
 
-    void RenderSwapContext::resetLevelRsourceSwapData()
+    void RenderSwapContext::resetLevelResourceSwapData()
     {
         m_swap_data[m_render_swap_data_index].m_level_resource_desc.reset();
     }
@@ -61,7 +61,7 @@ namespace Piccolo
 
     void RenderSwapContext::swap()
     {
-        resetLevelRsourceSwapData();
+        resetLevelResourceSwapData();
         resetGameObjectResourceSwapData();
         resetGameObjectToDelete();
         resetCameraSwapData();
