@@ -97,6 +97,11 @@ cmake -DCMAKE_TRY_COMPILE_TARGET_TYPE="STATIC_LIBRARY" -DCMAKE_EXPORT_COMPILE_CO
 copy compile_db_temp\compile_commands.json .
 ```
 
+For macOS with VSCode `clangd` extension:
+```sh
+./build_macos_ninja.sh debug
+```
+
 ### Using Physics Debug Renderer
 Currently Physics Debug Renderer is only available on Windows. You can use the following command to generate the solution with the debugger project.
 
