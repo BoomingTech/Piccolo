@@ -28,16 +28,16 @@
 #include <imgui_internal.h>
 #include <stb_image.h>
 
-namespace Pilot
+namespace Piccolo
 {
     std::vector<std::pair<std::string, bool>> g_editor_node_state_array;
     int                                       g_node_depth = -1;
     void                                      DrawVecControl(const std::string& label,
-                                                             Pilot::Vector3&    values,
+                                                             Piccolo::Vector3&    values,
                                                              float              resetValue  = 0.0f,
                                                              float              columnWidth = 100.0f);
     void                                      DrawVecControl(const std::string& label,
-                                                             Pilot::Quaternion& values,
+                                                             Piccolo::Quaternion& values,
                                                              float              resetValue  = 0.0f,
                                                              float              columnWidth = 100.0f);
 
@@ -81,38 +81,38 @@ namespace Pilot
 
                 Vector3 degrees_val;
 
-                degrees_val.x = trans_ptr->m_rotation.getRoll(false).valueDegrees();
-                degrees_val.y = trans_ptr->m_rotation.getPitch(false).valueDegrees();
+                degrees_val.x = trans_ptr->m_rotation.getPitch(false).valueDegrees();
+                degrees_val.y = trans_ptr->m_rotation.getRoll(false).valueDegrees();
                 degrees_val.z = trans_ptr->m_rotation.getYaw(false).valueDegrees();
 
                 DrawVecControl("Position", trans_ptr->m_position);
                 DrawVecControl("Rotation", degrees_val);
                 DrawVecControl("Scale", trans_ptr->m_scale);
 
-                trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) -
-                                          Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2)) +
-                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2));
-                trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.x / 2)) -
-                                          Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
-                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) *
-                                              Math::cos(Math::degreesToRadians(degrees_val.x / 2));
+                trans_ptr->m_rotation.w = Math::cos(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2));
+                trans_ptr->m_rotation.x = Math::sin(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) -
+                                          Math::cos(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2));
+                trans_ptr->m_rotation.y = Math::cos(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2)) +
+                                          Math::sin(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2));
+                trans_ptr->m_rotation.z = Math::cos(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.z / 2)) -
+                                          Math::sin(Math::degreesToRadians(degrees_val.x / 2)) *
+                                              Math::sin(Math::degreesToRadians(degrees_val.y / 2)) *
+                                              Math::cos(Math::degreesToRadians(degrees_val.z / 2));
                 trans_ptr->m_rotation.normalise();
 
                 g_editor_global_context.m_scene_manager->drawSelectedEntityAxis();
@@ -385,13 +385,13 @@ namespace Pilot
         ImGui::End();
     }
 
-    void EditorUI::createComponentUI(Reflection::ReflectionInstance& instance)
+    void EditorUI::createClassUI(Reflection::ReflectionInstance& instance)
     {
         Reflection::ReflectionInstance* reflection_instance;
         int count = instance.m_meta.getBaseClassReflectionInstanceList(reflection_instance, instance.m_instance);
         for (int index = 0; index < count; index++)
         {
-            createComponentUI(reflection_instance[index]);
+            createClassUI(reflection_instance[index]);
         }
         createLeafNodeUI(instance);
 
@@ -406,17 +406,16 @@ namespace Pilot
 
         for (size_t index = 0; index < fields_count; index++)
         {
-            auto fields_count = fields[index];
-            if (fields_count.isArrayType())
+            auto field = fields[index];
+            if (field.isArrayType())
             {
-
                 Reflection::ArrayAccessor array_accessor;
-                if (Reflection::TypeMeta::newArrayAccessorFromName(fields_count.getFieldTypeName(), array_accessor))
+                if (Reflection::TypeMeta::newArrayAccessorFromName(field.getFieldTypeName(), array_accessor))
                 {
-                    void* field_instance = fields_count.get(instance.m_instance);
+                    void* field_instance = field.get(instance.m_instance);
                     int   array_count    = array_accessor.getSize(field_instance);
                     m_editor_ui_creator["TreeNodePush"](
-                        std::string(fields_count.getFieldName()) + "[" + std::to_string(array_count) + "]", nullptr);
+                        std::string(field.getFieldName()) + "[" + std::to_string(array_count) + "]", nullptr);
                     auto item_type_meta_item =
                         Reflection::TypeMeta::newMetaFromName(array_accessor.getElementTypeName());
                     auto item_ui_creator_iterator = m_editor_ui_creator.find(item_type_meta_item.getTypeName());
@@ -426,9 +425,9 @@ namespace Pilot
                         {
                             m_editor_ui_creator["TreeNodePush"]("[" + std::to_string(index) + "]", nullptr);
                             auto object_instance = Reflection::ReflectionInstance(
-                                Pilot::Reflection::TypeMeta::newMetaFromName(item_type_meta_item.getTypeName().c_str()),
+                                Piccolo::Reflection::TypeMeta::newMetaFromName(item_type_meta_item.getTypeName().c_str()),
                                 array_accessor.get(index, field_instance));
-                            createComponentUI(object_instance);
+                            createClassUI(object_instance);
                             m_editor_ui_creator["TreeNodePop"]("[" + std::to_string(index) + "]", nullptr);
                         }
                         else
@@ -441,20 +440,20 @@ namespace Pilot
                                 "[" + std::to_string(index) + "]", array_accessor.get(index, field_instance));
                         }
                     }
-                    m_editor_ui_creator["TreeNodePop"](fields_count.getFieldName(), nullptr);
+                    m_editor_ui_creator["TreeNodePop"](field.getFieldName(), nullptr);
                 }
             }
-            auto ui_creator_iterator = m_editor_ui_creator.find(fields_count.getFieldTypeName());
+            auto ui_creator_iterator = m_editor_ui_creator.find(field.getFieldTypeName());
             if (ui_creator_iterator == m_editor_ui_creator.end())
             {
                 Reflection::TypeMeta field_meta =
-                    Reflection::TypeMeta::newMetaFromName(fields_count.getFieldTypeName());
-                if (fields_count.getTypeMeta(field_meta))
+                    Reflection::TypeMeta::newMetaFromName(field.getFieldTypeName());
+                if (field.getTypeMeta(field_meta))
                 {
                     auto child_instance =
-                        Reflection::ReflectionInstance(field_meta, fields_count.get(instance.m_instance));
+                        Reflection::ReflectionInstance(field_meta, field.get(instance.m_instance));
                     m_editor_ui_creator["TreeNodePush"](field_meta.getTypeName(), nullptr);
-                    createLeafNodeUI(child_instance);
+                    createClassUI(child_instance);
                     m_editor_ui_creator["TreeNodePop"](field_meta.getTypeName(), nullptr);
                 }
                 else
@@ -463,14 +462,14 @@ namespace Pilot
                     {
                         continue;
                     }
-                    m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                                                                         fields_count.get(instance.m_instance));
+                    m_editor_ui_creator[field.getFieldTypeName()](field.getFieldName(),
+                                                                         field.get(instance.m_instance));
                 }
             }
             else
             {
-                m_editor_ui_creator[fields_count.getFieldTypeName()](fields_count.getFieldName(),
-                                                                     fields_count.get(instance.m_instance));
+                m_editor_ui_creator[field.getFieldTypeName()](field.getFieldName(),
+                                                                     field.get(instance.m_instance));
             }
         }
         delete[] fields;
@@ -513,9 +512,9 @@ namespace Pilot
         {
             m_editor_ui_creator["TreeNodePush"](("<" + component_ptr.getTypeName() + ">").c_str(), nullptr);
             auto object_instance = Reflection::ReflectionInstance(
-                Pilot::Reflection::TypeMeta::newMetaFromName(component_ptr.getTypeName().c_str()),
+                Piccolo::Reflection::TypeMeta::newMetaFromName(component_ptr.getTypeName().c_str()),
                 component_ptr.operator->());
-            createComponentUI(object_instance);
+            createClassUI(object_instance);
             m_editor_ui_creator["TreeNodePop"](("<" + component_ptr.getTypeName() + ">").c_str(), nullptr);
         }
         ImGui::End();
@@ -914,7 +913,7 @@ namespace Pilot
 
     void EditorUI::preRender() { showEditorUI(); }
 
-    void DrawVecControl(const std::string& label, Pilot::Vector3& values, float resetValue, float columnWidth)
+    void DrawVecControl(const std::string& label, Piccolo::Vector3& values, float resetValue, float columnWidth)
     {
         ImGui::PushID(label.c_str());
 
@@ -970,7 +969,7 @@ namespace Pilot
         ImGui::PopID();
     }
 
-    void DrawVecControl(const std::string& label, Pilot::Quaternion& values, float resetValue, float columnWidth)
+    void DrawVecControl(const std::string& label, Piccolo::Quaternion& values, float resetValue, float columnWidth)
     {
         ImGui::PushID(label.c_str());
 
@@ -1037,4 +1036,4 @@ namespace Pilot
         ImGui::Columns(1);
         ImGui::PopID();
     }
-} // namespace Pilot
+} // namespace Piccolo

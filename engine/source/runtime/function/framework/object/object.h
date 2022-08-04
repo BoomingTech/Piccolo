@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     /// GObject : Game Object base class
     class GObject : public std::enable_shared_from_this<GObject>
@@ -74,4 +74,4 @@ namespace Pilot
         // in editor, and it's polymorphism
         std::vector<Reflection::ReflectionPtr<Component>> m_components;
     };
-} // namespace Pilot
+} // namespace Piccolo

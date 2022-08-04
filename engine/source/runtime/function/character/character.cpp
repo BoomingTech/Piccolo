@@ -5,7 +5,7 @@
 #include "runtime/function/framework/component/transform/transform_component.h"
 #include "runtime/function/input/input_system.h"
 
-namespace Pilot
+namespace Piccolo
 {
     Character::Character(std::shared_ptr<GObject> character_object) { setObject(character_object); }
 
@@ -75,4 +75,4 @@ namespace Pilot
         //m_position =
         //    (m_position * (k_camera_blend_time - frame_length) + new_position * frame_length) / k_camera_blend_time;
     }
-} // namespace Pilot
+} // namespace Piccolo

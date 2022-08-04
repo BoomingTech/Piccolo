@@ -12,7 +12,7 @@
 
 #include "runtime/core/base/macro.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderPipeline::initialize(RenderPipelineInitInfo init_info)
     {
@@ -215,4 +215,4 @@ namespace Pilot
         MainCameraPass& main_camera_pass = *(static_cast<MainCameraPass*>(m_main_camera_pass.get()));
         main_camera_pass.m_selected_axis = selected_axis;
     }
-} // namespace Pilot
+} // namespace Piccolo

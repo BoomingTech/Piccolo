@@ -5,7 +5,7 @@
 #include "runtime/function/animation/animation_loader.h"
 #include "runtime/function/animation/skeleton.h"
 
-namespace Pilot
+namespace Piccolo
 {
     std::map<std::string, std::shared_ptr<SkeletonData>>  AnimationManager::m_skeleton_definition_cache;
     std::map<std::string, std::shared_ptr<AnimationClip>> AnimationManager::m_animation_data_cache;
@@ -149,4 +149,4 @@ namespace Pilot
         }
         return blend_state_with_clip_data;
     }
-} // namespace Pilot
+} // namespace Piccolo

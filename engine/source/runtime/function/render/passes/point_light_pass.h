@@ -2,7 +2,7 @@
 
 #include "runtime/function/render/render_pass.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class RenderResourceBase;
 
@@ -29,4 +29,4 @@ namespace Pilot
         VkDescriptorSetLayout                           m_per_mesh_layout;
         MeshPointLightShadowPerframeStorageBufferObject m_mesh_point_light_shadow_perframe_storage_buffer_object;
     };
-} // namespace Pilot
+} // namespace Piccolo

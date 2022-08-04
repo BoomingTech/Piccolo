@@ -11,7 +11,7 @@
 #include <optional>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     class RenderResource;
     class RenderCamera;
@@ -69,4 +69,4 @@ namespace Pilot
         void updateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);
         void updateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);
     };
-} // namespace Pilot
+} // namespace Piccolo

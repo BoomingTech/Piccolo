@@ -4,7 +4,7 @@
 
 #include "runtime/function/animation/utilities.h"
 
-namespace Pilot
+namespace Piccolo
 {
     Skeleton::~Skeleton() { delete[] m_bones; }
 
@@ -154,4 +154,4 @@ namespace Pilot
         }
         return animation_result;
     }
-} // namespace Pilot
+} // namespace Piccolo

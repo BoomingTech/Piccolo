@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(Vector2)
     CLASS(Vector2, Fields)
@@ -341,4 +341,4 @@ namespace Pilot
         static const Vector2 UNIT_SCALE;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

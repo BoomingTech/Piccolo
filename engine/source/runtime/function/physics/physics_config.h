@@ -4,7 +4,7 @@
 
 #include "core/math/vector3.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class PhysicsConfig
     {
@@ -24,4 +24,4 @@ namespace Pilot
 
         float m_update_frequency {60.f};
     };
-} // namespace Pilot
+} // namespace Piccolo

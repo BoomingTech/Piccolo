@@ -8,7 +8,7 @@
 
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     class GObject;
     class PhysicsActor
@@ -81,4 +81,4 @@ namespace Pilot
 
         uint32_t m_body_id{0xffffffff};
     };
-}; // namespace Pilot
+}; // namespace Piccolo

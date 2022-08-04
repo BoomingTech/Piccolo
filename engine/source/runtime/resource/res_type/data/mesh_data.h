@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-namespace Pilot
+namespace Piccolo
 {
 
     REFLECTION_TYPE(Vertex)
@@ -51,4 +51,4 @@ namespace Pilot
         std::vector<SkeletonBinding> bind;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

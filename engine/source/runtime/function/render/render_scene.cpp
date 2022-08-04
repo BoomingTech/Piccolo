@@ -4,7 +4,7 @@
 #include "runtime/function/render/render_pass.h"
 #include "runtime/function/render/render_resource.h"
 
-namespace Pilot
+namespace Piccolo
 {
     void RenderScene::updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
                                            std::shared_ptr<RenderCamera>   camera)
@@ -109,12 +109,13 @@ namespace Pilot
                 m_directional_light_visible_mesh_nodes.emplace_back();
                 RenderMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
 
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
+                temp_node.model_matrix = &entity.m_model_matrix;
 
                 assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
+                if (!entity.m_joint_matrices.empty())
                 {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
+                    temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
+                    temp_node.joint_matrices = entity.m_joint_matrices.data();
                 }
                 temp_node.node_id = entity.m_instance_id;
 
@@ -163,12 +164,13 @@ namespace Pilot
                 m_point_lights_visible_mesh_nodes.emplace_back();
                 RenderMeshNode& temp_node = m_point_lights_visible_mesh_nodes.back();
 
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
+                temp_node.model_matrix = &entity.m_model_matrix;
 
                 assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
+                if (!entity.m_joint_matrices.empty())
                 {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
+                    temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
+                    temp_node.joint_matrices = entity.m_joint_matrices.data();
                 }
                 temp_node.node_id = entity.m_instance_id;
 
@@ -205,12 +207,13 @@ namespace Pilot
                 m_main_camera_visible_mesh_nodes.emplace_back();
                 RenderMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
 
-                temp_node.model_matrix = GLMUtil::fromMat4x4(entity.m_model_matrix);
+                temp_node.model_matrix = &entity.m_model_matrix;
 
                 assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
-                for (size_t joint_index = 0; joint_index < entity.m_joint_matrices.size(); joint_index++)
+                if (!entity.m_joint_matrices.empty())
                 {
-                    temp_node.joint_matrices[joint_index] = GLMUtil::fromMat4x4(entity.m_joint_matrices[joint_index]);
+                    temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
+                    temp_node.joint_matrices = entity.m_joint_matrices.data();
                 }
                 temp_node.node_id = entity.m_instance_id;
 
@@ -244,4 +247,4 @@ namespace Pilot
         // TODO
         m_main_camera_visible_particlebillboard_nodes.clear();
     }
-} // namespace Pilot
+} // namespace Piccolo

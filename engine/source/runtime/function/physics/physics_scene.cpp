@@ -22,15 +22,16 @@
 #include "Jolt/Physics/Collision/NarrowPhaseQuery.h"
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
+#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 #include "Jolt/Physics/Collision/ShapeCast.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-namespace Pilot
+namespace Piccolo
 {
-    PhysicsScene::PhysicsScene()
+    PhysicsScene::PhysicsScene(const Vector3& gravity)
     {
-
         static_assert(k_invalid_rigidbody_id == JPH::BodyID::cInvalidBodyID);
 
         JPH::Factory::sInstance = new JPH::Factory();
@@ -57,8 +58,8 @@ namespace Pilot
         // use the default setting
         m_physics.m_jolt_physics_system->SetPhysicsSettings(JPH::PhysicsSettings());
 
-        m_physics.m_jolt_physics_system->SetGravity(
-            JPH::Vec3(m_config.m_gravity.x, m_config.m_gravity.y, m_config.m_gravity.z));
+        m_physics.m_jolt_physics_system->SetGravity(toVec3(gravity));
+        m_config.m_gravity = gravity;
     }
 
     PhysicsScene::~PhysicsScene()
@@ -163,6 +164,16 @@ namespace Pilot
     }
 
     void PhysicsScene::removeRigidBody(uint32_t body_id) { m_pending_remove_bodies.push_back(body_id); }
+
+    void PhysicsScene::updateRigidBodyGlobalTransform(uint32_t body_id, const Transform& global_transform)
+    {
+        JPH::BodyInterface& body_interface = m_physics.m_jolt_physics_system->GetBodyInterface();
+
+        body_interface.SetPositionAndRotation(JPH::BodyID(body_id),
+                                              toVec3(global_transform.m_position),
+                                              toQuat(global_transform.m_rotation),
+                                              JPH::EActivation::Activate);
+    }
 
     void PhysicsScene::tick(float delta_time)
     {
@@ -282,7 +293,7 @@ namespace Pilot
             PhysicsHitInfo& hit = out_hits[index];
             hit.hit_position    = toVec3(sweep_result.mContactPointOn2);
             hit.hit_normal      = toVec3(sweep_result.mPenetrationAxis.Normalized());
-            hit.hit_distance    = (hit.hit_position - global_position).length();
+            hit.hit_distance    = sweep_result.mFraction * sweep_length;
             hit.body_id         = sweep_result.mBodyID2.GetIndexAndSequenceNumber();
         }
 
@@ -307,11 +318,14 @@ namespace Pilot
             return false;
         }
 
-        JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
-        scene_query.CollideShape(
-            jph_shape, JPH::Vec3::sReplicate(1.0f), toMat44(global_transform), JPH::CollideShapeSettings(), collector);
+        JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
+        scene_query.CollideShape(jph_shape,
+                                 JPH::Vec3::sReplicate(1.0f),
+                                 toMat44(shape_global_transform),
+                                 JPH::CollideShapeSettings(),
+                                 collector);
 
-        return !collector.mHits.empty();
+        return collector.HadHit();
     }
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
@@ -324,4 +338,4 @@ namespace Pilot
     }
 #endif
 
-} // namespace Pilot
+} // namespace Piccolo

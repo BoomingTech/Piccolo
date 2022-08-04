@@ -14,7 +14,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
-namespace Pilot
+namespace Piccolo
 {
     struct MeshVertex
     {
@@ -88,4 +88,4 @@ namespace Pilot
             return attribute_descriptions;
         }
     };
-} // namespace Pilot
+} // namespace Piccolo

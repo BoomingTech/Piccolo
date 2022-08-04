@@ -11,7 +11,7 @@
 
 #include "_generated/serializer/all_serializer.h"
 
-namespace Pilot
+namespace Piccolo
 {
     class AssetManager
     {
@@ -69,4 +69,4 @@ namespace Pilot
         std::filesystem::path getFullPath(const std::string& relative_path) const;
 
     };
-} // namespace Pilot
+} // namespace Piccolo

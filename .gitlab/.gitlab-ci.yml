@@ -1,0 +1,33 @@
+.job_rules_template: &job_rules
+  stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" 
+        && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" 
+        && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "upstream"'
+
+build_in_mac:
+  tags:
+    - mac
+    - shell
+  <<: *job_rules
+  script:
+    - ./build_macos.sh release
+
+build_in_ubuntu:
+  image: cmake:3.23   # you can build it with Dockerfile offered in this project
+  tags:
+    - ubuntu
+    - docker
+  <<: *job_rules
+  script:
+    - ./build_linux.sh release
+
+build_in_windows:
+  tags:
+    - windows
+    - shell
+  <<: *job_rules
+  script:
+    - ./build_windows.bat
+

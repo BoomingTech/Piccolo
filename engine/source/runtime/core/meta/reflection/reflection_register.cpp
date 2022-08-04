@@ -8,10 +8,10 @@
 #include "_generated/reflection/all_reflection.h"
 #include "_generated/serializer/all_serializer.ipp"
 
-namespace Pilot
+namespace Piccolo
 {
     namespace Reflection
     {
         void TypeMetaRegister::Unregister() { TypeMetaRegisterinterface::unregisterAll(); }
     } // namespace Reflection
-} // namespace Pilot
+} // namespace Piccolo

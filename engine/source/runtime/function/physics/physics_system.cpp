@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-namespace Pilot
+namespace Piccolo
 {
     void PhysicsSystem::tick(float delta_time)
     {
@@ -298,4 +298,4 @@ namespace Pilot
         actor_a.applyAngularImpulse(relative_a.crossProduct(-fullImpulse));
         actor_b.applyAngularImpulse(relative_b.crossProduct(fullImpulse));
     }
-} // namespace Pilot
+} // namespace Piccolo

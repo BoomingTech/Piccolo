@@ -1,6 +1,6 @@
 #include "runtime/core/math/matrix3.h"
 
-namespace Pilot
+namespace Piccolo
 {
     const Matrix3x3 Matrix3x3::ZERO(0, 0, 0, 0, 0, 0, 0, 0, 0);
     const Matrix3x3 Matrix3x3::IDENTITY(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -237,4 +237,4 @@ namespace Pilot
         m_mat[2][1] = yzm + x_sin_v;
         m_mat[2][2] = z2 * one_minus_cos + cos_v;
     }
-} // namespace Pilot
+} // namespace Piccolo

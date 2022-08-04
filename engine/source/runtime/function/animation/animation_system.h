@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-namespace Pilot
+namespace Piccolo
 {
     class AnimationManager
     {
@@ -30,4 +30,4 @@ namespace Pilot
         AnimationManager() = default;
     };
 
-} // namespace Pilot
+} // namespace Piccolo

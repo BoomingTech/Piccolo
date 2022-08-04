@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace Pilot
+namespace Piccolo
 {
     class RHI;
     class RenderScene;
@@ -49,4 +49,4 @@ namespace Pilot
 
         std::unordered_map<MeshSourceDesc, AxisAlignedBox> m_bounding_box_cache_map;
     };
-} // namespace Pilot
+} // namespace Piccolo

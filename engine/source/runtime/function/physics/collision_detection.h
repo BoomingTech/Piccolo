@@ -1,12 +1,13 @@
 #pragma once
 
+#include "runtime/core/base/hash.h"
 #include "runtime/core/math/axis_aligned.h"
 #include "runtime/core/math/transform.h"
 
 #include "runtime/function/physics/physics_actor.h"
 #include "runtime/function/physics/ray.h"
 
-namespace Pilot
+namespace Piccolo
 {
     struct ContactPoint
     {
@@ -32,22 +33,16 @@ namespace Pilot
             m_contact_point.m_penetration = penetration;
         }
 
-        bool operator<(const CollisionInfo& other_info) const
+        bool operator<(const CollisionInfo& rhs) const
         {
-            size_t other_hash = (size_t)other_info.m_id_a + ((size_t)other_info.m_id_b << 8);
-            size_t this_hash  = (size_t)m_id_a + ((size_t)m_id_b << 8);
+            size_t other_hash = 0;
+            hash_combine(other_hash, rhs.m_id_a, rhs.m_id_b);
+            size_t this_hash = 0;
+            hash_combine(this_hash, m_id_a, m_id_b);
             return this_hash < other_hash;
         }
 
-        bool operator==(const CollisionInfo& other_info) const
-        {
-            if (other_info.m_id_a == m_id_a && other_info.m_id_b == m_id_b)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        bool operator==(const CollisionInfo& rhs) const { return rhs.m_id_a == m_id_a && rhs.m_id_b == m_id_b; }
     };
 
     class CollisionDetection
@@ -109,4 +104,4 @@ namespace Pilot
                                           float            sphere_radius,
                                           RayCollision&    collision);
     };
-} // namespace Pilot
+} // namespace Piccolo

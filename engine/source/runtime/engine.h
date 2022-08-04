@@ -6,14 +6,14 @@
 #include <string>
 #include <unordered_set>
 
-namespace Pilot
+namespace Piccolo
 {
     extern bool                            g_is_editor_mode;
     extern std::unordered_set<std::string> g_editor_tick_component_types;
 
-    class PilotEngine
+    class PiccoloEngine
     {
-        friend class PilotEditor;
+        friend class PiccoloEditor;
 
         static const float k_fps_alpha;
 
@@ -51,4 +51,4 @@ namespace Pilot
         int   m_fps {0};
     };
 
-} // namespace Pilot
+} // namespace Piccolo

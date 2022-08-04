@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-namespace Pilot
+namespace Piccolo
 {
     void metaExample()
     {
@@ -77,4 +77,4 @@ namespace Pilot
             }
         }
     }
-} // namespace Pilot
+} // namespace Piccolo

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace Pilot
+namespace Piccolo
 {
     REFLECTION_TYPE(GameObjectMeshDesc)
     STRUCT(GameObjectMeshDesc, Fields)
@@ -94,10 +94,10 @@ namespace Pilot
         GObjectID                       m_go_id {k_invalid_gobject_id};
         std::vector<GameObjectPartDesc> m_object_parts;
     };
-} // namespace Pilot
+} // namespace Piccolo
 
 template<>
-struct std::hash<Pilot::GameObjectPartId>
+struct std::hash<Piccolo::GameObjectPartId>
 {
-    size_t operator()(const Pilot::GameObjectPartId& rhs) const noexcept { return rhs.getHashValue(); }
+    size_t operator()(const Piccolo::GameObjectPartId& rhs) const noexcept { return rhs.getHashValue(); }
 };

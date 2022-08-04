@@ -14,7 +14,7 @@ namespace JPH
     class Shape;
 }
 
-namespace Pilot
+namespace Piccolo
 {
     class RigidBodyShape;
 
@@ -86,4 +86,4 @@ namespace Pilot
 
     JPH::Shape* toShape(const RigidBodyShape& shape, const Vector3& scale);
 
-} // namespace Pilot
+} // namespace Piccolo
