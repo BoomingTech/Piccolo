@@ -18,13 +18,7 @@ jobs:
           submodules: 'true'
 
       - name: Install dependencies
-        run: |
-            sudo apt install libxrandr-dev
-            sudo apt install libxinerama-dev
-            sudo apt install libxcursor-dev
-            sudo apt install libxi-dev
-            sudo apt install libglvnd-dev
-            sudo apt install libvulkan-dev
+        run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglvnd-dev libvulkan-dev
         
       - name: Build
-        run: ./build_linux.sh ${{matrix.configuration}} 
+        run: ./build_linux.sh ${{matrix.configuration}}
