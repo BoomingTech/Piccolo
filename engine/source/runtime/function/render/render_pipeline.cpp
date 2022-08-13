@@ -122,7 +122,7 @@ namespace Piccolo
         static_cast<PointLightShadowPass*>(m_point_light_shadow_pass.get())->draw();
 
         ColorGradingPass& color_grading_pass = *(static_cast<ColorGradingPass*>(m_color_grading_pass.get()));
-        FXAAPass&         fxaa_pass          = *(static_cast<FXAAPass*>(m_tone_mapping_pass.get()));
+        FXAAPass&         fxaa_pass          = *(static_cast<FXAAPass*>(m_fxaa_pass.get()));
         ToneMappingPass&  tone_mapping_pass  = *(static_cast<ToneMappingPass*>(m_tone_mapping_pass.get()));
         UIPass&           ui_pass            = *(static_cast<UIPass*>(m_ui_pass.get()));
         CombineUIPass&    combine_ui_pass    = *(static_cast<CombineUIPass*>(m_combine_ui_pass.get()));
