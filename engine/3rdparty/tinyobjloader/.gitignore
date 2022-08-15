@@ -1,6 +1,0 @@
-#Common folder for building objects
-build/
-/python/dist/
-/python/*.egg-info
-/python/.eggs
-/python/tiny_obj_loader.h

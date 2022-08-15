@@ -1,6 +1,0 @@
-{
-  "components": [
-      "asset/objects/environment/wall/mesh/wall.mesh.component.json",
-      "asset/objects/environment/wall/rigid_body/wall.rigid_body.component.json"
-  ]
-}

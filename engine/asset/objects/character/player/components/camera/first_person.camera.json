@@ -1,9 +1,0 @@
-{
-  "parameter": {
-	  "$context":{
-      "fov": 89,
-      "vertical_offset": 1.65
-    },
-    "$typeName": "FirstPersonCameraParameter"
-  }
-}

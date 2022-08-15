@@ -1,9 +1,0 @@
-newmtl default
-Ka 0 0 0
-Kd 0 0 0
-Ks 0 0 0
-Kt 0.1 0.2 0.3
-map_Kd -colorspace sRGB -o 0.1 diffuse.jpg
-map_Ks -s 0.1 0.2 specular.jpg
-map_bump -colorspace linear -bm 3 bumpmap.jpg
-
