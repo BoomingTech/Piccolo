@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://games104.boomingtech.com">
-    <img src="engine/source/editor/resource/PilotEngine.png" width="400" alt="Pilot Engine logo">
+    <img src="engine/resource/PilotEngine.png" width="400" alt="Pilot Engine logo">
   </a>
 </p>
 
