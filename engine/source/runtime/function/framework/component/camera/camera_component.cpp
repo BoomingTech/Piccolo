@@ -92,7 +92,7 @@ namespace Piccolo
         m_left   = q_yaw * q_pitch * m_left;
         m_up     = m_foward.crossProduct(m_left);
 
-        Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, m_foward, m_up);
+        Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, eye_pos + m_foward, m_up);
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
