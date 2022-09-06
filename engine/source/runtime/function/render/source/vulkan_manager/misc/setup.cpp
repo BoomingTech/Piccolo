@@ -6,8 +6,6 @@ int Pilot::PVulkanManager::initialize(GLFWwindow* window, class Scene& scene, Pi
 
     m_global_render_resource.initialize(m_vulkan_context, m_max_frames_in_flight);
 
-    m_global_render_resource._brightness_constant.brightness = scene.m_brightness;
-
     PRenderPassBase::m_render_config._enable_debug_untils_label = m_enable_debug_utils_label;
     PRenderPassBase::m_render_config._enable_point_light_shadow = m_enable_point_light_shadow;
     PRenderPassBase::m_render_config._enable_validation_Layers  = m_enable_validation_Layers;

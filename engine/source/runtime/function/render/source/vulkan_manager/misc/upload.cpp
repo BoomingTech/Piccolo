@@ -1,3 +1,4 @@
+#include "runtime/core/base/macro.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_manager.h"
 #include <cstring>
 
@@ -562,6 +563,8 @@ void Pilot::PVulkanManager::updateGlobalTexturesForIBL(PIBLResourceData& ibl_res
 void Pilot::PVulkanManager::updateGlobalTexturesForColorGrading(PColorGradingResourceData& color_grading_resource_data)
 {
     // color grading texture (x1)
+    // TODO: remove debug information
+    if (
     initializeTextureImage(m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image,
                            m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_view,
                            m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_allocation,
@@ -569,7 +572,12 @@ void Pilot::PVulkanManager::updateGlobalTexturesForColorGrading(PColorGradingRes
                            color_grading_resource_data._color_grading_LUT_texture_image_height,
                            color_grading_resource_data._color_grading_LUT_texture_image_pixels,
                            color_grading_resource_data._color_grading_LUT_texture_image_format,
-                           1);
+                           1)) {
+                               LOG_DEBUG("color grading texture initialized");
+                           }
+                           else {
+                               LOG_WARN("color grading texture not initialized");
+                           }
 }
 
 void Pilot::PVulkanManager::initializeCubeMap(VkImage&             image,

@@ -4,7 +4,6 @@
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_pick_pass.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_point_light_pass.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_render_pass.h"
-#include "vulkan/vulkan_core.h"
 
 namespace Pilot
 {
@@ -13,19 +12,6 @@ namespace Pilot
         VkImageView point_light_shadow_color_image_view;
         VkImageView directional_light_shadow_color_image_view;
     };
-
-    class PBrightnessPass : public PRenderPassBase
-    {
-    public:
-        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
-        void draw();
-        void updateAfterFramebufferRecreate(VkImageView input_attachment);
-    private:
-        void setupDescriptorSetLayout();
-        void setupPipelines();
-        void setupDescriptorSet();
-    };
-
 
     class PColorGradingPass : public PRenderPassBase
     {
@@ -55,18 +41,28 @@ namespace Pilot
         void setupDescriptorSet();
     };
 
-    class PAnalogGlitchPass : public PRenderPassBase
+    // Add resolution data
+    struct ResolutionData {
+        glm::vec4 screen_resolution;
+        glm::vec4 editor_screen_resolution;
+    };
+
+    // Add a new pass class
+    class PAntiAliasingPass : public PRenderPassBase
     {
     public:
         void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        // update resolution data using push constant
+        void updateResolutionData();
         void draw();
+
         void updateAfterFramebufferRecreate(VkImageView input_attachment);
+
     private:
         void setupDescriptorSetLayout();
         void setupPipelines();
         void setupDescriptorSet();
     };
-
 
     class PUIPass : public PRenderPassBase
     {
@@ -119,7 +115,7 @@ namespace Pilot
         _main_camera_subpass_forward_lighting,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
-        _main_camera_subpass_analog_glitch,
+        _main_camera_subpass_anti_aliasing, // add a new enum
         _main_camera_subpass_ui,
         _main_camera_subpass_combine_ui,
         _main_camera_subpass_count
@@ -164,16 +160,18 @@ namespace Pilot
 
         void initialize();
 
-        void draw(PColorGradingPass& color_grading_pass,
+        // add a new pass arg to draw
+        void draw(PAntiAliasingPass& anti_aliasing_pass,
+                PColorGradingPass& color_grading_pass,
                   PToneMappingPass&  tone_mapping_pass,
-                  PAnalogGlitchPass& image_block_glitch_pass,
                   PUIPass&           ui_pass,
                   PCombineUIPass&    combine_ui_pass,
                   uint32_t           current_swapchain_image_index,
                   void*              ui_state);
 
         // legacy
-        void drawForward(PColorGradingPass& color_grading_pass,
+        void drawForward(PAntiAliasingPass& anti_aliasing_pass,
+                         PColorGradingPass& color_grading_pass,
                          PToneMappingPass&  tone_mapping_pass,
                          PUIPass&           ui_pass,
                          PCombineUIPass&    combine_ui_pass,

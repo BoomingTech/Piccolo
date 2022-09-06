@@ -14,9 +14,10 @@ bool Pilot::PVulkanManager::initializeDescriptorPool()
     pool_sizes[2].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     pool_sizes[2].descriptorCount = 1 * m_max_material_count;
     pool_sizes[3].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1 ; // ImGui_ImplVulkan_CreateDeviceObjects
+    pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
     pool_sizes[4].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-    pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2;
+    pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2 + 1;
+    // anti-aliasing reuse descriptor? TODO: check later
 
     VkDescriptorPoolCreateInfo pool_info {};
     pool_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

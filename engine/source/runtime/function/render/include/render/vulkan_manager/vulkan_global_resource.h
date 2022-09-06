@@ -83,25 +83,22 @@ namespace Pilot
         void*          _axis_inefficient_storage_buffer_memory_pointer;
     };
 
-    struct PBrightnessConstant
-    {
-        float brightness;
-    };
-
     class PGlobalRenderResource
     {
     public:
         PIBLResource          _ibl_resource;
         PColorGradingResource _color_grading_resource;
         PStorageBuffer        _storage_buffer;
-        PBrightnessConstant _brightness_constant;
 
         void                      initialize(PVulkanContext& context, int frames_in_flight = 3);
         PIBLResourceData          getIBLTextureData(Scene* scene, class PilotRenderer* renderer);
         PColorGradingResourceData getColorGradingTextureData(Scene* scene, class PilotRenderer* renderer);
         void                      clear(PVulkanContext& context);
+        bool is_lut_valid() {return _is_lut_valid;}
+        void mark_lut_valid() {_is_lut_valid = true;}
 
     private:
+        bool _is_lut_valid = false;
         void initializeIBLSamplers(PVulkanContext& context);
         void initializeStorageBuffer(PVulkanContext& context, int frames_in_flight);
         void mapStorageBuffer(PVulkanContext& context);

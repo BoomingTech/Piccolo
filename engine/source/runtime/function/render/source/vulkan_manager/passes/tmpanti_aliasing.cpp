@@ -1,17 +1,21 @@
+#include "runtime/core/base/macro.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_common.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_mesh.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_misc.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_passes.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_util.h"
 
-#include <color_grading_frag.h>
-// add a dummy frag shader
-#include <color_grading_dummy_frag.h>
-#include <post_process_vert.h>
+#include "runtime/function/render/include/render/glm_wrapper.h"
+
+#include <anti_aliasing_frag.h>
+#include <anti_aliasing_vert.h>
+
+using namespace std;
+bool printed = false;
 
 namespace Pilot
 {
-    void PColorGradingPass::initialize(VkRenderPass render_pass, VkImageView input_attachment)
+    void PAntiAliasingPass::initialize(VkRenderPass render_pass, VkImageView input_attachment)
     {
         _framebuffer.render_pass = render_pass;
         setupDescriptorSetLayout();
@@ -20,7 +24,7 @@ namespace Pilot
         updateAfterFramebufferRecreate(input_attachment);
     }
 
-    void PColorGradingPass::setupDescriptorSetLayout()
+    void PAntiAliasingPass::setupDescriptorSetLayout()
     {
         _descriptor_infos.resize(1);
 
@@ -33,11 +37,13 @@ namespace Pilot
         post_process_global_layout_input_attachment_binding.descriptorCount = 1;
         post_process_global_layout_input_attachment_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        VkDescriptorSetLayoutBinding& post_process_global_layout_LUT_binding = post_process_global_layout_bindings[1];
-        post_process_global_layout_LUT_binding.binding                       = 1;
-        post_process_global_layout_LUT_binding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        post_process_global_layout_LUT_binding.descriptorCount = 1;
-        post_process_global_layout_LUT_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+        // add image sampler
+        VkDescriptorSetLayoutBinding& post_process_global_layout_image_sampler_binding =
+            post_process_global_layout_bindings[1];
+        post_process_global_layout_image_sampler_binding.binding         = 1;
+        post_process_global_layout_image_sampler_binding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        post_process_global_layout_image_sampler_binding.descriptorCount = 1;
+        post_process_global_layout_image_sampler_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkDescriptorSetLayoutCreateInfo post_process_global_layout_create_info;
         post_process_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -55,8 +61,7 @@ namespace Pilot
             throw std::runtime_error("create post process global layout");
         }
     }
-
-    void PColorGradingPass::setupPipelines()
+    void PAntiAliasingPass::setupPipelines()
     {
         _render_pipelines.resize(1);
 
@@ -66,6 +71,20 @@ namespace Pilot
         pipeline_layout_create_info.setLayoutCount = 1;
         pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
+        // per https://vkguide.dev/docs/chapter-3/push_constants/
+        // using push constants
+        // setup push constants
+        VkPushConstantRange push_constant;
+        // this push constant range starts at the beginning
+        push_constant.offset = 0;
+        // this push constant range takes up the size of the struct
+        push_constant.size = sizeof(ResolutionData);
+        // beware wrong BIT
+        push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        // add the push constant to pipeline
+        pipeline_layout_create_info.pPushConstantRanges    = &push_constant;
+        pipeline_layout_create_info.pushConstantRangeCount = 1;
+
         if (vkCreatePipelineLayout(
                 m_p_vulkan_context->_device, &pipeline_layout_create_info, nullptr, &_render_pipelines[0].layout) !=
             VK_SUCCESS)
@@ -74,10 +93,9 @@ namespace Pilot
         }
 
         VkShaderModule vert_shader_module =
-            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, POST_PROCESS_VERT);
-        VkShaderModule frag_shader_module = PVulkanUtil::createShaderModule(
-            // if lut is loaded as expected, use color grading shader, else use a dummy shader
-            m_p_vulkan_context->_device, m_p_global_render_resource->is_lut_valid() ? COLOR_GRADING_FRAG : COLOR_GRADING_DUMMY_FRAG);
+            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, ANTI_ALIASING_VERT);
+        VkShaderModule frag_shader_module =
+            PVulkanUtil::createShaderModule(m_p_vulkan_context->_device, ANTI_ALIASING_FRAG);
 
         VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -181,7 +199,7 @@ namespace Pilot
         pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
         pipelineInfo.layout              = _render_pipelines[0].layout;
         pipelineInfo.renderPass          = _framebuffer.render_pass;
-        pipelineInfo.subpass             = _main_camera_subpass_color_grading;
+        pipelineInfo.subpass             = _main_camera_subpass_anti_aliasing;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
@@ -198,8 +216,7 @@ namespace Pilot
         vkDestroyShaderModule(m_p_vulkan_context->_device, vert_shader_module, nullptr);
         vkDestroyShaderModule(m_p_vulkan_context->_device, frag_shader_module, nullptr);
     }
-
-    void PColorGradingPass::setupDescriptorSet()
+    void PAntiAliasingPass::setupDescriptorSet()
     {
         VkDescriptorSetAllocateInfo post_process_global_descriptor_set_alloc_info;
         post_process_global_descriptor_set_alloc_info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -216,20 +233,21 @@ namespace Pilot
         }
     }
 
-    void PColorGradingPass::updateAfterFramebufferRecreate(VkImageView input_attachment)
+    void PAntiAliasingPass::updateAfterFramebufferRecreate(VkImageView input_attachment)
     {
+
         VkDescriptorImageInfo post_process_per_frame_input_attachment_info = {};
         post_process_per_frame_input_attachment_info.sampler =
             PVulkanUtil::getOrCreateNearestSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
         post_process_per_frame_input_attachment_info.imageView   = input_attachment;
         post_process_per_frame_input_attachment_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        VkDescriptorImageInfo color_grading_LUT_image_info = {};
-        color_grading_LUT_image_info.sampler =
+        // use input attachment as sampler image
+        VkDescriptorImageInfo post_process_global_layout_image_sampler_image_info = {};
+        post_process_global_layout_image_sampler_image_info.sampler =
             PVulkanUtil::getOrCreateLinearSampler(m_p_vulkan_context->_physical_device, m_p_vulkan_context->_device);
-        color_grading_LUT_image_info.imageView =
-            m_p_global_render_resource->_color_grading_resource._color_grading_LUT_texture_image_view;
-        color_grading_LUT_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        post_process_global_layout_image_sampler_image_info.imageView   = input_attachment;
+        post_process_global_layout_image_sampler_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkWriteDescriptorSet post_process_descriptor_writes_info[2];
 
@@ -248,11 +266,12 @@ namespace Pilot
         post_process_descriptor_LUT_write_info.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         post_process_descriptor_LUT_write_info.pNext                 = NULL;
         post_process_descriptor_LUT_write_info.dstSet                = _descriptor_infos[0].descriptor_set;
-        post_process_descriptor_LUT_write_info.dstBinding            = 1;
-        post_process_descriptor_LUT_write_info.dstArrayElement       = 0;
-        post_process_descriptor_LUT_write_info.descriptorType        = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        post_process_descriptor_LUT_write_info.descriptorCount       = 1;
-        post_process_descriptor_LUT_write_info.pImageInfo            = &color_grading_LUT_image_info;
+        // beware wrong dstBinding
+        post_process_descriptor_LUT_write_info.dstBinding      = 1;
+        post_process_descriptor_LUT_write_info.dstArrayElement = 0;
+        post_process_descriptor_LUT_write_info.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        post_process_descriptor_LUT_write_info.descriptorCount = 1;
+        post_process_descriptor_LUT_write_info.pImageInfo      = &post_process_global_layout_image_sampler_image_info;
 
         vkUpdateDescriptorSets(m_p_vulkan_context->_device,
                                sizeof(post_process_descriptor_writes_info) /
@@ -262,12 +281,31 @@ namespace Pilot
                                NULL);
     }
 
-    void PColorGradingPass::draw()
+    void PAntiAliasingPass::updateResolutionData()
+    {
+        // create ResolutionData
+        ResolutionData resolution_data = {
+            glm::vec4(
+                0.0F, 0.0F, m_p_vulkan_context->_swapchain_extent.width, m_p_vulkan_context->_swapchain_extent.height),
+            glm::vec4(m_command_info._viewport.x,
+                      m_command_info._viewport.y,
+                      m_command_info._viewport.width,
+                      m_command_info._viewport.height)};
+
+        vkCmdPushConstants(m_command_info._current_command_buffer,
+                           _render_pipelines[0].layout,
+                           VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(ResolutionData),
+                           &resolution_data);
+    }
+
+    void PAntiAliasingPass::draw()
     {
         if (m_render_config._enable_debug_untils_label)
         {
             VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Color Grading", {1.0f, 1.0f, 1.0f, 1.0f}};
+                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Anti Aliasing", {1.0f, 1.0f, 1.0f, 1.0f}};
             m_p_vulkan_context->_vkCmdBeginDebugUtilsLabelEXT(m_command_info._current_command_buffer, &label_info);
         }
 

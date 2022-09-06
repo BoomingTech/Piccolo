@@ -1,3 +1,4 @@
+#include "runtime/core/base/macro.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_global_resource.h"
 #include "runtime/function/render/include/render/render.h"
 #include "runtime/function/render/include/render/vulkan_manager/vulkan_manager.h"
@@ -108,10 +109,16 @@ Pilot::PColorGradingResourceData Pilot::PGlobalRenderResource::getColorGradingTe
     PILOT_PIXEL_FORMAT color_grading_LUT_texture_image_format = PILOT_PIXEL_FORMAT::PILOT_PIXEL_FORMAT_R32G32B32_FLOAT;
     if (color_grading_LUT_texture_image != NULL)
     {
+        // TODO: remove debug print later
+        LOG_DEBUG("get lut image");
+        // mark lut data as valid
+        mark_lut_valid();
         color_grading_LUT_texture_image_pixels = color_grading_LUT_texture_image->m_pixels;
         color_grading_LUT_texture_image_width  = static_cast<uint32_t>(color_grading_LUT_texture_image->m_width);
         color_grading_LUT_texture_image_height = static_cast<uint32_t>(color_grading_LUT_texture_image->m_height);
         color_grading_LUT_texture_image_format = color_grading_LUT_texture_image->m_format;
+    } else {
+        LOG_WARN("no lut image, will use dummy shader");
     }
 
     Pilot::PColorGradingResourceData color_grading_resource_data;

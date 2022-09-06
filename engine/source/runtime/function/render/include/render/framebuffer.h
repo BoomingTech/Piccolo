@@ -152,8 +152,6 @@ namespace Pilot
         float                    m_diagonal {0};
         std::shared_ptr<PCamera> m_camera;
 
-        float m_brightness {0};
-
         std::vector<std::shared_ptr<PParticleBillbord>> m_particlebillboards;
 
         // these are not populated by load
