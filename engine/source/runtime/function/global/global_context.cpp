@@ -1,6 +1,7 @@
 #include "runtime/function/global/global_context.h"
 
 #include "core/log/log_system.h"
+#include "core/job/job_system.h"
 
 #include "runtime/engine.h"
 
@@ -29,6 +30,9 @@ namespace Piccolo
         m_file_system = std::make_shared<FileSystem>();
 
         m_logger_system = std::make_shared<LogSystem>();
+        m_job_system = std::make_shared<JobSystem>();
+        m_job_system->registerJobType(JobType::LOAD_ASSET);
+        m_job_system->init();
 
         m_asset_manager = std::make_shared<AssetManager>();
 
