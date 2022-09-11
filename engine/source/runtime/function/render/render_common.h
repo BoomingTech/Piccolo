@@ -2,18 +2,10 @@
 
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
+#include "runtime/core/math/matrix4.h"
 
 #include "runtime/function/render/render_type.h"
 
-#ifndef GLM_FORCE_RADIANS
-#define GLM_FORCE_RADIANS 1
-#endif
-
-#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
-#endif
-
-#include <glm/glm.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -46,8 +38,8 @@ namespace Piccolo
 
     struct MeshPerframeStorageBufferObject
     {
-        glm::mat4                   proj_view_matrix;
-        glm::vec3                   camera_position;
+        Matrix4x4                   proj_view_matrix;
+        Vector3                     camera_position;
         float                       _padding_camera_position;
         Vector3                     ambient_light;
         float                       _padding_ambient_light;
@@ -57,7 +49,7 @@ namespace Piccolo
         uint32_t                    _padding_point_light_num_3;
         VulkanScenePointLight       scene_point_lights[m_max_point_light_count];
         VulkanSceneDirectionalLight scene_directional_light;
-        glm::mat4                   directional_light_proj_view;
+        Matrix4x4                   directional_light_proj_view;
     };
 
     struct VulkanMeshInstance
@@ -66,7 +58,7 @@ namespace Piccolo
         float     _padding_enable_vertex_blending_1;
         float     _padding_enable_vertex_blending_2;
         float     _padding_enable_vertex_blending_3;
-        glm::mat4 model_matrix;
+        Matrix4x4 model_matrix;
     };
 
     struct MeshPerdrawcallStorageBufferObject
@@ -76,7 +68,7 @@ namespace Piccolo
 
     struct MeshPerdrawcallVertexBlendingStorageBufferObject
     {
-        glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPerMaterialUniformBufferObject
@@ -109,12 +101,12 @@ namespace Piccolo
 
     struct MeshPointLightShadowPerdrawcallVertexBlendingStorageBufferObject
     {
-        glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshDirectionalLightShadowPerframeStorageBufferObject
     {
-        glm::mat4 light_proj_view;
+        Matrix4x4 light_proj_view;
     };
 
     struct MeshDirectionalLightShadowPerdrawcallStorageBufferObject
@@ -124,21 +116,21 @@ namespace Piccolo
 
     struct MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject
     {
-        glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
     };
 
     struct AxisStorageBufferObject
     {
-        glm::mat4 model_matrix  = glm::mat4(1.0);
+        Matrix4x4 model_matrix  = Matrix4x4::IDENTITY;
         uint32_t  selected_axis = 3;
     };
 
     struct ParticleBillboardPerframeStorageBufferObject
     {
-        glm::mat4 proj_view_matrix;
-        glm::vec3 eye_position;
+        Matrix4x4 proj_view_matrix;
+        Vector3   eye_position;
         float     _padding_eye_position;
-        glm::vec3 up_direction;
+        Vector3   up_direction;
         float     _padding_up_direction;
     };
 
@@ -150,21 +142,21 @@ namespace Piccolo
 
     struct MeshInefficientPickPerframeStorageBufferObject
     {
-        glm::mat4 proj_view_matrix;
+        Matrix4x4 proj_view_matrix;
         uint32_t  rt_width;
         uint32_t  rt_height;
     };
 
     struct MeshInefficientPickPerdrawcallStorageBufferObject
     {
-        glm::mat4 model_matrices[m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 model_matrices[m_mesh_per_drawcall_max_instance_count];
         uint32_t  node_ids[m_mesh_per_drawcall_max_instance_count];
         float     enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject
     {
-        glm::mat4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
     };
 
     // mesh
@@ -237,7 +229,7 @@ namespace Piccolo
 
     struct RenderAxisNode
     {
-        glm::mat4   model_matrix {glm::mat4(1.0f)};
+        Matrix4x4   model_matrix {Matrix4x4::IDENTITY};
         VulkanMesh* ref_mesh {nullptr};
         uint32_t    node_id;
         bool        enable_vertex_blending {false};

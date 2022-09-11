@@ -2,7 +2,6 @@
 #include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
-#include "runtime/function/render/glm_wrapper.h"
 
 #include "runtime/function/render/passes/directional_light_pass.h"
 
@@ -627,7 +626,7 @@ namespace Piccolo
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
                                 perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                 GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
+                                  *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                                 perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
                                     mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
                                             .joint_matrices ?
@@ -680,8 +679,8 @@ namespace Piccolo
                                         {
                                             per_drawcall_vertex_blending_storage_buffer_object
                                                 .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                                GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                    .joint_matrices[j]);
+                                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
+                                                    .joint_matrices[j];
                                         }
                                     }
                                 }
