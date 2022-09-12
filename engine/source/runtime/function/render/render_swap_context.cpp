@@ -47,7 +47,10 @@ namespace Piccolo
         return !(m_swap_data[m_render_swap_data_index].m_level_resource_desc.has_value() ||
                  m_swap_data[m_render_swap_data_index].m_game_object_resource_desc.has_value() ||
                  m_swap_data[m_render_swap_data_index].m_game_object_to_delete.has_value() ||
-                 m_swap_data[m_render_swap_data_index].m_camera_swap_data.has_value());
+                 m_swap_data[m_render_swap_data_index].m_camera_swap_data.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_particle_submit_request.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_emitter_tick_request.has_value() ||
+                 m_swap_data[m_render_swap_data_index].m_emitter_transform_request.has_value());
     }
 
     void RenderSwapContext::resetLevelRsourceSwapData()
@@ -90,6 +93,7 @@ namespace Piccolo
         resetCameraSwapData();
         resetEmitterTickSwapData();
         resetEmitterTransformSwapData();
+        resetPartilceBatchSwapData();
         std::swap(m_logic_swap_data_index, m_render_swap_data_index);
     }
 

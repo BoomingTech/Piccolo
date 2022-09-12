@@ -4,7 +4,7 @@
 
 #include "runtime/resource/res_type/components/emitter.h"
 
-#include "runtime/core/math/Matrix4.h"
+#include "runtime/core/math/matrix4.h"
 #include "runtime/core/math/vector2.h"
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"

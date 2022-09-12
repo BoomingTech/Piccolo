@@ -1,5 +1,5 @@
 #pragma once
-#include "runtime/core/math/Matrix4.h"
+#include "runtime/core/math/matrix4.h"
 #include "runtime/core/math/vector2.h"
 #include "runtime/core/math/vector4.h"
 #include "runtime/core/meta/reflection/reflection.h"
@@ -7,7 +7,7 @@
 namespace Piccolo
 {
     REFLECTION_TYPE(ParticleComponentRes)
-    CLASS(ParticleComponentRes, Fields)
+        CLASS(ParticleComponentRes, Fields)
     {
         REFLECTION_BODY(ParticleComponentRes);
 

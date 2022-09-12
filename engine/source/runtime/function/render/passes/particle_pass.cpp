@@ -1363,20 +1363,21 @@ namespace Piccolo
             {
                 std::vector<VkWriteDescriptorSet> computeWriteDescriptorSets {
                     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}};
+
+                VkDescriptorBufferInfo uniformbufferDescriptor = {m_compute_uniform_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo uniformbufferDescriptor = {m_compute_uniform_buffer, 0, VK_WHOLE_SIZE};
-                    VkWriteDescriptorSet&  descriptorset           = computeWriteDescriptorSets[0];
-                    descriptorset.sType                            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorset.dstSet                           = m_descriptor_infos[eid * 3].descriptor_set;
-                    descriptorset.descriptorType                   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    descriptorset.dstBinding                       = 0;
-                    descriptorset.pBufferInfo                      = &uniformbufferDescriptor;
-                    descriptorset.descriptorCount                  = 1;
+                    VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[0];
+                    descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
+                    descriptorset.descriptorType        = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    descriptorset.dstBinding            = 0;
+                    descriptorset.pBufferInfo           = &uniformbufferDescriptor;
+                    descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo positionBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_position_device_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo positionBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_position_device_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[1];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1386,9 +1387,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo counterBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_counter_device_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo counterBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_counter_device_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[2];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1398,9 +1399,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo indirectArgumentBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_indirect_dispatch_argument_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo indirectArgumentBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_indirect_dispatch_argument_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[3];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1410,9 +1411,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo aliveListBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_alive_list_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo aliveListBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_alive_list_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[4];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1422,9 +1423,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo deadListBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo deadListBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[5];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1434,9 +1435,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo aliveListNextBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo aliveListNextBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[6];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1446,9 +1447,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo particleComponentResBufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_particle_component_res_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo particleComponentResBufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_particle_component_res_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[7];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1458,9 +1459,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo particleSceneUniformBufferDescriptor = {
+                    m_scene_uniform_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo particleSceneUniformBufferDescriptor = {
-                        m_scene_uniform_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[8];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1470,9 +1471,9 @@ namespace Piccolo
                     descriptorset.descriptorCount       = 1;
                 }
 
+                VkDescriptorBufferInfo positionRenderbufferDescriptor = {
+                    m_emitter_buffer_batches[eid].m_position_render_buffer, 0, VK_WHOLE_SIZE};
                 {
-                    VkDescriptorBufferInfo positionRenderbufferDescriptor = {
-                        m_emitter_buffer_batches[eid].m_position_render_buffer, 0, VK_WHOLE_SIZE};
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[9];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1481,33 +1482,34 @@ namespace Piccolo
                     descriptorset.pBufferInfo           = &positionRenderbufferDescriptor;
                     descriptorset.descriptorCount       = 1;
                 }
+
+                VkSampler           sampler;
+                VkSamplerCreateInfo samplerCreateInfo {};
+                samplerCreateInfo.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerCreateInfo.maxAnisotropy    = 1.0f;
+                samplerCreateInfo.anisotropyEnable = true;
+                samplerCreateInfo.magFilter        = VK_FILTER_LINEAR;
+                samplerCreateInfo.minFilter        = VK_FILTER_LINEAR;
+                samplerCreateInfo.mipmapMode       = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerCreateInfo.addressModeU     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.addressModeV     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.addressModeW     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.mipLodBias       = 0.0f;
+                samplerCreateInfo.compareOp        = VK_COMPARE_OP_NEVER;
+                samplerCreateInfo.minLod           = 0.0f;
+                samplerCreateInfo.maxLod           = 0.0f;
+                samplerCreateInfo.borderColor      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+                if (VK_SUCCESS != vkCreateSampler(m_vulkan_rhi->m_device, &samplerCreateInfo, nullptr, &sampler))
                 {
-                    VkSampler           sampler;
-                    VkSamplerCreateInfo samplerCreateInfo {};
-                    samplerCreateInfo.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                    samplerCreateInfo.maxAnisotropy    = 1.0f;
-                    samplerCreateInfo.anisotropyEnable = true;
-                    samplerCreateInfo.magFilter        = VK_FILTER_LINEAR;
-                    samplerCreateInfo.minFilter        = VK_FILTER_LINEAR;
-                    samplerCreateInfo.mipmapMode       = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                    samplerCreateInfo.addressModeU     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.addressModeV     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.addressModeW     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.mipLodBias       = 0.0f;
-                    samplerCreateInfo.compareOp        = VK_COMPARE_OP_NEVER;
-                    samplerCreateInfo.minLod           = 0.0f;
-                    samplerCreateInfo.maxLod           = 0.0f;
-                    samplerCreateInfo.borderColor      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-                    if (VK_SUCCESS != vkCreateSampler(m_vulkan_rhi->m_device, &samplerCreateInfo, nullptr, &sampler))
-                    {
-                        throw std::runtime_error("create sampler error");
-                    }
+                    throw std::runtime_error("create sampler error");
+                }
 
-                    VkDescriptorImageInfo piccolo_texture_image_info = {};
-                    piccolo_texture_image_info.sampler               = sampler;
-                    piccolo_texture_image_info.imageView             = m_piccolo_logo_texture_image_view;
-                    piccolo_texture_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                VkDescriptorImageInfo piccolo_texture_image_info = {};
+                piccolo_texture_image_info.sampler               = sampler;
+                piccolo_texture_image_info.imageView             = m_piccolo_logo_texture_image_view;
+                piccolo_texture_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+                {
                     VkWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[10];
                     descriptorset.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorset.dstSet                = m_descriptor_infos[eid * 3].descriptor_set;
@@ -1516,20 +1518,21 @@ namespace Piccolo
                     descriptorset.pImageInfo            = &piccolo_texture_image_info;
                     descriptorset.descriptorCount       = 1;
                 }
+
                 vkUpdateDescriptorSets(m_vulkan_rhi->m_device,
                                        static_cast<uint32_t>(computeWriteDescriptorSets.size()),
                                        computeWriteDescriptorSets.data(),
                                        0,
                                        NULL);
-                LOG_INFO("update compute descriptor set done");
             }
             {
                 VkWriteDescriptorSet descriptor_input_attachment_writes_info[2] = {{}, {}};
+
+                VkDescriptorImageInfo gbuffer_normal_descriptor_image_info = {};
+                gbuffer_normal_descriptor_image_info.sampler               = nullptr;
+                gbuffer_normal_descriptor_image_info.imageView             = m_src_normal_image_view;
+                gbuffer_normal_descriptor_image_info.imageLayout           = VK_IMAGE_LAYOUT_GENERAL;
                 {
-                    VkDescriptorImageInfo gbuffer_normal_descriptor_image_info = {};
-                    gbuffer_normal_descriptor_image_info.sampler               = nullptr;
-                    gbuffer_normal_descriptor_image_info.imageView             = m_src_normal_image_view;
-                    gbuffer_normal_descriptor_image_info.imageLayout           = VK_IMAGE_LAYOUT_GENERAL;
 
                     VkWriteDescriptorSet& gbuffer_normal_descriptor_input_attachment_write_info =
                         descriptor_input_attachment_writes_info[0];
@@ -1546,33 +1549,34 @@ namespace Piccolo
                     gbuffer_normal_descriptor_input_attachment_write_info.pImageInfo =
                         &gbuffer_normal_descriptor_image_info;
                 }
+
+                VkSampler           sampler;
+                VkSamplerCreateInfo samplerCreateInfo {};
+                samplerCreateInfo.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerCreateInfo.maxAnisotropy    = 1.0f;
+                samplerCreateInfo.anisotropyEnable = true;
+                samplerCreateInfo.magFilter        = VK_FILTER_NEAREST;
+                samplerCreateInfo.minFilter        = VK_FILTER_NEAREST;
+                samplerCreateInfo.mipmapMode       = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerCreateInfo.addressModeU     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.addressModeV     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.addressModeW     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerCreateInfo.mipLodBias       = 0.0f;
+                samplerCreateInfo.compareOp        = VK_COMPARE_OP_NEVER;
+                samplerCreateInfo.minLod           = 0.0f;
+                samplerCreateInfo.maxLod           = 0.0f;
+                samplerCreateInfo.borderColor      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+                if (VK_SUCCESS != vkCreateSampler(m_vulkan_rhi->m_device, &samplerCreateInfo, nullptr, &sampler))
                 {
-                    VkSampler           sampler;
-                    VkSamplerCreateInfo samplerCreateInfo {};
-                    samplerCreateInfo.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                    samplerCreateInfo.maxAnisotropy    = 1.0f;
-                    samplerCreateInfo.anisotropyEnable = true;
-                    samplerCreateInfo.magFilter        = VK_FILTER_NEAREST;
-                    samplerCreateInfo.minFilter        = VK_FILTER_NEAREST;
-                    samplerCreateInfo.mipmapMode       = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                    samplerCreateInfo.addressModeU     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.addressModeV     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.addressModeW     = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                    samplerCreateInfo.mipLodBias       = 0.0f;
-                    samplerCreateInfo.compareOp        = VK_COMPARE_OP_NEVER;
-                    samplerCreateInfo.minLod           = 0.0f;
-                    samplerCreateInfo.maxLod           = 0.0f;
-                    samplerCreateInfo.borderColor      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-                    if (VK_SUCCESS != vkCreateSampler(m_vulkan_rhi->m_device, &samplerCreateInfo, nullptr, &sampler))
-                    {
-                        throw std::runtime_error("create sampler error");
-                    }
+                    throw std::runtime_error("create sampler error");
+                }
 
-                    VkDescriptorImageInfo depth_descriptor_image_info = {};
-                    depth_descriptor_image_info.sampler               = sampler;
-                    depth_descriptor_image_info.imageView             = m_src_depth_image_view;
-                    depth_descriptor_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                VkDescriptorImageInfo depth_descriptor_image_info = {};
+                depth_descriptor_image_info.sampler               = sampler;
+                depth_descriptor_image_info.imageView             = m_src_depth_image_view;
+                depth_descriptor_image_info.imageLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+                {
                     VkWriteDescriptorSet& depth_descriptor_input_attachment_write_info =
                         descriptor_input_attachment_writes_info[1];
                     depth_descriptor_input_attachment_write_info.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1586,13 +1590,13 @@ namespace Piccolo
                     depth_descriptor_input_attachment_write_info.descriptorCount = 1;
                     depth_descriptor_input_attachment_write_info.pImageInfo      = &depth_descriptor_image_info;
                 }
+
                 vkUpdateDescriptorSets(m_vulkan_rhi->m_device,
                                        sizeof(descriptor_input_attachment_writes_info) /
                                            sizeof(descriptor_input_attachment_writes_info[0]),
                                        descriptor_input_attachment_writes_info,
                                        0,
                                        NULL);
-                LOG_INFO("update normal and depth descriptor set done");
             }
         }
     }
