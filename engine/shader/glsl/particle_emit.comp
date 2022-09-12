@@ -134,14 +134,14 @@ void main()
                 }
                 else
                 {
-                    particle.color.x = rnd0;
-                    particle.color.y = rnd1;
-                    particle.color.z = rnd2;
-                    particle.color.w = 1.0f;
+                    particle.color.x = 1.0 - rnd0;
+                    particle.color.y = 1.0 - rnd1;
+                    particle.color.z = 1.0 - rnd2;
+                    particle.color.w = 0.0f;
 
                     vec4 rotated_vel =
-                        emitterinfo.rotation * vec4(0,
-                                                     (rnd1 * 2 - 1) * emitterinfo.vel.w,
+                        emitterinfo.rotation * vec4((rnd0 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.x,
+                                                     (rnd1 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.y,
                                                      (rnd2 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.z,
                                                      1);
                     particle.vel.x = rotated_vel.x;
