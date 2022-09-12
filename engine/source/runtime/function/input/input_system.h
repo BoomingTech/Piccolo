@@ -14,6 +14,7 @@ namespace Piccolo
         squat    = 1 << 5,                 // not implemented yet
         sprint   = 1 << 6,                 // LEFT SHIFT
         fire     = 1 << 7,                 // not implemented yet
+        free_carema = 1 << 8,              // F
         invalid  = (unsigned int)(1 << 31) // lost focus
     };
 

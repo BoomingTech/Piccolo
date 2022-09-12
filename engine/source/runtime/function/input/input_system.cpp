@@ -61,6 +61,9 @@ namespace Piccolo
                 case GLFW_KEY_LEFT_SHIFT:
                     m_game_command |= (unsigned int)GameCommand::sprint;
                     break;
+                case GLFW_KEY_F:
+                    m_game_command ^= (unsigned int)GameCommand::free_carema;
+                    break;
                 default:
                     break;
             }
