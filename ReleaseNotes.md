@@ -27,7 +27,7 @@
 - 修复了Components Details面板修改变换无法移动模型的问题 #251
 
 #### 引擎
-- 修复了FXAA Pass使用了错误的指针的问题 #320
+- 修复了Forward渲染中FXAA Pass指针使用错误的的问题 #320
 - 修复了Apple Sillicon上的编译问题 #326
 - 修复了第一人称LookAt矩阵构建bug #334
 - 修复了渲染结果无法跟随ImGUI窗口移动的bug #345
