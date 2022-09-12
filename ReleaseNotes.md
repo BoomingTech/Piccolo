@@ -1,3 +1,58 @@
+# Pilot引擎 0.0.8 版本发布说明
+✨ 大家好！Pilot引擎自4月4日发布以来，我们很高兴得到很多开发者朋友们的关注，非常感谢社区开发者们的贡献！
+在整合了开发者社区贡献的更改和我们内部开发更改之后，在此我们激动地发布**Pilot引擎0.0.8版本**！
+
+## 版本信息
+- 发布版本：v0.0.8
+- 发布时间：2022年9月12日
+
+## 更新内容
+### 新特性
+#### 引擎
+- 基于GPU的粒子系统 #345
+- F键切换自由相机/角色跟随相机 #345
+- 增加了复合哈希函数 #281
+
+#### 编辑器
+- 将bool型变量反射为复选框控件 #335
+
+### 重构
+- 移除了渲染层的GLM数学库，统一为内置数学库 #345
+
+### 优化
+- 减少不必要的内存拷贝，提高渲染性能 #296
+
+### 修复的bug
+#### 编辑器
+- 修复了Components Details面板修改变换无法移动模型的问题 #251
+
+#### 引擎
+- 修复了Forward渲染中FXAA Pass指针使用错误的的问题 #320
+- 修复了Apple Sillicon上的编译问题 #326
+- 修复了第一人称LookAt矩阵构建bug #334
+- 修复了渲染结果无法跟随ImGUI窗口移动的bug #345
+
+## What's Changed
+* fix compilation by @OlorinMedas in https://github.com/BoomingTech/Piccolo/pull/280
+* Add hash_combine by @ShenMian in https://github.com/BoomingTech/Piccolo/pull/281
+* Fix the misalignment of rotation in <TransformComponent> by @Killyice in https://github.com/BoomingTech/Piccolo/pull/283
+* Reduce unnecessary copies of memory data to improve rendering performance by @kwbm in https://github.com/BoomingTech/Piccolo/pull/296
+* fix "setTile" typo by @chaihahaha in https://github.com/BoomingTech/Piccolo/pull/303
+* feature: Add checkbox for bool field in editor ui by @CRAFTSTARCN in https://github.com/BoomingTech/Piccolo/pull/335
+* render_pipeline.cpp中forwardRender()函数，创建fxaa_pass时错误使用了m_tone_mapping_pass.get() by @sorvon in https://github.com/BoomingTech/Piccolo/pull/320
+* fix: Support build on Apple Sillicon. by @snakeeye in https://github.com/BoomingTech/Piccolo/pull/326
+* fix first person camera lookatMat by @KVM-Explorer in https://github.com/BoomingTech/Piccolo/pull/334
+* 0.0.8 by @BoomingTechDev in https://github.com/BoomingTech/Piccolo/pull/345
+
+## New Contributors
+* @Killyice made their first contribution in https://github.com/BoomingTech/Piccolo/pull/283
+* @chaihahaha made their first contribution in https://github.com/BoomingTech/Piccolo/pull/303
+* @sorvon made their first contribution in https://github.com/BoomingTech/Piccolo/pull/320
+* @snakeeye made their first contribution in https://github.com/BoomingTech/Piccolo/pull/326
+* @KVM-Explorer made their first contribution in https://github.com/BoomingTech/Piccolo/pull/334
+
+**Full Changelog**: https://github.com/BoomingTech/Piccolo/compare/v0.0.7...v0.0.8
+
 # Pilot引擎 0.0.7 版本发布说明
 ✨ 大家好！Pilot引擎自4月4日发布以来，我们很高兴得到很多开发者朋友们的关注，非常感谢社区开发者们的贡献！
 在整合了开发者社区贡献的更改和我们内部开发更改之后，在此我们激动地发布**Pilot引擎0.0.7版本**！
