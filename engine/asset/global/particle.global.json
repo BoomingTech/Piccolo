@@ -1,0 +1,13 @@
+{
+  "emit_gap": 10,
+  "emit_count": 100000,
+  "time_step": 0.004,
+  "gravity": {
+    "x": 0,
+    "y": 0,
+    "z": -30
+  },
+  "max_life": 0.04,
+  "particle_billboard_texture_path": "asset/texture/default/spark.HDR",
+  "piccolo_logo_texture_path": "resource/PiccoloEditorBigIcon.png"
+}

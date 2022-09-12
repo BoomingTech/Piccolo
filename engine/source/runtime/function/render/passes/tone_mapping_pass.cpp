@@ -247,13 +247,13 @@ namespace Piccolo
         m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
         m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               m_render_pipelines[0].layout,
-                                               0,
-                                               1,
-                                               &m_descriptor_infos[0].descriptor_set,
-                                               0,
-                                               NULL);
+                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    m_render_pipelines[0].layout,
+                                                    0,
+                                                    1,
+                                                    &m_descriptor_infos[0].descriptor_set,
+                                                    0,
+                                                    NULL);
 
         vkCmdDraw(m_vulkan_rhi->m_current_command_buffer, 3, 1, 0, 0);
 

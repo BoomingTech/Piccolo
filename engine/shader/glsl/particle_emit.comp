@@ -1,0 +1,194 @@
+#version 450
+
+#define POINT_TYPE_EMITTER 0
+#define MESH_TYPE_EMITTER  1
+
+struct Particle
+{
+    vec3  pos;
+    float life;
+    vec3  vel;
+    float size_x;
+    vec3  acc;
+    float size_y;
+    vec4  color;
+};
+
+struct CountBuffer
+{
+    int dead_count;
+    int alive_count;
+    int alive_count_after_sim;
+    int emit_count;
+};
+
+struct Argument
+{
+    uvec4 emit_count;
+    uvec4 simulateCount;
+    int   alive_flap_bit;
+};
+
+struct EmitterInfo
+{
+    vec4 pos;    // position base, variance
+    mat4 rotation; // rotation
+    vec4 vel;    // velocity base, variance
+    vec4 acc;    // acceleration base, variance
+    vec3 size;   // size base
+    int  emitter_type;
+    vec4 life;  // life base, variance, accumulate time
+    vec4 color; // color rgba
+    
+};
+
+layout(binding = 0) uniform UBO
+{
+    float emit_delta;
+    int   xemit_count;
+    float max_life;
+    float fixed_time_step;
+    float random0;
+    float random1;
+    float random2;
+    uint  frameindex;
+    vec4  gravity;
+    uvec4 viewport;
+    vec4  extent;
+}
+ubo;
+
+layout(set = 0, binding = 1) buffer Pos { Particle Particles[]; };
+
+layout(set = 0, binding = 2) buffer Counter { CountBuffer counter; };
+
+layout(set = 0, binding = 3) buffer indirectArgumentBuffer { Argument argument; };
+
+layout(set = 0, binding = 4) buffer AliveBuffer { ivec4 alivelist[]; };
+
+layout(set = 0, binding = 5) buffer DeadBuffer { ivec4 deadbuffer[]; };
+
+layout(set = 0, binding = 6) buffer AliveBufferNext { ivec4 alivelistnext[]; };
+
+layout(set = 0, binding = 7) buffer EmitterInfoBuffer { EmitterInfo emitterinfo; };
+
+layout(set = 0, binding = 10) uniform sampler2D piccolotexture;
+
+// Gold Noise ©2015 dcerisano@standard3d.com
+// - based on the Golden Ratio
+// - uniform normalized distribution
+// - fastest static noise generator function (also runs at low precision)
+// - use with indicated fractional seeding method
+const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio
+
+float gold_noise(in vec2 xy, in float seed) { return fract(tan(distance(xy * PHI, xy) * seed) * xy.x); }
+
+const float PI = 3.1415926535897932384626433832795;
+
+layout(local_size_x = 256) in;
+void main()
+{
+    emitterinfo.life.z += 1;
+    uint threadId = gl_GlobalInvocationID.x;
+    if (emitterinfo.life.z > ubo.emit_delta)
+    {
+        emitterinfo.life.z = 1;
+        if (threadId < counter.emit_count)
+        {
+            bool     fix = false;
+            Particle particle;
+            float    rnd0 = gold_noise(vec2(threadId * ubo.random0, threadId * ubo.random1), ubo.random2);
+            float    rnd1 = gold_noise(vec2(threadId * ubo.random0, threadId * ubo.random1), ubo.random2 + 0.2);
+            float    rnd2 = gold_noise(vec2(threadId * ubo.random0, threadId * ubo.random1), ubo.random2 + 0.4);
+            if (emitterinfo.emitter_type == POINT_TYPE_EMITTER)
+            {
+                float theta = 0.15 * PI;
+                float phi   = (2 * rnd0 - 1) * PI;
+                float r     = 1 + rnd1;
+                float x     = r * sin(theta) * cos(phi);
+                float y     = r * sin(theta) * sin(phi);
+                float z     = r * cos(theta);
+
+                particle.pos.x = 0.1 * (2 * rnd0 - 1) * emitterinfo.pos.w + emitterinfo.pos.x;
+                particle.pos.y = 0.1 * (2 * rnd1 - 1) * emitterinfo.pos.w + emitterinfo.pos.y;
+                particle.pos.z = 0.1 * (2 * rnd2 - 1) * emitterinfo.pos.w + emitterinfo.pos.z;
+
+                particle.vel.x = x * emitterinfo.vel.w + emitterinfo.vel.x;
+                particle.vel.y = y * emitterinfo.vel.w + emitterinfo.vel.y;
+                particle.vel.z = z * emitterinfo.vel.w + emitterinfo.vel.z;
+
+                particle.color = emitterinfo.color;
+            }
+            else if (emitterinfo.emitter_type == MESH_TYPE_EMITTER)
+            {
+                vec4 rotated_pos = emitterinfo.rotation * vec4(0, rnd0, rnd1, 0);
+                particle.pos.x   = emitterinfo.pos.x + rotated_pos.x;
+                particle.pos.y   = emitterinfo.pos.y + rotated_pos.y;
+                particle.pos.z   = emitterinfo.pos.z + rotated_pos.z;
+
+                vec4 color = texture(piccolotexture, vec2(1.0 - rnd0, 1.0 - rnd1));
+                if (color.w > 0.9)
+                {
+                    particle.color = color;
+                    fix            = true;
+                }
+                else
+                {
+                    particle.color.x = 1.0 - rnd0;
+                    particle.color.y = 1.0 - rnd1;
+                    particle.color.z = 1.0 - rnd2;
+                    particle.color.w = 0.0f;
+
+                    vec4 rotated_vel =
+                        emitterinfo.rotation * vec4((rnd0 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.x,
+                                                     (rnd1 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.y,
+                                                     (rnd2 * 2 - 1) * emitterinfo.vel.w + emitterinfo.vel.z,
+                                                     1);
+                    particle.vel.x = rotated_vel.x;
+                    particle.vel.y = rotated_vel.y;
+                    particle.vel.z = rotated_vel.z;
+                }
+            }
+            else
+            {
+                // wrong emitter type, should not happen
+            }
+
+            if (!fix)
+            {
+                particle.acc.x = emitterinfo.acc.x + ubo.gravity.x;
+                particle.acc.y = emitterinfo.acc.y + ubo.gravity.y;
+                particle.acc.z = emitterinfo.acc.z + ubo.gravity.z;
+            }
+            else
+            {
+                particle.acc = vec3(0, 0, 0);
+                particle.vel = vec3(0, 0, 0);
+            }
+
+            particle.life = rnd0 * emitterinfo.life.y + emitterinfo.life.x;
+
+            particle.size_x = emitterinfo.size.x;
+            particle.size_y = emitterinfo.size.y;
+
+            // retrieve particle from dead pool
+            int deadCount = atomicAdd(counter.dead_count, -1);
+            int index     = deadbuffer[deadCount - 1].x;
+
+            // append to particle buffer
+            Particles[index] = particle;
+
+            // add index to alive list
+            if (argument.alive_flap_bit == 0)
+            {
+                int aliveIndex          = atomicAdd(counter.alive_count, 1);
+                alivelist[aliveIndex].x = index;
+            }
+            else
+            {
+                int aliveIndex              = atomicAdd(counter.alive_count, 1);
+                alivelistnext[aliveIndex].x = index;
+            }
+        }
+    }
+}

@@ -2,7 +2,6 @@
 #include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
-#include "runtime/function/render/glm_wrapper.h"
 
 #include "runtime/function/render/passes/directional_light_pass.h"
 
@@ -46,8 +45,8 @@ namespace Piccolo
         m_framebuffer.attachments[0].format = VK_FORMAT_R32_SFLOAT;
         VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
                                 m_vulkan_rhi->m_device,
-                                m_directional_light_shadow_map_dimension,
-                                m_directional_light_shadow_map_dimension,
+                                s_directional_light_shadow_map_dimension,
+                                s_directional_light_shadow_map_dimension,
                                 m_framebuffer.attachments[0].format,
                                 VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -69,8 +68,8 @@ namespace Piccolo
         m_framebuffer.attachments[1].format = m_vulkan_rhi->m_depth_image_format;
         VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
                                 m_vulkan_rhi->m_device,
-                                m_directional_light_shadow_map_dimension,
-                                m_directional_light_shadow_map_dimension,
+                                s_directional_light_shadow_map_dimension,
+                                s_directional_light_shadow_map_dimension,
                                 m_framebuffer.attachments[1].format,
                                 VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
@@ -167,12 +166,12 @@ namespace Piccolo
         framebuffer_create_info.renderPass      = m_framebuffer.render_pass;
         framebuffer_create_info.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
         framebuffer_create_info.pAttachments    = attachments;
-        framebuffer_create_info.width           = m_directional_light_shadow_map_dimension;
-        framebuffer_create_info.height          = m_directional_light_shadow_map_dimension;
+        framebuffer_create_info.width           = s_directional_light_shadow_map_dimension;
+        framebuffer_create_info.height          = s_directional_light_shadow_map_dimension;
         framebuffer_create_info.layers          = 1;
 
-        if (vkCreateFramebuffer(m_vulkan_rhi->m_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) !=
-            VK_SUCCESS)
+        if (vkCreateFramebuffer(
+                m_vulkan_rhi->m_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) != VK_SUCCESS)
         {
             throw std::runtime_error("create directional light shadow framebuffer");
         }
@@ -282,9 +281,9 @@ namespace Piccolo
         input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
 
         VkViewport viewport = {
-            0, 0, m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension, 0.0, 1.0};
+            0, 0, s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension, 0.0, 1.0};
         VkRect2D scissor = {{0, 0},
-                            {m_directional_light_shadow_map_dimension, m_directional_light_shadow_map_dimension}};
+                            {s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension}};
 
         VkPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -492,7 +491,7 @@ namespace Piccolo
             if (node.enable_vertex_blending)
             {
                 temp.joint_matrices = node.joint_matrices;
-                temp.joint_count = node.joint_count;
+                temp.joint_count    = node.joint_count;
             }
 
             mesh_nodes.push_back(temp);
@@ -505,8 +504,8 @@ namespace Piccolo
             renderpass_begin_info.renderPass        = m_framebuffer.render_pass;
             renderpass_begin_info.framebuffer       = m_framebuffer.framebuffer;
             renderpass_begin_info.renderArea.offset = {0, 0};
-            renderpass_begin_info.renderArea.extent = {m_directional_light_shadow_map_dimension,
-                                                       m_directional_light_shadow_map_dimension};
+            renderpass_begin_info.renderArea.extent = {s_directional_light_shadow_map_dimension,
+                                                       s_directional_light_shadow_map_dimension};
 
             VkClearValue clear_values[2];
             clear_values[0].color                 = {1.0f};
@@ -537,8 +536,9 @@ namespace Piccolo
                 m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
             }
 
-            m_vulkan_rhi->m_vk_cmd_bind_pipeline(
-                m_vulkan_rhi->m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
+            m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
+                                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                 m_render_pipelines[0].pipeline);
 
             // perframe storage buffer
             uint32_t perframe_dynamic_offset =
@@ -573,13 +573,13 @@ namespace Piccolo
                     {
                         // bind per mesh
                         m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                               m_render_pipelines[0].layout,
-                                                               1,
-                                                               1,
-                                                               &mesh->mesh_vertex_blending_descriptor_set,
-                                                               0,
-                                                               NULL);
+                                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                                    m_render_pipelines[0].layout,
+                                                                    1,
+                                                                    1,
+                                                                    &mesh->mesh_vertex_blending_descriptor_set,
+                                                                    0,
+                                                                    NULL);
 
                         VkBuffer     vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
                         VkDeviceSize offsets[]        = {0};
@@ -627,12 +627,10 @@ namespace Piccolo
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
                                 perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                 GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
+                                    *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                                 perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                            .joint_matrices ?
-                                        1.0 :
-                                        -1.0;
+                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ? 1.0 :
+                                                                                                                  -1.0;
                             }
 
                             // per drawcall vertex blending storage buffer
@@ -640,8 +638,7 @@ namespace Piccolo
                             bool     least_one_enable_vertex_blending = true;
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                         .joint_matrices)
+                                if (!mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices)
                                 {
                                     least_one_enable_vertex_blending = false;
                                     break;
@@ -673,15 +670,17 @@ namespace Piccolo
                                             per_drawcall_vertex_blending_dynamic_offset));
                                 for (uint32_t i = 0; i < current_instance_count; ++i)
                                 {
-                                    if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                            .joint_matrices)
+                                    if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices)
                                     {
-                                        for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
+                                        for (uint32_t j = 0;
+                                             j <
+                                             mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
+                                             ++j)
                                         {
                                             per_drawcall_vertex_blending_storage_buffer_object
-                                                .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                                GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                    .joint_matrices[j]);
+                                                .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
+                                                    .joint_matrices[j];
                                         }
                                     }
                                 }
@@ -705,11 +704,11 @@ namespace Piccolo
                                 (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
                                 dynamic_offsets);
                             m_vulkan_rhi->m_vk_cmd_draw_indexed(m_vulkan_rhi->m_current_command_buffer,
-                                                            mesh->mesh_index_count,
-                                                            current_instance_count,
-                                                            0,
-                                                            0,
-                                                            0);
+                                                                mesh->mesh_index_count,
+                                                                current_instance_count,
+                                                                0,
+                                                                0,
+                                                                0);
                         }
                     }
                 }

@@ -7,6 +7,35 @@
   "character_name": "Player",
   "objects": [
     {
+      "name": "Emitter",
+      "instanced_components": [
+        {
+          "$typeName": "TransformComponent",
+          "$context": {
+            "transform": {
+              "position": {
+                "x": 32,
+                "y": 11,
+                "z": 3
+              },
+              "rotation": {
+                "w": 0.46944212913513184,
+                "x": 0,
+                "y": 0,
+                "z": 0.88296324014663696
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      ],
+      "definition": "asset/objects/environment/particle/particle.object.json"
+    },
+    {
       "name": "Player",
       "instanced_components": [
         {
@@ -19,10 +48,10 @@
                 "z": 0
               },
               "rotation": {
-                "w": 1,
+                "w": 0.70710678118654752,
                 "x": 0,
                 "y": 0,
-                "z": 0
+                "z": 0.70710678118654752
               },
               "scale": {
                 "x": 1,

@@ -25,6 +25,15 @@ namespace Piccolo
                                            VkMemoryPropertyFlags properties,
                                            VkBuffer&             buffer,
                                            VkDeviceMemory&       buffer_memory);
+        static void           createBufferAndInitialize(VkDevice              device,
+                                                        VkPhysicalDevice      physicalDevice,
+                                                        VkBufferUsageFlags    usageFlags,
+                                                        VkMemoryPropertyFlags memoryPropertyFlags,
+                                                        VkBuffer*             buffer,
+                                                        VkDeviceMemory*       memory,
+                                                        VkDeviceSize          size,
+                                                        void*                 data     = nullptr,
+                                                        int                   datasize = 0);
         static void           copyBuffer(RHI*         rhi,
                                          VkBuffer     srcBuffer,
                                          VkBuffer     dstBuffer,
@@ -51,15 +60,15 @@ namespace Piccolo
                                               VkImageViewType    view_type,
                                               uint32_t           layout_count,
                                               uint32_t           miplevels);
-        static void           createGlobalImage(RHI*               rhi,
-                                                VkImage&           image,
-                                                VkImageView&       image_view,
-                                                VmaAllocation&     image_allocation,
-                                                uint32_t           texture_image_width,
-                                                uint32_t           texture_image_height,
-                                                void*              texture_image_pixels,
+        static void           createGlobalImage(RHI*                 rhi,
+                                                VkImage&             image,
+                                                VkImageView&         image_view,
+                                                VmaAllocation&       image_allocation,
+                                                uint32_t             texture_image_width,
+                                                uint32_t             texture_image_height,
+                                                void*                texture_image_pixels,
                                                 PICCOLO_PIXEL_FORMAT texture_image_format,
-                                                uint32_t           miplevels = 0);
+                                                uint32_t             miplevels = 0);
         static void           createCubeMap(RHI*                 rhi,
                                             VkImage&             image,
                                             VkImageView&         image_view,
@@ -67,7 +76,7 @@ namespace Piccolo
                                             uint32_t             texture_image_width,
                                             uint32_t             texture_image_height,
                                             std::array<void*, 6> texture_image_pixels,
-                                            PICCOLO_PIXEL_FORMAT   texture_image_format,
+                                            PICCOLO_PIXEL_FORMAT texture_image_format,
                                             uint32_t             miplevels);
         static void           generateTextureMipMaps(RHI*     rhi,
                                                      VkImage  image,

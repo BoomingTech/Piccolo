@@ -1,0 +1,44 @@
+{
+  "components": [
+    {
+      "$context": {
+        "particle_res": {
+          "local_translation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "velocity": {
+            "x": 0.02,
+            "y": 0.02,
+            "z": 2.5,
+            "w": 4.0
+          },
+          "acceleration": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -2.5,
+            "w": 0.0
+          },
+          "size": {
+            "x": 0.02,
+            "y": 0.02,
+            "z": 0.00
+          },
+          "emitter_type": 1,
+          "life": {
+            "x": 1.5,
+            "y": 0.0
+          },
+          "color": {
+            "x": 9.047718,
+            "y": 0.601811,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      "$typeName": "ParticleComponent"
+    }
+  ]
+}

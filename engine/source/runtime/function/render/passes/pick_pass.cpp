@@ -3,7 +3,6 @@
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
 
 #include "runtime/function/render/render_helper.h"
-#include "runtime/function/render/glm_wrapper.h"
 
 #include "runtime/function/render/passes/pick_pass.h"
 
@@ -137,8 +136,8 @@ namespace Piccolo
         framebuffer_create_info.height          = m_vulkan_rhi->m_swapchain_extent.height;
         framebuffer_create_info.layers          = 1;
 
-        if (vkCreateFramebuffer(m_vulkan_rhi->m_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) !=
-            VK_SUCCESS)
+        if (vkCreateFramebuffer(
+                m_vulkan_rhi->m_device, &framebuffer_create_info, nullptr, &m_framebuffer.framebuffer) != VK_SUCCESS)
         {
             throw std::runtime_error("create inefficient pick framebuffer");
         }
@@ -456,11 +455,11 @@ namespace Piccolo
 
             MeshNode temp;
             temp.model_matrix = node.model_matrix;
-            temp.node_id = node.node_id;
+            temp.node_id      = node.node_id;
             if (node.ref_mesh->enable_vertex_blending)
             {
                 temp.joint_matrices = node.joint_matrices;
-                temp.joint_count = node.joint_count;
+                temp.joint_count    = node.joint_count;
             }
 
             model_nodes.push_back(temp);
@@ -534,9 +533,10 @@ namespace Piccolo
         renderpass_begin_info.clearValueCount = 2;
         renderpass_begin_info.pClearValues    = clearValues;
 
-        m_vulkan_rhi->m_vk_cmd_begin_render_pass(m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index],
-                                            &renderpass_begin_info,
-                                            VK_SUBPASS_CONTENTS_INLINE); // no second buffer
+        m_vulkan_rhi->m_vk_cmd_begin_render_pass(
+            m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index],
+            &renderpass_begin_info,
+            VK_SUBPASS_CONTENTS_INLINE); // no second buffer
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -547,8 +547,8 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index],
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[0].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[0].pipeline);
         m_vulkan_rhi->m_vk_cmd_set_viewport(
             m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index], 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(
@@ -651,7 +651,7 @@ namespace Piccolo
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
                             perdrawcall_storage_buffer_object.model_matrices[i] =
-                                GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
+                                *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                             perdrawcall_storage_buffer_object.node_ids[i] =
                                 mesh_nodes[drawcall_max_instance_count * drawcall_index + i].node_id;
                         }
@@ -684,11 +684,13 @@ namespace Piccolo
                                         per_drawcall_vertex_blending_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
+                                for (uint32_t j = 0;
+                                     j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
+                                     ++j)
                                 {
                                     per_drawcall_vertex_blending_storage_buffer_object
-                                        .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                        GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j]);
+                                        .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                        mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
                                 }
                             }
                         }
@@ -730,15 +732,18 @@ namespace Piccolo
         }
 
         // end render pass
-        m_vulkan_rhi->m_vk_cmd_end_render_pass(m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index]);
+        m_vulkan_rhi->m_vk_cmd_end_render_pass(
+            m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index]);
 
         // end command buffer
-        VkResult res_end_command_buffer =
-            m_vulkan_rhi->m_vk_end_command_buffer(m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index]);
+        VkResult res_end_command_buffer = m_vulkan_rhi->m_vk_end_command_buffer(
+            m_vulkan_rhi->m_p_command_buffers[*m_vulkan_rhi->m_p_current_frame_index]);
         assert(VK_SUCCESS == res_end_command_buffer);
 
         VkResult res_reset_fences = m_vulkan_rhi->m_vk_reset_fences(
-            m_vulkan_rhi->m_device, 1, &m_vulkan_rhi->m_is_frame_in_flight_fences[*m_vulkan_rhi->m_p_current_frame_index]);
+            m_vulkan_rhi->m_device,
+            1,
+            &m_vulkan_rhi->m_is_frame_in_flight_fences[*m_vulkan_rhi->m_p_current_frame_index]);
         assert(VK_SUCCESS == res_reset_fences);
 
         VkSubmitInfo submit_info         = {};
@@ -758,15 +763,15 @@ namespace Piccolo
                           m_vulkan_rhi->m_is_frame_in_flight_fences[*m_vulkan_rhi->m_p_current_frame_index]);
         assert(VK_SUCCESS == res_queue_submit);
 
-        auto new_index = (*m_vulkan_rhi->m_p_current_frame_index + 1) % m_vulkan_rhi->m_max_frames_in_flight;
+        auto new_index = (*m_vulkan_rhi->m_p_current_frame_index + 1) % m_vulkan_rhi->s_max_frames_in_flight;
         *m_vulkan_rhi->m_p_current_frame_index = new_index;
 
         // implicit host read barrier
         res_wait_for_fences = m_vulkan_rhi->m_vk_wait_for_fences(m_vulkan_rhi->m_device,
-                                                             m_vulkan_rhi->m_max_frames_in_flight,
-                                                             m_vulkan_rhi->m_is_frame_in_flight_fences,
-                                                             VK_TRUE,
-                                                             UINT64_MAX);
+                                                                 m_vulkan_rhi->s_max_frames_in_flight,
+                                                                 m_vulkan_rhi->m_is_frame_in_flight_fences,
+                                                                 VK_TRUE,
+                                                                 UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
         auto command_buffer = m_vulkan_rhi->beginSingleTimeCommands();
@@ -782,8 +787,8 @@ namespace Piccolo
         region.imageOffset                     = {0, 0, 0};
         region.imageExtent = {m_vulkan_rhi->m_swapchain_extent.width, m_vulkan_rhi->m_swapchain_extent.height, 1};
 
-        uint32_t       buffer_size = m_vulkan_rhi->m_swapchain_extent.width * m_vulkan_rhi->m_swapchain_extent.height * 4;
-        VkBuffer       inefficient_staging_buffer;
+        uint32_t buffer_size = m_vulkan_rhi->m_swapchain_extent.width * m_vulkan_rhi->m_swapchain_extent.height * 4;
+        VkBuffer inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
         VulkanUtil::createBuffer(m_vulkan_rhi->m_physical_device,
                                  m_vulkan_rhi->m_device,

@@ -1,35 +1,69 @@
 #version 310 es
 
-layout(set = 0, binding = 0) readonly buffer _unused_name_perframe
+#extension GL_GOOGLE_include_directive : enable
+
+#include "constants.h"
+
+layout(set = 0, binding = 0) uniform _unused_name_perframe
 {
     mat4 proj_view_matrix;
-    vec3 eye_position;
+    vec3 right_diection;
     vec3 up_direction;
+    vec3 forward_diection;
 };
 
-layout(set = 0, binding = 1) readonly buffer _unused_name_perdrawcall { vec4 positions[4096]; };
+struct Particle
+{
+    vec3  pos;
+    float life;
+    vec3  vel;
+    float size_x;
+    vec3  acc;
+    float size_y;
+    vec4  color;
+};
+
+layout(set = 0, binding = 1) readonly buffer _unused_name_perdrawcall { Particle particles[]; };
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec2 out_uv;
 
 void main()
 {
-    const vec2 vertex_buffer[4] = vec2[4](vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, -1.0));
+    const vec2 vertex_buffer[4] = vec2[4](vec2(-0.5, 0.5), vec2(0.5, 0.5), vec2(-0.5, -0.5), vec2(0.5, -0.5));
+    const vec2 uv_buffer[4]     = vec2[4](vec2(0, 1), vec2(1, 1), vec2(0, 0), vec2(1, 0));
     vec2       model_position   = vertex_buffer[gl_VertexIndex];
 
     // Real-Time Rendering Fourth Edition
     // 13.6 Billboarding
     // 13.6.2 World-Oriented Billboard
-
-    vec3 anchor_location = positions[gl_InstanceIndex].xyz;
+    Particle particle        = particles[gl_InstanceIndex];
+    vec3     anchor_location = particle.pos;
 
     // viewport-oriented
-    vec3 front_direction = eye_position - anchor_location;
+    vec3  vel_dir      = particle.vel;
+    float projectvel_x = dot(vel_dir, right_diection);
+    float projectvel_y = dot(vel_dir, up_direction);
+    float size_x       = particle.size_x;
+    float size_y       = particle.size_y;
 
-    // keep FrontDirection fixed and deduce UpDirection
-    vec3 right_diection = normalize(cross(up_direction, front_direction));
-    vec3 up_direction   = normalize(cross(front_direction, right_diection));
-
-    // model to World
-    vec3 world_position = right_diection * model_position.x + up_direction * model_position.y + anchor_location;
+    vec3 world_position;
+    if (abs(projectvel_x) < size_x || abs(projectvel_y) < size_y)
+    {
+        world_position =
+            size_x * right_diection * model_position.x + size_y * up_direction * model_position.y + anchor_location;
+    }
+    else
+    {
+        vec3 project_dir = normalize(projectvel_x * right_diection + projectvel_y * up_direction);
+        vec3 side_dir    = normalize(cross(forward_diection, project_dir));
+        world_position =
+            size_x * side_dir * model_position.x + size_y * project_dir * model_position.y + anchor_location;
+    }
 
     // world to NDC
     gl_Position = proj_view_matrix * vec4(world_position, 1.0);
+
+    out_color = particle.color;
+    out_uv    = uv_buffer[gl_VertexIndex];
 }

@@ -221,14 +221,15 @@ namespace Piccolo
             submit_info.signalSemaphoreCount   = 0;
             submit_info.pSignalSemaphores      = NULL;
 
-            VkResult res_reset_fences = m_vk_reset_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
+            VkResult res_reset_fences =
+                m_vk_reset_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
             assert(VK_SUCCESS == res_reset_fences);
 
             VkResult res_queue_submit =
                 vkQueueSubmit(m_graphics_queue, 1, &submit_info, m_is_frame_in_flight_fences[m_current_frame_index]);
             assert(VK_SUCCESS == res_queue_submit);
 
-            m_current_frame_index = (m_current_frame_index + 1) % m_max_frames_in_flight;
+            m_current_frame_index = (m_current_frame_index + 1) % s_max_frames_in_flight;
             return true;
         }
         else
@@ -255,6 +256,8 @@ namespace Piccolo
         VkResult res_end_command_buffer = m_vk_end_command_buffer(m_command_buffers[m_current_frame_index]);
         assert(VK_SUCCESS == res_end_command_buffer);
 
+        VkSemaphore semaphores[2] = {m_image_available_for_texturescopy_semaphores[m_current_frame_index],
+                                     m_image_finished_for_presentation_semaphores[m_current_frame_index]};
         // submit command buffer
         VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         VkSubmitInfo         submit_info   = {};
@@ -264,8 +267,8 @@ namespace Piccolo
         submit_info.pWaitDstStageMask      = wait_stages;
         submit_info.commandBufferCount     = 1;
         submit_info.pCommandBuffers        = &m_command_buffers[m_current_frame_index];
-        submit_info.signalSemaphoreCount   = 1;
-        submit_info.pSignalSemaphores      = &m_image_finished_for_presentation_semaphores[m_current_frame_index];
+        submit_info.signalSemaphoreCount   = 2;
+        submit_info.pSignalSemaphores      = semaphores;
 
         VkResult res_reset_fences = m_vk_reset_fences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
         assert(VK_SUCCESS == res_reset_fences);
@@ -294,7 +297,7 @@ namespace Piccolo
             assert(VK_SUCCESS == present_result);
         }
 
-        m_current_frame_index = (m_current_frame_index + 1) % m_max_frames_in_flight;
+        m_current_frame_index = (m_current_frame_index + 1) % s_max_frames_in_flight;
     }
 
     VkCommandBuffer VulkanRHI::beginSingleTimeCommands()
@@ -375,7 +378,7 @@ namespace Piccolo
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
-        
+
 #if defined(__MACH__)
         extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #endif
@@ -547,7 +550,8 @@ namespace Piccolo
 
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos; // all queues that need to be created
         std::set<uint32_t>                   queue_families = {m_queue_indices.m_graphics_family.value(),
-                                             m_queue_indices.m_present_family.value()};
+                                             m_queue_indices.m_present_family.value(),
+                                             m_queue_indices.m_compute_family.value()};
 
         float queue_priority = 1.0f;
         for (uint32_t queue_family : queue_families) // for every queue family
@@ -596,24 +600,27 @@ namespace Piccolo
         // initialize queues of this device
         vkGetDeviceQueue(m_device, m_queue_indices.m_graphics_family.value(), 0, &m_graphics_queue);
         vkGetDeviceQueue(m_device, m_queue_indices.m_present_family.value(), 0, &m_present_queue);
+        vkGetDeviceQueue(m_device, m_queue_indices.m_compute_family.value(), 0, &m_compute_queue);
 
         // more efficient pointer
-        m_vk_wait_for_fences         = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
-        m_vk_reset_fences           = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
-        m_vk_reset_command_pool      = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
-        m_vk_begin_command_buffer    = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
-        m_vk_end_command_buffer      = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
-        m_vk_cmd_begin_render_pass    = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
-        m_vk_cmd_next_subpass        = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
-        m_vk_cmd_end_render_pass      = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
-        m_vk_cmd_bind_pipeline       = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
-        m_vk_cmd_set_viewport        = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
-        m_vk_cmd_set_scissor         = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
-        m_vk_cmd_bind_vertex_buffers  = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
-        m_vk_cmd_bind_index_buffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
-        m_vk_cmd_bind_descriptor_sets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
-        m_vk_cmd_draw_indexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
-        m_vk_cmd_clear_attachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
+        m_vk_wait_for_fences       = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
+        m_vk_reset_fences          = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
+        m_vk_reset_command_pool    = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
+        m_vk_begin_command_buffer  = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
+        m_vk_end_command_buffer    = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
+        m_vk_cmd_begin_render_pass = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
+        m_vk_cmd_next_subpass      = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
+        m_vk_cmd_end_render_pass   = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
+        m_vk_cmd_bind_pipeline     = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
+        m_vk_cmd_set_viewport      = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
+        m_vk_cmd_set_scissor       = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
+        m_vk_cmd_bind_vertex_buffers =
+            (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
+        m_vk_cmd_bind_index_buffer = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
+        m_vk_cmd_bind_descriptor_sets =
+            (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
+        m_vk_cmd_draw_indexed      = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
+        m_vk_cmd_clear_attachments = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
 
         m_depth_image_format = findDepthFormat();
     }
@@ -642,7 +649,7 @@ namespace Piccolo
             command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
             command_pool_create_info.queueFamilyIndex = m_queue_indices.m_graphics_family.value();
 
-            for (uint32_t i = 0; i < m_max_frames_in_flight; ++i)
+            for (uint32_t i = 0; i < s_max_frames_in_flight; ++i)
             {
                 if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_command_pools[i]) != VK_SUCCESS)
                 {
@@ -659,7 +666,7 @@ namespace Piccolo
         command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        for (uint32_t i = 0; i < m_max_frames_in_flight; ++i)
+        for (uint32_t i = 0; i < s_max_frames_in_flight; ++i)
         {
             command_buffer_allocate_info.commandPool = m_command_pools[i];
 
@@ -676,7 +683,7 @@ namespace Piccolo
         // should be big enough, and thus we can sub-allocate DescriptorSet from
         // DescriptorPool merely as we sub-allocate Buffer/Image from DeviceMemory.
 
-        VkDescriptorPoolSize pool_sizes[5];
+        VkDescriptorPoolSize pool_sizes[6];
         pool_sizes[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         pool_sizes[0].descriptorCount = 3 + 2 + 2 + 2 + 1 + 1 + 3 + 3;
         pool_sizes[1].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -687,13 +694,15 @@ namespace Piccolo
         pool_sizes[3].descriptorCount = 3 + 5 * m_max_material_count + 1 + 1; // ImGui_ImplVulkan_CreateDeviceObjects
         pool_sizes[4].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         pool_sizes[4].descriptorCount = 4 + 1 + 1 + 2;
+        pool_sizes[5].type            = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        pool_sizes[5].descriptorCount = 1;
 
         VkDescriptorPoolCreateInfo pool_info {};
         pool_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.poolSizeCount = sizeof(pool_sizes) / sizeof(pool_sizes[0]);
         pool_info.pPoolSizes    = pool_sizes;
-        pool_info.maxSets =
-            1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 + 1; // +skybox + axis descriptor set
+        pool_info.maxSets       = 1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 +
+                            1; // +skybox + axis descriptor set
         pool_info.flags = 0U;
 
         if (vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_descriptor_pool) != VK_SUCCESS)
@@ -713,13 +722,16 @@ namespace Piccolo
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // the fence is initialized as signaled
 
-        for (uint32_t i = 0; i < m_max_frames_in_flight; i++)
+        for (uint32_t i = 0; i < s_max_frames_in_flight; i++)
         {
             if (vkCreateSemaphore(
                     m_device, &semaphore_create_info, nullptr, &m_image_available_for_render_semaphores[i]) !=
                     VK_SUCCESS ||
                 vkCreateSemaphore(
                     m_device, &semaphore_create_info, nullptr, &m_image_finished_for_presentation_semaphores[i]) !=
+                    VK_SUCCESS ||
+                vkCreateSemaphore(
+                    m_device, &semaphore_create_info, nullptr, &m_image_available_for_texturescopy_semaphores[i]) !=
                     VK_SUCCESS ||
                 vkCreateFence(m_device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) != VK_SUCCESS)
             {
@@ -737,7 +749,7 @@ namespace Piccolo
                                 m_depth_image_format,
                                 VK_IMAGE_TILING_OPTIMAL,
                                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                    VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                 m_depth_image,
                                 m_depth_image_memory,
@@ -757,12 +769,12 @@ namespace Piccolo
         for (size_t i = 0; i < m_swapchain_images.size(); i++)
         {
             m_swapchain_imageviews[i] = VulkanUtil::createImageView(m_device,
-                                                                   m_swapchain_images[i],
-                                                                   m_swapchain_image_format,
-                                                                   VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                   VK_IMAGE_VIEW_TYPE_2D,
-                                                                   1,
-                                                                   1);
+                                                                    m_swapchain_images[i],
+                                                                    m_swapchain_image_format,
+                                                                    VK_IMAGE_ASPECT_COLOR_BIT,
+                                                                    VK_IMAGE_VIEW_TYPE_2D,
+                                                                    1,
+                                                                    1);
         }
     }
 
@@ -814,7 +826,8 @@ namespace Piccolo
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        uint32_t queueFamilyIndices[] = {m_queue_indices.m_graphics_family.value(), m_queue_indices.m_present_family.value()};
+        uint32_t queueFamilyIndices[] = {m_queue_indices.m_graphics_family.value(),
+                                         m_queue_indices.m_present_family.value()};
 
         if (m_queue_indices.m_graphics_family != m_queue_indices.m_present_family)
         {
@@ -870,7 +883,7 @@ namespace Piccolo
         }
 
         VkResult res_wait_for_fences =
-            m_vk_wait_for_fences(m_device, m_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+            m_vk_wait_for_fences(m_device, s_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
 
         vkDestroyImageView(m_device, m_depth_image_view, NULL);
@@ -931,6 +944,11 @@ namespace Piccolo
             if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) // if support graphics command queue
             {
                 indices.m_graphics_family = i;
+            }
+
+            if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) // if support compute command queue
+            {
+                indices.m_compute_family = i;
             }
 
             VkBool32 is_present_support = false;

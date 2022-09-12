@@ -1,17 +1,10 @@
 #pragma once
 
+#include "runtime/core/math/vector2.h"
 #include "runtime/core/math/vector3.h"
-
-#ifndef GLM_FORCE_RADIANS
-#define GLM_FORCE_RADIANS 1
-#endif
-
-#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
-#endif
+#include "runtime/core/math/vector4.h"
 
 #include <array>
-#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
 namespace Piccolo
@@ -20,24 +13,24 @@ namespace Piccolo
     {
         struct VulkanMeshVertexPostition
         {
-            glm::vec3 position;
+            Vector3 position;
         };
 
         struct VulkanMeshVertexVaryingEnableBlending
         {
-            glm::vec3 normal;
-            glm::vec3 tangent;
+            Vector3 normal;
+            Vector3 tangent;
         };
 
         struct VulkanMeshVertexVarying
         {
-            glm::vec2 texcoord;
+            Vector2 texcoord;
         };
 
         struct VulkanMeshVertexJointBinding
         {
-            glm::ivec4 indices;
-            glm::vec4  weights;
+            int indices[4];
+            Vector4  weights;
         };
 
         static std::array<VkVertexInputBindingDescription, 3> getBindingDescriptions()

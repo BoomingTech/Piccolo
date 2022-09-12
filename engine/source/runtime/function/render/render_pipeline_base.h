@@ -46,5 +46,7 @@ namespace Piccolo
         std::shared_ptr<RenderPassBase> m_ui_pass;
         std::shared_ptr<RenderPassBase> m_combine_ui_pass;
         std::shared_ptr<RenderPassBase> m_pick_pass;
+        std::shared_ptr<RenderPassBase> m_particle_pass;
+
     };
 } // namespace Piccolo
