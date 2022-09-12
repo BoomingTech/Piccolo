@@ -40,6 +40,7 @@ namespace Piccolo
 
         void fromRotationMatrix(const Matrix3x3& rotation);
         void toRotationMatrix(Matrix3x3 & rotation) const;
+        void toRotationMatrix(Matrix4x4 & rotation) const;
 
         void fromAngleAxis(const Radian& angle, const Vector3& axis);
 

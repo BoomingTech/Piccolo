@@ -71,8 +71,8 @@ namespace Piccolo
 
         //float frame_length = delta_time * blend_ratio;
         //m_position =
-        //    (m_position * (k_camera_blend_time - frame_length) + new_position * frame_length) / k_camera_blend_time;
+        //    (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
         //m_position =
-        //    (m_position * (k_camera_blend_time - frame_length) + new_position * frame_length) / k_camera_blend_time;
+        //    (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
     }
 } // namespace Piccolo

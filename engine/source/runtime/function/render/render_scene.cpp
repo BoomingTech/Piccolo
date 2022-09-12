@@ -21,8 +21,6 @@ namespace Piccolo
         RenderPass::m_visiable_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
         RenderPass::m_visiable_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
         RenderPass::m_visiable_nodes.p_axis_node                            = &m_axis_node;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes =
-            &m_main_camera_visible_particlebillboard_nodes;
     }
 
     GuidAllocator<GameObjectPartId>& RenderScene::getInstanceIdAllocator() { return m_instance_id_allocator; }
@@ -102,15 +100,14 @@ namespace Piccolo
             BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
                                                  entity.m_bounding_box.getMaxCorner()};
 
-            if (TiledFrustumIntersectBox(
-                    frustum, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
+            if (TiledFrustumIntersectBox(frustum, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
             {
                 m_directional_light_visible_mesh_nodes.emplace_back();
                 RenderMeshNode& temp_node = m_directional_light_visible_mesh_nodes.back();
 
                 temp_node.model_matrix = &entity.m_model_matrix;
 
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
+                assert(entity.m_joint_matrices.size() <= s_mesh_vertex_blending_max_joint_count);
                 if (!entity.m_joint_matrices.empty())
                 {
                     temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
@@ -149,9 +146,8 @@ namespace Piccolo
             bool intersect_with_point_lights = true;
             for (size_t i = 0; i < point_light_num; i++)
             {
-                if (!BoxIntersectsWithSphere(
-                        BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix),
-                        point_lights_bounding_spheres[i]))
+                if (!BoxIntersectsWithSphere(BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix),
+                                             point_lights_bounding_spheres[i]))
                 {
                     intersect_with_point_lights = false;
                     break;
@@ -165,7 +161,7 @@ namespace Piccolo
 
                 temp_node.model_matrix = &entity.m_model_matrix;
 
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
+                assert(entity.m_joint_matrices.size() <= s_mesh_vertex_blending_max_joint_count);
                 if (!entity.m_joint_matrices.empty())
                 {
                     temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
@@ -192,22 +188,20 @@ namespace Piccolo
         Matrix4x4 proj_matrix      = camera->getPersProjMatrix();
         Matrix4x4 proj_view_matrix = proj_matrix * view_matrix;
 
-        ClusterFrustum f =
-            CreateClusterFrustumFromMatrix(proj_view_matrix, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
+        ClusterFrustum f = CreateClusterFrustumFromMatrix(proj_view_matrix, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
 
         for (const RenderEntity& entity : m_render_entities)
         {
             BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
                                                  entity.m_bounding_box.getMaxCorner()};
 
-            if (TiledFrustumIntersectBox(
-                    f, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
+            if (TiledFrustumIntersectBox(f, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
             {
                 m_main_camera_visible_mesh_nodes.emplace_back();
                 RenderMeshNode& temp_node = m_main_camera_visible_mesh_nodes.back();
-                temp_node.model_matrix = &entity.m_model_matrix;
+                temp_node.model_matrix    = &entity.m_model_matrix;
 
-                assert(entity.m_joint_matrices.size() <= m_mesh_vertex_blending_max_joint_count);
+                assert(entity.m_joint_matrices.size() <= s_mesh_vertex_blending_max_joint_count);
                 if (!entity.m_joint_matrices.empty())
                 {
                     temp_node.joint_count    = static_cast<uint32_t>(entity.m_joint_matrices.size());
@@ -243,7 +237,5 @@ namespace Piccolo
     void RenderScene::updateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource)
     {
         // TODO
-        m_main_camera_visible_particlebillboard_nodes.clear();
     }
 } // namespace Piccolo
-

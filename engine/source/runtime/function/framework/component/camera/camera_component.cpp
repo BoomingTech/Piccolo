@@ -88,11 +88,11 @@ namespace Piccolo
         const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
         Vector3     eye_pos = current_character->getPosition() + offset * Vector3::UNIT_Z;
 
-        m_foward = q_yaw * q_pitch * m_foward;
-        m_left   = q_yaw * q_pitch * m_left;
-        m_up     = m_foward.crossProduct(m_left);
+        m_forward = q_yaw * q_pitch * m_forward;
+        m_left    = q_yaw * q_pitch * m_left;
+        m_up      = m_forward.crossProduct(m_left);
 
-        Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, eye_pos + m_foward, m_up);
+        Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, eye_pos + m_forward, m_up);
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
@@ -100,7 +100,7 @@ namespace Piccolo
         camera_swap_data.m_view_matrix                     = desired_mat;
         swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
 
-        Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
+        Vector3    object_facing = m_forward - m_forward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
         Quaternion object_rotation;
         object_rotation.fromAxes(object_left, -object_facing, Vector3::UNIT_Z);

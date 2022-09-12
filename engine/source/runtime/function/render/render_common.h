@@ -1,8 +1,8 @@
 #pragma once
 
+#include "runtime/core/math/matrix4.h"
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
-#include "runtime/core/math/matrix4.h"
 
 #include "runtime/function/render/render_type.h"
 
@@ -11,13 +11,13 @@
 
 namespace Piccolo
 {
-    static const uint32_t m_point_light_shadow_map_dimension       = 2048;
-    static const uint32_t m_directional_light_shadow_map_dimension = 4096;
+    static const uint32_t s_point_light_shadow_map_dimension       = 2048;
+    static const uint32_t s_directional_light_shadow_map_dimension = 4096;
 
     // TODO: 64 may not be the best
-    static uint32_t const m_mesh_per_drawcall_max_instance_count = 64;
-    static uint32_t const m_mesh_vertex_blending_max_joint_count = 1024;
-    static uint32_t const m_max_point_light_count                = 15;
+    static uint32_t const s_mesh_per_drawcall_max_instance_count = 64;
+    static uint32_t const s_mesh_vertex_blending_max_joint_count = 1024;
+    static uint32_t const s_max_point_light_count                = 15;
     // should sync the macros in "shader_include/constants.h"
 
     struct VulkanSceneDirectionalLight
@@ -47,7 +47,7 @@ namespace Piccolo
         uint32_t                    _padding_point_light_num_1;
         uint32_t                    _padding_point_light_num_2;
         uint32_t                    _padding_point_light_num_3;
-        VulkanScenePointLight       scene_point_lights[m_max_point_light_count];
+        VulkanScenePointLight       scene_point_lights[s_max_point_light_count];
         VulkanSceneDirectionalLight scene_directional_light;
         Matrix4x4                   directional_light_proj_view;
     };
@@ -63,12 +63,12 @@ namespace Piccolo
 
     struct MeshPerdrawcallStorageBufferObject
     {
-        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPerdrawcallVertexBlendingStorageBufferObject
     {
-        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[s_mesh_vertex_blending_max_joint_count * s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPerMaterialUniformBufferObject
@@ -91,17 +91,17 @@ namespace Piccolo
         uint32_t _padding_point_light_num_1;
         uint32_t _padding_point_light_num_2;
         uint32_t _padding_point_light_num_3;
-        Vector4  point_lights_position_and_radius[m_max_point_light_count];
+        Vector4  point_lights_position_and_radius[s_max_point_light_count];
     };
 
     struct MeshPointLightShadowPerdrawcallStorageBufferObject
     {
-        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshPointLightShadowPerdrawcallVertexBlendingStorageBufferObject
     {
-        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[s_mesh_vertex_blending_max_joint_count * s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshDirectionalLightShadowPerframeStorageBufferObject
@@ -111,12 +111,12 @@ namespace Piccolo
 
     struct MeshDirectionalLightShadowPerdrawcallStorageBufferObject
     {
-        VulkanMeshInstance mesh_instances[m_mesh_per_drawcall_max_instance_count];
+        VulkanMeshInstance mesh_instances[s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject
     {
-        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[s_mesh_vertex_blending_max_joint_count * s_mesh_per_drawcall_max_instance_count];
     };
 
     struct AxisStorageBufferObject
@@ -128,16 +128,28 @@ namespace Piccolo
     struct ParticleBillboardPerframeStorageBufferObject
     {
         Matrix4x4 proj_view_matrix;
-        Vector3   eye_position;
-        float     _padding_eye_position;
+        Vector3   right_direction;
+        float     _padding_right_position;
         Vector3   up_direction;
         float     _padding_up_direction;
+        Vector3   foward_direction;
+        float     _padding_forward_position;
     };
 
+    struct ParticleCollisionPerframeStorageBufferObject
+    {
+        Matrix4x4 view_matrix;
+        Matrix4x4 proj_view_matrix;
+        Matrix4x4 proj_inv_matrix;
+    };
+
+    // TODO: 4096 may not be the best
+    static constexpr int s_particle_billboard_buffer_size = 4096;
     struct ParticleBillboardPerdrawcallStorageBufferObject
     {
-        // TODO: 4096 may not be the best
-        Vector4 positions[4096];
+        Vector4 positions[s_particle_billboard_buffer_size];
+        Vector4 sizes[s_particle_billboard_buffer_size];
+        Vector4 colors[s_particle_billboard_buffer_size];
     };
 
     struct MeshInefficientPickPerframeStorageBufferObject
@@ -149,14 +161,14 @@ namespace Piccolo
 
     struct MeshInefficientPickPerdrawcallStorageBufferObject
     {
-        Matrix4x4 model_matrices[m_mesh_per_drawcall_max_instance_count];
-        uint32_t  node_ids[m_mesh_per_drawcall_max_instance_count];
-        float     enable_vertex_blendings[m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 model_matrices[s_mesh_per_drawcall_max_instance_count];
+        uint32_t  node_ids[s_mesh_per_drawcall_max_instance_count];
+        float     enable_vertex_blendings[s_mesh_per_drawcall_max_instance_count];
     };
 
     struct MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject
     {
-        Matrix4x4 joint_matrices[m_mesh_vertex_blending_max_joint_count * m_mesh_per_drawcall_max_instance_count];
+        Matrix4x4 joint_matrices[s_mesh_vertex_blending_max_joint_count * s_mesh_per_drawcall_max_instance_count];
     };
 
     // mesh
@@ -235,33 +247,28 @@ namespace Piccolo
         bool        enable_vertex_blending {false};
     };
 
-    struct RenderParticleBillboardNode
-    {
-        std::vector<Vector4> positions;
-    };
-
     struct TextureDataToUpdate
     {
-        void*              base_color_image_pixels;
-        uint32_t           base_color_image_width;
-        uint32_t           base_color_image_height;
+        void*                base_color_image_pixels;
+        uint32_t             base_color_image_width;
+        uint32_t             base_color_image_height;
         PICCOLO_PIXEL_FORMAT base_color_image_format;
-        void*              metallic_roughness_image_pixels;
-        uint32_t           metallic_roughness_image_width;
-        uint32_t           metallic_roughness_image_height;
+        void*                metallic_roughness_image_pixels;
+        uint32_t             metallic_roughness_image_width;
+        uint32_t             metallic_roughness_image_height;
         PICCOLO_PIXEL_FORMAT metallic_roughness_image_format;
-        void*              normal_roughness_image_pixels;
-        uint32_t           normal_roughness_image_width;
-        uint32_t           normal_roughness_image_height;
+        void*                normal_roughness_image_pixels;
+        uint32_t             normal_roughness_image_width;
+        uint32_t             normal_roughness_image_height;
         PICCOLO_PIXEL_FORMAT normal_roughness_image_format;
-        void*              occlusion_image_pixels;
-        uint32_t           occlusion_image_width;
-        uint32_t           occlusion_image_height;
+        void*                occlusion_image_pixels;
+        uint32_t             occlusion_image_width;
+        uint32_t             occlusion_image_height;
         PICCOLO_PIXEL_FORMAT occlusion_image_format;
-        void*              emissive_image_pixels;
-        uint32_t           emissive_image_width;
-        uint32_t           emissive_image_height;
+        void*                emissive_image_pixels;
+        uint32_t             emissive_image_width;
+        uint32_t             emissive_image_height;
         PICCOLO_PIXEL_FORMAT emissive_image_format;
-        VulkanPBRMaterial* now_material;
+        VulkanPBRMaterial*   now_material;
     };
 } // namespace Piccolo

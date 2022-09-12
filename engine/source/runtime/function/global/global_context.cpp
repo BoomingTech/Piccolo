@@ -16,6 +16,7 @@
 #include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
+#include "runtime/function/particle/particle_manager.h"
 
 namespace Piccolo
 {
@@ -46,6 +47,9 @@ namespace Piccolo
 
         m_input_system = std::make_shared<InputSystem>();
         m_input_system->initialize();
+
+        m_particle_manager = std::make_shared<ParticleManager>();
+        m_particle_manager->initialize();
 
         m_render_system = std::make_shared<RenderSystem>();
         RenderSystemInitInfo render_init_info;
@@ -78,5 +82,7 @@ namespace Piccolo
         m_file_system.reset();
 
         m_config_manager.reset();
+
+        m_particle_manager.reset();
     }
 } // namespace Piccolo

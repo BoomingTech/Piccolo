@@ -10,7 +10,7 @@ namespace Piccolo
 {
     class Character
     {
-        inline static const float k_camera_blend_time {0.3f};
+        inline static const float s_camera_blend_time {0.3f};
 
     public:
         Character(std::shared_ptr<GObject> character_object);
@@ -34,6 +34,6 @@ namespace Piccolo
 
         // hack for setting rotation frame buffer
         Quaternion m_rotation_buffer;
-        bool       m_rotation_dirty;
+        bool       m_rotation_dirty {false};
     };
 } // namespace Piccolo

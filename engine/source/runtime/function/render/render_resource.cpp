@@ -121,6 +121,10 @@ namespace Piccolo
         uint32_t point_light_num = static_cast<uint32_t>(render_scene->m_point_light_list.m_lights.size());
 
         // set ubo data
+        m_particle_collision_perframe_storage_buffer_object.view_matrix      = view_matrix;
+        m_particle_collision_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
+        m_particle_collision_perframe_storage_buffer_object.proj_inv_matrix  = proj_matrix.inverse();
+
         m_mesh_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_mesh_perframe_storage_buffer_object.camera_position = camera_position;
         m_mesh_perframe_storage_buffer_object.ambient_light = ambient_light;
@@ -154,8 +158,9 @@ namespace Piccolo
         m_mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
 
         m_particlebillboard_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
-        m_particlebillboard_perframe_storage_buffer_object.eye_position = camera_position;
-        m_particlebillboard_perframe_storage_buffer_object.up_direction = camera->up();
+        m_particlebillboard_perframe_storage_buffer_object.right_direction  = camera->right();
+        m_particlebillboard_perframe_storage_buffer_object.foward_direction = camera->forward();
+        m_particlebillboard_perframe_storage_buffer_object.up_direction     = camera->up();
     }
 
     void RenderResource::createIBLSamplers(std::shared_ptr<RHI> rhi)
@@ -1171,7 +1176,7 @@ namespace Piccolo
     {
         VulkanRHI*     raw_rhi          = static_cast<VulkanRHI*>(rhi.get());
         StorageBuffer& _storage_buffer  = m_global_render_resource._storage_buffer;
-        uint32_t       frames_in_flight = raw_rhi->m_max_frames_in_flight;
+        uint32_t       frames_in_flight = raw_rhi->s_max_frames_in_flight;
 
         VkPhysicalDeviceProperties properties;
         vkGetPhysicalDeviceProperties(raw_rhi->m_physical_device, &properties);

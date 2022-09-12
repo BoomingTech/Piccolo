@@ -1,0 +1,170 @@
+#version 450
+
+#extension GL_GOOGLE_include_directive : enable
+
+#include "constants.h"
+
+struct Particle
+{
+    vec3  pos;
+    float life;
+    vec3  vel;
+    float size_x;
+    vec3  acc;
+    float size_y;
+    vec4  color;
+};
+
+struct CountBuffer
+{
+    int dead_count;
+    int alive_count;
+    int alive_count_after_sim;
+    int emit_count;
+};
+
+struct Argument
+{
+    uvec4 emit_count;
+    uvec4 simulateCount;
+    int   alive_flap_bit;
+};
+
+layout(binding = 0) uniform UBO
+{
+    float emit_delta;
+    int   xemit_count;
+    float max_life;
+    float fixed_time_step;
+    float random0;
+    float random1;
+    float random2;
+    uint  frameindex;
+    vec4  gravity;
+    uvec4 viewport;
+    vec4  extent;
+}
+ubo;
+
+layout(std140, binding = 1) buffer Pos { Particle Particles[]; };
+
+layout(std140, binding = 2) buffer Counter { CountBuffer counter; };
+
+layout(std140, binding = 3) buffer indirectArgumentBuffer { Argument argument; };
+
+layout(std140, binding = 4) buffer AliveBuffer { ivec4 alivelist[]; };
+
+layout(std140, binding = 5) buffer DeadBuffer { ivec4 deadbuffer[]; };
+
+layout(std140, binding = 6) buffer AliveBufferNext { ivec4 alivelistnext[]; };
+
+layout(std140, binding = 8) uniform _unused_name_perframe
+{
+    mat4 view_matrix;
+    mat4 proj_view_matrix;
+    mat4 proj_inv_matrix;
+};
+
+layout(std140, binding = 9) buffer _unsed_name_render_particle { Particle renderParticles[]; };
+
+layout(set = 1, binding = 0, rgba8) uniform readonly image2D in_normal;
+layout(set = 1, binding = 1) uniform sampler2D in_scene_depth;
+
+layout(local_size_x = 256) in;
+void main()
+{
+    uint threadId = gl_GlobalInvocationID.x;
+    if (threadId < counter.alive_count)
+    {
+        float    dt         = ubo.fixed_time_step;
+        int      particleId = argument.alive_flap_bit == 0 ? alivelist[threadId].x : alivelistnext[threadId].x;
+        Particle particle   = Particles[particleId];
+
+        if (particle.life > 0)
+        {
+            particle.vel += particle.acc * dt;
+            particle.pos += particle.vel * dt;
+
+            // transfrom position to view space
+            vec3 viewSpaceParticlePosition = (view_matrix * vec4(particle.pos, 1)).xyz;
+
+            vec4 screenSpaceParticlePosition = proj_view_matrix * vec4(particle.pos, 1);
+            screenSpaceParticlePosition.xyz /= screenSpaceParticlePosition.w;
+
+            // on screen collision
+            if (screenSpaceParticlePosition.x > -1 && screenSpaceParticlePosition.x < 1 &&
+                screenSpaceParticlePosition.y > -1 && screenSpaceParticlePosition.y < 1)
+            {
+                vec2  uv = screenSpaceParticlePosition.xy * vec2(0.5f, 0.5f) + 0.5f;
+                float px = (ubo.viewport.x + uv.x * ubo.viewport.z);
+                float py = (ubo.viewport.y + uv.y * ubo.viewport.w);
+
+                // Fetch the depth value at this point
+                float depth = texture(in_scene_depth, vec2(px / ubo.extent.x, py / ubo.extent.y)).r;
+
+                vec4 viewSpacePosOfDepthBuffer;
+                viewSpacePosOfDepthBuffer.xy = screenSpaceParticlePosition.xy;
+                viewSpacePosOfDepthBuffer.z  = depth;
+                viewSpacePosOfDepthBuffer.w  = 1;
+
+                // Transform into view space using the inverse projection matrix
+                viewSpacePosOfDepthBuffer = proj_inv_matrix * viewSpacePosOfDepthBuffer;
+                viewSpacePosOfDepthBuffer.xyz /= viewSpacePosOfDepthBuffer.w;
+                float colliderthickness = 0.5f;
+
+                if ((viewSpaceParticlePosition.z < viewSpacePosOfDepthBuffer.z) &&
+                    viewSpaceParticlePosition.z + colliderthickness > viewSpacePosOfDepthBuffer.z)
+                {
+                    vec3 worldnormal = (imageLoad(in_normal, ivec2(px, py)).rgb) * 2 - 1;
+                    if (dot(particle.vel, worldnormal) < 0)
+                    {
+                        vec3  prevd = normalize(particle.vel);
+                        float distance =
+                            abs(dot(prevd, (viewSpacePosOfDepthBuffer.xyz - viewSpaceParticlePosition.xyz)));
+
+                        vec3 newv = 0.4f * reflect(particle.vel, worldnormal);
+
+                        // stabilize
+                        if (length(newv) < 0.3f)
+                        {
+                            particle.vel = vec3(0, 0, 0);
+                        }
+                        else
+                        {
+                            particle.vel = newv;
+                        }
+
+                        // push to surface, avoid multiple collision
+                        particle.pos += -distance * prevd + particle.vel * dt;
+                    }
+                }
+            }
+        }
+
+        if (particle.life < 0)
+        {
+            uint deadIndex          = atomicAdd(counter.dead_count, 1);
+            deadbuffer[deadIndex].x = particleId;
+            particle.pos            = vec3(0, 0, 0);
+            particle.life           = 0;
+            particle.vel            = vec3(0, 0, 0);
+            particle.size_x         = 0;
+            particle.acc            = vec3(0, 0, 0);
+            particle.size_y         = 0;
+            particle.color          = vec4(0, 0, 0, 0);
+        }
+        else
+        {
+            int nextAliveIndex = atomicAdd(counter.alive_count_after_sim, 1);
+            if (argument.alive_flap_bit == 0)
+                alivelistnext[nextAliveIndex].x = particleId;
+            else
+                alivelist[nextAliveIndex].x = particleId;
+
+            particle.life -= dt;
+
+            renderParticles[nextAliveIndex] = particle;
+        }
+        Particles[particleId] = particle;
+    }
+}

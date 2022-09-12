@@ -40,7 +40,7 @@ namespace Piccolo
 
         CameraMode m_camera_mode {CameraMode::invalid};
 
-        Vector3 m_foward {Vector3::NEGATIVE_UNIT_Y};
+        Vector3 m_forward {Vector3::NEGATIVE_UNIT_Y};
         Vector3 m_up {Vector3::UNIT_Z};
         Vector3 m_left {Vector3::UNIT_X};
     };
