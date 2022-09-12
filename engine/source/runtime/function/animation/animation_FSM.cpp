@@ -34,6 +34,7 @@ namespace Pilot
         {
             case States::_idle:
                 /**** [0] ****/
+                // TODO: Make the FSM working
                 break;
             case States::_walk_start:
                 /**** [1] ****/
