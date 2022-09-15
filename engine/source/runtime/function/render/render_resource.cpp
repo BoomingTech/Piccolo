@@ -1,4 +1,3 @@
-#include "runtime/function/render/glm_wrapper.h"
 #include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_helper.h"
 
@@ -112,29 +111,33 @@ namespace Piccolo
     void RenderResource::updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
                                               std::shared_ptr<RenderCamera> camera)
     {
-        Matrix4x4 view_matrix      = camera->getViewMatrix();
-        Matrix4x4 proj_matrix      = camera->getPersProjMatrix();
-        Vector3   camera_position  = camera->position();
-        glm::mat4 proj_view_matrix = GLMUtil::fromMat4x4(proj_matrix * view_matrix);
+        Matrix4x4 view_matrix = camera->getViewMatrix();
+        Matrix4x4 proj_matrix = camera->getPersProjMatrix();
+        Vector3   camera_position = camera->position();
+        Matrix4x4 proj_view_matrix = proj_matrix * view_matrix;
 
         // ambient light
         Vector3  ambient_light   = render_scene->m_ambient_light.m_irradiance;
         uint32_t point_light_num = static_cast<uint32_t>(render_scene->m_point_light_list.m_lights.size());
 
         // set ubo data
+        m_particle_collision_perframe_storage_buffer_object.view_matrix      = view_matrix;
+        m_particle_collision_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
+        m_particle_collision_perframe_storage_buffer_object.proj_inv_matrix  = proj_matrix.inverse();
+
         m_mesh_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
-        m_mesh_perframe_storage_buffer_object.camera_position  = GLMUtil::fromVec3(camera_position);
-        m_mesh_perframe_storage_buffer_object.ambient_light    = ambient_light;
-        m_mesh_perframe_storage_buffer_object.point_light_num  = point_light_num;
+        m_mesh_perframe_storage_buffer_object.camera_position = camera_position;
+        m_mesh_perframe_storage_buffer_object.ambient_light = ambient_light;
+        m_mesh_perframe_storage_buffer_object.point_light_num = point_light_num;
+
 
         m_mesh_point_light_shadow_perframe_storage_buffer_object.point_light_num = point_light_num;
-
         // point lights
         for (uint32_t i = 0; i < point_light_num; i++)
         {
             Vector3 point_light_position = render_scene->m_point_light_list.m_lights[i].m_position;
             Vector3 point_light_intensity =
-                render_scene->m_point_light_list.m_lights[i].m_flux / (4.0f * glm::pi<float>());
+                render_scene->m_point_light_list.m_lights[i].m_flux / (4.0f * Math_PI);
 
             float radius = render_scene->m_point_light_list.m_lights[i].calculateRadius();
 
@@ -155,8 +158,9 @@ namespace Piccolo
         m_mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
 
         m_particlebillboard_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
-        m_particlebillboard_perframe_storage_buffer_object.eye_position     = GLMUtil::fromVec3(camera_position);
-        m_particlebillboard_perframe_storage_buffer_object.up_direction     = GLMUtil::fromVec3(camera->up());
+        m_particlebillboard_perframe_storage_buffer_object.right_direction  = camera->right();
+        m_particlebillboard_perframe_storage_buffer_object.foward_direction = camera->forward();
+        m_particlebillboard_perframe_storage_buffer_object.up_direction     = camera->up();
     }
 
     void RenderResource::createIBLSamplers(std::shared_ptr<RHI> rhi)
@@ -702,22 +706,22 @@ namespace Piccolo
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
             {
-                glm::vec3 normal  = glm::vec3(vertex_buffer_data[vertex_index].nx,
-                                             vertex_buffer_data[vertex_index].ny,
-                                             vertex_buffer_data[vertex_index].nz);
-                glm::vec3 tangent = glm::vec3(vertex_buffer_data[vertex_index].tx,
-                                              vertex_buffer_data[vertex_index].ty,
-                                              vertex_buffer_data[vertex_index].tz);
+                Vector3 normal = Vector3(vertex_buffer_data[vertex_index].nx,
+                    vertex_buffer_data[vertex_index].ny,
+                    vertex_buffer_data[vertex_index].nz);
+                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx,
+                    vertex_buffer_data[vertex_index].ty,
+                    vertex_buffer_data[vertex_index].tz);
 
-                mesh_vertex_positions[vertex_index].position = glm::vec3(vertex_buffer_data[vertex_index].x,
-                                                                         vertex_buffer_data[vertex_index].y,
-                                                                         vertex_buffer_data[vertex_index].z);
+                mesh_vertex_positions[vertex_index].position = Vector3(vertex_buffer_data[vertex_index].x,
+                    vertex_buffer_data[vertex_index].y,
+                    vertex_buffer_data[vertex_index].z);
 
                 mesh_vertex_blending_varyings[vertex_index].normal  = normal;
                 mesh_vertex_blending_varyings[vertex_index].tangent = tangent;
 
                 mesh_vertex_varyings[vertex_index].texcoord =
-                    glm::vec2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
+                    Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
             }
 
             for (uint32_t index_index = 0; index_index < index_count; ++index_index)
@@ -726,11 +730,10 @@ namespace Piccolo
 
                 // TODO: move to assets loading process
 
-                mesh_vertex_joint_binding[index_index].indices =
-                    glm::ivec4(joint_binding_buffer_data[vertex_buffer_index].m_index0,
-                               joint_binding_buffer_data[vertex_buffer_index].m_index1,
-                               joint_binding_buffer_data[vertex_buffer_index].m_index2,
-                               joint_binding_buffer_data[vertex_buffer_index].m_index3);
+                mesh_vertex_joint_binding[index_index].indices[0] = joint_binding_buffer_data[vertex_buffer_index].m_index0;
+                mesh_vertex_joint_binding[index_index].indices[1] = joint_binding_buffer_data[vertex_buffer_index].m_index1;
+                mesh_vertex_joint_binding[index_index].indices[2] = joint_binding_buffer_data[vertex_buffer_index].m_index2;
+                mesh_vertex_joint_binding[index_index].indices[3] = joint_binding_buffer_data[vertex_buffer_index].m_index3;
 
                 float inv_total_weight = joint_binding_buffer_data[vertex_buffer_index].m_weight0 +
                                          joint_binding_buffer_data[vertex_buffer_index].m_weight1 +
@@ -740,10 +743,10 @@ namespace Piccolo
                 inv_total_weight = (inv_total_weight != 0.0) ? 1 / inv_total_weight : 1.0;
 
                 mesh_vertex_joint_binding[index_index].weights =
-                    glm::vec4(joint_binding_buffer_data[vertex_buffer_index].m_weight0 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].m_weight1 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].m_weight2 * inv_total_weight,
-                              joint_binding_buffer_data[vertex_buffer_index].m_weight3 * inv_total_weight);
+                    Vector4(joint_binding_buffer_data[vertex_buffer_index].m_weight0 * inv_total_weight,
+                        joint_binding_buffer_data[vertex_buffer_index].m_weight1 * inv_total_weight,
+                        joint_binding_buffer_data[vertex_buffer_index].m_weight2 * inv_total_weight,
+                        joint_binding_buffer_data[vertex_buffer_index].m_weight3 * inv_total_weight);
             }
 
             vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
@@ -913,22 +916,22 @@ namespace Piccolo
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
             {
-                glm::vec3 normal  = glm::vec3(vertex_buffer_data[vertex_index].nx,
-                                             vertex_buffer_data[vertex_index].ny,
-                                             vertex_buffer_data[vertex_index].nz);
-                glm::vec3 tangent = glm::vec3(vertex_buffer_data[vertex_index].tx,
-                                              vertex_buffer_data[vertex_index].ty,
-                                              vertex_buffer_data[vertex_index].tz);
+                Vector3 normal = Vector3(vertex_buffer_data[vertex_index].nx,
+                    vertex_buffer_data[vertex_index].ny,
+                    vertex_buffer_data[vertex_index].nz);
+                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx,
+                    vertex_buffer_data[vertex_index].ty,
+                    vertex_buffer_data[vertex_index].tz);
 
-                mesh_vertex_positions[vertex_index].position = glm::vec3(vertex_buffer_data[vertex_index].x,
-                                                                         vertex_buffer_data[vertex_index].y,
-                                                                         vertex_buffer_data[vertex_index].z);
+                mesh_vertex_positions[vertex_index].position = Vector3(vertex_buffer_data[vertex_index].x,
+                    vertex_buffer_data[vertex_index].y,
+                    vertex_buffer_data[vertex_index].z);
 
                 mesh_vertex_blending_varyings[vertex_index].normal  = normal;
                 mesh_vertex_blending_varyings[vertex_index].tangent = tangent;
 
                 mesh_vertex_varyings[vertex_index].texcoord =
-                    glm::vec2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
+                    Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
             }
 
             vkUnmapMemory(vulkan_context->m_device, inefficient_staging_buffer_memory);
@@ -1173,7 +1176,7 @@ namespace Piccolo
     {
         VulkanRHI*     raw_rhi          = static_cast<VulkanRHI*>(rhi.get());
         StorageBuffer& _storage_buffer  = m_global_render_resource._storage_buffer;
-        uint32_t       frames_in_flight = raw_rhi->m_max_frames_in_flight;
+        uint32_t       frames_in_flight = raw_rhi->s_max_frames_in_flight;
 
         VkPhysicalDeviceProperties properties;
         vkGetPhysicalDeviceProperties(raw_rhi->m_physical_device, &properties);

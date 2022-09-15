@@ -85,6 +85,10 @@ For documentation, please refer to the Wiki section.
 
 ## Extra
 
+### Vulkan Validation Layer: Validation Error
+We have noticed some developers on Windows encounted PiccoloEditor.exe could run normally but reported an exception Vulkan Validation Layer: Validation Error
+when debugging. You can solve this problem by installing Vulkan SDK (official newest version will do).
+
 ### Generate Compilation Database
 
 You can build `compile_commands.json` with the following commands when `Unix Makefiles` generaters are avaliable. `compile_commands.json` is the file

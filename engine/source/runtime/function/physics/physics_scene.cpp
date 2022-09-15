@@ -32,7 +32,7 @@ namespace Piccolo
 {
     PhysicsScene::PhysicsScene(const Vector3& gravity)
     {
-        static_assert(k_invalid_rigidbody_id == JPH::BodyID::cInvalidBodyID);
+        static_assert(s_invalid_rigidbody_id == JPH::BodyID::cInvalidBodyID);
 
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();

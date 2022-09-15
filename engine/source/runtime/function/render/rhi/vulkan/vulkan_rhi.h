@@ -15,8 +15,12 @@ namespace Piccolo
     {
         std::optional<uint32_t> m_graphics_family;
         std::optional<uint32_t> m_present_family;
+        std::optional<uint32_t> m_compute_family;
 
-        bool isComplete() const { return m_graphics_family.has_value() && m_present_family.has_value(); }
+        bool isComplete() const
+        {
+            return m_graphics_family.has_value() && m_present_family.has_value() && m_compute_family.has_value();
+        }
     };
 
     struct SwapChainSupportDetails
@@ -108,6 +112,7 @@ namespace Piccolo
         VkFormat           m_depth_image_format {VK_FORMAT_UNDEFINED};
         VkQueue            m_graphics_queue {VK_NULL_HANDLE};
         VkQueue            m_present_queue {VK_NULL_HANDLE};
+        VkQueue            m_compute_queue {VK_NULL_HANDLE};
         VkCommandPool      m_command_pool {VK_NULL_HANDLE};
 
         VkSwapchainKHR           m_swapchain {VK_NULL_HANDLE};
@@ -147,13 +152,14 @@ namespace Piccolo
         VkDescriptorPool m_descriptor_pool;
 
         // command pool and buffers
-        static uint8_t const m_max_frames_in_flight {3};
+        static uint8_t const s_max_frames_in_flight {3};
         uint8_t              m_current_frame_index {0};
-        VkCommandPool        m_command_pools[m_max_frames_in_flight];
-        VkCommandBuffer      m_command_buffers[m_max_frames_in_flight];
-        VkSemaphore          m_image_available_for_render_semaphores[m_max_frames_in_flight];
-        VkSemaphore          m_image_finished_for_presentation_semaphores[m_max_frames_in_flight];
-        VkFence              m_is_frame_in_flight_fences[m_max_frames_in_flight];
+        VkCommandPool        m_command_pools[s_max_frames_in_flight];
+        VkCommandBuffer      m_command_buffers[s_max_frames_in_flight];
+        VkSemaphore          m_image_available_for_render_semaphores[s_max_frames_in_flight];
+        VkSemaphore          m_image_available_for_texturescopy_semaphores[s_max_frames_in_flight];
+        VkSemaphore          m_image_finished_for_presentation_semaphores[s_max_frames_in_flight];
+        VkFence              m_is_frame_in_flight_fences[s_max_frames_in_flight];
 
         // TODO: set
         VkCommandBuffer  m_current_command_buffer;

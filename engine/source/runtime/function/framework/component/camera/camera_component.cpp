@@ -67,6 +67,7 @@ namespace Piccolo
                 tickThirdPersonCamera(delta_time);
                 break;
             case CameraMode::free:
+                tickFreeCamera(delta_time);
                 break;
             default:
                 break;
@@ -86,13 +87,13 @@ namespace Piccolo
         q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, m_left);
 
         const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
-        Vector3     eye_pos = current_character->getPosition() + offset * Vector3::UNIT_Z;
+        m_position = current_character->getPosition() + offset * Vector3::UNIT_Z;
 
-        m_foward = q_yaw * q_pitch * m_foward;
-        m_left   = q_yaw * q_pitch * m_left;
-        m_up     = m_foward.crossProduct(m_left);
+        m_forward = q_yaw * q_pitch * m_forward;
+        m_left    = q_yaw * q_pitch * m_left;
+        m_up      = m_forward.crossProduct(m_left);
 
-        Matrix4x4 desired_mat = Math::makeLookAtMatrix(eye_pos, m_foward, m_up);
+        Matrix4x4 desired_mat = Math::makeLookAtMatrix(m_position, m_position + m_forward, m_up);
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
@@ -100,7 +101,7 @@ namespace Piccolo
         camera_swap_data.m_view_matrix                     = desired_mat;
         swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
 
-        Vector3    object_facing = m_foward - m_foward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
+        Vector3    object_facing = m_forward - m_forward.dotProduct(Vector3::UNIT_Z) * Vector3::UNIT_Z;
         Vector3    object_left   = Vector3::UNIT_Z.crossProduct(object_facing);
         Quaternion object_rotation;
         object_rotation.fromAxes(object_left, -object_facing, Vector3::UNIT_Z);
@@ -128,19 +129,78 @@ namespace Piccolo
         Vector3     offset            = Vector3(0, horizontal_offset, vertical_offset);
 
         Vector3 center_pos = current_character->getPosition() + Vector3::UNIT_Z * vertical_offset;
-        Vector3 camera_pos =
+        m_position =
             current_character->getRotation() * param->m_cursor_pitch * offset + current_character->getPosition();
-        Vector3 camera_forward = center_pos - camera_pos;
-        Vector3 camera_up      = current_character->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
+
+        m_forward = center_pos - m_position;
+        m_up = current_character->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
+        m_left = m_up.crossProduct(m_forward);
 
         current_character->setRotation(q_yaw * current_character->getRotation());
 
-        Matrix4x4 desired_mat = Math::makeLookAtMatrix(camera_pos, camera_pos + camera_forward, camera_up);
+        Matrix4x4 desired_mat = Math::makeLookAtMatrix(m_position, m_position + m_forward, m_up);
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
         camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
         camera_swap_data.m_view_matrix                     = desired_mat;
+        swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
+    }
+
+    void CameraComponent::tickFreeCamera(float delta_time)
+    {
+        unsigned int command = g_runtime_global_context.m_input_system->getGameCommand();
+        if (command >= (unsigned int)GameCommand::invalid) return;
+
+        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
+        if (current_character == nullptr)
+            return;
+
+        Quaternion q_yaw, q_pitch;
+
+        q_yaw.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
+        q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, m_left);
+
+        m_forward = q_yaw * q_pitch * m_forward;
+        m_left = q_yaw * q_pitch * m_left;
+        m_up = m_forward.crossProduct(m_left);
+
+        bool has_move_command = ((unsigned int)GameCommand::forward | (unsigned int)GameCommand::backward |
+                                 (unsigned int)GameCommand::left | (unsigned int)GameCommand::right) & command;
+        if (has_move_command)
+        {
+            Vector3 move_direction = Vector3::ZERO;
+
+            if ((unsigned int)GameCommand::forward & command)
+            {
+                move_direction += m_forward;
+            }
+
+            if ((unsigned int)GameCommand::backward & command)
+            {
+                move_direction -= m_forward;
+            }
+
+            if ((unsigned int)GameCommand::left & command)
+            {
+                move_direction += m_left;
+            }
+
+            if ((unsigned int)GameCommand::right & command)
+            {
+                move_direction -= m_left;
+            }
+
+            m_position += move_direction * 2.0f * delta_time;
+        }
+
+        Matrix4x4 desired_mat = Math::makeLookAtMatrix(m_position, m_position + m_forward, m_up);
+
+        RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
+        CameraSwapData     camera_swap_data;
+        camera_swap_data.m_camera_type = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix = desired_mat;
         swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 } // namespace Piccolo

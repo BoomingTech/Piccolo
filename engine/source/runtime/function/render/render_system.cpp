@@ -14,6 +14,7 @@
 #include "runtime/function/render/window_system.h"
 
 #include "runtime/function/render/passes/main_camera_pass.h"
+#include "runtime/function/render/passes/particle_pass.h"
 
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 
@@ -70,7 +71,7 @@ namespace Piccolo
 
         // initialize render pipeline
         RenderPipelineInitInfo pipeline_init_info;
-        pipeline_init_info.enable_fxaa = global_rendering_res.m_enable_fxaa;
+        pipeline_init_info.enable_fxaa     = global_rendering_res.m_enable_fxaa;
         pipeline_init_info.render_resource = m_render_resource;
 
         m_render_pipeline        = std::make_shared<RenderPipeline>();
@@ -195,7 +196,14 @@ namespace Piccolo
         return m_render_scene->getMeshAssetIdAllocator();
     }
 
-    void RenderSystem::clearForLevelReloading() { m_render_scene->clearForLevelReloading(); }
+    void RenderSystem::clearForLevelReloading()
+    {
+        m_render_scene->clearForLevelReloading();
+
+        ParticleSubmitRequest request;
+
+        m_swap_context.getLogicSwapData().m_particle_submit_request = request;
+    }
 
     void RenderSystem::setRenderPipelineType(RENDER_PIPELINE_TYPE pipeline_type)
     {
@@ -329,7 +337,7 @@ namespace Piccolo
                     }
                 }
                 // after finished processing, pop this game object
-                swap_data.m_game_object_resource_desc->popProcessObject();
+                swap_data.m_game_object_resource_desc->pop();
             }
 
             // reset game object swap data to a clean state
@@ -343,7 +351,7 @@ namespace Piccolo
             {
                 GameObjectDesc gobject = swap_data.m_game_object_to_delete->getNextProcessObject();
                 m_render_scene->deleteEntityByGObjectID(gobject.getId());
-                swap_data.m_game_object_to_delete->popProcessObject();
+                swap_data.m_game_object_to_delete->pop();
             }
 
             m_swap_context.resetGameObjectToDelete();
@@ -368,6 +376,38 @@ namespace Piccolo
             }
 
             m_swap_context.resetCameraSwapData();
+        }
+
+        if (swap_data.m_particle_submit_request.has_value())
+        {
+            std::shared_ptr<ParticlePass> particle_pass =
+                std::static_pointer_cast<ParticlePass>(m_render_pipeline->m_particle_pass);
+
+            int emitter_count = swap_data.m_particle_submit_request->getEmitterCount();
+            particle_pass->setEmitterCount(emitter_count);
+
+            for (int index = 0; index < emitter_count; ++index)
+            {
+                const ParticleEmitterDesc& desc = swap_data.m_particle_submit_request->getEmitterDesc(index);
+                particle_pass->createEmitter(index, desc);
+            }
+
+            particle_pass->initializeEmitters();
+
+            m_swap_context.resetPartilceBatchSwapData();
+        }
+        if (swap_data.m_emitter_tick_request.has_value())
+        {
+            std::static_pointer_cast<ParticlePass>(m_render_pipeline->m_particle_pass)
+                ->setTickIndices(swap_data.m_emitter_tick_request->m_emitter_indices);
+            m_swap_context.resetEmitterTickSwapData();
+        }
+
+        if (swap_data.m_emitter_transform_request.has_value())
+        {
+            std::static_pointer_cast<ParticlePass>(m_render_pipeline->m_particle_pass)
+                ->setTransformIndices(swap_data.m_emitter_transform_request->m_transform_descs);
+            m_swap_context.resetEmitterTransformSwapData();
         }
     }
 } // namespace Piccolo

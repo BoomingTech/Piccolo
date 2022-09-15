@@ -8,15 +8,13 @@
 #include "runtime/engine.h"
 #include "runtime/function/character/character.h"
 #include "runtime/function/framework/object/object.h"
+#include "runtime/function/particle/particle_manager.h"
 #include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/physics/physics_scene.h"
-
 #include <limits>
 
 namespace Piccolo
 {
-    Level::~Level() { clear(); }
-
     void Level::clear()
     {
         m_current_active_character.reset();

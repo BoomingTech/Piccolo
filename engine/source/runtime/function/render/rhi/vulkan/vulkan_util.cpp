@@ -45,6 +45,73 @@ namespace Piccolo
         return shader_module;
     }
 
+    void VulkanUtil::createBufferAndInitialize(VkDevice              device,
+                                       VkPhysicalDevice      physicalDevice,
+                                       VkBufferUsageFlags    usageFlags,
+                                       VkMemoryPropertyFlags memoryPropertyFlags,
+                                       VkBuffer*             buffer,
+                                       VkDeviceMemory*       memory,
+                                       VkDeviceSize          size,
+                                       void*                 data,
+                                       int                   datasize)
+    {
+        // Create the buffer handle
+        VkBufferCreateInfo bufferCreateInfo {};
+        bufferCreateInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.usage       = usageFlags;
+        bufferCreateInfo.size        = size;
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        if (VK_SUCCESS != vkCreateBuffer(device, &bufferCreateInfo, nullptr, buffer))
+        {
+            throw std::runtime_error("create buffer buffer");
+        }
+
+        // Create the memory backing up the buffer handle
+        VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+        VkMemoryRequirements memReqs;
+        VkMemoryAllocateInfo memAlloc {};
+        memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        vkGetBufferMemoryRequirements(device, *buffer, &memReqs);
+        memAlloc.allocationSize = memReqs.size;
+
+        // Find a memory type index that fits the properties of the buffer
+        bool memTypeFound = false;
+        for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
+        {
+            if ((memReqs.memoryTypeBits & 1) == 1)
+            {
+                if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & memoryPropertyFlags) == memoryPropertyFlags)
+                {
+                    memAlloc.memoryTypeIndex = i;
+                    memTypeFound             = true;
+                }
+            }
+            memReqs.memoryTypeBits >>= 1;
+        }
+        assert(memTypeFound);
+        if (VK_SUCCESS != vkAllocateMemory(device, &memAlloc, nullptr, memory))
+        {
+            throw std::runtime_error("alloc memory");
+        }
+
+        if (data != nullptr && datasize != 0)
+        {
+            void* mapped;
+            if (VK_SUCCESS != vkMapMemory(device, *memory, 0, size, 0, &mapped))
+            {
+                throw std::runtime_error("map memory");
+            }
+            memcpy(mapped, data, datasize);
+            vkUnmapMemory(device, *memory);
+        }
+
+        if (VK_SUCCESS != vkBindBufferMemory(device, *buffer, *memory, 0))
+        {
+            throw std::runtime_error("bind memory");
+        }
+    }
+
     void VulkanUtil::createBuffer(VkPhysicalDevice      physical_device,
                                   VkDevice              device,
                                   VkDeviceSize          size,

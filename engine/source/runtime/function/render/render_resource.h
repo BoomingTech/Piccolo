@@ -43,15 +43,15 @@ namespace Piccolo
         void*                _brdfLUT_texture_image_pixels;
         uint32_t             _brdfLUT_texture_image_width;
         uint32_t             _brdfLUT_texture_image_height;
-        PICCOLO_PIXEL_FORMAT   _brdfLUT_texture_image_format;
+        PICCOLO_PIXEL_FORMAT _brdfLUT_texture_image_format;
         std::array<void*, 6> _irradiance_texture_image_pixels;
         uint32_t             _irradiance_texture_image_width;
         uint32_t             _irradiance_texture_image_height;
-        PICCOLO_PIXEL_FORMAT   _irradiance_texture_image_format;
+        PICCOLO_PIXEL_FORMAT _irradiance_texture_image_format;
         std::array<void*, 6> _specular_texture_image_pixels;
         uint32_t             _specular_texture_image_width;
         uint32_t             _specular_texture_image_height;
-        PICCOLO_PIXEL_FORMAT   _specular_texture_image_format;
+        PICCOLO_PIXEL_FORMAT _specular_texture_image_format;
     };
 
     struct ColorGradingResource
@@ -63,9 +63,9 @@ namespace Piccolo
 
     struct ColorGradingResourceData
     {
-        void*              _color_grading_LUT_texture_image_pixels;
-        uint32_t           _color_grading_LUT_texture_image_width;
-        uint32_t           _color_grading_LUT_texture_image_height;
+        void*                _color_grading_LUT_texture_image_pixels;
+        uint32_t             _color_grading_LUT_texture_image_width;
+        uint32_t             _color_grading_LUT_texture_image_height;
         PICCOLO_PIXEL_FORMAT _color_grading_LUT_texture_image_format;
     };
 
@@ -139,6 +139,7 @@ namespace Piccolo
         AxisStorageBufferObject                        m_axis_storage_buffer_object;
         MeshInefficientPickPerframeStorageBufferObject m_mesh_inefficient_pick_perframe_storage_buffer_object;
         ParticleBillboardPerframeStorageBufferObject   m_particlebillboard_perframe_storage_buffer_object;
+        ParticleCollisionPerframeStorageBufferObject   m_particle_collision_perframe_storage_buffer_object;
 
         // cached mesh and material
         std::map<size_t, VulkanMesh>        m_vulkan_meshes;

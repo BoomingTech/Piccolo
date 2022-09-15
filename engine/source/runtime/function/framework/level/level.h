@@ -19,7 +19,7 @@ namespace Piccolo
     class Level
     {
     public:
-        virtual ~Level();
+        virtual ~Level(){};
 
         bool load(const std::string& level_res_url);
         void unload();

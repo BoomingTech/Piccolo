@@ -2,7 +2,6 @@
 #include "runtime/function/render/render_helper.h"
 #include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/render_resource.h"
-#include "runtime/function/render/glm_wrapper.h"
 
 #include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/rhi/vulkan/vulkan_util.h"
@@ -17,8 +16,6 @@
 #include <mesh_frag.h>
 #include <mesh_gbuffer_frag.h>
 #include <mesh_vert.h>
-#include <particlebillboard_frag.h>
-#include <particlebillboard_vert.h>
 #include <skybox_frag.h>
 #include <skybox_vert.h>
 
@@ -38,6 +35,8 @@ namespace Piccolo
         setupDescriptorSet();
         setupFramebufferDescriptorSet();
         setupSwapchainFramebuffers();
+
+        setupParticlePass();
     }
 
     void MainCameraPass::preparePassData(std::shared_ptr<RenderResourceBase> render_resource)
@@ -47,8 +46,6 @@ namespace Piccolo
         {
             m_mesh_perframe_storage_buffer_object = vulkan_resource->m_mesh_perframe_storage_buffer_object;
             m_axis_storage_buffer_object          = vulkan_resource->m_axis_storage_buffer_object;
-            m_particlebillboard_perframe_storage_buffer_object =
-                vulkan_resource->m_particlebillboard_perframe_storage_buffer_object;
         }
     }
 
@@ -63,60 +60,83 @@ namespace Piccolo
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
-        for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
+        for (int buffer_index = 0; buffer_index < _main_camera_pass_custom_attachment_count; ++buffer_index)
         {
-            VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
-                                    m_vulkan_rhi->m_device,
-                                    m_vulkan_rhi->m_swapchain_extent.width,
-                                    m_vulkan_rhi->m_swapchain_extent.height,
-                                    m_framebuffer.attachments[i].format,
-                                    VK_IMAGE_TILING_OPTIMAL,
-                                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
-                                        VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                    m_framebuffer.attachments[i].image,
-                                    m_framebuffer.attachments[i].mem,
-                                    0,
-                                    1,
-                                    1);
+            if (buffer_index == _main_camera_pass_gbuffer_a)
+            {
+                VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
+                                        m_vulkan_rhi->m_device,
+                                        m_vulkan_rhi->m_swapchain_extent.width,
+                                        m_vulkan_rhi->m_swapchain_extent.height,
+                                        m_framebuffer.attachments[_main_camera_pass_gbuffer_a].format,
+                                        VK_IMAGE_TILING_OPTIMAL,
+                                        VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                            VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                        m_framebuffer.attachments[_main_camera_pass_gbuffer_a].image,
+                                        m_framebuffer.attachments[_main_camera_pass_gbuffer_a].mem,
+                                        0,
+                                        1,
+                                        1);
+            }
+            else
+            {
+                VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
+                                        m_vulkan_rhi->m_device,
+                                        m_vulkan_rhi->m_swapchain_extent.width,
+                                        m_vulkan_rhi->m_swapchain_extent.height,
+                                        m_framebuffer.attachments[buffer_index].format,
+                                        VK_IMAGE_TILING_OPTIMAL,
+                                        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
+                                            VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                        m_framebuffer.attachments[buffer_index].image,
+                                        m_framebuffer.attachments[buffer_index].mem,
+                                        0,
+                                        1,
+                                        1);
+            }
 
-            m_framebuffer.attachments[i].view = VulkanUtil::createImageView(m_vulkan_rhi->m_device,
-                                                                            m_framebuffer.attachments[i].image,
-                                                                            m_framebuffer.attachments[i].format,
-                                                                            VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                            VK_IMAGE_VIEW_TYPE_2D,
-                                                                            1,
-                                                                            1);
+            m_framebuffer.attachments[buffer_index].view =
+                VulkanUtil::createImageView(m_vulkan_rhi->m_device,
+                                            m_framebuffer.attachments[buffer_index].image,
+                                            m_framebuffer.attachments[buffer_index].format,
+                                            VK_IMAGE_ASPECT_COLOR_BIT,
+                                            VK_IMAGE_VIEW_TYPE_2D,
+                                            1,
+                                            1);
         }
 
         m_framebuffer.attachments[_main_camera_pass_post_process_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
         m_framebuffer.attachments[_main_camera_pass_post_process_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-        for (int i = _main_camera_pass_custom_attachment_count;
-             i < _main_camera_pass_custom_attachment_count + _main_camera_pass_post_process_attachment_count;
-             ++i)
+        for (int attachment_index = _main_camera_pass_custom_attachment_count;
+             attachment_index <
+             _main_camera_pass_custom_attachment_count + _main_camera_pass_post_process_attachment_count;
+             ++attachment_index)
         {
             VulkanUtil::createImage(m_vulkan_rhi->m_physical_device,
                                     m_vulkan_rhi->m_device,
                                     m_vulkan_rhi->m_swapchain_extent.width,
                                     m_vulkan_rhi->m_swapchain_extent.height,
-                                    m_framebuffer.attachments[i].format,
+                                    m_framebuffer.attachments[attachment_index].format,
                                     VK_IMAGE_TILING_OPTIMAL,
                                     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT |
                                         VK_IMAGE_USAGE_SAMPLED_BIT,
                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                    m_framebuffer.attachments[i].image,
-                                    m_framebuffer.attachments[i].mem,
+                                    m_framebuffer.attachments[attachment_index].image,
+                                    m_framebuffer.attachments[attachment_index].mem,
                                     0,
                                     1,
                                     1);
 
-            m_framebuffer.attachments[i].view = VulkanUtil::createImageView(m_vulkan_rhi->m_device,
-                                                                            m_framebuffer.attachments[i].image,
-                                                                            m_framebuffer.attachments[i].format,
-                                                                            VK_IMAGE_ASPECT_COLOR_BIT,
-                                                                            VK_IMAGE_VIEW_TYPE_2D,
-                                                                            1,
-                                                                            1);
+            m_framebuffer.attachments[attachment_index].view =
+                VulkanUtil::createImageView(m_vulkan_rhi->m_device,
+                                            m_framebuffer.attachments[attachment_index].image,
+                                            m_framebuffer.attachments[attachment_index].format,
+                                            VK_IMAGE_ASPECT_COLOR_BIT,
+                                            VK_IMAGE_VIEW_TYPE_2D,
+                                            1,
+                                            1);
         }
     }
 
@@ -128,7 +148,7 @@ namespace Piccolo
         gbuffer_normal_attachment_description.format  = m_framebuffer.attachments[_main_camera_pass_gbuffer_a].format;
         gbuffer_normal_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
         gbuffer_normal_attachment_description.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        gbuffer_normal_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        gbuffer_normal_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         gbuffer_normal_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         gbuffer_normal_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         gbuffer_normal_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -210,7 +230,7 @@ namespace Piccolo
         depth_attachment_description.format                   = m_vulkan_rhi->m_depth_image_format;
         depth_attachment_description.samples                  = VK_SAMPLE_COUNT_1_BIT;
         depth_attachment_description.loadOp                   = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depth_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depth_attachment_description.storeOp                  = VK_ATTACHMENT_STORE_OP_STORE;
         depth_attachment_description.stencilLoadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depth_attachment_description.stencilStoreOp           = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depth_attachment_description.initialLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -357,10 +377,9 @@ namespace Piccolo
         }
         else
         {
-            fxaa_pass_input_attachment_reference.attachment =
-                &backup_even_color_attachment_description - attachments;
+            fxaa_pass_input_attachment_reference.attachment = &backup_even_color_attachment_description - attachments;
         }
-        fxaa_pass_input_attachment_reference.layout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        fxaa_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference fxaa_pass_color_attachment_reference {};
         fxaa_pass_color_attachment_reference.attachment = &backup_odd_color_attachment_description - attachments;
@@ -752,43 +771,6 @@ namespace Piccolo
                     m_vulkan_rhi->m_device, &axis_layout_create_info, NULL, &m_descriptor_infos[_axis].layout))
             {
                 throw std::runtime_error("create axis layout");
-            }
-        }
-
-        {
-            VkDescriptorSetLayoutBinding particlebillboard_global_layout_bindings[2];
-
-            VkDescriptorSetLayoutBinding& particlebillboard_global_layout_perframe_storage_buffer_binding =
-                particlebillboard_global_layout_bindings[0];
-            particlebillboard_global_layout_perframe_storage_buffer_binding.binding = 0;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorType =
-                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorCount = 1;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.pImmutableSamplers = NULL;
-
-            VkDescriptorSetLayoutBinding& particlebillboard_global_layout_perdrawcall_storage_buffer_binding =
-                particlebillboard_global_layout_bindings[1];
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.binding = 1;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorType =
-                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorCount = 1;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.pImmutableSamplers = NULL;
-
-            VkDescriptorSetLayoutCreateInfo particlebillboard_global_layout_create_info;
-            particlebillboard_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            particlebillboard_global_layout_create_info.pNext = NULL;
-            particlebillboard_global_layout_create_info.flags = 0;
-            particlebillboard_global_layout_create_info.bindingCount = 2;
-            particlebillboard_global_layout_create_info.pBindings    = particlebillboard_global_layout_bindings;
-
-            if (VK_SUCCESS != vkCreateDescriptorSetLayout(m_vulkan_rhi->m_device,
-                                                          &particlebillboard_global_layout_create_info,
-                                                          NULL,
-                                                          &m_descriptor_infos[_particle].layout))
-            {
-                throw std::runtime_error("create particle billboard global layout");
             }
         }
 
@@ -1446,148 +1428,6 @@ namespace Piccolo
             vkDestroyShaderModule(m_vulkan_rhi->m_device, frag_shader_module, nullptr);
         }
 
-        // particle billboard
-        {
-            VkDescriptorSetLayout      descriptorset_layouts[1] = {m_descriptor_infos[_particle].layout};
-            VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
-            pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_create_info.setLayoutCount = 1;
-            pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
-
-            if (vkCreatePipelineLayout(m_vulkan_rhi->m_device,
-                                       &pipeline_layout_create_info,
-                                       nullptr,
-                                       &m_render_pipelines[_render_pipeline_type_particle].layout) != VK_SUCCESS)
-            {
-                throw std::runtime_error("create particle billboard pipeline layout");
-            }
-
-            VkShaderModule vert_shader_module =
-                VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, PARTICLEBILLBOARD_VERT);
-            VkShaderModule frag_shader_module =
-                VulkanUtil::createShaderModule(m_vulkan_rhi->m_device, PARTICLEBILLBOARD_FRAG);
-
-            VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
-            vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vert_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-            vert_pipeline_shader_stage_create_info.module = vert_shader_module;
-            vert_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo frag_pipeline_shader_stage_create_info {};
-            frag_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            frag_pipeline_shader_stage_create_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-            frag_pipeline_shader_stage_create_info.module = frag_shader_module;
-            frag_pipeline_shader_stage_create_info.pName  = "main";
-
-            VkPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                               frag_pipeline_shader_stage_create_info};
-
-            VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
-            vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertex_input_state_create_info.vertexBindingDescriptionCount   = 0;
-            vertex_input_state_create_info.pVertexBindingDescriptions      = NULL;
-            vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
-            vertex_input_state_create_info.pVertexAttributeDescriptions    = NULL;
-
-            VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info {};
-            input_assembly_create_info.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-            input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-            input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
-
-            VkPipelineViewportStateCreateInfo viewport_state_create_info {};
-            viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-            viewport_state_create_info.viewportCount = 1;
-            viewport_state_create_info.pViewports    = &m_vulkan_rhi->m_viewport;
-            viewport_state_create_info.scissorCount  = 1;
-            viewport_state_create_info.pScissors     = &m_vulkan_rhi->m_scissor;
-
-            VkPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
-            rasterization_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-            rasterization_state_create_info.depthClampEnable        = VK_FALSE;
-            rasterization_state_create_info.rasterizerDiscardEnable = VK_FALSE;
-            rasterization_state_create_info.polygonMode             = VK_POLYGON_MODE_FILL;
-            rasterization_state_create_info.lineWidth               = 1.0f;
-            rasterization_state_create_info.cullMode                = VK_CULL_MODE_BACK_BIT;
-            rasterization_state_create_info.frontFace               = VK_FRONT_FACE_CLOCKWISE;
-            rasterization_state_create_info.depthBiasEnable         = VK_FALSE;
-            rasterization_state_create_info.depthBiasConstantFactor = 0.0f;
-            rasterization_state_create_info.depthBiasClamp          = 0.0f;
-            rasterization_state_create_info.depthBiasSlopeFactor    = 0.0f;
-
-            VkPipelineMultisampleStateCreateInfo multisample_state_create_info {};
-            multisample_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-            multisample_state_create_info.sampleShadingEnable  = VK_FALSE;
-            multisample_state_create_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-            VkPipelineColorBlendAttachmentState color_blend_attachments[1] = {};
-            color_blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            color_blend_attachments[0].blendEnable         = VK_TRUE;
-            color_blend_attachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].colorBlendOp        = VK_BLEND_OP_ADD;
-            color_blend_attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachments[0].alphaBlendOp        = VK_BLEND_OP_ADD;
-
-            VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = VK_FALSE;
-            color_blend_state_create_info.logicOp       = VK_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
-            color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
-            color_blend_state_create_info.blendConstants[0] = 0.0f;
-            color_blend_state_create_info.blendConstants[1] = 0.0f;
-            color_blend_state_create_info.blendConstants[2] = 0.0f;
-            color_blend_state_create_info.blendConstants[3] = 0.0f;
-
-            VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info {};
-            depth_stencil_create_info.sType            = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depth_stencil_create_info.depthTestEnable  = VK_TRUE;
-            depth_stencil_create_info.depthWriteEnable = VK_FALSE;
-            depth_stencil_create_info.depthCompareOp   = VK_COMPARE_OP_LESS;
-            depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
-            depth_stencil_create_info.stencilTestEnable     = VK_FALSE;
-
-            VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-
-            VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
-            dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamic_state_create_info.dynamicStateCount = 2;
-            dynamic_state_create_info.pDynamicStates    = dynamic_states;
-
-            VkGraphicsPipelineCreateInfo pipelineInfo {};
-            pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount          = 2;
-            pipelineInfo.pStages             = shader_stages;
-            pipelineInfo.pVertexInputState   = &vertex_input_state_create_info;
-            pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
-            pipelineInfo.pViewportState      = &viewport_state_create_info;
-            pipelineInfo.pRasterizationState = &rasterization_state_create_info;
-            pipelineInfo.pMultisampleState   = &multisample_state_create_info;
-            pipelineInfo.pColorBlendState    = &color_blend_state_create_info;
-            pipelineInfo.pDepthStencilState  = &depth_stencil_create_info;
-            pipelineInfo.layout              = m_render_pipelines[_render_pipeline_type_particle].layout;
-            pipelineInfo.renderPass          = m_framebuffer.render_pass;
-            pipelineInfo.subpass             = _main_camera_subpass_forward_lighting;
-            pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
-            pipelineInfo.pDynamicState       = &dynamic_state_create_info;
-
-            if (vkCreateGraphicsPipelines(m_vulkan_rhi->m_device,
-                                          VK_NULL_HANDLE,
-                                          1,
-                                          &pipelineInfo,
-                                          nullptr,
-                                          &m_render_pipelines[_render_pipeline_type_particle].pipeline) != VK_SUCCESS)
-            {
-                throw std::runtime_error("create particle billboard graphics pipeline");
-            }
-
-            vkDestroyShaderModule(m_vulkan_rhi->m_device, vert_shader_module, nullptr);
-            vkDestroyShaderModule(m_vulkan_rhi->m_device, frag_shader_module, nullptr);
-        }
-
         // draw axis
         {
             VkDescriptorSetLayout      descriptorset_layouts[1] = {m_descriptor_infos[_axis].layout};
@@ -1735,7 +1575,6 @@ namespace Piccolo
         setupModelGlobalDescriptorSet();
         setupSkyboxDescriptorSet();
         setupAxisDescriptorSet();
-        setupParticleDescriptorSet();
         setupGbufferLightingDescriptorSet();
     }
 
@@ -1977,60 +1816,6 @@ namespace Piccolo
                                NULL);
     }
 
-    void MainCameraPass::setupParticleDescriptorSet()
-    {
-        VkDescriptorSetAllocateInfo particlebillboard_global_descriptor_set_alloc_info;
-        particlebillboard_global_descriptor_set_alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        particlebillboard_global_descriptor_set_alloc_info.pNext = NULL;
-        particlebillboard_global_descriptor_set_alloc_info.descriptorPool     = m_vulkan_rhi->m_descriptor_pool;
-        particlebillboard_global_descriptor_set_alloc_info.descriptorSetCount = 1;
-        particlebillboard_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[_particle].layout;
-
-        if (VK_SUCCESS != vkAllocateDescriptorSets(m_vulkan_rhi->m_device,
-                                                   &particlebillboard_global_descriptor_set_alloc_info,
-                                                   &m_descriptor_infos[_particle].descriptor_set))
-        {
-            throw std::runtime_error("allocate particle billboard global descriptor set");
-        }
-
-        VkDescriptorBufferInfo particlebillboard_perframe_storage_buffer_info = {};
-        particlebillboard_perframe_storage_buffer_info.offset                 = 0;
-        particlebillboard_perframe_storage_buffer_info.range = sizeof(ParticleBillboardPerframeStorageBufferObject);
-        particlebillboard_perframe_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-
-        VkDescriptorBufferInfo particlebillboard_perdrawcall_storage_buffer_info = {};
-        particlebillboard_perdrawcall_storage_buffer_info.offset                 = 0;
-        particlebillboard_perdrawcall_storage_buffer_info.range =
-            sizeof(ParticleBillboardPerdrawcallStorageBufferObject);
-        particlebillboard_perdrawcall_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(particlebillboard_perdrawcall_storage_buffer_info.range <
-               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
-
-        VkWriteDescriptorSet particlebillboard_descriptor_writes_info[2];
-
-        particlebillboard_descriptor_writes_info[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        particlebillboard_descriptor_writes_info[0].pNext           = NULL;
-        particlebillboard_descriptor_writes_info[0].dstSet          = m_descriptor_infos[_particle].descriptor_set;
-        particlebillboard_descriptor_writes_info[0].dstBinding      = 0;
-        particlebillboard_descriptor_writes_info[0].dstArrayElement = 0;
-        particlebillboard_descriptor_writes_info[0].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        particlebillboard_descriptor_writes_info[0].descriptorCount = 1;
-        particlebillboard_descriptor_writes_info[0].pBufferInfo     = &particlebillboard_perframe_storage_buffer_info;
-
-        particlebillboard_descriptor_writes_info[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        particlebillboard_descriptor_writes_info[1].pNext           = NULL;
-        particlebillboard_descriptor_writes_info[1].dstSet          = m_descriptor_infos[_particle].descriptor_set;
-        particlebillboard_descriptor_writes_info[1].dstBinding      = 1;
-        particlebillboard_descriptor_writes_info[1].dstArrayElement = 0;
-        particlebillboard_descriptor_writes_info[1].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        particlebillboard_descriptor_writes_info[1].descriptorCount = 1;
-        particlebillboard_descriptor_writes_info[1].pBufferInfo = &particlebillboard_perdrawcall_storage_buffer_info;
-
-        vkUpdateDescriptorSets(m_vulkan_rhi->m_device, 2, particlebillboard_descriptor_writes_info, 0, NULL);
-    }
-
     void MainCameraPass::setupGbufferLightingDescriptorSet()
     {
         VkDescriptorSetAllocateInfo gbuffer_light_global_descriptor_set_alloc_info;
@@ -2193,6 +1978,8 @@ namespace Piccolo
         setupFramebufferDescriptorSet();
 
         setupSwapchainFramebuffers();
+
+        setupParticlePass();
     }
 
     void MainCameraPass::draw(ColorGradingPass& color_grading_pass,
@@ -2200,6 +1987,7 @@ namespace Piccolo
                               ToneMappingPass&  tone_mapping_pass,
                               UIPass&           ui_pass,
                               CombineUIPass&    combine_ui_pass,
+                              ParticlePass&     particle_pass,
                               uint32_t          current_swapchain_image_index)
     {
         {
@@ -2266,7 +2054,7 @@ namespace Piccolo
             m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
         }
 
-        drawBillboardParticle();
+        particle_pass.draw();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -2283,7 +2071,8 @@ namespace Piccolo
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        if (m_enable_fxaa) fxaa_pass.draw();
+        if (m_enable_fxaa)
+            fxaa_pass.draw();
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -2302,10 +2091,10 @@ namespace Piccolo
         clear_rects[0].rect.extent.width  = m_vulkan_rhi->m_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_vulkan_rhi->m_swapchain_extent.height;
         m_vulkan_rhi->m_vk_cmd_clear_attachments(m_vulkan_rhi->m_current_command_buffer,
-                                             sizeof(clear_attachments) / sizeof(clear_attachments[0]),
-                                             clear_attachments,
-                                             sizeof(clear_rects) / sizeof(clear_rects[0]),
-                                             clear_rects);
+                                                 sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                 clear_attachments,
+                                                 sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                 clear_rects);
 
         drawAxis();
 
@@ -2323,6 +2112,7 @@ namespace Piccolo
                                      ToneMappingPass&  tone_mapping_pass,
                                      UIPass&           ui_pass,
                                      CombineUIPass&    combine_ui_pass,
+                                     ParticlePass&     particle_pass,
                                      uint32_t          current_swapchain_image_index)
     {
         {
@@ -2361,7 +2151,7 @@ namespace Piccolo
 
         drawMeshLighting();
         drawSkybox();
-        drawBillboardParticle();
+        particle_pass.draw();
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -2378,7 +2168,8 @@ namespace Piccolo
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
-        if (m_enable_fxaa) fxaa_pass.draw();
+        if (m_enable_fxaa)
+            fxaa_pass.draw();
 
         m_vulkan_rhi->m_vk_cmd_next_subpass(m_vulkan_rhi->m_current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -2397,10 +2188,10 @@ namespace Piccolo
         clear_rects[0].rect.extent.width  = m_vulkan_rhi->m_swapchain_extent.width;
         clear_rects[0].rect.extent.height = m_vulkan_rhi->m_swapchain_extent.height;
         m_vulkan_rhi->m_vk_cmd_clear_attachments(m_vulkan_rhi->m_current_command_buffer,
-                                             sizeof(clear_attachments) / sizeof(clear_attachments[0]),
-                                             clear_attachments,
-                                             sizeof(clear_rects) / sizeof(clear_rects[0]),
-                                             clear_rects);
+                                                 sizeof(clear_attachments) / sizeof(clear_attachments[0]),
+                                                 clear_attachments,
+                                                 sizeof(clear_rects) / sizeof(clear_rects[0]),
+                                                 clear_rects);
 
         drawAxis();
 
@@ -2435,7 +2226,7 @@ namespace Piccolo
             if (node.enable_vertex_blending)
             {
                 temp.joint_matrices = node.joint_matrices;
-                temp.joint_count = node.joint_count;
+                temp.joint_count    = node.joint_count;
             }
 
             mesh_nodes.push_back(temp);
@@ -2449,8 +2240,8 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_mesh_gbuffer].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[_render_pipeline_type_mesh_gbuffer].pipeline);
         m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
 
@@ -2481,13 +2272,13 @@ namespace Piccolo
 
             // bind per material
             m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                                   VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                   m_render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
-                                                   2,
-                                                   1,
-                                                   &material.material_descriptor_set,
-                                                   0,
-                                                   NULL);
+                                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                        m_render_pipelines[_render_pipeline_type_mesh_gbuffer].layout,
+                                                        2,
+                                                        1,
+                                                        &material.material_descriptor_set,
+                                                        0,
+                                                        NULL);
 
             // TODO: render from near to far
 
@@ -2515,10 +2306,10 @@ namespace Piccolo
                                                  mesh.mesh_vertex_varying_buffer};
                     VkDeviceSize offsets[]        = {0, 0, 0};
                     m_vulkan_rhi->m_vk_cmd_bind_vertex_buffers(m_vulkan_rhi->m_current_command_buffer,
-                                                          0,
-                                                          (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                                          vertex_buffers,
-                                                          offsets);
+                                                               0,
+                                                               (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                               vertex_buffers,
+                                                               offsets);
                     m_vulkan_rhi->m_vk_cmd_bind_index_buffer(
                         m_vulkan_rhi->m_current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -2559,11 +2350,10 @@ namespace Piccolo
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
                             perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
+                                *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                             perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ?
-                                    1.0 :
-                                    -1.0;
+                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ? 1.0 :
+                                                                                                              -1.0;
                         }
 
                         // per drawcall vertex blending storage buffer
@@ -2604,12 +2394,14 @@ namespace Piccolo
                             {
                                 if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices)
                                 {
-                                    for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
+                                    for (uint32_t j = 0;
+                                         j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
+                                         ++j)
                                     {
                                         per_drawcall_vertex_blending_storage_buffer_object
-                                            .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                            GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                .joint_matrices[j]);
+                                            .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
+                                                .joint_matrices[j];
                                     }
                                 }
                             }
@@ -2634,11 +2426,11 @@ namespace Piccolo
                             dynamic_offsets);
 
                         m_vulkan_rhi->m_vk_cmd_draw_indexed(m_vulkan_rhi->m_current_command_buffer,
-                                                        mesh.mesh_index_count,
-                                                        current_instance_count,
-                                                        0,
-                                                        0,
-                                                        0);
+                                                            mesh.mesh_index_count,
+                                                            current_instance_count,
+                                                            0,
+                                                            0,
+                                                            0);
                     }
                 }
             }
@@ -2653,8 +2445,8 @@ namespace Piccolo
     void MainCameraPass::drawDeferredLighting()
     {
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_deferred_lighting].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[_render_pipeline_type_deferred_lighting].pipeline);
 
         m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
@@ -2683,13 +2475,13 @@ namespace Piccolo
                                               m_descriptor_infos[_skybox].descriptor_set};
         uint32_t        dynamic_offsets[4] = {perframe_dynamic_offset, perframe_dynamic_offset, 0, 0};
         m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               m_render_pipelines[_render_pipeline_type_deferred_lighting].layout,
-                                               0,
-                                               3,
-                                               descriptor_sets,
-                                               4,
-                                               dynamic_offsets);
+                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    m_render_pipelines[_render_pipeline_type_deferred_lighting].layout,
+                                                    0,
+                                                    3,
+                                                    descriptor_sets,
+                                                    4,
+                                                    dynamic_offsets);
 
         vkCmdDraw(m_vulkan_rhi->m_current_command_buffer, 3, 1, 0, 0);
     }
@@ -2716,7 +2508,7 @@ namespace Piccolo
             if (node.enable_vertex_blending)
             {
                 temp.joint_matrices = node.joint_matrices;
-                temp.joint_count = node.joint_count;
+                temp.joint_count    = node.joint_count;
             }
 
             mesh_nodes.push_back(temp);
@@ -2730,8 +2522,8 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_mesh_lighting].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[_render_pipeline_type_mesh_lighting].pipeline);
         m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
 
@@ -2762,13 +2554,13 @@ namespace Piccolo
 
             // bind per material
             m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                                   VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                   m_render_pipelines[_render_pipeline_type_mesh_lighting].layout,
-                                                   2,
-                                                   1,
-                                                   &material.material_descriptor_set,
-                                                   0,
-                                                   NULL);
+                                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                        m_render_pipelines[_render_pipeline_type_mesh_lighting].layout,
+                                                        2,
+                                                        1,
+                                                        &material.material_descriptor_set,
+                                                        0,
+                                                        NULL);
 
             // TODO: render from near to far
 
@@ -2796,10 +2588,10 @@ namespace Piccolo
                                                  mesh.mesh_vertex_varying_buffer};
                     VkDeviceSize offsets[]        = {0, 0, 0};
                     m_vulkan_rhi->m_vk_cmd_bind_vertex_buffers(m_vulkan_rhi->m_current_command_buffer,
-                                                          0,
-                                                          (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                                          vertex_buffers,
-                                                          offsets);
+                                                               0,
+                                                               (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                               vertex_buffers,
+                                                               offsets);
                     m_vulkan_rhi->m_vk_cmd_bind_index_buffer(
                         m_vulkan_rhi->m_current_command_buffer, mesh.mesh_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -2840,11 +2632,10 @@ namespace Piccolo
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
                             perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
-                                GLMUtil::fromMat4x4(*mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix);
+                                *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                             perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ?
-                                    1.0 :
-                                    -1.0;
+                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ? 1.0 :
+                                                                                                              -1.0;
                         }
 
                         // per drawcall vertex blending storage buffer
@@ -2885,12 +2676,14 @@ namespace Piccolo
                             {
                                 if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices)
                                 {
-                                    for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
+                                    for (uint32_t j = 0;
+                                         j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
+                                         ++j)
                                     {
                                         per_drawcall_vertex_blending_storage_buffer_object
-                                            .joint_matrices[m_mesh_vertex_blending_max_joint_count * i + j] =
-                                            GLMUtil::fromMat4x4(mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                .joint_matrices[j]);
+                                            .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                            mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
+                                                .joint_matrices[j];
                                     }
                                 }
                             }
@@ -2915,11 +2708,11 @@ namespace Piccolo
                             dynamic_offsets);
 
                         m_vulkan_rhi->m_vk_cmd_draw_indexed(m_vulkan_rhi->m_current_command_buffer,
-                                                        mesh.mesh_index_count,
-                                                        current_instance_count,
-                                                        0,
-                                                        0,
-                                                        0);
+                                                            mesh.mesh_index_count,
+                                                            current_instance_count,
+                                                            0,
+                                                            0,
+                                                            0);
                     }
                 }
             }
@@ -2960,120 +2753,18 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_skybox].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[_render_pipeline_type_skybox].pipeline);
         m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               m_render_pipelines[_render_pipeline_type_skybox].layout,
-                                               0,
-                                               1,
-                                               &m_descriptor_infos[_skybox].descriptor_set,
-                                               1,
-                                               &perframe_dynamic_offset);
+                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    m_render_pipelines[_render_pipeline_type_skybox].layout,
+                                                    0,
+                                                    1,
+                                                    &m_descriptor_infos[_skybox].descriptor_set,
+                                                    1,
+                                                    &perframe_dynamic_offset);
         vkCmdDraw(m_vulkan_rhi->m_current_command_buffer, 36, 1, 0,
                   0); // 2 triangles(6 vertex) each face, 6 faces
-
-        if (m_vulkan_rhi->isDebugLabelEnabled())
-        {
-            m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
-        }
-    }
-
-    void MainCameraPass::drawBillboardParticle()
-    {
-        if (m_vulkan_rhi->isDebugLabelEnabled())
-        {
-            VkDebugUtilsLabelEXT label_info = {
-                VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "ParticleBillboard", {1.0f, 1.0f, 1.0f, 1.0f}};
-            m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer, &label_info);
-        }
-
-        m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_particle].pipeline);
-        m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
-        m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
-
-        // perframe storage buffer
-        uint32_t perframe_dynamic_offset =
-            roundUp(m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index],
-                    m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] =
-            perframe_dynamic_offset + sizeof(ParticleBillboardPerframeStorageBufferObject);
-        assert(m_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] <=
-               (m_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_vulkan_rhi->m_current_frame_index] +
-                m_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_vulkan_rhi->m_current_frame_index]));
-
-        (*reinterpret_cast<ParticleBillboardPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-            perframe_dynamic_offset)) = m_particlebillboard_perframe_storage_buffer_object;
-
-        for (RenderParticleBillboardNode& node : *(m_visiable_nodes.p_main_camera_visible_particlebillboard_nodes))
-        {
-            uint32_t total_instance_count = static_cast<uint32_t>(node.positions.size());
-
-            if (total_instance_count > 0)
-            {
-                uint32_t drawcall_max_instance_count =
-                    (sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions) /
-                     sizeof(ParticleBillboardPerdrawcallStorageBufferObject::positions[0]));
-                uint32_t drawcall_count =
-                    roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
-
-                for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
-                {
-                    uint32_t current_instance_count =
-                        ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                         drawcall_max_instance_count) ?
-                            (total_instance_count - drawcall_max_instance_count * drawcall_index) :
-                            drawcall_max_instance_count;
-
-                    // perdrawcall storage buffer
-                    uint32_t perdrawcall_dynamic_offset =
-                        roundUp(m_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index],
-                                m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                    m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] =
-                        perdrawcall_dynamic_offset + sizeof(ParticleBillboardPerdrawcallStorageBufferObject);
-                    assert(m_global_render_resource->_storage_buffer
-                               ._global_upload_ringbuffers_end[m_vulkan_rhi->m_current_frame_index] <=
-                           (m_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_begin[m_vulkan_rhi->m_current_frame_index] +
-                            m_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_size[m_vulkan_rhi->m_current_frame_index]));
-
-                    ParticleBillboardPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
-                        (*reinterpret_cast<ParticleBillboardPerdrawcallStorageBufferObject*>(
-                            reinterpret_cast<uintptr_t>(
-                                m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-                            perdrawcall_dynamic_offset));
-                    for (uint32_t i = 0; i < current_instance_count; ++i)
-                    {
-                        perdrawcall_storage_buffer_object.positions[i] =
-                            node.positions[drawcall_max_instance_count * drawcall_index + i];
-                    }
-
-                    // bind perdrawcall
-                    uint32_t dynamic_offsets[2] = {perframe_dynamic_offset, perdrawcall_dynamic_offset};
-                    m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                                           VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                           m_render_pipelines[_render_pipeline_type_particle].layout,
-                                                           0,
-                                                           1,
-                                                           &m_descriptor_infos[_particle].descriptor_set,
-                                                           2,
-                                                           dynamic_offsets);
-
-                    vkCmdDraw(m_vulkan_rhi->m_current_command_buffer, 4, current_instance_count, 0, 0);
-                }
-            }
-        }
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
@@ -3113,18 +2804,18 @@ namespace Piccolo
         }
 
         m_vulkan_rhi->m_vk_cmd_bind_pipeline(m_vulkan_rhi->m_current_command_buffer,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         m_render_pipelines[_render_pipeline_type_axis].pipeline);
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             m_render_pipelines[_render_pipeline_type_axis].pipeline);
         m_vulkan_rhi->m_vk_cmd_set_viewport(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_viewport);
         m_vulkan_rhi->m_vk_cmd_set_scissor(m_vulkan_rhi->m_current_command_buffer, 0, 1, &m_vulkan_rhi->m_scissor);
         m_vulkan_rhi->m_vk_cmd_bind_descriptor_sets(m_vulkan_rhi->m_current_command_buffer,
-                                               VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               m_render_pipelines[_render_pipeline_type_axis].layout,
-                                               0,
-                                               1,
-                                               &m_descriptor_infos[_axis].descriptor_set,
-                                               1,
-                                               &perframe_dynamic_offset);
+                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    m_render_pipelines[_render_pipeline_type_axis].layout,
+                                                    0,
+                                                    1,
+                                                    &m_descriptor_infos[_axis].descriptor_set,
+                                                    1,
+                                                    &perframe_dynamic_offset);
 
         m_axis_storage_buffer_object.selected_axis = m_selected_axis;
         m_axis_storage_buffer_object.model_matrix  = m_visiable_nodes.p_axis_node->model_matrix;
@@ -3134,28 +2825,41 @@ namespace Piccolo
                                      m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_buffer};
         VkDeviceSize offsets[]        = {0, 0, 0};
         m_vulkan_rhi->m_vk_cmd_bind_vertex_buffers(m_vulkan_rhi->m_current_command_buffer,
-                                              0,
-                                              (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
-                                              vertex_buffers,
-                                              offsets);
+                                                   0,
+                                                   (sizeof(vertex_buffers) / sizeof(vertex_buffers[0])),
+                                                   vertex_buffers,
+                                                   offsets);
         m_vulkan_rhi->m_vk_cmd_bind_index_buffer(m_vulkan_rhi->m_current_command_buffer,
-                                            m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_buffer,
-                                            0,
-                                            VK_INDEX_TYPE_UINT16);
+                                                 m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_buffer,
+                                                 0,
+                                                 VK_INDEX_TYPE_UINT16);
         (*reinterpret_cast<AxisStorageBufferObject*>(reinterpret_cast<uintptr_t>(
             m_global_render_resource->_storage_buffer._axis_inefficient_storage_buffer_memory_pointer))) =
             m_axis_storage_buffer_object;
 
         m_vulkan_rhi->m_vk_cmd_draw_indexed(m_vulkan_rhi->m_current_command_buffer,
-                                        m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_count,
-                                        1,
-                                        0,
-                                        0,
-                                        0);
+                                            m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_count,
+                                            1,
+                                            0,
+                                            0,
+                                            0);
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
             m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_vulkan_rhi->m_current_command_buffer);
         }
     }
+
+    VkCommandBuffer MainCameraPass::getRenderCommandBuffer() { return m_vulkan_rhi->m_current_command_buffer; }
+
+    void MainCameraPass::setupParticlePass()
+    {
+        m_particle_pass->setDepthAndNormalImage(m_vulkan_rhi->m_depth_image,
+                                                m_framebuffer.attachments[_main_camera_pass_gbuffer_a].image);
+
+        m_particle_pass->setRenderPassHandle(m_framebuffer.render_pass);
+    }
+
+    void MainCameraPass::setParticlePass(std::shared_ptr<ParticlePass> pass) { m_particle_pass = pass; }
+
 } // namespace Piccolo

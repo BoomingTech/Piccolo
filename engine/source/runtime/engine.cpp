@@ -6,6 +6,7 @@
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/input/input_system.h"
+#include "runtime/function/particle/particle_manager.h"
 #include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
@@ -100,7 +101,7 @@ namespace Piccolo
         return true;
     }
 
-    const float PiccoloEngine::k_fps_alpha = 1.f / 100;
+    const float PiccoloEngine::s_fps_alpha = 1.f / 100;
     void        PiccoloEngine::calculateFPS(float delta_time)
     {
         m_frame_count++;
@@ -111,7 +112,7 @@ namespace Piccolo
         }
         else
         {
-            m_average_duration = m_average_duration * (1 - k_fps_alpha) + delta_time * k_fps_alpha;
+            m_average_duration = m_average_duration * (1 - s_fps_alpha) + delta_time * s_fps_alpha;
         }
 
         m_fps = static_cast<int>(1.f / m_average_duration);

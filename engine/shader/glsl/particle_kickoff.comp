@@ -1,0 +1,69 @@
+#version 450
+
+struct Particle
+{
+    vec3  pos;
+    float life;
+    vec3  vel;
+    float size_x;
+    vec3  acc;
+    float size_y;
+    vec4  color;
+};
+
+struct CountBuffer
+{
+    int dead_count;
+    int alive_count;
+    int alive_count_after_sim;
+    int emit_count;
+};
+
+layout(binding = 0) uniform UBO
+{
+    float emit_delta;
+    int   xemit_count;
+    float max_life;
+    float fixed_time_step;
+    float random0;
+    float random1;
+    float random2;
+    uint  frame_index;
+    vec4  gravity;
+    uvec4 viewport;
+    vec4  extent;
+}
+ubo;
+
+layout(std140, binding = 2) buffer Counter { CountBuffer counter; };
+
+struct Argument
+{
+    uvec4 emit_count;
+    uvec4 simulate_count;
+    int   alive_flap_bit;
+};
+
+layout(std140, binding = 3) buffer ArgumentBuffer { Argument argument; };
+
+layout(local_size_x = 1) in;
+void main()
+{
+    int emitCount = min(counter.dead_count, ubo.xemit_count);
+
+    // indirect argument for emit
+    argument.emit_count.xyz = uvec3(ceil(float(emitCount) / float(256)), 1, 1);
+
+    // indirect argument for simulate
+    argument.simulate_count.xyz = uvec3(ceil(float(emitCount + counter.alive_count_after_sim) / float(256)), 1, 1);
+
+    // set new alive cnt
+    counter.alive_count = counter.alive_count_after_sim;
+
+    // reset particle cnt
+    counter.alive_count_after_sim = 0;
+
+    counter.emit_count = emitCount;
+
+    argument.alive_flap_bit = 1 - argument.alive_flap_bit;
+}
