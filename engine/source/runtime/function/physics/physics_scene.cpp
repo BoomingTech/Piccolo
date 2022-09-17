@@ -119,7 +119,6 @@ namespace Piccolo
         JPH::EMotionType motion_type = JPH::EMotionType::Static;
         JPH::ObjectLayer layer       = Layers::NON_MOVING;
 
-        JPH::Body* jph_body = nullptr;
         JPH::Ref<JPH::StaticCompoundShapeSettings> compund_shape_setting = new JPH::StaticCompoundShapeSettings;
         for (const JPHShapeData& shape_data : jph_shapes)
         {
@@ -128,7 +127,7 @@ namespace Piccolo
                                             shape_data.shape);
         }
 
-        jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(compund_shape_setting,
+        JPH::Body* jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(compund_shape_setting,
                                              toVec3(global_transform.m_position),
                                              toQuat(global_transform.m_rotation),
                                              motion_type,
