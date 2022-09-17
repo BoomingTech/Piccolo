@@ -54,14 +54,11 @@ namespace Piccolo
     {
         m_physics_actor->setGlobalTransform(transform);
 
-        // these code intended to fix transform of rigid bodies, but 
-        // in JoltPhysics it removes local transform of shapes...
-        // so currently rigid bodies cannot be transformed
-        //std::shared_ptr<PhysicsScene> physics_scene =
-        //    g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
-        //ASSERT(physics_scene);
+        std::shared_ptr<PhysicsScene> physics_scene =
+            g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        ASSERT(physics_scene);
 
-        //physics_scene->updateRigidBodyGlobalTransform(m_physics_actor->getBodyID(), transform);
+        physics_scene->updateRigidBodyGlobalTransform(m_physics_actor->getBodyID(), transform);
     }
 
 } // namespace Piccolo
