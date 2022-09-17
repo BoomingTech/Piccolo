@@ -25,6 +25,7 @@ namespace Piccolo
         m_transform_buffer[m_next_index].m_scale = new_scale;
         m_transform.m_scale                      = new_scale;
         m_is_dirty                               = true;
+        m_is_scale_dirty                         = true;
     }
 
     void TransformComponent::setRotation(const Quaternion& new_rotation)
@@ -58,7 +59,8 @@ namespace Piccolo
         RigidBodyComponent* rigid_body_component = m_parent_object.lock()->tryGetComponent(RigidBodyComponent);
         if (rigid_body_component)
         {
-            rigid_body_component->updateGlobalTransform(m_transform_buffer[m_current_index]);
+            rigid_body_component->updateGlobalTransform(m_transform_buffer[m_current_index], m_is_scale_dirty);
+            m_is_scale_dirty = false;
         }
     }
 
