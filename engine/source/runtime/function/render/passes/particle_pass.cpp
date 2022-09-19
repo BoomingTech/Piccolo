@@ -1607,13 +1607,6 @@ namespace Piccolo
         {
             VkCommandBufferBeginInfo cmdBufInfo {};
             cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-
-            VkSubmitInfo computeSubmitInfo {};
-            computeSubmitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            computeSubmitInfo.pWaitDstStageMask  = 0;
-            computeSubmitInfo.commandBufferCount = 1;
-            computeSubmitInfo.pCommandBuffers    = &m_compute_command_buffer;
 
             // particle compute pass
             if (VK_SUCCESS != vkBeginCommandBuffer(m_compute_command_buffer, &cmdBufInfo))
@@ -1831,6 +1824,7 @@ namespace Piccolo
                 throw std::runtime_error("end command buffer");
             }
             vkResetFences(m_vulkan_rhi->m_device, 1, &m_fence);
+            VkSubmitInfo computeSubmitInfo {};
             computeSubmitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             computeSubmitInfo.pWaitDstStageMask  = 0;
             computeSubmitInfo.commandBufferCount = 1;
@@ -1886,11 +1880,6 @@ namespace Piccolo
                             1,
                             &copyRegion);
 
-            if (m_vulkan_rhi->isDebugLabelEnabled())
-            {
-                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
-            }
-
             // Barrier to ensure that buffer copy is finished before host reading from it
             bufferBarrier.srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
             bufferBarrier.dstAccessMask       = VK_ACCESS_HOST_READ_BIT;
@@ -1909,6 +1898,12 @@ namespace Piccolo
                                  &bufferBarrier,
                                  0,
                                  nullptr);
+
+            if (m_vulkan_rhi->isDebugLabelEnabled())
+            {
+                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
+            }
+
             if (VK_SUCCESS != vkEndCommandBuffer(m_compute_command_buffer))
             {
                 throw std::runtime_error("end command buffer");
