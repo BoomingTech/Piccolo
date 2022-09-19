@@ -1605,15 +1605,9 @@ namespace Piccolo
     {
         for (auto i : m_emitter_tick_indices)
         {
-            if (m_vulkan_rhi->isDebugLabelEnabled())
-            {
-                VkDebugUtilsLabelEXT label_info = {
-                    VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Particlecompute", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_compute_command_buffer, &label_info);
-            }
-
             VkCommandBufferBeginInfo cmdBufInfo {};
             cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
             VkSubmitInfo computeSubmitInfo {};
             computeSubmitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1959,10 +1953,7 @@ namespace Piccolo
             ParticleCounter counterNext {};
             memcpy(&counterNext, mapped, sizeof(ParticleCounter));
             vkUnmapMemory(m_vulkan_rhi->m_device, m_emitter_buffer_batches[i].m_counter_host_memory);
-            if (m_vulkan_rhi->isDebugLabelEnabled())
-            {
-                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
-            }
+
             if constexpr (s_verbose_particle_alive_info)
                 LOG_INFO("{} {} {} {}",
                          counterNext.dead_count,
