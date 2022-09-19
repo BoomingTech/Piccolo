@@ -119,7 +119,7 @@ namespace Piccolo
             imagecopyRegion.dstSubresource = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1};
             imagecopyRegion.dstOffset      = {0, 0, 0};
             imagecopyRegion.extent         = {
-                m_vulkan_rhi->m_swapchain_extent.width, m_vulkan_rhi->m_swapchain_extent.height, 1};
+                        m_vulkan_rhi->m_swapchain_extent.width, m_vulkan_rhi->m_swapchain_extent.height, 1};
 
             vkCmdCopyImage(m_copy_command_buffer,
                            m_src_depth_image,
@@ -165,6 +165,7 @@ namespace Piccolo
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
+            // end depth image copy label
             m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_copy_command_buffer);
         }
 
@@ -221,7 +222,7 @@ namespace Piccolo
             imagecopyRegion.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
             imagecopyRegion.dstOffset      = {0, 0, 0};
             imagecopyRegion.extent         = {
-                m_vulkan_rhi->m_swapchain_extent.width, m_vulkan_rhi->m_swapchain_extent.height, 1};
+                        m_vulkan_rhi->m_swapchain_extent.width, m_vulkan_rhi->m_swapchain_extent.height, 1};
 
             vkCmdCopyImage(m_copy_command_buffer,
                            m_src_normal_image,
@@ -267,6 +268,7 @@ namespace Piccolo
 
         if (m_vulkan_rhi->isDebugLabelEnabled())
         {
+            // end normal image copy label
             m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_copy_command_buffer);
         }
 
@@ -377,6 +379,7 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
+                // end particle draw label
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_render_command_buffer);
             }
         }
@@ -1091,7 +1094,7 @@ namespace Piccolo
         // compute pipeline
         {
             VkDescriptorSetLayout      descriptorset_layouts[2] = {m_descriptor_infos[0].layout,
-                                                              m_descriptor_infos[1].layout};
+                                                                   m_descriptor_infos[1].layout};
             VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipeline_layout_create_info.setLayoutCount =
@@ -1616,9 +1619,13 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
-                VkDebugUtilsLabelEXT label_info = {
+                VkDebugUtilsLabelEXT compute_label_info = {
+                    VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Particle compute", {1.0f, 1.0f, 1.0f, 1.0f}};
+                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_compute_command_buffer, &compute_label_info);
+
+                VkDebugUtilsLabelEXT kickoff_label_info = {
                     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, NULL, "Particle Kickoff", {1.0f, 1.0f, 1.0f, 1.0f}};
-                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_compute_command_buffer, &label_info);
+                m_vulkan_rhi->m_vk_cmd_begin_debug_utils_label_ext(m_compute_command_buffer, &kickoff_label_info);
             }
 
             vkCmdBindPipeline(m_compute_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_kickoff_pipeline);
@@ -1636,6 +1643,7 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
+                // end particle kickoff label
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
             }
 
@@ -1691,6 +1699,7 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
+                // end particle emit label
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
             }
 
@@ -1816,6 +1825,7 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
+                // end particle simulate label
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
             }
 
@@ -1901,6 +1911,9 @@ namespace Piccolo
 
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
+                // end particle counter copy label
+                m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
+                // end particle compute label
                 m_vulkan_rhi->m_vk_cmd_end_debug_utils_label_ext(m_compute_command_buffer);
             }
 
