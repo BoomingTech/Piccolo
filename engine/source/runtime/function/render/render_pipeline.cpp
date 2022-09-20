@@ -69,7 +69,7 @@ namespace Piccolo
         std::vector<VkDescriptorSetLayout> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
         std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)
             ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
-        std::static_pointer_cast<PointLightShadowPass>(m_directional_light_pass)
+        std::static_pointer_cast<DirectionalLightShadowPass>(m_directional_light_pass)
             ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
 
         m_point_light_shadow_pass->postInitialize();
