@@ -265,6 +265,9 @@ namespace Piccolo
 
         static Matrix4x4
         makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
+        
+        static Matrix4x4
+        makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar);
     };
 
     // these functions could not be defined within the class definition of class
