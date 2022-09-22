@@ -527,7 +527,7 @@ namespace Piccolo
         }
 
         // Mesh
-        if (m_vulkan_rhi->isPointLightShadowEnabled())
+        // if (m_vulkan_rhi->isPointLightShadowEnabled())
         {
             if (m_vulkan_rhi->isDebugLabelEnabled())
             {
