@@ -95,7 +95,7 @@
                                 "$context": {
                                     "half_extents": {
                                         "x": 0.15000000596046448,
-                                        "y": 2.6500000953674316,
+                                        "y": 2.3,
                                         "z": 3.5
                                     }
                                 },
@@ -104,8 +104,38 @@
                             "local_transform": {
                                 "position": {
                                     "x": 0,
-                                    "y": 3.2999999523162842,
+                                    "y": 3.0,
                                     "z": 3.5
+                                },
+                                "rotation": {
+                                    "w": 1,
+                                    "x": 0,
+                                    "y": 0,
+                                    "z": 0
+                                },
+                                "scale": {
+                                    "x": 1,
+                                    "y": 1,
+                                    "z": 1
+                                }
+                            }
+                        },
+                        {
+                            "geometry": {
+                                "$context": {
+                                    "half_extents": {
+                                        "x": 0.15000000596046448,
+                                        "y": 1,
+                                        "z": 2
+                                    }
+                                },
+                                "$typeName": "Box"
+                            },
+                            "local_transform": {
+                                "position": {
+                                    "x": 0,
+                                    "y": -0.3,
+                                    "z": 5
                                 },
                                 "rotation": {
                                     "w": 1,

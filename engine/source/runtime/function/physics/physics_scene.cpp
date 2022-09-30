@@ -119,32 +119,19 @@ namespace Piccolo
         JPH::EMotionType motion_type = JPH::EMotionType::Static;
         JPH::ObjectLayer layer       = Layers::NON_MOVING;
 
-        JPH::Body* jph_body = nullptr;
-        if (jph_shapes.size() == 1)
+        JPH::Ref<JPH::StaticCompoundShapeSettings> compund_shape_setting = new JPH::StaticCompoundShapeSettings;
+        for (const JPHShapeData& shape_data : jph_shapes)
         {
-            jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(jph_shapes[0].shape,
-                                                                           toVec3(jph_shapes[0].global_position),
-                                                                           toQuat(jph_shapes[0].global_rotation),
-                                                                           motion_type,
-                                                                           layer));
+            compund_shape_setting->AddShape(toVec3(shape_data.local_transform.m_position * shape_data.global_scale),
+                                            toQuat(shape_data.local_transform.m_rotation),
+                                            shape_data.shape);
         }
-        else
-        {
-            JPH::Ref<JPH::StaticCompoundShapeSettings> compund_shape_setting = new JPH::StaticCompoundShapeSettings;
 
-            for (const JPHShapeData& shape_data : jph_shapes)
-            {
-                compund_shape_setting->AddShape(toVec3(shape_data.local_transform.m_position),
-                                                toQuat(shape_data.local_transform.m_rotation),
-                                                shape_data.shape);
-            }
-
-            jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(compund_shape_setting,
-                                                                           toVec3(global_transform.m_position),
-                                                                           toQuat(global_transform.m_rotation),
-                                                                           motion_type,
-                                                                           layer));
-        }
+        JPH::Body* jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(compund_shape_setting,
+                                             toVec3(global_transform.m_position),
+                                             toQuat(global_transform.m_rotation),
+                                             motion_type,
+                                             layer));
 
         if (jph_body == nullptr)
         {
