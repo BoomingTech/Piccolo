@@ -9,7 +9,6 @@
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
-#include "runtime/engine.h"
 #include "runtime/function/framework/world/world_manager.h"
 #include "runtime/function/input/input_system.h"
 #include "runtime/function/physics/physics_system.h"
@@ -55,10 +54,12 @@ namespace Piccolo
         RenderSystemInitInfo render_init_info;
         render_init_info.window_system = m_window_system;
         m_render_system->initialize(render_init_info);
+
     }
 
     void RuntimeGlobalContext::shutdownSystems()
     {
+        m_render_system->clear();
         m_render_system.reset();
 
         m_window_system.reset();

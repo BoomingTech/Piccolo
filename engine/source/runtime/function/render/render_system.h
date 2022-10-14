@@ -40,10 +40,12 @@ namespace Piccolo
 
         void initialize(RenderSystemInitInfo init_info);
         void tick();
+        void clear();
 
         void                          swapLogicRenderData();
         RenderSwapContext&            getSwapContext();
         std::shared_ptr<RenderCamera> getRenderCamera() const;
+        std::shared_ptr<RHI>          getRHI() const;
 
         void      setRenderPipelineType(RENDER_PIPELINE_TYPE pipeline_type);
         void      initializeUIRenderBackend(WindowUI* window_ui);

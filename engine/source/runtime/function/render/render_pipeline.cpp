@@ -1,5 +1,5 @@
 #include "runtime/function/render/render_pipeline.h"
-#include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
+#include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 
 #include "runtime/function/render/passes/color_grading_pass.h"
 #include "runtime/function/render/passes/combine_ui_pass.h"
@@ -66,7 +66,7 @@ namespace Piccolo
 
         std::static_pointer_cast<ParticlePass>(m_particle_pass)->setupParticlePass();
 
-        std::vector<VkDescriptorSetLayout> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
+        std::vector<RHIDescriptorSetLayout*> descriptor_layouts = _main_camera_pass->getDescriptorSetLayouts();
         std::static_pointer_cast<PointLightShadowPass>(m_point_light_shadow_pass)
             ->setPerMeshLayout(descriptor_layouts[MainCameraPass::LayoutType::_per_mesh]);
         std::static_pointer_cast<PointLightShadowPass>(m_directional_light_pass)

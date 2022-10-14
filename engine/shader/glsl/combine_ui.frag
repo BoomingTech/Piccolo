@@ -19,7 +19,14 @@ void main()
     // Gamma correct
     // TODO: select the VK_FORMAT_B8G8R8A8_SRGB surface format,
     // there is no need to do gamma correction in the fragment shader
-    ui_color = vec4(pow(ui_color.r, 1.0 / 2.2), pow(ui_color.g, 1.0 / 2.2), pow(ui_color.b, 1.0 / 2.2), pow(ui_color.a, 1.0 / 2.2));
-
-    out_color = scene_color + ui_color;
+    if(ui_color.r<1e-6&&ui_color.g<1e-6&&ui_color.a<1e-6)
+    {
+        ui_color = vec4(pow(ui_color.r, 1.0 / 2.2), pow(ui_color.g, 1.0 / 2.2), pow(ui_color.b, 1.0 / 2.2), pow(ui_color.a, 1.0 / 2.2));
+        out_color = scene_color;
+    }
+    else
+    {
+        ui_color = vec4(pow(ui_color.r, 1.0 / 2.2), pow(ui_color.g, 1.0 / 2.2), pow(ui_color.b, 1.0 / 2.2), pow(ui_color.a, 1.0 / 2.2));
+        out_color = ui_color;
+    }
 }

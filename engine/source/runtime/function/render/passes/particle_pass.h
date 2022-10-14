@@ -15,35 +15,35 @@ namespace Piccolo
     class ParticleEmitterBufferBatch
     {
     public:
-        VkBuffer m_particle_storage_buffer;
-        VkBuffer m_position_render_buffer;
-        VkBuffer m_position_device_buffer;
-        VkBuffer m_position_host_buffer;
-        VkBuffer m_counter_device_buffer;
-        VkBuffer m_counter_host_buffer;
-        VkBuffer m_indirect_dispatch_argument_buffer;
-        VkBuffer m_alive_list_buffer;
-        VkBuffer m_alive_list_next_buffer;
-        VkBuffer m_dead_list_buffer;
-        VkBuffer m_particle_component_res_buffer;
+        RHIBuffer* m_particle_storage_buffer = nullptr;
+        RHIBuffer* m_position_render_buffer = nullptr;
+        RHIBuffer* m_position_device_buffer = nullptr;
+        RHIBuffer* m_position_host_buffer = nullptr;
+        RHIBuffer* m_counter_device_buffer = nullptr;
+        RHIBuffer* m_counter_host_buffer = nullptr;
+        RHIBuffer* m_indirect_dispatch_argument_buffer = nullptr;
+        RHIBuffer* m_alive_list_buffer = nullptr;
+        RHIBuffer* m_alive_list_next_buffer = nullptr;
+        RHIBuffer* m_dead_list_buffer = nullptr;
+        RHIBuffer* m_particle_component_res_buffer = nullptr;
 
-        VkDeviceMemory m_counter_host_memory;
-        VkDeviceMemory m_position_host_memory;
-        VkDeviceMemory m_position_device_memory;
-        VkDeviceMemory m_counter_device_memory;
-        VkDeviceMemory m_indirect_dispatch_argument_memory;
-        VkDeviceMemory m_alive_list_memory;
-        VkDeviceMemory m_alive_list_next_memory;
-        VkDeviceMemory m_dead_list_memory;
-        VkDeviceMemory m_particle_component_res_memory;
-        VkDeviceMemory m_position_render_memory;
+        RHIDeviceMemory* m_counter_host_memory = nullptr;
+        RHIDeviceMemory* m_position_host_memory = nullptr;
+        RHIDeviceMemory* m_position_device_memory = nullptr;
+        RHIDeviceMemory* m_counter_device_memory = nullptr;
+        RHIDeviceMemory* m_indirect_dispatch_argument_memory = nullptr;
+        RHIDeviceMemory* m_alive_list_memory = nullptr;
+        RHIDeviceMemory* m_alive_list_next_memory = nullptr;
+        RHIDeviceMemory* m_dead_list_memory = nullptr;
+        RHIDeviceMemory* m_particle_component_res_memory = nullptr;
+        RHIDeviceMemory* m_position_render_memory = nullptr;
 
         void* m_emitter_desc_mapped {nullptr};
 
         ParticleEmitterDesc m_emitter_desc;
 
         uint32_t m_num_particle {0};
-        void     freeUpBatch(VkDevice device);
+        void     freeUpBatch(std::shared_ptr<RHI> rhi);
     };
 
     class ParticlePass : public RenderPass
@@ -59,13 +59,13 @@ namespace Piccolo
 
         void copyNormalAndDepthImage();
 
-        void setDepthAndNormalImage(VkImage depth_image, VkImage normal_image);
+        void setDepthAndNormalImage(RHIImage* depth_image, RHIImage* normal_image);
 
         void setupParticlePass();
 
-        void setRenderCommandBufferHandle(VkCommandBuffer command_buffer);
+        void setRenderCommandBufferHandle(RHICommandBuffer* command_buffer);
 
-        void setRenderPassHandle(VkRenderPass render_pass);
+        void setRenderPassHandle(RHIRenderPass* render_pass);
 
         void updateAfterFramebufferRecreate();
 
@@ -98,43 +98,43 @@ namespace Piccolo
 
         void setupParticleDescriptorSet();
 
-        VkPipeline m_kickoff_pipeline;
-        VkPipeline m_emit_pipeline;
-        VkPipeline m_simulate_pipeline;
+        RHIPipeline* m_kickoff_pipeline = nullptr;
+        RHIPipeline* m_emit_pipeline = nullptr;
+        RHIPipeline* m_simulate_pipeline = nullptr;
 
-        VkCommandBuffer m_compute_command_buffer;
-        VkCommandBuffer m_render_command_buffer;
-        VkCommandBuffer m_copy_command_buffer;
+        RHICommandBuffer* m_compute_command_buffer = nullptr;
+        RHICommandBuffer* m_render_command_buffer = nullptr;
+        RHICommandBuffer* m_copy_command_buffer = nullptr;
 
-        VkBuffer m_scene_uniform_buffer;
-        VkBuffer m_compute_uniform_buffer;
-        VkBuffer m_particle_billboard_uniform_buffer;
+        RHIBuffer* m_scene_uniform_buffer = nullptr;
+        RHIBuffer* m_compute_uniform_buffer = nullptr;
+        RHIBuffer* m_particle_billboard_uniform_buffer = nullptr;
 
-        VkViewport m_viewport_params;
+        RHIViewport m_viewport_params;
 
-        VkFence m_fence;
+        RHIFence* m_fence = nullptr;
 
-        VkImage        m_src_depth_image;
-        VkImage        m_dst_normal_image;
-        VkImage        m_src_normal_image;
-        VkImage        m_dst_depth_image;
-        VkImageView    m_src_depth_image_view;
-        VkImageView    m_src_normal_image_view;
-        VkDeviceMemory m_dst_normal_image_memory;
-        VkDeviceMemory m_dst_depth_image_memory;
+        RHIImage*        m_src_depth_image = nullptr;
+        RHIImage*        m_dst_normal_image = nullptr;
+        RHIImage*        m_src_normal_image = nullptr;
+        RHIImage*        m_dst_depth_image = nullptr;
+        RHIImageView*    m_src_depth_image_view = nullptr;
+        RHIImageView*    m_src_normal_image_view = nullptr;
+        RHIDeviceMemory* m_dst_normal_image_memory = nullptr;
+        RHIDeviceMemory* m_dst_depth_image_memory = nullptr;
 
         /*
          * particle rendering
          */
-        VkImage       m_particle_billboard_texture_image;
-        VkImageView   m_particle_billboard_texture_image_view;
+        RHIImage*       m_particle_billboard_texture_image = nullptr;
+        RHIImageView*   m_particle_billboard_texture_image_view = nullptr;
         VmaAllocation m_particle_billboard_texture_vma_allocation;
 
-        VkImage       m_piccolo_logo_texture_image;
-        VkImageView   m_piccolo_logo_texture_image_view;
+        RHIImage*       m_piccolo_logo_texture_image = nullptr;
+        RHIImageView*   m_piccolo_logo_texture_image_view = nullptr;
         VmaAllocation m_piccolo_logo_texture_vma_allocation;
 
-        VkRenderPass m_render_pass;
+        RHIRenderPass* m_render_pass = nullptr;
 
         ParticleBillboardPerframeStorageBufferObject m_particlebillboard_perframe_storage_buffer_object;
         ParticleCollisionPerframeStorageBufferObject m_particle_collision_perframe_storage_buffer_object;

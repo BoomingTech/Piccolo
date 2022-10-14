@@ -256,7 +256,7 @@ extern "C" {
 // see: https://clang.llvm.org/docs/AttributeReference.html#nullable
 #ifndef VMA_NULLABLE
     #ifdef __clang__
-        #define VMA_NULLABLE _Nullable
+        #define VMA_NULLABLE
     #else
         #define VMA_NULLABLE
     #endif
@@ -266,7 +266,7 @@ extern "C" {
 // see: https://clang.llvm.org/docs/AttributeReference.html#nonnull
 #ifndef VMA_NOT_NULL
     #ifdef __clang__
-        #define VMA_NOT_NULL _Nonnull
+        #define VMA_NOT_NULL
     #else
         #define VMA_NOT_NULL
     #endif
@@ -13900,6 +13900,10 @@ bool VmaDefragmentationContext_T::ComputeDefragmentation_Extensive(VmaBlockVecto
             // Everything moved
             vectorState.operation = StateExtensive::Operation::Cleanup;
         }
+        break;
+    }
+    case StateExtensive::Operation::Cleanup:
+    {
         break;
     }
     }

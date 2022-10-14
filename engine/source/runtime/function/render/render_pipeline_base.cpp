@@ -1,6 +1,6 @@
 #include "runtime/function/render/render_pipeline_base.h"
-
 #include "runtime/core/base/macro.h"
+#include "runtime/function/global/global_context.h"
 
 namespace Piccolo
 {
