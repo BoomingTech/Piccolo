@@ -17,13 +17,12 @@ namespace Piccolo
 
         void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
-        void tick(float delta_time) override {}
         void updateGlobalTransform(const Transform& transform);
+        const PhysicsActor* getPhysicsActor() const;
 
     protected:
         META(Enable)
         RigidBodyComponentRes m_rigidbody_res;
-
         PhysicsActor* m_physics_actor {nullptr};
     };
 } // namespace Piccolo

@@ -13,6 +13,7 @@
 #include "runtime/function/render/render_scene.h"
 #include "runtime/function/render/window_system.h"
 #include "runtime/function/global/global_context.h"
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
 
 #include "runtime/function/render/passes/main_camera_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
@@ -93,7 +94,7 @@ namespace Piccolo
                  .layout;
     }
 
-    void RenderSystem::tick()
+    void RenderSystem::tick(float delta_time)
     {
         // process swap data between logic and render contexts
         processSwapData();
@@ -110,6 +111,8 @@ namespace Piccolo
 
         // prepare pipeline's render passes data
         m_render_pipeline->preparePassData(m_render_resource);
+
+        g_runtime_global_context.m_debugdraw_manager->tick(delta_time);
 
         // render one frame
         if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::FORWARD_PIPELINE)

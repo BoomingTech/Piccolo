@@ -1,5 +1,7 @@
 #include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
 
+#include "runtime/engine.h"
+
 #include "runtime/core/base/macro.h"
 
 #include "runtime/function/framework/component/transform/transform_component.h"
@@ -62,6 +64,11 @@ namespace Piccolo
         //ASSERT(physics_scene);
 
         //physics_scene->updateRigidBodyGlobalTransform(m_physics_actor->getBodyID(), transform);
+    }
+
+    const PhysicsActor* RigidBodyComponent::getPhysicsActor() const
+    {
+        return m_physics_actor;
     }
 
 } // namespace Piccolo

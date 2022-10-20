@@ -25,4 +25,6 @@ namespace Piccolo
     }
 
     const AnimationResult& AnimationComponent::getResult() const { return m_animation_res.animation_result; }
+
+    const Skeleton& AnimationComponent::getSkeleton() const { return m_skeleton; }
 } // namespace Piccolo

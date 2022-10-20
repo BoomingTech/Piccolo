@@ -1137,7 +1137,7 @@ namespace Piccolo
     {
         VulkanRHI* raw_rhi = static_cast<VulkanRHI*>(rhi.get());
         StorageBuffer& _storage_buffer = m_global_render_resource._storage_buffer;
-        uint32_t       frames_in_flight = raw_rhi->s_max_frames_in_flight;
+        uint32_t       frames_in_flight = raw_rhi->k_max_frames_in_flight;
 
         RHIPhysicalDeviceProperties properties;
         rhi->getPhysicalDeviceProperties(&properties);

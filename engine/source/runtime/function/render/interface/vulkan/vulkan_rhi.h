@@ -166,7 +166,7 @@ namespace Piccolo
         //semaphores
         RHISemaphore* &getTextureCopySemaphore(uint32_t index) override;
     public:
-        static uint8_t const s_max_frames_in_flight {3};
+        static uint8_t const k_max_frames_in_flight {3};
 
         
         RHIQueue* m_graphics_queue{ nullptr };
@@ -181,13 +181,13 @@ namespace Piccolo
         RHIFormat m_depth_image_format{ RHI_FORMAT_UNDEFINED };
         RHIImageView* m_depth_image_view = new VulkanImageView();
 
-        RHIFence* m_rhi_is_frame_in_flight_fences[s_max_frames_in_flight];
+        RHIFence* m_rhi_is_frame_in_flight_fences[k_max_frames_in_flight];
 
         RHIDescriptorPool* m_descriptor_pool = new VulkanDescriptorPool();
 
         RHICommandPool* m_rhi_command_pool; 
 
-        RHICommandBuffer* m_command_buffers[s_max_frames_in_flight];
+        RHICommandBuffer* m_command_buffers[k_max_frames_in_flight];
         RHICommandBuffer* m_current_command_buffer = new VulkanCommandBuffer();
 
         QueueFamilyIndices m_queue_indices;
@@ -235,12 +235,12 @@ namespace Piccolo
 
         // command pool and buffers
         uint8_t              m_current_frame_index {0};
-        VkCommandPool        m_command_pools[s_max_frames_in_flight];
-        VkCommandBuffer      m_vk_command_buffers[s_max_frames_in_flight];
-        VkSemaphore          m_image_available_for_render_semaphores[s_max_frames_in_flight];
-        VkSemaphore          m_image_finished_for_presentation_semaphores[s_max_frames_in_flight];
-        RHISemaphore*        m_image_available_for_texturescopy_semaphores[s_max_frames_in_flight];
-        VkFence              m_is_frame_in_flight_fences[s_max_frames_in_flight];
+        VkCommandPool        m_command_pools[k_max_frames_in_flight];
+        VkCommandBuffer      m_vk_command_buffers[k_max_frames_in_flight];
+        VkSemaphore          m_image_available_for_render_semaphores[k_max_frames_in_flight];
+        VkSemaphore          m_image_finished_for_presentation_semaphores[k_max_frames_in_flight];
+        RHISemaphore*        m_image_available_for_texturescopy_semaphores[k_max_frames_in_flight];
+        VkFence              m_is_frame_in_flight_fences[k_max_frames_in_flight];
 
         // TODO: set
         VkCommandBuffer   m_vk_current_command_buffer;

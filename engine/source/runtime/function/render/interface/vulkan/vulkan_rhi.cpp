@@ -411,7 +411,7 @@ namespace Piccolo
                 LOG_ERROR("vkQueueSubmit failed!");
                 return false;
             }
-            m_current_frame_index = (m_current_frame_index + 1) % s_max_frames_in_flight;
+            m_current_frame_index = (m_current_frame_index + 1) % k_max_frames_in_flight;
             return RHI_SUCCESS;
         }
         else
@@ -505,7 +505,7 @@ namespace Piccolo
             }
         }
 
-        m_current_frame_index = (m_current_frame_index + 1) % s_max_frames_in_flight;
+        m_current_frame_index = (m_current_frame_index + 1) % k_max_frames_in_flight;
     }
 
     RHICommandBuffer* VulkanRHI::beginSingleTimeCommands()
@@ -871,7 +871,7 @@ namespace Piccolo
             command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
             command_pool_create_info.queueFamilyIndex = m_queue_indices.graphics_family.value();
 
-            for (uint32_t i = 0; i < s_max_frames_in_flight; ++i)
+            for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
             {
                 if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_command_pools[i]) != VK_SUCCESS)
                 {
@@ -2605,7 +2605,7 @@ namespace Piccolo
         command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        for (uint32_t i = 0; i < s_max_frames_in_flight; ++i)
+        for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
         {
             command_buffer_allocate_info.commandPool = m_command_pools[i];
             VkCommandBuffer vk_command_buffer;
@@ -2669,7 +2669,7 @@ namespace Piccolo
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // the fence is initialized as signaled
 
-        for (uint32_t i = 0; i < s_max_frames_in_flight; i++)
+        for (uint32_t i = 0; i < k_max_frames_in_flight; i++)
         {
             m_image_available_for_texturescopy_semaphores[i] = new VulkanSemaphore();
             if (vkCreateSemaphore(
@@ -3277,7 +3277,7 @@ namespace Piccolo
         }
 
         VkResult res_wait_for_fences =
-            _vkWaitForFences(m_device, s_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+            _vkWaitForFences(m_device, k_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
         if (VK_SUCCESS != res_wait_for_fences)
         {
             LOG_ERROR("_vkWaitForFences failed");
@@ -3596,7 +3596,7 @@ namespace Piccolo
     }
     uint8_t VulkanRHI::getMaxFramesInFlight() const
     {
-        return s_max_frames_in_flight;
+        return k_max_frames_in_flight;
     }
     uint8_t VulkanRHI::getCurrentFrameIndex() const
     {

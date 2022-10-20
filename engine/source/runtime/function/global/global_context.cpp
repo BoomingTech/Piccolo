@@ -16,6 +16,8 @@
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
 #include "runtime/function/particle/particle_manager.h"
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
+#include "runtime/function/render/render_debug_config.h"
 
 namespace Piccolo
 {
@@ -55,10 +57,18 @@ namespace Piccolo
         render_init_info.window_system = m_window_system;
         m_render_system->initialize(render_init_info);
 
+        m_debugdraw_manager = std::make_shared<DebugDrawManager>();
+        m_debugdraw_manager->initialize();
+
+        m_render_debug_config = std::make_shared<RenderDebugConfig>();
     }
 
     void RuntimeGlobalContext::shutdownSystems()
     {
+        m_render_debug_config.reset();
+
+        m_debugdraw_manager.reset();
+
         m_render_system->clear();
         m_render_system.reset();
 

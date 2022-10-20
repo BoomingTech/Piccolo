@@ -18,10 +18,12 @@ namespace Piccolo
     class RenderScene;
     class RenderCamera;
     class WindowUI;
+    class DebugDrawManager;
 
     struct RenderSystemInitInfo
     {
         std::shared_ptr<WindowSystem> window_system;
+        std::shared_ptr<DebugDrawManager> debugdraw_manager;
     };
 
     struct EngineContentViewport
@@ -39,7 +41,7 @@ namespace Piccolo
         ~RenderSystem();
 
         void initialize(RenderSystemInitInfo init_info);
-        void tick();
+        void tick(float delta_time);
         void clear();
 
         void                          swapLogicRenderData();

@@ -11,6 +11,8 @@
 #include "runtime/function/render/passes/ui_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
 
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
+
 #include "runtime/core/base/macro.h"
 
 namespace Piccolo
@@ -153,6 +155,9 @@ namespace Piccolo
                           particle_pass,
                           vulkan_rhi->m_current_swapchain_image_index);
 
+        
+        g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
+
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
         static_cast<ParticlePass*>(m_particle_pass.get())->copyNormalAndDepthImage();
         static_cast<ParticlePass*>(m_particle_pass.get())->simulate();
@@ -199,6 +204,8 @@ namespace Piccolo
                    combine_ui_pass,
                    particle_pass,
                    vulkan_rhi->m_current_swapchain_image_index);
+                   
+        g_runtime_global_context.m_debugdraw_manager->draw(vulkan_rhi->m_current_swapchain_image_index);
 
         vulkan_rhi->submitRendering(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
         static_cast<ParticlePass*>(m_particle_pass.get())->copyNormalAndDepthImage();
@@ -227,6 +234,7 @@ namespace Piccolo
             main_camera_pass.getFramebufferImageViews()[_main_camera_pass_backup_buffer_even]);
         pick_pass.recreateFramebuffer();
         particle_pass.updateAfterFramebufferRecreate();
+        g_runtime_global_context.m_debugdraw_manager->updateAfterRecreateSwapchain();
     }
     uint32_t RenderPipeline::getGuidOfPickedMesh(const Vector2& picked_uv)
     {
