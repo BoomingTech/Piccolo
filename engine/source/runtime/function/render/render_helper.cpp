@@ -334,7 +334,7 @@ namespace Piccolo
 
             BoundingBox frustum_bounding_box_light_view = BoundingBoxTransform(frustum_bounding_box, light_view);
             BoundingBox scene_bounding_box_light_view   = BoundingBoxTransform(scene_bounding_box, light_view);
-            light_proj = Math::makeOrthographicProjectionMatrix(
+            light_proj = Math::makeOrthographicProjectionMatrix01(
                 std::max(frustum_bounding_box_light_view.min_bound.x, scene_bounding_box_light_view.min_bound.x),
                 std::min(frustum_bounding_box_light_view.max_bound.x, scene_bounding_box_light_view.max_bound.x),
                 std::max(frustum_bounding_box_light_view.min_bound.y, scene_bounding_box_light_view.min_bound.y),

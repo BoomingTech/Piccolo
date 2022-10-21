@@ -121,10 +121,9 @@ namespace Piccolo
         JPH::ObjectLayer layer       = Layers::NON_MOVING;
 
         JPH::Ref<JPH::StaticCompoundShapeSettings> compund_shape_setting = new JPH::StaticCompoundShapeSettings;
-
         for (const JPHShapeData& shape_data : jph_shapes)
         {
-            compund_shape_setting->AddShape(toVec3(shape_data.local_transform.m_position),
+            compund_shape_setting->AddShape(toVec3(shape_data.local_transform.m_position * shape_data.global_scale),
                                             toQuat(shape_data.local_transform.m_rotation),
                                             shape_data.shape);
         }

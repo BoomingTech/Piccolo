@@ -163,7 +163,7 @@ namespace Piccolo
         float C  = -(right + left) * inv_width;
         float D  = -(top + bottom) * inv_height;
         float q  = -2 * inv_distance;
-        float qn = qn = -(zfar + znear) * inv_distance;
+        float qn = -(zfar + znear) * inv_distance;
 
         // NB: This creates 'uniform' orthographic projection matrix,
         // which depth range [-1,1], right-handed rules
@@ -179,6 +179,47 @@ namespace Piccolo
         // D = - (top + bottom) / (top - bottom)
         // q = - 2 / (far - near)
         // qn = - (far + near) / (far - near)
+
+        Matrix4x4 proj_matrix = Matrix4x4::ZERO;
+        proj_matrix[0][0]     = A;
+        proj_matrix[0][3]     = C;
+        proj_matrix[1][1]     = B;
+        proj_matrix[1][3]     = D;
+        proj_matrix[2][2]     = q;
+        proj_matrix[2][3]     = qn;
+        proj_matrix[3][3]     = 1;
+
+        return proj_matrix;
+    }
+
+    Matrix4x4
+    Math::makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar)
+    {
+        float inv_width    = 1.0f / (right - left);
+        float inv_height   = 1.0f / (top - bottom);
+        float inv_distance = 1.0f / (zfar - znear);
+
+        float A  = 2 * inv_width;
+        float B  = 2 * inv_height;
+        float C  = -(right + left) * inv_width;
+        float D  = -(top + bottom) * inv_height;
+        float q  = -1 * inv_distance;
+        float qn = -znear * inv_distance;
+
+        // NB: This creates 'uniform' orthographic projection matrix,
+        // which depth range [-1,1], right-handed rules
+        //
+        // [ A   0   0   C  ]
+        // [ 0   B   0   D  ]
+        // [ 0   0   q   qn ]
+        // [ 0   0   0   1  ]
+        //
+        // A = 2 * / (right - left)
+        // B = 2 * / (top - bottom)
+        // C = - (right + left) / (right - left)
+        // D = - (top + bottom) / (top - bottom)
+        // q = - 1 / (far - near)
+        // qn = - near / (far - near)
 
         Matrix4x4 proj_matrix = Matrix4x4::ZERO;
         proj_matrix[0][0]     = A;

@@ -1,3 +1,11 @@
+/*
+ * @Author: liangliang.ma liangliang.ma@boomingtech.com
+ * @Date: 2022-10-21 18:24:39
+ * @LastEditors: liangliang.ma liangliang.ma@boomingtech.com
+ * @LastEditTime: 2022-10-21 18:39:05
+ * @FilePath: \pilot-internal\engine\source\runtime\function\framework\component\rigidbody\rigidbody_component.cpp
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include "runtime/function/framework/component/rigidbody/rigidbody_component.h"
 
 #include "runtime/engine.h"
@@ -39,16 +47,40 @@ namespace Piccolo
         physics_scene->removeRigidBody(m_rigidbody_id);
     }
 
-    void RigidBodyComponent::updateGlobalTransform(const Transform& transform)
+    void RigidBodyComponent::createRigidBody(const Transform& global_transform)
     {
-        // these code intended to fix transform of rigid bodies, but
-        // in JoltPhysics it removes local transform of shapes...
-        // so currently rigid bodies cannot be transformed
-        // std::shared_ptr<PhysicsScene> physics_scene =
-        //    g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
-        // ASSERT(physics_scene);
+        std::shared_ptr<PhysicsScene> physics_scene =
+            g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        ASSERT(physics_scene);
 
-        // physics_scene->updateRigidBodyGlobalTransform(m_physics_actor->getBodyID(), transform);
+        m_rigidbody_id = physics_scene->createRigidBody(global_transform, m_rigidbody_res);
+    }
+
+    void RigidBodyComponent::removeRigidBody()
+    {
+        std::shared_ptr<PhysicsScene> physics_scene =
+            g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        ASSERT(physics_scene);
+
+        physics_scene->removeRigidBody(m_rigidbody_id);
+    }
+
+    void RigidBodyComponent::updateGlobalTransform(const Transform& transform, bool is_scale_dirty)
+    {
+        if (is_scale_dirty)
+        {
+            removeRigidBody();
+
+            createRigidBody(transform);
+        }
+        else
+        {
+            std::shared_ptr<PhysicsScene> physics_scene =
+                g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+            ASSERT(physics_scene);
+
+            physics_scene->updateRigidBodyGlobalTransform(m_rigidbody_id, transform);
+        }
     }
 
     void RigidBodyComponent::getShapeBoundingBoxes(std::vector<AxisAlignedBox>& out_bounding_boxes) const
