@@ -47,10 +47,10 @@ namespace Piccolo
             Matrix4x4 proj_view_matrix;
         };
 
-        struct UniformBufferDynamicObject
+        struct alignas(256) UniformBufferDynamicObject
         {
-            alignas(64) Matrix4x4 model_matrix;
-            alignas(64) Vector4 color;
+            Matrix4x4 model_matrix;
+            Vector4 color;
         };
 
         struct Resource

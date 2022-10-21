@@ -159,18 +159,21 @@ namespace Piccolo
                                                      m_debug_draw_pipeline[DebugDrawPipelineType::_debug_draw_pipeline_type_triangle],
                                                      m_debug_draw_pipeline[DebugDrawPipelineType::_debug_draw_pipeline_type_point_no_depth_test],
                                                      m_debug_draw_pipeline[DebugDrawPipelineType::_debug_draw_pipeline_type_line_no_depth_test],
+                                                     m_debug_draw_pipeline[DebugDrawPipelineType::_debug_draw_pipeline_type_triangle_no_depth_test],
                                                      m_debug_draw_pipeline[DebugDrawPipelineType::_debug_draw_pipeline_type_triangle_no_depth_test] };
         std::vector<size_t>vc_start_offsets{ m_point_start_offset,
                                              m_line_start_offset,
                                              m_triangle_start_offset,
                                              m_no_depth_test_point_start_offset,
                                              m_no_depth_test_line_start_offset,
-                                             m_no_depth_test_triangle_start_offset };
+                                             m_no_depth_test_triangle_start_offset,
+                                             m_text_start_offset };
         std::vector<size_t>vc_end_offsets{ m_point_end_offset,
                                            m_line_end_offset,
                                            m_triangle_end_offset,
                                            m_no_depth_test_point_end_offset,
                                            m_no_depth_test_line_end_offset,
+                                           m_no_depth_test_triangle_end_offset,
                                            m_text_end_offset };
         RHIClearValue clear_values[2];
         clear_values[0].color = { 0.0f,0.0f,0.0f,0.0f };
