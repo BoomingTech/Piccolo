@@ -3,7 +3,6 @@
 #include "runtime/resource/res_type/components/rigid_body.h"
 
 #include "runtime/function/framework/component/component.h"
-#include "runtime/function/physics/physics_actor.h"
 
 namespace Piccolo
 {
@@ -18,11 +17,12 @@ namespace Piccolo
         void postLoadResource(std::weak_ptr<GObject> parent_object) override;
 
         void updateGlobalTransform(const Transform& transform);
-        const PhysicsActor* getPhysicsActor() const;
+        void getShapeBoundingBoxes(std::vector<AxisAlignedBox> & out_boudning_boxes) const;
 
     protected:
         META(Enable)
         RigidBodyComponentRes m_rigidbody_res;
-        PhysicsActor* m_physics_actor {nullptr};
+
+        uint32_t m_rigidbody_id {0xffffffff};
     };
 } // namespace Piccolo
