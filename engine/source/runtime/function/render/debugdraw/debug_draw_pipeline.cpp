@@ -94,10 +94,11 @@ namespace Piccolo
     }
     void DebugDrawPipeline::setupFramebuffer()
     {
-        m_framebuffer.framebuffers.resize(m_rhi->getMaxFramesInFlight());
+        const std::vector<RHIImageView*>&& imageViews = m_rhi->getSwapchainInfo().imageViews;
+        m_framebuffer.framebuffers.resize(imageViews.size());
         for (size_t i = 0; i < m_framebuffer.framebuffers.size(); i++) {
 
-            RHIImageView* attachments[2] = { m_rhi->getSwapchainInfo().imageViews[i],m_rhi->getDepthImageInfo().depth_image_view};
+            RHIImageView* attachments[2] = { imageViews[i], m_rhi->getDepthImageInfo().depth_image_view};
 
             RHIFramebufferCreateInfo framebuffer_create_info{};
             framebuffer_create_info.sType = RHI_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
