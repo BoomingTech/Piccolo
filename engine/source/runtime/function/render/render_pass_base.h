@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime/function/render/rhi.h"
+#include "runtime/function/render/interface/rhi.h"
 
 namespace Piccolo
 {

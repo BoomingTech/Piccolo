@@ -23,6 +23,7 @@
 #include "Jolt/Physics/Collision/RayCast.h"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "Jolt/Physics/Collision/Shape/CompoundShapeVisitors.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 #include "Jolt/Physics/Collision/ShapeCast.h"
@@ -128,10 +129,10 @@ namespace Piccolo
         }
 
         JPH::Body* jph_body = body_interface.CreateBody(JPH::BodyCreationSettings(compund_shape_setting,
-                                             toVec3(global_transform.m_position),
-                                             toQuat(global_transform.m_rotation),
-                                             motion_type,
-                                             layer));
+                                                                                  toVec3(global_transform.m_position),
+                                                                                  toQuat(global_transform.m_rotation),
+                                                                                  motion_type,
+                                                                                  layer));
 
         if (jph_body == nullptr)
         {
@@ -313,6 +314,39 @@ namespace Piccolo
                                  collector);
 
         return collector.HadHit();
+    }
+
+    void PhysicsScene::getShapeBoundingBoxes(uint32_t body_id, std::vector<AxisAlignedBox>& out_bounding_boxes) const
+    {
+        JPH::BodyLockRead body_lock(m_physics.m_jolt_physics_system->GetBodyLockInterface(), JPH::BodyID(body_id));
+        const JPH::Body&  body = body_lock.GetBody();
+
+        JPH::TransformedShape body_transformed_shape = body.GetTransformedShape();
+
+        struct Collector : JPH::TransformedShapeCollector
+        {
+            virtual void AddHit(const ResultType& inResult) override { mShapes.push_back(inResult); }
+
+            std::vector<JPH::TransformedShape> mShapes;
+        };
+
+        Collector collector;
+        body_transformed_shape.CollectTransformedShapes(body_transformed_shape.GetWorldSpaceBounds(), collector);
+
+        for (const JPH::TransformedShape& ts : collector.mShapes)
+        {
+            const JPH::Shape* shape = ts.mShape;
+
+            assert(shape->GetType() == JPH::EShapeType::Convex);
+
+            RigidBodyShape rigid_body_shape;
+
+            JPH::AABox jph_bounding_box = ts.GetWorldSpaceBounds();
+            Vector3    center           = toVec3(jph_bounding_box.GetCenter());
+            Vector3    extent           = toVec3(jph_bounding_box.GetExtent());
+
+            out_bounding_boxes.emplace_back(center, extent);
+        }
     }
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER

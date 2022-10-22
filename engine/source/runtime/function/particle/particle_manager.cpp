@@ -13,9 +13,17 @@ namespace Piccolo
     void ParticleManager::initialize()
     {
         std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
-        ASSERT(config_manager);
+        if (config_manager == nullptr)
+        {
+            LOG_ERROR("config_manager is nullptr");
+            return;
+        }
         std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
-        ASSERT(asset_manager);
+        if (asset_manager == nullptr)
+        {
+            LOG_ERROR("asset_manager is nullptr");
+            return;
+        }
 
         GlobalParticleRes  global_particle_res;
         const std::string& global_particle_res_url = config_manager->getGlobalParticleResUrl();

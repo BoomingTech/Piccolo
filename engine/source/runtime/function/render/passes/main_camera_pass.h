@@ -77,8 +77,8 @@ namespace Piccolo
 
         void copyNormalAndDepthImage();
 
-        VkImageView m_point_light_shadow_color_image_view;
-        VkImageView m_directional_light_shadow_color_image_view;
+        RHIImageView* m_point_light_shadow_color_image_view;
+        RHIImageView* m_directional_light_shadow_color_image_view;
 
         bool                                         m_is_show_axis{ false };
         bool                                         m_enable_fxaa{ false };
@@ -88,7 +88,7 @@ namespace Piccolo
 
         void updateAfterFramebufferRecreate();
 
-        VkCommandBuffer getRenderCommandBuffer();
+        RHICommandBuffer* getRenderCommandBuffer();
 
         void setParticlePass(std::shared_ptr<ParticlePass> pass);
 
@@ -117,7 +117,7 @@ namespace Piccolo
 
 
     private:
-        std::vector<VkFramebuffer> m_swapchain_framebuffers;
+        std::vector<RHIFramebuffer*> m_swapchain_framebuffers;
         std::shared_ptr<ParticlePass> m_particle_pass;
     };
 } // namespace Piccolo

@@ -12,15 +12,20 @@
 #include "runtime/function/render/render_resource_base.h"
 #include "runtime/function/render/render_scene.h"
 #include "runtime/function/render/window_system.h"
+#include "runtime/function/global/global_context.h"
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
 
 #include "runtime/function/render/passes/main_camera_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
 
-#include "runtime/function/render/rhi/vulkan/vulkan_rhi.h"
+#include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 
 namespace Piccolo
 {
-    RenderSystem::~RenderSystem() {}
+    RenderSystem::~RenderSystem()
+    {
+        clear();
+    }
 
     void RenderSystem::initialize(RenderSystemInitInfo init_info)
     {
@@ -89,7 +94,7 @@ namespace Piccolo
                  .layout;
     }
 
-    void RenderSystem::tick()
+    void RenderSystem::tick(float delta_time)
     {
         // process swap data between logic and render contexts
         processSwapData();
@@ -107,6 +112,8 @@ namespace Piccolo
         // prepare pipeline's render passes data
         m_render_pipeline->preparePassData(m_render_resource);
 
+        g_runtime_global_context.m_debugdraw_manager->tick(delta_time);
+
         // render one frame
         if (m_render_pipeline_type == RENDER_PIPELINE_TYPE::FORWARD_PIPELINE)
         {
@@ -122,11 +129,40 @@ namespace Piccolo
         }
     }
 
+    void RenderSystem::clear()
+    {
+        if (m_rhi)
+        {
+            m_rhi->clear();
+        }
+        m_rhi.reset();
+
+        if (m_render_scene)
+        {
+            m_render_scene->clear();
+        }
+        m_render_scene.reset();
+
+        if (m_render_resource)
+        {
+            m_render_resource->clear();
+        }
+        m_render_resource.reset();
+        
+        if (m_render_pipeline)
+        {
+            m_render_pipeline->clear();
+        }
+        m_render_pipeline.reset();
+    }
+
     void RenderSystem::swapLogicRenderData() { m_swap_context.swapLogicRenderData(); }
 
     RenderSwapContext& RenderSystem::getSwapContext() { return m_swap_context; }
 
     std::shared_ptr<RenderCamera> RenderSystem::getRenderCamera() const { return m_render_camera; }
+
+    std::shared_ptr<RHI>          RenderSystem::getRHI() const { return m_rhi; }
 
     void RenderSystem::updateEngineContentViewport(float offset_x, float offset_y, float width, float height)
     {

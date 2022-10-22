@@ -36,6 +36,9 @@ namespace Piccolo
         std::vector<RenderMeshNode> m_main_camera_visible_mesh_nodes;
         RenderAxisNode              m_axis_node;
 
+        // clear
+        void clear();
+
         // update visible objects in each frame
         void updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
                                   std::shared_ptr<RenderCamera>   camera);
