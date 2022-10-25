@@ -99,7 +99,7 @@ namespace Piccolo
             return false;
         }
 
-        ReflectionInstance TypeMeta::newFromNameAndPJson(std::string type_name, const PJson& json_context)
+        ReflectionInstance TypeMeta::newFromNameAndJson(std::string type_name, const Json& json_context)
         {
             auto iter = m_class_map.find(type_name);
 
@@ -110,7 +110,7 @@ namespace Piccolo
             return ReflectionInstance();
         }
 
-        PJson TypeMeta::writeByName(std::string type_name, void* instance)
+        Json TypeMeta::writeByName(std::string type_name, void* instance)
         {
             auto iter = m_class_map.find(type_name);
 
@@ -118,7 +118,7 @@ namespace Piccolo
             {
                 return std::get<2>(*iter->second)(instance);
             }
-            return PJson();
+            return Json();
         }
 
         std::string TypeMeta::getTypeName() { return m_type_name; }

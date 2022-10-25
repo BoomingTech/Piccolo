@@ -24,7 +24,7 @@ namespace Piccolo
 
 #define REFLECTION_BODY(class_name) \
     friend class Reflection::TypeFieldReflectionOparator::Type##class_name##Operator; \
-    friend class PSerializer;
+    friend class Serializer;
     // public: virtual std::string getTypeName() override {return #class_name;}
 
 #define REFLECTION_TYPE(class_name) \
@@ -81,13 +81,13 @@ namespace Piccolo
     typedef std::function<int(void*)>              GetSizeFunc;
     typedef std::function<bool()>                  GetBoolFunc;
 
-    typedef std::function<void*(const PJson&)>                          ConstructorWithPJson;
-    typedef std::function<PJson(void*)>                                 WritePJsonByName;
+    typedef std::function<void*(const Json&)>                          ConstructorWithJson;
+    typedef std::function<Json(void*)>                                 WriteJsonByName;
     typedef std::function<int(Reflection::ReflectionInstance*&, void*)> GetBaseClassReflectionInstanceListFunc;
 
     typedef std::tuple<SetFuncion, GetFuncion, GetNameFuncion, GetNameFuncion, GetNameFuncion, GetBoolFunc>
         FieldFunctionTuple;
-    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithPJson, WritePJsonByName>
+    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName>
                                                                                                 ClassFunctionTuple;
     typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion> ArrayFunctionTuple;
 
@@ -116,8 +116,8 @@ namespace Piccolo
             static TypeMeta newMetaFromName(std::string type_name);
 
             static bool               newArrayAccessorFromName(std::string array_type_name, ArrayAccessor& accessor);
-            static ReflectionInstance newFromNameAndPJson(std::string type_name, const PJson& json_context);
-            static PJson              writeByName(std::string type_name, void* instance);
+            static ReflectionInstance newFromNameAndJson(std::string type_name, const Json& json_context);
+            static Json              writeByName(std::string type_name, void* instance);
 
             std::string getTypeName();
 

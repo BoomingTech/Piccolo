@@ -5,8 +5,8 @@
 
 namespace Piccolo{
     {{#class_defines}}template<>
-    PJson PSerializer::write(const {{class_name}}& instance);
+    Json Serializer::write(const {{class_name}}& instance);
     template<>
-    {{class_name}}& PSerializer::read(const PJson& json_context, {{class_name}}& instance);
+    {{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance);
     {{/class_defines}}
 }//namespace
