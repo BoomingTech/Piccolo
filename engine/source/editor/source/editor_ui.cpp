@@ -743,7 +743,7 @@ namespace Piccolo
         render_target_window_pos.y = menu_bar_rect.Max.y;
         render_target_window_size.x = ImGui::GetWindowSize().x;
         render_target_window_size.y = (ImGui::GetWindowSize().y + ImGui::GetWindowPos().y) - menu_bar_rect.Max.y; // coord of right bottom point of full window minus coord of right bottom point of menu bar window.
-
+        render_target_window_size.y = std::max(1.0f, render_target_window_size.y); // prevent negative value
         // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
         {
 #if defined(__MACH__)
