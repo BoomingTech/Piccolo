@@ -1,3 +1,3 @@
 #pragma once
 #include "json11.hpp"
-using PJson = json11::Json;
+using Json = json11::Json;

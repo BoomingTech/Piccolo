@@ -19,7 +19,7 @@ namespace Piccolo
 
     void PiccoloEngine::startEngine(const std::string& config_file_path)
     {
-        Reflection::TypeMetaRegister::Register();
+        Reflection::TypeMetaRegister::metaRegister();
 
         g_runtime_global_context.startSystems(config_file_path);
 
@@ -32,7 +32,7 @@ namespace Piccolo
 
         g_runtime_global_context.shutdownSystems();
 
-        Reflection::TypeMetaRegister::Unregister();
+        Reflection::TypeMetaRegister::metaUnregister();
     }
 
     void PiccoloEngine::initialize() {}
