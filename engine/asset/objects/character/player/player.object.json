@@ -121,6 +121,12 @@
                 }
             },
             "$typeName": "CameraComponent"
+        },
+        {
+            "$context": {
+                "lua_script": "print(\"hello world\")"
+            },
+            "$typeName": "LuaComponent"
         }
     ]
 }
