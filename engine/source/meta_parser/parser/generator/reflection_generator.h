@@ -17,6 +17,8 @@ namespace Generator
 
     private:
         std::vector<std::string> m_head_file_list;
-        std::vector<std::string> m_type_list;
+        std::vector<std::string> m_sourcefile_list;
+
+        std::string convertNameToUpperCamelCase(std::string& name, std::string pat);
     };
 } // namespace Generator
