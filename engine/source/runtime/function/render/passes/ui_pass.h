@@ -8,7 +8,7 @@ namespace Piccolo
 
     struct UIPassInitInfo : RenderPassInitInfo
     {
-        VkRenderPass render_pass;
+        RHIRenderPass* render_pass;
     };
 
     class UIPass : public RenderPass

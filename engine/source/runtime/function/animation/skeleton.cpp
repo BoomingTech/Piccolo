@@ -154,4 +154,14 @@ namespace Piccolo
         }
         return animation_result;
     }
+
+    const Bone* Skeleton::getBones() const
+    {
+        return m_bones;
+    }
+
+    int32_t Skeleton::getBonesCount() const
+    {
+        return m_bone_count;
+    }
 } // namespace Piccolo

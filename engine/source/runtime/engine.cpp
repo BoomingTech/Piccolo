@@ -10,6 +10,7 @@
 #include "runtime/function/physics/physics_manager.h"
 #include "runtime/function/render/render_system.h"
 #include "runtime/function/render/window_system.h"
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
 
 namespace Piccolo
 {
@@ -18,7 +19,7 @@ namespace Piccolo
 
     void PiccoloEngine::startEngine(const std::string& config_file_path)
     {
-        Reflection::TypeMetaRegister::Register();
+        Reflection::TypeMetaRegister::metaRegister();
 
         g_runtime_global_context.startSystems(config_file_path);
 
@@ -31,7 +32,7 @@ namespace Piccolo
 
         g_runtime_global_context.shutdownSystems();
 
-        Reflection::TypeMetaRegister::Unregister();
+        Reflection::TypeMetaRegister::metaUnregister();
     }
 
     void PiccoloEngine::initialize() {}
@@ -73,7 +74,7 @@ namespace Piccolo
         // exchange data between logic and render contexts
         g_runtime_global_context.m_render_system->swapLogicRenderData();
 
-        rendererTick();
+        rendererTick(delta_time);
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
         g_runtime_global_context.m_physics_manager->renderPhysicsWorld(delta_time);
@@ -95,9 +96,9 @@ namespace Piccolo
         g_runtime_global_context.m_input_system->tick();
     }
 
-    bool PiccoloEngine::rendererTick()
+    bool PiccoloEngine::rendererTick(float delta_time)
     {
-        g_runtime_global_context.m_render_system->tick();
+        g_runtime_global_context.m_render_system->tick(delta_time);
         return true;
     }
 

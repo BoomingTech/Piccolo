@@ -18,6 +18,7 @@ namespace Piccolo
 
         GObjectID getObjectID() const;
         void      setObject(std::shared_ptr<GObject> gobject);
+        std::weak_ptr<GObject> getObject() const { return m_character_object; }
 
         void setPosition(const Vector3& position) { m_position = position; }
         void setRotation(const Quaternion& rotation) { m_rotation = rotation; }

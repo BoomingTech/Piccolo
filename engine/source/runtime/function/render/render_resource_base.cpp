@@ -39,10 +39,10 @@ namespace Piccolo
         switch (desired_channels)
         {
             case 2:
-                texture->m_format = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R32G32_FLOAT;
+                texture->m_format = RHIFormat::RHI_FORMAT_R32G32_SFLOAT;
                 break;
             case 4:
-                texture->m_format = PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R32G32B32A32_FLOAT;
+                texture->m_format = RHIFormat::RHI_FORMAT_R32G32B32A32_SFLOAT;
                 break;
             default:
                 // three component format is not supported in some vulkan driver implementations
@@ -72,8 +72,8 @@ namespace Piccolo
 
         texture->m_width        = iw;
         texture->m_height       = ih;
-        texture->m_format       = (is_srgb) ? PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_SRGB :
-                                              PICCOLO_PIXEL_FORMAT::PICCOLO_PIXEL_FORMAT_R8G8B8A8_UNORM;
+        texture->m_format       = (is_srgb) ? RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB :
+                                              RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
         texture->m_depth        = 1;
         texture->m_array_layers = 1;
         texture->m_mip_levels   = 1;

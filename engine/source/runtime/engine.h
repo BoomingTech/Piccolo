@@ -32,7 +32,7 @@ namespace Piccolo
 
     protected:
         void logicalTick(float delta_time);
-        bool rendererTick();
+        bool rendererTick(float delta_time);
 
         void calculateFPS(float delta_time);
 

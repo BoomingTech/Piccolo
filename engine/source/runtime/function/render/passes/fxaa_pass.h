@@ -8,8 +8,8 @@ namespace Piccolo
 
     struct FXAAPassInitInfo : RenderPassInitInfo
     {
-        VkRenderPass render_pass;
-        VkImageView  input_attachment;
+        RHIRenderPass* render_pass;
+        RHIImageView*  input_attachment;
     };
 
     class FXAAPass : public RenderPass
@@ -18,7 +18,7 @@ namespace Piccolo
         void initialize(const RenderPassInitInfo* init_info) override final;
         void draw() override final;
 
-        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+        void updateAfterFramebufferRecreate(RHIImageView* input_attachment);
 
     private:
         void setupDescriptorSetLayout();

@@ -9,7 +9,7 @@ namespace Piccolo
 
     struct PickPassInitInfo : RenderPassInitInfo
     {
-        VkDescriptorSetLayout per_mesh_layout;
+        RHIDescriptorSetLayout* per_mesh_layout;
     };
 
     class PickPass : public RenderPass
@@ -34,10 +34,10 @@ namespace Piccolo
         void setupDescriptorSet();
 
     private:
-        VkImage        _object_id_image {VK_NULL_HANDLE};
-        VkDeviceMemory _object_id_image_memory {VK_NULL_HANDLE};
-        VkImageView    _object_id_image_view {VK_NULL_HANDLE};
+        RHIImage*        _object_id_image = nullptr;
+        RHIDeviceMemory* _object_id_image_memory = nullptr;
+        RHIImageView*      _object_id_image_view = nullptr;
 
-        VkDescriptorSetLayout _per_mesh_layout {VK_NULL_HANDLE};
+        RHIDescriptorSetLayout* _per_mesh_layout = nullptr;
     };
 } // namespace Piccolo

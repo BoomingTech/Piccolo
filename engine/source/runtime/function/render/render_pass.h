@@ -55,35 +55,34 @@ namespace Piccolo
     public:
         struct FrameBufferAttachment
         {
-            VkImage        image;
-            VkDeviceMemory mem;
-            VkImageView    view;
-            VkFormat       format;
+            RHIImage*        image;
+            RHIDeviceMemory* mem;
+            RHIImageView*    view;
+            RHIFormat       format;
         };
 
         struct Framebuffer
         {
             int           width;
             int           height;
-            VkFramebuffer framebuffer;
-            VkRenderPass  render_pass;
+            RHIFramebuffer* framebuffer;
+            RHIRenderPass*  render_pass;
 
             std::vector<FrameBufferAttachment> attachments;
         };
 
         struct Descriptor
         {
-            VkDescriptorSetLayout layout;
-            VkDescriptorSet       descriptor_set;
+            RHIDescriptorSetLayout* layout;
+            RHIDescriptorSet*       descriptor_set;
         };
 
         struct RenderPipelineBase
         {
-            VkPipelineLayout layout;
-            VkPipeline       pipeline;
+            RHIPipelineLayout* layout;
+            RHIPipeline*       pipeline;
         };
 
-        std::shared_ptr<VulkanRHI> m_vulkan_rhi {nullptr};
         GlobalRenderResource*      m_global_render_resource {nullptr};
 
         std::vector<Descriptor>         m_descriptor_infos;
@@ -95,9 +94,9 @@ namespace Piccolo
 
         virtual void draw();
 
-        virtual VkRenderPass                       getRenderPass() const;
-        virtual std::vector<VkImageView>           getFramebufferImageViews() const;
-        virtual std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() const;
+        virtual RHIRenderPass*                       getRenderPass() const;
+        virtual std::vector<RHIImageView*>           getFramebufferImageViews() const;
+        virtual std::vector<RHIDescriptorSetLayout*> getDescriptorSetLayouts() const;
 
         static VisiableNodes m_visiable_nodes;
 
