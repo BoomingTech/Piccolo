@@ -29,17 +29,7 @@ namespace Generator
         auto relativeDir = fs::path(path).filename().replace_extension("reflection.gen.h").string();
         return m_out_path + "/" + relativeDir;
     }
-    std::string ReflectionGenerator::convertNameToUpperCamelCase(std::string& name, std::string pat)
-    {
-        std::string ret_string;
-        auto& name_spilts = Utils::split(name, pat);
-        for (auto& split_string : name_spilts)
-        {
-            split_string[0] = toupper(split_string[0]);
-            ret_string.append(split_string);
-        }
-        return ret_string;
-    }
+
     int ReflectionGenerator::generate(std::string path, SchemaMoudle schema)
     {
         static const std::string vector_prefix = "std::vector<";
@@ -114,7 +104,7 @@ namespace Generator
         mustache_data.set("class_defines", class_defines);
         mustache_data.set("include_headfiles", include_headfiles);
 
-        std::string tmp = convertNameToUpperCamelCase(fs::path(path).stem().string(), "_");
+        std::string tmp = Utils::convertNameToUpperCamelCase(fs::path(path).stem().string(), "_");
         mustache_data.set("sourefile_name_upper_camel_case", tmp);
 
         std::string render_string =
