@@ -53,7 +53,7 @@ namespace Utils
 
     unsigned long formatPathString(const std::string& path_string, std::string& out_string);
 
-    std::string convertNameToUpperCamelCase(std::string& name, std::string pat);
+    std::string convertNameToUpperCamelCase(const std::string& name, std::string pat);
 
 } // namespace Utils
 
