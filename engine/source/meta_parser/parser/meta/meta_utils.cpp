@@ -325,7 +325,7 @@ namespace Utils
     std::string convertNameToUpperCamelCase(const std::string& name, std::string pat)
     {
         std::string ret_string;
-        auto name_spilts = split(name, pat);
+        auto&& name_spilts = split(name, pat);
         for (auto& split_string : name_spilts)
         {
             split_string[0] = toupper(split_string[0]);
