@@ -26,18 +26,18 @@ namespace Piccolo
         // serializer & deserializer
 
         // write Test1_in (object) to Test1_json_in (json)
-        auto test1_json_in = PSerializer::write(test1_in);
+        auto test1_json_in = Serializer::write(test1_in);
 
         std::string test1_context = test1_json_in.dump();
 
         // read Test1_context (json) to Test1_out (object)
         std::string err;
 
-        auto&& Test1_json = PJson::parse(test1_context, err);
-        PSerializer::read(Test1_json, test1_out);
+        auto&& Test1_json = Json::parse(test1_context, err);
+        Serializer::read(Test1_json, test1_out);
         LOG_INFO(test1_context);
 
-        auto        Test2_json_in = PSerializer::write(test2_in);
+        auto        Test2_json_in = Serializer::write(test2_in);
         std::string test2_context = Test2_json_in.dump();
 
         std::fstream out_put("out.txt", std::ios::out);
@@ -46,8 +46,8 @@ namespace Piccolo
         out_put.close();
 
         Test2  test2_out;
-        auto&& test2_json = PJson::parse(test2_context, err);
-        PSerializer::read(test2_json, test2_out);
+        auto&& test2_json = Json::parse(test2_context, err);
+        Serializer::read(test2_json, test2_out);
         LOG_INFO(test2_context.c_str());
 
         // reflection

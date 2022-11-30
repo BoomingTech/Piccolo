@@ -6,8 +6,8 @@ namespace Piccolo
         class TypeMetaRegister
         {
         public:
-            static void Register();
-            static void Unregister();
+            static void metaRegister();
+            static void metaUnregister();
         };
     } // namespace Reflection
 } // namespace Piccolo

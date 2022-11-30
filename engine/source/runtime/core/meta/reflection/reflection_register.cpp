@@ -12,6 +12,6 @@ namespace Piccolo
 {
     namespace Reflection
     {
-        void TypeMetaRegister::Unregister() { TypeMetaRegisterinterface::unregisterAll(); }
+        void TypeMetaRegister::metaUnregister() { TypeMetaRegisterinterface::unregisterAll(); }
     } // namespace Reflection
 } // namespace Piccolo

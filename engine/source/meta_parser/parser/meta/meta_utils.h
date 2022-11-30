@@ -52,6 +52,9 @@ namespace Utils
     void replaceAll(std::string& resource_str, std::string sub_str, std::string new_str);
 
     unsigned long formatPathString(const std::string& path_string, std::string& out_string);
+
+    std::string convertNameToUpperCamelCase(const std::string& name, std::string pat);
+
 } // namespace Utils
 
 #include "meta_utils.hpp"
