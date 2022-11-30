@@ -322,5 +322,15 @@ namespace Utils
         out_string.append(out_sub_string[out_sub_string.size() - 1]);
         return 0;
     }
-
+    std::string convertNameToUpperCamelCase(const std::string& name, std::string pat)
+    {
+        std::string ret_string;
+        auto&& name_spilts = split(name, pat);
+        for (auto& split_string : name_spilts)
+        {
+            split_string[0] = toupper(split_string[0]);
+            ret_string.append(split_string);
+        }
+        return ret_string;
+    }
 } // namespace Utils

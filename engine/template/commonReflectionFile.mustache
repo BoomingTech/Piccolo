@@ -90,9 +90,11 @@ namespace Reflection{
         {{/class_need_register}}
     }{{/class_defines}}
 namespace TypeWrappersRegister{
-    {{#class_defines}}
-        void {{class_name}}(){ TypeWrapperRegister_{{class_name}}();}
+    void {{sourefile_name_upper_camel_case}}()
+    {
+        {{#class_defines}}TypeWrapperRegister_{{class_name}}();
     {{/class_defines}}
+    }
 }//namespace TypeWrappersRegister
 
 }//namespace Reflection
