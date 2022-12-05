@@ -31,6 +31,8 @@ class BodyCreationSettings;
 class Body : public NonCopyable
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Default constructor
 							Body() = default;
 
@@ -306,11 +308,16 @@ private:
 	EMotionType				mMotionType;													///< Type of motion (static, dynamic or kinematic)
 	atomic<uint8>			mFlags = 0;														///< See EFlags for possible flags
 	
-	// 121 bytes up to here
+	// 121 bytes up to here (64-bit mode)
+
+#if JPH_CPU_ADDRESS_BITS == 32
+	// Padding for 32 bit mode
+	char					mPadding[19];
+#endif
 };
 
 static_assert(sizeof(Body) == 128, "Body should be 128 bytes");
-static_assert(alignof(Body) == 16, "Body should align to 16 bytes");
+static_assert(alignof(Body) == JPH_VECTOR_ALIGNMENT, "Body should properly align");
 
 JPH_NAMESPACE_END
 

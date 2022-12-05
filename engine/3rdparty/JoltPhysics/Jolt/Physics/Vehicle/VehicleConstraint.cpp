@@ -212,10 +212,14 @@ void VehicleConstraint::OnStep(float inDeltaTime, PhysicsSystem &inPhysicsSystem
 	mController->PostCollide(inDeltaTime, inPhysicsSystem);
 
 	// If the wheels are rotating, we don't want to go to sleep yet
-	bool allow_sleep = true;
-	for (const Wheel *w : mWheels)
-		if (abs(w->mAngularVelocity) > DegreesToRadians(10.0f))
-			allow_sleep = false;
+	bool allow_sleep = mController->AllowSleep();
+	if (allow_sleep)
+		for (const Wheel *w : mWheels)
+			if (abs(w->mAngularVelocity) > DegreesToRadians(10.0f))
+			{
+				allow_sleep = false;
+				break;
+			}
 	if (mBody->GetAllowSleeping() != allow_sleep)
 		mBody->SetAllowSleeping(allow_sleep);
 }
@@ -279,7 +283,7 @@ void VehicleConstraint::CalculateWheelContactPoint(Mat44Arg inBodyTransform, con
 {
 	Vec3 contact_pos = inBodyTransform * (inWheel.mSettings->mPosition + inWheel.mSettings->mDirection * inWheel.mContactLength);
 	outR1PlusU = contact_pos - mBody->GetCenterOfMassPosition();
-	outR2 = contact_pos - mBody->GetCenterOfMassPosition();
+	outR2 = contact_pos - inWheel.mContactBody->GetCenterOfMassPosition();
 }
 
 void VehicleConstraint::CalculatePitchRollConstraintProperties(float inDeltaTime, Mat44Arg inBodyTransform)
@@ -383,7 +387,8 @@ bool VehicleConstraint::SolveVelocityConstraint(float inDeltaTime)
 	impulse |= mController->SolveLongitudinalAndLateralConstraints(inDeltaTime);
 
 	// Apply the pitch / roll constraint to avoid the vehicle from toppling over
-	impulse |= mPitchRollPart.SolveVelocityConstraint(*mBody, Body::sFixedToWorld, mPitchRollRotationAxis, 0, FLT_MAX);
+	if (mPitchRollPart.IsActive())
+		impulse |= mPitchRollPart.SolveVelocityConstraint(*mBody, Body::sFixedToWorld, mPitchRollRotationAxis, 0, FLT_MAX);
 
 	return impulse;
 }

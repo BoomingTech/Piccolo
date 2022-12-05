@@ -10,12 +10,12 @@ JPH_NAMESPACE_BEGIN
 ProfileThread::ProfileThread(const string_view &inThreadName) :
 	mThreadName(inThreadName)
 {
-	Profiler::sInstance.AddThread(this);
+	Profiler::sInstance->AddThread(this);
 }
 
 ProfileThread::~ProfileThread()
 {
-	Profiler::sInstance.RemoveThread(this);
+	Profiler::sInstance->RemoveThread(this);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ ProfileMeasurement::~ProfileMeasurement()
 		val = vld1q_s32(src + 4);
 		vst1q_s32(dst + 4, val);
 	#else
-		#error Unsupported CPU architecture
+		memcpy(mSample, &mTemp, sizeof(ProfileSample));
 	#endif
 		mSample = nullptr;
 	}

@@ -6,6 +6,7 @@
 #include <Tests/Rig/KinematicRigTest.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/StateRecorder.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
 #include <Application/DebugUI.h>
 #include <Layers.h>
 #include <Utils/Log.h>
@@ -56,7 +57,7 @@ void KinematicRigTest::Initialize()
 	mRagdoll->AddToPhysicsSystem(EActivation::Activate);
 
 	// Load animation
-	string filename = string("Assets/Human/") + sAnimationName + ".tof";
+	String filename = String("Assets/Human/") + sAnimationName + ".tof";
 	if (!ObjectStreamIn::sReadObject(filename.c_str(), mAnimation))
 		FatalError("Could not open animation");
 

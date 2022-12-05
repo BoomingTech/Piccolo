@@ -15,11 +15,8 @@
 #include <Jolt/Core/StringTools.h>
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
-
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <unordered_set>
-#include <unordered_map>
-JPH_SUPPRESS_WARNINGS_STD_END
+#include <Jolt/Core/UnorderedMap.h>
+#include <Jolt/Core/UnorderedSet.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -46,7 +43,7 @@ ConvexHullShape::ConvexHullShape(const ConvexHullShapeSettings &inSettings, Shap
 {
 	using BuilderFace = ConvexHullBuilder::Face;
 	using Edge = ConvexHullBuilder::Edge;
-	using Faces = vector<BuilderFace *>;
+	using Faces = Array<BuilderFace *>;
 	
 	// Check convex radius
 	if (mConvexRadius < 0.0f)
@@ -124,7 +121,7 @@ ConvexHullShape::ConvexHullShape(const ConvexHullShapeSettings &inSettings, Shap
 	mInertia = Mat44::sIdentity() * (covariance_matrix(0, 0) + covariance_matrix(1, 1) + covariance_matrix(2, 2)) - covariance_matrix;
 
 	// Convert polygons fron the builder to our internal representation
-	using VtxMap = unordered_map<int, uint8>;
+	using VtxMap = UnorderedMap<int, uint8>;
 	VtxMap vertex_map;
 	for (BuilderFace *builder_face : builder_faces)
 	{
@@ -187,7 +184,7 @@ ConvexHullShape::ConvexHullShape(const ConvexHullShapeSettings &inSettings, Shap
 	for (int p = 0; p < (int)mPoints.size(); ++p)
 	{
 		// For each point, find faces that use the point
-		vector<int> faces;
+		Array<int> faces;
 		for (int f = 0; f < (int)mFaces.size(); ++f)
 		{
 			const Face &face = mFaces[f];
@@ -215,7 +212,7 @@ ConvexHullShape::ConvexHullShape(const ConvexHullShapeSettings &inSettings, Shap
 			
 			// When using 2 normals, we get the two with the biggest angle between them with a minimal difference of 1 degree
 			// otherwise we fall back to just using 1 plane normal
-			float smallest_dot = cos(DegreesToRadians(1.0f));
+			float smallest_dot = Cos(DegreesToRadians(1.0f));
 			int best2[2] = { -1, -1 };
 
 			for (int face1 = 0; face1 < (int)faces.size(); ++face1)
@@ -380,7 +377,7 @@ Vec3 ConvexHullShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg i
 	float best_dist = abs(first_plane.SignedDistance(inLocalSurfacePosition));
 
 	// Find the face that has the shortest distance to the surface point
-	for (vector<Face>::size_type i = 1; i < mFaces.size(); ++i)
+	for (Array<Face>::size_type i = 1; i < mFaces.size(); ++i)
 	{
 		const Plane &plane = mPlanes[i];
 		Vec3 plane_normal = plane.GetNormal();
@@ -672,8 +669,10 @@ const ConvexShape::Support *ConvexHullShape::GetSupportFunction(ESupportMode inM
 	return nullptr;
 }
 
-void ConvexHullShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const 
+void ConvexHullShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const 
 {
+	JPH_ASSERT(inSubShapeID.IsEmpty(), "Invalid subshape ID");
+
 	Vec3 inv_scale = inScale.Reciprocal();
 	
 	// Need to transform the plane normals using inScale
@@ -683,7 +682,7 @@ void ConvexHullShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, Su
 	float best_dot = plane0_normal.Dot(inDirection) / plane0_normal.Length();
 	int best_face_idx = 0;
 
-	for (vector<Plane>::size_type i = 1; i < mPlanes.size(); ++i)
+	for (Array<Plane>::size_type i = 1; i < mPlanes.size(); ++i)
 	{
 		Vec3 plane_normal = inv_scale * mPlanes[i].GetNormal();
 		float dot = plane_normal.Dot(inDirection) / plane_normal.Length();
@@ -704,17 +703,20 @@ void ConvexHullShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, Su
 	int max_vertices_to_return = outVertices.capacity() / 2;
 	int delta_vtx = (int(best_face.mNumVertices) + max_vertices_to_return) / max_vertices_to_return;
 
+	// Calculate transform with scale
+	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);
+
 	if (ScaleHelpers::IsInsideOut(inScale))
 	{
 		// Flip winding of supporting face
 		for (const uint8 *v = end_vtx - 1; v >= first_vtx; v -= delta_vtx)
-			outVertices.push_back(inScale * mPoints[*v].mPosition);
+			outVertices.push_back(transform * mPoints[*v].mPosition);
 	}
 	else
 	{
 		// Normal winding of supporting face
 		for (const uint8 *v = first_vtx; v < end_vtx; v += delta_vtx)
-			outVertices.push_back(inScale * mPoints[*v].mPosition);
+			outVertices.push_back(transform * mPoints[*v].mPosition);
 	}
 }
 
@@ -804,7 +806,7 @@ void ConvexHullShape::Draw(DebugRenderer *inRenderer, Mat44Arg inCenterOfMassTra
 {
 	if (mGeometry == nullptr)
 	{
-		vector<DebugRenderer::Triangle> triangles;
+		Array<DebugRenderer::Triangle> triangles;
 		for (const Face &f : mFaces)
 		{
 			const uint8 *first_vtx = mVertexIdx.data() + f.mFirstVertex;
@@ -832,7 +834,21 @@ void ConvexHullShape::Draw(DebugRenderer *inRenderer, Mat44Arg inCenterOfMassTra
 
 	// Draw the geometry
 	Color color = inUseMaterialColors? GetMaterial()->GetDebugColor() : inColor;
-	inRenderer->DrawGeometry(inCenterOfMassTransform * Mat44::sScale(inScale), color, mGeometry, cull_mode, DebugRenderer::ECastShadow::On, draw_mode);
+	Mat44 transform = inCenterOfMassTransform * Mat44::sScale(inScale);
+	inRenderer->DrawGeometry(transform, color, mGeometry, cull_mode, DebugRenderer::ECastShadow::On, draw_mode);
+
+	// Draw the outline if requested
+	if (sDrawFaceOutlines)
+		for (const Face &f : mFaces)
+		{
+			const uint8 *first_vtx = mVertexIdx.data() + f.mFirstVertex;
+			const uint8 *end_vtx = first_vtx + f.mNumVertices;
+
+			// Draw edges of face
+			inRenderer->DrawLine(transform * mPoints[*(end_vtx - 1)].mPosition, transform * mPoints[*first_vtx].mPosition, Color::sGrey);
+			for (const uint8 *v = first_vtx + 1; v < end_vtx; ++v)
+				inRenderer->DrawLine(transform * mPoints[*(v - 1)].mPosition, transform * mPoints[*v].mPosition, Color::sGrey);
+		}
 }
 
 void ConvexHullShape::DrawShrunkShape(DebugRenderer *inRenderer, Mat44Arg inCenterOfMassTransform, Vec3Arg inScale) const
@@ -991,8 +1007,12 @@ bool ConvexHullShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inS
 	return false;
 }
 
-void ConvexHullShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const
+void ConvexHullShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	// Determine if ray hits the shape
 	float min_fraction, max_fraction;
 	if (CastRayHelper(inRay, min_fraction, max_fraction)
@@ -1020,8 +1040,12 @@ void ConvexHullShape::CastRay(const RayCast &inRay, const RayCastSettings &inRay
 	}
 }
 
-void ConvexHullShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void ConvexHullShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	// Check if point is behind all planes
 	for (const Plane &p : mPlanes)
 		if (p.SignedDistance(inPoint) > 0.0f)

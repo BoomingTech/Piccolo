@@ -16,7 +16,7 @@
 	#undef JPH_DEBUG_RENDERER
 #endif // !JPH_DEBUG_RENDERER
 
-DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont, const std::filesystem::path& asset_folder) :
+DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont) :
 	mRenderer(inRenderer),
 	mFont(inFont)
 {
@@ -28,8 +28,8 @@ DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont, con
 	};
 
 	// Lines
-	ComPtr<ID3DBlob> vtx_line = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "LineVertexShader.hlsl").generic_string().c_str());
-	ComPtr<ID3DBlob> pix_line = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "LinePixelShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> vtx_line = mRenderer->CreateVertexShader("Assets/Shaders/LineVertexShader.hlsl");
+	ComPtr<ID3DBlob> pix_line = mRenderer->CreatePixelShader("Assets/Shaders/LinePixelShader.hlsl");
 	mLineState = mRenderer->CreatePipelineState(vtx_line.Get(), line_vertex_desc, ARRAYSIZE(line_vertex_desc), pix_line.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 
 	// Create input layout for triangles
@@ -51,15 +51,15 @@ DebugRendererImp::DebugRendererImp(Renderer *inRenderer, const Font *inFont, con
 	};
 
 	// Triangles
-	ComPtr<ID3DBlob> vtx_triangle = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "TriangleVertexShader.hlsl").generic_string().c_str());
-	ComPtr<ID3DBlob> pix_triangle  = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "TrianglePixelShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> vtx_triangle = mRenderer->CreateVertexShader("Assets/Shaders/TriangleVertexShader.hlsl");
+	ComPtr<ID3DBlob> pix_triangle  = mRenderer->CreatePixelShader("Assets/Shaders/TrianglePixelShader.hlsl");
 	mTriangleStateBF = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	mTriangleStateFF = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
 	mTriangleStateWire = mRenderer->CreatePipelineState(vtx_triangle.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_triangle.Get(), D3D12_FILL_MODE_WIREFRAME, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	
 	// Shadow pass
-	ComPtr<ID3DBlob> vtx_shadow = mRenderer->CreateVertexShader((asset_folder / "Shaders" / "TriangleDepthVertexShader.hlsl").generic_string().c_str());
-	ComPtr<ID3DBlob> pix_shadow = mRenderer->CreatePixelShader((asset_folder / "Shaders" / "TriangleDepthPixelShader.hlsl").generic_string().c_str());
+	ComPtr<ID3DBlob> vtx_shadow = mRenderer->CreateVertexShader("Assets/Shaders/TriangleDepthVertexShader.hlsl");
+	ComPtr<ID3DBlob> pix_shadow = mRenderer->CreatePixelShader("Assets/Shaders/TriangleDepthPixelShader.hlsl");
 	mShadowStateBF = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
 	mShadowStateFF = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_SOLID, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::FrontFace);
 	mShadowStateWire = mRenderer->CreatePipelineState(vtx_shadow.Get(), triangles_vertex_desc, ARRAYSIZE(triangles_vertex_desc), pix_shadow.Get(), D3D12_FILL_MODE_WIREFRAME, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, PipelineState::EDepthTest::On, PipelineState::EBlendMode::AlphaBlend, PipelineState::ECullMode::Backface);
@@ -205,14 +205,14 @@ void DebugRendererImp::DrawTriangle(Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, Co
 	mLockedPrimitiveBounds.Encapsulate(inV3);
 }
 
-void DebugRendererImp::DrawInstances(const Geometry *inGeometry, const vector<int> &inStartIdx)
+void DebugRendererImp::DrawInstances(const Geometry *inGeometry, const Array<int> &inStartIdx)
 {
 	RenderInstances *instances_buffer = mInstancesBuffer[mRenderer->GetCurrentFrameIndex()];
 
 	if (!inStartIdx.empty())
 	{
 		// Get LODs
-		const vector<LOD> &geometry_lods = inGeometry->mLODs;
+		const Array<LOD> &geometry_lods = inGeometry->mLODs;
 
 		// Write instances for all LODS
 		int next_start_idx = inStartIdx.front();
@@ -283,13 +283,13 @@ void DebugRendererImp::DrawTriangles()
 		int dst_index = 0;
 
 		// This keeps track of which instances use which lod, first array: 0 = light pass, 1 = geometry pass
-		vector<vector<int>> lod_indices[2];
+		Array<Array<int>> lod_indices[2];
 
 		for (InstanceMap *primitive_map : { &mPrimitives, &mTempPrimitives, &mPrimitivesBackFacing, &mWireframePrimitives })
 			for (InstanceMap::value_type &v : *primitive_map)
 			{
 				// Get LODs
-				const vector<LOD> &geometry_lods = v.first->mLODs;
+				const Array<LOD> &geometry_lods = v.first->mLODs;
 				size_t num_lods = geometry_lods.size();
 				JPH_ASSERT(num_lods > 0);
 
@@ -300,7 +300,7 @@ void DebugRendererImp::DrawTriangles()
 					lod_indices[1].resize(num_lods);
 
 				// Iterate over all instances
-				const vector<InstanceWithLODInfo> &instances = v.second.mInstances;
+				const Array<InstanceWithLODInfo> &instances = v.second.mInstances;
 				for (size_t i = 0; i < instances.size(); ++i)
 				{
 					const InstanceWithLODInfo &src_instance = instances[i];
@@ -326,11 +326,11 @@ void DebugRendererImp::DrawTriangles()
 				}
 
 				// Loop over both passes: 0 = light, 1 = geometry
-				vector<int> *start_idx[] = { &v.second.mLightStartIdx, &v.second.mGeometryStartIdx };
+				Array<int> *start_idx[] = { &v.second.mLightStartIdx, &v.second.mGeometryStartIdx };
 				for (int type = 0; type < 2; ++type) 
 				{
 					// Reserve space for instance indices
-					vector<int> &type_start_idx = *start_idx[type];
+					Array<int> &type_start_idx = *start_idx[type];
 					type_start_idx.resize(num_lods + 1);
 
 					// Write out geometry pass instances
@@ -340,7 +340,7 @@ void DebugRendererImp::DrawTriangles()
 						type_start_idx[lod] = dst_index;
 
 						// Copy instances
-						vector<int> &this_lod_indices = lod_indices[type][lod];
+						Array<int> &this_lod_indices = lod_indices[type][lod];
 						for (int i : this_lod_indices)
 						{
 							const Instance &src_instance = instances[i];
@@ -466,7 +466,7 @@ void DebugRendererImp::ClearLines()
 
 void DebugRendererImp::ClearMap(InstanceMap &ioInstances)
 {
-	vector<GeometryRef> to_delete;
+	Array<GeometryRef> to_delete;
 	
 	for (InstanceMap::value_type &kv : ioInstances)
 	{

@@ -119,19 +119,33 @@ void Character::CheckCollision(const Shape *inShape, float inMaxSeparationDistan
 
 void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 {
+	// Get character position, rotation and velocity
+	Vec3 char_pos;
+	Quat char_rot;
+	Vec3 char_vel;
+	{
+		BodyLockRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
+		if (!lock.Succeeded())
+			return;
+		const Body &body = lock.GetBody();
+		char_pos = body.GetPosition();
+		char_rot = body.GetRotation();
+		char_vel = body.GetLinearVelocity();
+	}
+
 	// Collector that finds the hit with the normal that is the most 'up'
 	class MyCollector : public CollideShapeCollector
 	{
 	public:
 		// Constructor
-		explicit			MyCollector(Vec3Arg inGravity) : mGravity(inGravity) { }
+		explicit			MyCollector(Vec3Arg inUp) : mUp(inUp) { }
 
 		// See: CollectorType::AddHit
 		virtual void		AddHit(const CollideShapeResult &inResult) override
 		{
 			Vec3 normal = -inResult.mPenetrationAxis.Normalized();
-			float dot = normal.Dot(mGravity);
-			if (dot < mBestDot) // Find the hit that is most opposite to the gravity
+			float dot = normal.Dot(mUp);
+			if (dot > mBestDot) // Find the hit that is most aligned with the up vector
 			{
 				mGroundBodyID = inResult.mBodyID2;
 				mGroundBodySubShapeID = inResult.mSubShapeID2;
@@ -147,13 +161,13 @@ void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 		Vec3				mGroundNormal = Vec3::sZero();
 
 	private:
-		float				mBestDot = FLT_MAX;
-		Vec3				mGravity;
+		float				mBestDot = -FLT_MAX;
+		Vec3				mUp;
 	};
 
 	// Collide shape
-	MyCollector collector(mSystem->GetGravity());
-	CheckCollision(mShape, inMaxSeparationDistance, collector, inLockBodies);
+	MyCollector collector(mUp);
+	CheckCollision(char_pos, char_rot, char_vel, inMaxSeparationDistance, mShape, collector, inLockBodies);
 
 	// Copy results
 	mGroundBodyID = collector.mGroundBodyID;
@@ -168,11 +182,13 @@ void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 		const Body &body = lock.GetBody();
 
 		// Update ground state
-		Vec3 up = -mSystem->GetGravity().Normalized();
-		if (mGroundNormal.Dot(up) > mCosMaxSlopeAngle)
-			mGroundState = EGroundState::OnGround;
+		Mat44 inv_transform = Mat44::sInverseRotationTranslation(char_rot, char_pos);
+		if (mSupportingVolume.SignedDistance(inv_transform * mGroundPosition) > 0.0f)
+			mGroundState = EGroundState::NotSupported;
+		else if (IsSlopeTooSteep(mGroundNormal))
+			mGroundState = EGroundState::OnSteepGround;
 		else
-			mGroundState = EGroundState::Sliding;
+			mGroundState = EGroundState::OnGround;
 
 		// Copy other body properties
 		mGroundMaterial = body.GetShape()->GetMaterial(mGroundBodySubShapeID);

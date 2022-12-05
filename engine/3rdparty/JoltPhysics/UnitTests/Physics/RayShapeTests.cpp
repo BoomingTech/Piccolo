@@ -290,7 +290,7 @@ TEST_SUITE("RayShapeTests")
 			if (inExpectedFraction1 != FLT_MAX)
 			{
 				CHECK(system.GetNarrowPhaseQuery().CastRay(ray, hit));
-				CHECK_APPROX_EQUAL(hit.mFraction, inExpectedFraction1, 1.0e-5f);
+				CHECK_APPROX_EQUAL(hit.mFraction, inExpectedFraction1, 2.0e-5f);
 			}
 			else
 			{
@@ -324,7 +324,7 @@ TEST_SUITE("RayShapeTests")
 			if (inExpectedFraction1 != FLT_MAX)
 			{
 				CHECK(collector.mHits.size() == 1);
-				CHECK_APPROX_EQUAL(collector.mHits[0].mFraction, inExpectedFraction1, 1.0e-5f);
+				CHECK_APPROX_EQUAL(collector.mHits[0].mFraction, inExpectedFraction1, 2.0e-5f);
 			}
 			else
 			{
@@ -359,7 +359,7 @@ TEST_SUITE("RayShapeTests")
 			if (inExpectedFraction1 != FLT_MAX)
 			{
 				CHECK(collector.mHits.size() >= 1);
-				CHECK_APPROX_EQUAL(collector.mHits[0].mFraction, inExpectedFraction1, 1.0e-5f);
+				CHECK_APPROX_EQUAL(collector.mHits[0].mFraction, inExpectedFraction1, 2.0e-5f);
 			}
 			else
 			{
@@ -370,7 +370,7 @@ TEST_SUITE("RayShapeTests")
 			if (inExpectedFraction2 != FLT_MAX)
 			{
 				CHECK(collector.mHits.size() >= 2);
-				CHECK_APPROX_EQUAL(collector.mHits[1].mFraction, inExpectedFraction2, 1.0e-5f);
+				CHECK_APPROX_EQUAL(collector.mHits[1].mFraction, inExpectedFraction2, 2.0e-5f);
 			}
 			else
 			{
@@ -417,7 +417,7 @@ TEST_SUITE("RayShapeTests")
 	TEST_CASE("TestConvexHullShapeRay")
 	{
 		// Create convex hull shape of a box (off center so the center of mass is not zero)
-		vector<Vec3> box;
+		Array<Vec3> box;
 		box.push_back(Vec3(-2, -4, -6));
 		box.push_back(Vec3(-2, -4, 7));
 		box.push_back(Vec3(-2, 5, -6));
@@ -470,7 +470,7 @@ TEST_SUITE("RayShapeTests")
 	TEST_CASE("TestScaledShapeRay")
 	{
 		// Create convex hull shape of a box (off center so the center of mass is not zero)
-		vector<Vec3> box;
+		Array<Vec3> box;
 		box.push_back(Vec3(-2, -4, -6));
 		box.push_back(Vec3(-2, -4, 7));
 		box.push_back(Vec3(-2, 5, -6));
@@ -499,7 +499,7 @@ TEST_SUITE("RayShapeTests")
 	TEST_CASE("TestStaticCompoundShapeRay")
 	{
 		// Create convex hull shape of a box (off center so the center of mass is not zero)
-		vector<Vec3> box;
+		Array<Vec3> box;
 		box.push_back(Vec3(-2, -4, -6));
 		box.push_back(Vec3(-2, -4, 7));
 		box.push_back(Vec3(-2, 5, -6));
@@ -535,7 +535,7 @@ TEST_SUITE("RayShapeTests")
 	TEST_CASE("TestMutableCompoundShapeRay")
 	{
 		// Create convex hull shape of a box (off center so the center of mass is not zero)
-		vector<Vec3> box;
+		Array<Vec3> box;
 		box.push_back(Vec3(-2, -4, -6));
 		box.push_back(Vec3(-2, -4, 7));
 		box.push_back(Vec3(-2, 5, -6));

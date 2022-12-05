@@ -30,7 +30,36 @@ private:
 	uint		mPrevState;	
 };
 
-#elif defined(JPH_USE_NEON)
+#elif defined(JPH_CPU_ARM) && defined(JPH_COMPILER_MSVC)
+
+/// Helper class that needs to be put on the stack to update the state of the floating point control word.
+/// This state is kept per thread.
+template <unsigned int Value, unsigned int Mask>
+class FPControlWord : public NonCopyable
+{
+public:
+				FPControlWord()
+	{
+		// Read state before change
+		_controlfp_s(&mPrevState, 0, 0);
+
+		// Update the state
+		unsigned int dummy;
+		_controlfp_s(&dummy, Value, Mask);
+	}
+
+				~FPControlWord()
+	{
+		// Restore state
+		unsigned int dummy;
+		_controlfp_s(&dummy, mPrevState, Mask);
+	}
+
+private:
+	unsigned int mPrevState;
+};
+
+#elif defined(JPH_CPU_ARM)
 
 /// Helper class that needs to be put on the stack to update the state of the floating point control word.
 /// This state is kept per thread.
@@ -60,6 +89,10 @@ public:
 private:
 	uint64		mPrevState;
 };
+
+#elif defined(JPH_CPU_WASM)
+
+// Not supported
 
 #else
 

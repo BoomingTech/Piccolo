@@ -38,7 +38,7 @@ public:
 		uint32						mUserData = 0;											///< User data value (can be used by the application for any purpose)
 	};
 
-	using SubShapes = vector<SubShapeSettings>;
+	using SubShapes = Array<SubShapeSettings>;
 
 	SubShapes						mSubShapes;
 };
@@ -47,6 +47,8 @@ public:
 class CompoundShape : public Shape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 	explicit						CompoundShape(EShapeSubType inSubType) : Shape(EShapeType::Compound, inSubType) { }
 									CompoundShape(EShapeSubType inSubType, const ShapeSettings &inSettings, ShapeResult &outResult) : Shape(EShapeType::Compound, inSubType, inSettings, outResult) { }
@@ -83,6 +85,9 @@ public:
 
 	// See Shape::GetSurfaceNormal
 	virtual Vec3					GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocalSurfacePosition) const override;
+
+	// See Shape::GetSupportingFace
+	virtual void					GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override;
 
 	// See Shape::GetSubmergedVolume
 	virtual void					GetSubmergedVolume(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const Plane &inSurface, float &outTotalVolume, float &outSubmergedVolume, Vec3 &outCenterOfBuoyancy) const override;
@@ -226,9 +231,9 @@ public:
 		// 3 padding bytes left
 	};
 
-	static_assert(sizeof(SubShape) == 40, "Compiler added unexpected padding");
+	static_assert(sizeof(SubShape) == (JPH_CPU_ADDRESS_BITS == 64? 40 : 36), "Compiler added unexpected padding");
 
-	using SubShapes = vector<SubShape>;
+	using SubShapes = Array<SubShape>;
 
 	/// Access to the sub shapes of this compound
 	const SubShapes &				GetSubShapes() const									{ return mSubShapes; }

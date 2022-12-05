@@ -33,9 +33,16 @@
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/NarrowPhaseStats.h>
 #include <Jolt/Physics/Constraints/DistanceConstraint.h>
+#include <Jolt/Physics/Constraints/PulleyConstraint.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
 #include <Utils/Log.h>
+#include <Utils/ShapeCreator.h>
+#include <Utils/CustomMemoryHook.h>
 #include <Renderer/DebugRendererImp.h>
+
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <fstream>
+JPH_SUPPRESS_WARNINGS_STD_END
 
 //-----------------------------------------------------------------------------
 // RTTI definitions
@@ -81,6 +88,7 @@ JPH_DECLARE_RTTI_FOR_FACTORY(MultithreadedTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(ContactListenerTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(ActivateDuringUpdateTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(SensorTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(DynamicMeshTest)
 
 static TestNameAndRTTI sGeneralTests[] =
 {
@@ -111,6 +119,7 @@ static TestNameAndRTTI sGeneralTests[] =
 	{ "Contact Listener",					JPH_RTTI(ContactListenerTest) },
 	{ "Activate During Update",				JPH_RTTI(ActivateDuringUpdateTest) },
 	{ "Sensor",								JPH_RTTI(SensorTest) },
+	{ "Dynamic Mesh",						JPH_RTTI(DynamicMeshTest) },
 };
 
 JPH_DECLARE_RTTI_FOR_FACTORY(DistanceConstraintTest)
@@ -128,6 +137,9 @@ JPH_DECLARE_RTTI_FOR_FACTORY(ConstraintSingularityTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(PoweredSwingTwistConstraintTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(SwingTwistConstraintFrictionTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(PathConstraintTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(RackAndPinionConstraintTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(GearConstraintTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(PulleyConstraintTest)
 
 static TestNameAndRTTI sConstraintTests[] =
 {
@@ -144,6 +156,9 @@ static TestNameAndRTTI sConstraintTests[] =
 	{ "Swing Twist Constraint Friction",	JPH_RTTI(SwingTwistConstraintFrictionTest) },
 	{ "Six DOF Constraint",					JPH_RTTI(SixDOFConstraintTest) },
 	{ "Path Constraint",					JPH_RTTI(PathConstraintTest) },
+	{ "Rack And Pinion Constraint",			JPH_RTTI(RackAndPinionConstraintTest) },
+	{ "Gear Constraint",					JPH_RTTI(GearConstraintTest) },
+	{ "Pulley Constraint",					JPH_RTTI(PulleyConstraintTest) },
 	{ "Spring",								JPH_RTTI(SpringTest) },
 	{ "Constraint Singularity",				JPH_RTTI(ConstraintSingularityTest) },
 };
@@ -214,6 +229,7 @@ JPH_DECLARE_RTTI_FOR_FACTORY(KinematicRigTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(PoweredRigTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(RigPileTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(LoadSaveBinaryRigTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(SkeletonMapperTest)
 
 static TestNameAndRTTI sRigTests[] =
 {
@@ -222,6 +238,7 @@ static TestNameAndRTTI sRigTests[] =
 	{ "Load / Save Binary Rig",				JPH_RTTI(LoadSaveBinaryRigTest) },
 	{ "Kinematic Rig",						JPH_RTTI(KinematicRigTest) },
 	{ "Powered Rig",						JPH_RTTI(PoweredRigTest) },
+	{ "Skeleton Mapper",					JPH_RTTI(SkeletonMapperTest) },
 	{ "Rig Pile",							JPH_RTTI(RigPileTest) }
 };
 
@@ -325,150 +342,161 @@ SamplesApp::SamplesApp()
 	// Create job system without extra threads for validating
 	mJobSystemValidating = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, 0);
 
-	// Create UI
-	UIElement *main_menu = mDebugUI->CreateMenu();
-	mDebugUI->CreateTextButton(main_menu, "Select Test", [this]() { 
-		UIElement *tests = mDebugUI->CreateMenu();
-		for (TestCategory &c : sAllCategories)
-		{
-			mDebugUI->CreateTextButton(tests, c.mName, [=]() { 
-				UIElement *category = mDebugUI->CreateMenu();
-				for (uint j = 0; j < c.mNumTests; ++j)
-					mDebugUI->CreateTextButton(category, c.mTests[j].mName, [=]() { StartTest(c.mTests[j].mRTTI); });
-				mDebugUI->ShowMenu(category);
-			});
-		}
-		mDebugUI->ShowMenu(tests);
-	});
-	mTestSettingsButton = mDebugUI->CreateTextButton(main_menu, "Test Settings", [this](){
-		UIElement *test_settings = mDebugUI->CreateMenu();
-		mTest->CreateSettingsMenu(mDebugUI, test_settings);
-		mDebugUI->ShowMenu(test_settings);
-	});
-	mDebugUI->CreateTextButton(main_menu, "Restart Test (R)", [this]() { StartTest(mTestClass); });
-	mDebugUI->CreateTextButton(main_menu, "Run All Tests", [this]() { RunAllTests(); });
-	mNextTestButton = mDebugUI->CreateTextButton(main_menu, "Next Test (N)", [this]() { NextTest(); });
-	mNextTestButton->SetDisabled(true);
-	mDebugUI->CreateTextButton(main_menu, "Take Snapshot", [this]() { TakeSnapshot(); });
-	mDebugUI->CreateTextButton(main_menu, "Take And Reload Snapshot", [this]() { TakeAndReloadSnapshot(); });
-	mDebugUI->CreateTextButton(main_menu, "Physics Settings", [this]() { 
-		UIElement *phys_settings = mDebugUI->CreateMenu();
-		mDebugUI->CreateSlider(phys_settings, "Max Concurrent Jobs", float(mMaxConcurrentJobs), 1, float(thread::hardware_concurrency()), 1, [this](float inValue) { mMaxConcurrentJobs = (int)inValue; });
-		mDebugUI->CreateSlider(phys_settings, "Gravity (m/s^2)", -mPhysicsSystem->GetGravity().GetY(), 0.0f, 20.0f, 1.0f, [this](float inValue) { mPhysicsSystem->SetGravity(Vec3(0, -inValue, 0)); });
-		mDebugUI->CreateSlider(phys_settings, "Update Frequency (Hz)", mUpdateFrequency, 7.5f, 120.0f, 2.5f, [this](float inValue) { mUpdateFrequency = inValue; });
-		mDebugUI->CreateSlider(phys_settings, "Num Collision Steps", float(mCollisionSteps), 1.0f, 4.0f, 1.0f, [this](float inValue) { mCollisionSteps = int(inValue); });
-		mDebugUI->CreateSlider(phys_settings, "Num Integration Sub Steps", float(mIntegrationSubSteps), 1.0f, 4.0f, 1.0f, [this](float inValue) { mIntegrationSubSteps = int(inValue); });
-		mDebugUI->CreateSlider(phys_settings, "Num Velocity Steps", float(mPhysicsSettings.mNumVelocitySteps), 0, 30, 1, [this](float inValue) { mPhysicsSettings.mNumVelocitySteps = int(round(inValue)); mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateSlider(phys_settings, "Num Position Steps", float(mPhysicsSettings.mNumPositionSteps), 0, 30, 1, [this](float inValue) { mPhysicsSettings.mNumPositionSteps = int(round(inValue)); mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateSlider(phys_settings, "Baumgarte Stabilization Factor", mPhysicsSettings.mBaumgarte, 0.01f, 1.0f, 0.05f, [this](float inValue) { mPhysicsSettings.mBaumgarte = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateSlider(phys_settings, "Speculative Contact Distance (m)", mPhysicsSettings.mSpeculativeContactDistance, 0.0f, 0.1f, 0.005f, [this](float inValue) { mPhysicsSettings.mSpeculativeContactDistance = inValue; });
-		mDebugUI->CreateSlider(phys_settings, "Penetration Slop (m)", mPhysicsSettings.mPenetrationSlop, 0.0f, 0.1f, 0.005f, [this](float inValue) { mPhysicsSettings.mPenetrationSlop = inValue; });
-		mDebugUI->CreateSlider(phys_settings, "Min Velocity For Restitution (m/s)", mPhysicsSettings.mMinVelocityForRestitution, 0.0f, 10.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mMinVelocityForRestitution = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateSlider(phys_settings, "Time Before Sleep (s)", mPhysicsSettings.mTimeBeforeSleep, 0.1f, 1.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mTimeBeforeSleep = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateSlider(phys_settings, "Point Velocity Sleep Threshold (m/s)", mPhysicsSettings.mPointVelocitySleepThreshold, 0.01f, 1.0f, 0.01f, [this](float inValue) { mPhysicsSettings.mPointVelocitySleepThreshold = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Constraint Warm Starting", mPhysicsSettings.mConstraintWarmStart, [this](UICheckBox::EState inState) { mPhysicsSettings.mConstraintWarmStart = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Use Body Pair Contact Cache", mPhysicsSettings.mUseBodyPairContactCache, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseBodyPairContactCache = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Contact Manifold Reduction", mPhysicsSettings.mUseManifoldReduction, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseManifoldReduction = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Allow Sleeping", mPhysicsSettings.mAllowSleeping, [this](UICheckBox::EState inState) { mPhysicsSettings.mAllowSleeping = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Check Active Triangle Edges", mPhysicsSettings.mCheckActiveEdges, [this](UICheckBox::EState inState) { mPhysicsSettings.mCheckActiveEdges = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		mDebugUI->CreateCheckBox(phys_settings, "Record State For Playback", mRecordState, [this](UICheckBox::EState inState) { mRecordState = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(phys_settings, "Check Determinism", mCheckDeterminism, [this](UICheckBox::EState inState) { mCheckDeterminism = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(phys_settings, "Install Contact Listener", mInstallContactListener, [this](UICheckBox::EState inState) { mInstallContactListener = inState == UICheckBox::STATE_CHECKED; StartTest(mTestClass); });
-		mDebugUI->ShowMenu(phys_settings);
-	});
-#ifdef JPH_DEBUG_RENDERER
-	mDebugUI->CreateTextButton(main_menu, "Drawing Options", [this]() { 
-		UIElement *drawing_options = mDebugUI->CreateMenu();
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes (H)", mBodyDrawSettings.mDrawShape, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShape = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes Wireframe (Alt+W)", mBodyDrawSettings.mDrawShapeWireframe, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShapeWireframe = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateComboBox(drawing_options, "Draw Shape Color", { "Instance", "Shape Type", "Motion Type", "Sleep", "Island", "Material" }, (int)mBodyDrawSettings.mDrawShapeColor, [this](int inItem) { mBodyDrawSettings.mDrawShapeColor = (BodyManager::EShapeColor)inItem; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupport + Cvx Radius (Shift+H)", mBodyDrawSettings.mDrawGetSupportFunction, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawGetSupportFunction = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes Using GetTrianglesStart/Next (Alt+H)", mDrawGetTriangles, [this](UICheckBox::EState inState) { mDrawGetTriangles = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupport Direction", mBodyDrawSettings.mDrawSupportDirection, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawSupportDirection = inState == UICheckBox::STATE_CHECKED; mBodyDrawSettings.mDrawGetSupportFunction |= mBodyDrawSettings.mDrawSupportDirection; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupportingFace (Shift+F)", mBodyDrawSettings.mDrawGetSupportingFace, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawGetSupportingFace = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Constraints (C)", mDrawConstraints, [this](UICheckBox::EState inState) { mDrawConstraints = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Constraint Limits (L)", mDrawConstraintLimits, [this](UICheckBox::EState inState) { mDrawConstraintLimits = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Constraint Reference Frame", mDrawConstraintReferenceFrame, [this](UICheckBox::EState inState) { mDrawConstraintReferenceFrame = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Point (1)", ContactConstraintManager::sDrawContactPoint, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactPoint = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Supporting Faces (2)", ContactConstraintManager::sDrawSupportingFaces, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawSupportingFaces = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Point Reduction (3)", ContactConstraintManager::sDrawContactPointReduction, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactPointReduction = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Manifolds (M)", ContactConstraintManager::sDrawContactManifolds, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactManifolds = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Motion Quality Linear Cast", PhysicsSystem::sDrawMotionQualityLinearCast, [](UICheckBox::EState inState) { PhysicsSystem::sDrawMotionQualityLinearCast = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Bounding Boxes", mBodyDrawSettings.mDrawBoundingBox, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawBoundingBox = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Center of Mass Transforms", mBodyDrawSettings.mDrawCenterOfMassTransform, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawCenterOfMassTransform = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw World Transforms", mBodyDrawSettings.mDrawWorldTransform, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawWorldTransform = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Velocity", mBodyDrawSettings.mDrawVelocity, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawVelocity = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Sleep Stats", mBodyDrawSettings.mDrawSleepStats, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawSleepStats = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Mass and Inertia (I)", mBodyDrawSettings.mDrawMassAndInertia, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawMassAndInertia = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Joints", mPoseDrawSettings.mDrawJoints, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJoints = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Joint Orientations", mPoseDrawSettings.mDrawJointOrientations, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJointOrientations = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Joint Names", mPoseDrawSettings.mDrawJointNames, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJointNames = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Mesh Shape Triangle Groups", MeshShape::sDrawTriangleGroups, [](UICheckBox::EState inState) { MeshShape::sDrawTriangleGroups = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Mesh Shape Triangle Outlines", MeshShape::sDrawTriangleOutlines, [](UICheckBox::EState inState) { MeshShape::sDrawTriangleOutlines = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Height Field Shape Triangle Outlines", HeightFieldShape::sDrawTriangleOutlines, [](UICheckBox::EState inState) { HeightFieldShape::sDrawTriangleOutlines = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Submerged Volumes", Shape::sDrawSubmergedVolumes, [](UICheckBox::EState inState) { Shape::sDrawSubmergedVolumes = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Constraints", CharacterVirtual::sDrawConstraints, [](UICheckBox::EState inState) { CharacterVirtual::sDrawConstraints = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Walk Stairs", CharacterVirtual::sDrawWalkStairs, [](UICheckBox::EState inState) { CharacterVirtual::sDrawWalkStairs = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->ShowMenu(drawing_options);
-	});
-#endif // JPH_DEBUG_RENDERER
-	mDebugUI->CreateTextButton(main_menu, "Mouse Probe", [this]() { 
-		UIElement *probe_options = mDebugUI->CreateMenu();
-		mDebugUI->CreateComboBox(probe_options, "Mode", { "Pick", "Ray", "RayCollector", "CollidePoint", "CollideShape", "CastShape", "TransfShape", "GetTriangles", "BP Ray", "BP Box", "BP Sphere", "BP Point", "BP OBox", "BP Cast Box" }, (int)mProbeMode, [this](int inItem) { mProbeMode = (EProbeMode)inItem; });
-		mDebugUI->CreateComboBox(probe_options, "Shape", { "Sphere", "Box", "ConvexHull", "Capsule", "TaperedCapsule", "Cylinder", "Triangle", "StaticCompound", "StaticCompound2", "MutableCompound" }, (int)mProbeShape, [=](int inItem) { mProbeShape = (EProbeShape)inItem; });
-		mDebugUI->CreateCheckBox(probe_options, "Scale Shape", mScaleShape, [this](UICheckBox::EState inState) { mScaleShape = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateSlider(probe_options, "Scale X", mShapeScale.GetX(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetX(inValue); });
-		mDebugUI->CreateSlider(probe_options, "Scale Y", mShapeScale.GetY(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetY(inValue); });
-		mDebugUI->CreateSlider(probe_options, "Scale Z", mShapeScale.GetZ(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetZ(inValue); });
-		mDebugUI->CreateComboBox(probe_options, "Back Face Cull", { "On", "Off" }, (int)mBackFaceMode, [=](int inItem) { mBackFaceMode = (EBackFaceMode)inItem; });
-		mDebugUI->CreateComboBox(probe_options, "Active Edge Mode", { "Only Active", "All" }, (int)mActiveEdgeMode, [=](int inItem) { mActiveEdgeMode = (EActiveEdgeMode)inItem; });
-		mDebugUI->CreateComboBox(probe_options, "Collect Faces Mode", { "Collect Faces", "No Faces" }, (int)mCollectFacesMode, [=](int inItem) { mCollectFacesMode = (ECollectFacesMode)inItem; });
-		mDebugUI->CreateSlider(probe_options, "Max Separation Distance", mMaxSeparationDistance, 0.0f, 5.0f, 0.1f, [this](float inValue) { mMaxSeparationDistance = inValue; });
-		mDebugUI->CreateCheckBox(probe_options, "Treat Convex As Solid", mTreatConvexAsSolid, [this](UICheckBox::EState inState) { mTreatConvexAsSolid = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(probe_options, "Return Deepest Point", mReturnDeepestPoint, [this](UICheckBox::EState inState) { mReturnDeepestPoint = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateCheckBox(probe_options, "Shrunken Shape + Convex Radius", mUseShrunkenShapeAndConvexRadius, [this](UICheckBox::EState inState) { mUseShrunkenShapeAndConvexRadius = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateSlider(probe_options, "Max Hits", float(mMaxHits), 0, 10, 1, [this](float inValue) { mMaxHits = (int)inValue; });
-		mDebugUI->ShowMenu(probe_options);
-	});
-	mDebugUI->CreateTextButton(main_menu, "Shoot Object", [this]() { 
-		UIElement *shoot_options = mDebugUI->CreateMenu();
-		mDebugUI->CreateTextButton(shoot_options, "Shoot Object (B)", [=]() { ShootObject(); });
-		mDebugUI->CreateSlider(shoot_options, "Initial Velocity", mShootObjectVelocity, 0.0f, 500.0f, 10.0f, [this](float inValue) { mShootObjectVelocity = inValue; });
-		mDebugUI->CreateComboBox(shoot_options, "Shape", { "Sphere", "ConvexHull", "Thin Bar" }, (int)mShootObjectShape, [=](int inItem) { mShootObjectShape = (EShootObjectShape)inItem; });
-		mDebugUI->CreateComboBox(shoot_options, "Motion Quality", { "Discrete", "LinearCast" }, (int)mShootObjectMotionQuality, [=](int inItem) { mShootObjectMotionQuality = (EMotionQuality)inItem; });
-		mDebugUI->CreateSlider(shoot_options, "Friction", mShootObjectFriction, 0.0f, 1.0f, 0.05f, [this](float inValue) { mShootObjectFriction = inValue; });
-		mDebugUI->CreateSlider(shoot_options, "Restitution", mShootObjectRestitution, 0.0f, 1.0f, 0.05f, [this](float inValue) { mShootObjectRestitution = inValue; });
-		mDebugUI->CreateCheckBox(shoot_options, "Scale Shape", mShootObjectScaleShape, [this](UICheckBox::EState inState) { mShootObjectScaleShape = inState == UICheckBox::STATE_CHECKED; });
-		mDebugUI->CreateSlider(shoot_options, "Scale X", mShootObjectShapeScale.GetX(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetX(inValue); });
-		mDebugUI->CreateSlider(shoot_options, "Scale Y", mShootObjectShapeScale.GetY(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetY(inValue); });
-		mDebugUI->CreateSlider(shoot_options, "Scale Z", mShootObjectShapeScale.GetZ(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetZ(inValue); });
-		mDebugUI->ShowMenu(shoot_options);
-	});
-	mDebugUI->CreateTextButton(main_menu, "Help", [this](){
-		UIElement *help = mDebugUI->CreateMenu();
-		mDebugUI->CreateStaticText(help,
-			"ESC: Back to previous menu.\n"
-			"WASD + Mouse: Fly around. Hold Shift to speed up, Ctrl to slow down.\n"
-			"Space: Hold to pick up and drag a physics object under the crosshair.\n"
-			"P: Pause / unpause simulation.\n"
-			"O: Single step the simulation.\n"
-			",: Step back (only when Physics Settings / Record State for Playback is on).\n"
-			".: Step forward (only when Physics Settings / Record State for Playback is on).\n"
-			"Shift + ,: Play reverse (only when Physics Settings / Record State for Playback is on).\n"
-			"Shift + .: Replay forward (only when Physics Settings / Record State for Playback is on).\n"
-			"T: Dump frame timing information to profile_*.html (when JPH_PROFILE_ENABLED defined)."
-		);
-		mDebugUI->ShowMenu(help);
-	});
-	mDebugUI->ShowMenu(main_menu);
+	{
+		// Disable allocation checking
+		DisableCustomMemoryHook dcmh;
+
+		// Create UI
+		UIElement *main_menu = mDebugUI->CreateMenu();
+		mDebugUI->CreateTextButton(main_menu, "Select Test", [this]() { 
+			UIElement *tests = mDebugUI->CreateMenu();
+			for (TestCategory &c : sAllCategories)
+			{
+				mDebugUI->CreateTextButton(tests, c.mName, [=]() { 
+					UIElement *category = mDebugUI->CreateMenu();
+					for (uint j = 0; j < c.mNumTests; ++j)
+						mDebugUI->CreateTextButton(category, c.mTests[j].mName, [=]() { StartTest(c.mTests[j].mRTTI); });
+					mDebugUI->ShowMenu(category);
+				});
+			}
+			mDebugUI->ShowMenu(tests);
+		});
+		mTestSettingsButton = mDebugUI->CreateTextButton(main_menu, "Test Settings", [this](){
+			UIElement *test_settings = mDebugUI->CreateMenu();
+			mTest->CreateSettingsMenu(mDebugUI, test_settings);
+			mDebugUI->ShowMenu(test_settings);
+		});
+		mDebugUI->CreateTextButton(main_menu, "Restart Test (R)", [this]() { StartTest(mTestClass); });
+		mDebugUI->CreateTextButton(main_menu, "Run All Tests", [this]() { RunAllTests(); });
+		mNextTestButton = mDebugUI->CreateTextButton(main_menu, "Next Test (N)", [this]() { NextTest(); });
+		mNextTestButton->SetDisabled(true);
+		mDebugUI->CreateTextButton(main_menu, "Take Snapshot", [this]() { TakeSnapshot(); });
+		mDebugUI->CreateTextButton(main_menu, "Take And Reload Snapshot", [this]() { TakeAndReloadSnapshot(); });
+		mDebugUI->CreateTextButton(main_menu, "Physics Settings", [this]() { 
+			UIElement *phys_settings = mDebugUI->CreateMenu();
+			mDebugUI->CreateSlider(phys_settings, "Max Concurrent Jobs", float(mMaxConcurrentJobs), 1, float(thread::hardware_concurrency()), 1, [this](float inValue) { mMaxConcurrentJobs = (int)inValue; });
+			mDebugUI->CreateSlider(phys_settings, "Gravity (m/s^2)", -mPhysicsSystem->GetGravity().GetY(), 0.0f, 20.0f, 1.0f, [this](float inValue) { mPhysicsSystem->SetGravity(Vec3(0, -inValue, 0)); });
+			mDebugUI->CreateSlider(phys_settings, "Update Frequency (Hz)", mUpdateFrequency, 7.5f, 300.0f, 2.5f, [this](float inValue) { mUpdateFrequency = inValue; });
+			mDebugUI->CreateSlider(phys_settings, "Num Collision Steps", float(mCollisionSteps), 1.0f, 4.0f, 1.0f, [this](float inValue) { mCollisionSteps = int(inValue); });
+			mDebugUI->CreateSlider(phys_settings, "Num Integration Sub Steps", float(mIntegrationSubSteps), 1.0f, 4.0f, 1.0f, [this](float inValue) { mIntegrationSubSteps = int(inValue); });
+			mDebugUI->CreateSlider(phys_settings, "Num Velocity Steps", float(mPhysicsSettings.mNumVelocitySteps), 0, 30, 1, [this](float inValue) { mPhysicsSettings.mNumVelocitySteps = int(round(inValue)); mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateSlider(phys_settings, "Num Position Steps", float(mPhysicsSettings.mNumPositionSteps), 0, 30, 1, [this](float inValue) { mPhysicsSettings.mNumPositionSteps = int(round(inValue)); mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateSlider(phys_settings, "Baumgarte Stabilization Factor", mPhysicsSettings.mBaumgarte, 0.01f, 1.0f, 0.05f, [this](float inValue) { mPhysicsSettings.mBaumgarte = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateSlider(phys_settings, "Speculative Contact Distance (m)", mPhysicsSettings.mSpeculativeContactDistance, 0.0f, 0.1f, 0.005f, [this](float inValue) { mPhysicsSettings.mSpeculativeContactDistance = inValue; });
+			mDebugUI->CreateSlider(phys_settings, "Penetration Slop (m)", mPhysicsSettings.mPenetrationSlop, 0.0f, 0.1f, 0.005f, [this](float inValue) { mPhysicsSettings.mPenetrationSlop = inValue; });
+			mDebugUI->CreateSlider(phys_settings, "Min Velocity For Restitution (m/s)", mPhysicsSettings.mMinVelocityForRestitution, 0.0f, 10.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mMinVelocityForRestitution = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateSlider(phys_settings, "Time Before Sleep (s)", mPhysicsSettings.mTimeBeforeSleep, 0.1f, 1.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mTimeBeforeSleep = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateSlider(phys_settings, "Point Velocity Sleep Threshold (m/s)", mPhysicsSettings.mPointVelocitySleepThreshold, 0.01f, 1.0f, 0.01f, [this](float inValue) { mPhysicsSettings.mPointVelocitySleepThreshold = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+		#if defined(_DEBUG) && !defined(JPH_DISABLE_CUSTOM_ALLOCATOR) && !defined(JPH_COMPILER_MINGW)
+			mDebugUI->CreateCheckBox(phys_settings, "Enable Checking Memory Hook", IsCustomMemoryHookEnabled(), [](UICheckBox::EState inState) { EnableCustomMemoryHook(inState == UICheckBox::STATE_CHECKED); });
+		#endif
+			mDebugUI->CreateCheckBox(phys_settings, "Constraint Warm Starting", mPhysicsSettings.mConstraintWarmStart, [this](UICheckBox::EState inState) { mPhysicsSettings.mConstraintWarmStart = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateCheckBox(phys_settings, "Use Body Pair Contact Cache", mPhysicsSettings.mUseBodyPairContactCache, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseBodyPairContactCache = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateCheckBox(phys_settings, "Contact Manifold Reduction", mPhysicsSettings.mUseManifoldReduction, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseManifoldReduction = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateCheckBox(phys_settings, "Allow Sleeping", mPhysicsSettings.mAllowSleeping, [this](UICheckBox::EState inState) { mPhysicsSettings.mAllowSleeping = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateCheckBox(phys_settings, "Check Active Triangle Edges", mPhysicsSettings.mCheckActiveEdges, [this](UICheckBox::EState inState) { mPhysicsSettings.mCheckActiveEdges = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
+			mDebugUI->CreateCheckBox(phys_settings, "Record State For Playback", mRecordState, [this](UICheckBox::EState inState) { mRecordState = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(phys_settings, "Check Determinism", mCheckDeterminism, [this](UICheckBox::EState inState) { mCheckDeterminism = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(phys_settings, "Install Contact Listener", mInstallContactListener, [this](UICheckBox::EState inState) { mInstallContactListener = inState == UICheckBox::STATE_CHECKED; StartTest(mTestClass); });
+			mDebugUI->ShowMenu(phys_settings);
+		});
+	#ifdef JPH_DEBUG_RENDERER
+		mDebugUI->CreateTextButton(main_menu, "Drawing Options", [this]() { 
+			UIElement *drawing_options = mDebugUI->CreateMenu();
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes (H)", mBodyDrawSettings.mDrawShape, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShape = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes Wireframe (Alt+W)", mBodyDrawSettings.mDrawShapeWireframe, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShapeWireframe = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateComboBox(drawing_options, "Draw Shape Color", { "Instance", "Shape Type", "Motion Type", "Sleep", "Island", "Material" }, (int)mBodyDrawSettings.mDrawShapeColor, [this](int inItem) { mBodyDrawSettings.mDrawShapeColor = (BodyManager::EShapeColor)inItem; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupport + Cvx Radius (Shift+H)", mBodyDrawSettings.mDrawGetSupportFunction, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawGetSupportFunction = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes Using GetTrianglesStart/Next (Alt+H)", mDrawGetTriangles, [this](UICheckBox::EState inState) { mDrawGetTriangles = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupport Direction", mBodyDrawSettings.mDrawSupportDirection, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawSupportDirection = inState == UICheckBox::STATE_CHECKED; mBodyDrawSettings.mDrawGetSupportFunction |= mBodyDrawSettings.mDrawSupportDirection; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw GetSupportingFace (Shift+F)", mBodyDrawSettings.mDrawGetSupportingFace, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawGetSupportingFace = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Constraints (C)", mDrawConstraints, [this](UICheckBox::EState inState) { mDrawConstraints = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Constraint Limits (L)", mDrawConstraintLimits, [this](UICheckBox::EState inState) { mDrawConstraintLimits = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Constraint Reference Frame", mDrawConstraintReferenceFrame, [this](UICheckBox::EState inState) { mDrawConstraintReferenceFrame = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Point (1)", ContactConstraintManager::sDrawContactPoint, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactPoint = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Supporting Faces (2)", ContactConstraintManager::sDrawSupportingFaces, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawSupportingFaces = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Point Reduction (3)", ContactConstraintManager::sDrawContactPointReduction, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactPointReduction = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Contact Manifolds (M)", ContactConstraintManager::sDrawContactManifolds, [](UICheckBox::EState inState) { ContactConstraintManager::sDrawContactManifolds = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Motion Quality Linear Cast", PhysicsSystem::sDrawMotionQualityLinearCast, [](UICheckBox::EState inState) { PhysicsSystem::sDrawMotionQualityLinearCast = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Bounding Boxes", mBodyDrawSettings.mDrawBoundingBox, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawBoundingBox = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Center of Mass Transforms", mBodyDrawSettings.mDrawCenterOfMassTransform, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawCenterOfMassTransform = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw World Transforms", mBodyDrawSettings.mDrawWorldTransform, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawWorldTransform = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Velocity", mBodyDrawSettings.mDrawVelocity, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawVelocity = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Sleep Stats", mBodyDrawSettings.mDrawSleepStats, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawSleepStats = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Mass and Inertia (I)", mBodyDrawSettings.mDrawMassAndInertia, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawMassAndInertia = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Joints", mPoseDrawSettings.mDrawJoints, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJoints = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Joint Orientations", mPoseDrawSettings.mDrawJointOrientations, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJointOrientations = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Joint Names", mPoseDrawSettings.mDrawJointNames, [this](UICheckBox::EState inState) { mPoseDrawSettings.mDrawJointNames = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Convex Hull Shape Face Outlines", ConvexHullShape::sDrawFaceOutlines, [](UICheckBox::EState inState) { ConvexHullShape::sDrawFaceOutlines = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Mesh Shape Triangle Groups", MeshShape::sDrawTriangleGroups, [](UICheckBox::EState inState) { MeshShape::sDrawTriangleGroups = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Mesh Shape Triangle Outlines", MeshShape::sDrawTriangleOutlines, [](UICheckBox::EState inState) { MeshShape::sDrawTriangleOutlines = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Height Field Shape Triangle Outlines", HeightFieldShape::sDrawTriangleOutlines, [](UICheckBox::EState inState) { HeightFieldShape::sDrawTriangleOutlines = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Submerged Volumes", Shape::sDrawSubmergedVolumes, [](UICheckBox::EState inState) { Shape::sDrawSubmergedVolumes = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Constraints", CharacterVirtual::sDrawConstraints, [](UICheckBox::EState inState) { CharacterVirtual::sDrawConstraints = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Walk Stairs", CharacterVirtual::sDrawWalkStairs, [](UICheckBox::EState inState) { CharacterVirtual::sDrawWalkStairs = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Stick To Floor", CharacterVirtual::sDrawStickToFloor, [](UICheckBox::EState inState) { CharacterVirtual::sDrawStickToFloor = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->ShowMenu(drawing_options);
+		});
+	#endif // JPH_DEBUG_RENDERER
+		mDebugUI->CreateTextButton(main_menu, "Mouse Probe", [this]() { 
+			UIElement *probe_options = mDebugUI->CreateMenu();
+			mDebugUI->CreateComboBox(probe_options, "Mode", { "Pick", "Ray", "RayCollector", "CollidePoint", "CollideShape", "CastShape", "TransfShape", "GetTriangles", "BP Ray", "BP Box", "BP Sphere", "BP Point", "BP OBox", "BP Cast Box" }, (int)mProbeMode, [this](int inItem) { mProbeMode = (EProbeMode)inItem; });
+			mDebugUI->CreateComboBox(probe_options, "Shape", { "Sphere", "Box", "ConvexHull", "Capsule", "TaperedCapsule", "Cylinder", "Triangle", "StaticCompound", "StaticCompound2", "MutableCompound", "Mesh" }, (int)mProbeShape, [=](int inItem) { mProbeShape = (EProbeShape)inItem; });
+			mDebugUI->CreateCheckBox(probe_options, "Scale Shape", mScaleShape, [this](UICheckBox::EState inState) { mScaleShape = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateSlider(probe_options, "Scale X", mShapeScale.GetX(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetX(inValue); });
+			mDebugUI->CreateSlider(probe_options, "Scale Y", mShapeScale.GetY(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetY(inValue); });
+			mDebugUI->CreateSlider(probe_options, "Scale Z", mShapeScale.GetZ(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShapeScale.SetZ(inValue); });
+			mDebugUI->CreateComboBox(probe_options, "Back Face Cull", { "On", "Off" }, (int)mBackFaceMode, [=](int inItem) { mBackFaceMode = (EBackFaceMode)inItem; });
+			mDebugUI->CreateComboBox(probe_options, "Active Edge Mode", { "Only Active", "All" }, (int)mActiveEdgeMode, [=](int inItem) { mActiveEdgeMode = (EActiveEdgeMode)inItem; });
+			mDebugUI->CreateComboBox(probe_options, "Collect Faces Mode", { "Collect Faces", "No Faces" }, (int)mCollectFacesMode, [=](int inItem) { mCollectFacesMode = (ECollectFacesMode)inItem; });
+			mDebugUI->CreateSlider(probe_options, "Max Separation Distance", mMaxSeparationDistance, 0.0f, 5.0f, 0.1f, [this](float inValue) { mMaxSeparationDistance = inValue; });
+			mDebugUI->CreateCheckBox(probe_options, "Treat Convex As Solid", mTreatConvexAsSolid, [this](UICheckBox::EState inState) { mTreatConvexAsSolid = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(probe_options, "Return Deepest Point", mReturnDeepestPoint, [this](UICheckBox::EState inState) { mReturnDeepestPoint = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(probe_options, "Shrunken Shape + Convex Radius", mUseShrunkenShapeAndConvexRadius, [this](UICheckBox::EState inState) { mUseShrunkenShapeAndConvexRadius = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateCheckBox(probe_options, "Draw Supporting Face", mDrawSupportingFace, [this](UICheckBox::EState inState) { mDrawSupportingFace = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateSlider(probe_options, "Max Hits", float(mMaxHits), 0, 10, 1, [this](float inValue) { mMaxHits = (int)inValue; });
+			mDebugUI->ShowMenu(probe_options);
+		});
+		mDebugUI->CreateTextButton(main_menu, "Shoot Object", [this]() { 
+			UIElement *shoot_options = mDebugUI->CreateMenu();
+			mDebugUI->CreateTextButton(shoot_options, "Shoot Object (B)", [=]() { ShootObject(); });
+			mDebugUI->CreateSlider(shoot_options, "Initial Velocity", mShootObjectVelocity, 0.0f, 500.0f, 10.0f, [this](float inValue) { mShootObjectVelocity = inValue; });
+			mDebugUI->CreateComboBox(shoot_options, "Shape", { "Sphere", "ConvexHull", "Thin Bar" }, (int)mShootObjectShape, [=](int inItem) { mShootObjectShape = (EShootObjectShape)inItem; });
+			mDebugUI->CreateComboBox(shoot_options, "Motion Quality", { "Discrete", "LinearCast" }, (int)mShootObjectMotionQuality, [=](int inItem) { mShootObjectMotionQuality = (EMotionQuality)inItem; });
+			mDebugUI->CreateSlider(shoot_options, "Friction", mShootObjectFriction, 0.0f, 1.0f, 0.05f, [this](float inValue) { mShootObjectFriction = inValue; });
+			mDebugUI->CreateSlider(shoot_options, "Restitution", mShootObjectRestitution, 0.0f, 1.0f, 0.05f, [this](float inValue) { mShootObjectRestitution = inValue; });
+			mDebugUI->CreateCheckBox(shoot_options, "Scale Shape", mShootObjectScaleShape, [this](UICheckBox::EState inState) { mShootObjectScaleShape = inState == UICheckBox::STATE_CHECKED; });
+			mDebugUI->CreateSlider(shoot_options, "Scale X", mShootObjectShapeScale.GetX(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetX(inValue); });
+			mDebugUI->CreateSlider(shoot_options, "Scale Y", mShootObjectShapeScale.GetY(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetY(inValue); });
+			mDebugUI->CreateSlider(shoot_options, "Scale Z", mShootObjectShapeScale.GetZ(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetZ(inValue); });
+			mDebugUI->ShowMenu(shoot_options);
+		});
+		mDebugUI->CreateTextButton(main_menu, "Help", [this](){
+			UIElement *help = mDebugUI->CreateMenu();
+			mDebugUI->CreateStaticText(help,
+				"ESC: Back to previous menu.\n"
+				"WASD + Mouse: Fly around. Hold Shift to speed up, Ctrl to slow down.\n"
+				"Space: Hold to pick up and drag a physics object under the crosshair.\n"
+				"P: Pause / unpause simulation.\n"
+				"O: Single step the simulation.\n"
+				",: Step back (only when Physics Settings / Record State for Playback is on).\n"
+				".: Step forward (only when Physics Settings / Record State for Playback is on).\n"
+				"Shift + ,: Play reverse (only when Physics Settings / Record State for Playback is on).\n"
+				"Shift + .: Replay forward (only when Physics Settings / Record State for Playback is on).\n"
+				"T: Dump frame timing information to profile_*.html (when JPH_PROFILE_ENABLED defined)."
+			);
+			mDebugUI->ShowMenu(help);
+		});
+		mDebugUI->ShowMenu(main_menu);
+	}
 
 	// Get test name from commandline
-	string cmd_line = ToLower(GetCommandLineA());
-	vector<string> args;
+	String cmd_line = ToLower(GetCommandLineA());
+	Array<String> args;
 	StringToVector(cmd_line, args, " ");
 	if (args.size() == 2)
 	{
-		string cmd = args[1];
+		String cmd = args[1];
 		if (cmd == "alltests")
 		{
 			// Run all tests
@@ -484,7 +512,7 @@ SamplesApp::SamplesApp()
 				for (uint i = 0; i < c.mNumTests; ++i)
 				{
 					TestNameAndRTTI &t = c.mTests[i];
-					string test_name = ToLower(t.mRTTI->GetName());
+					String test_name = ToLower(t.mRTTI->GetName());
 					if (test_name == cmd)
 					{
 						test = t.mRTTI;
@@ -495,6 +523,11 @@ SamplesApp::SamplesApp()
 			// Construct test
 			StartTest(test);
 		}
+	}
+	else
+	{
+		// Otherwise start default test
+		StartTest(JPH_RTTI(LoadRigTest));
 	}
 }
 
@@ -681,7 +714,7 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 	case EProbeShape::ConvexHull:
 		{
 			// Create tetrahedron
-			vector<Vec3> tetrahedron;
+			Array<Vec3> tetrahedron;
 			tetrahedron.push_back(Vec3::sZero());
 			tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
 			tetrahedron.push_back(Vec3(0.4f, 0, 0));
@@ -712,7 +745,7 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 
 	case EProbeShape::StaticCompound:
 		{
-			vector<Vec3> tetrahedron;
+			Array<Vec3> tetrahedron;
 			tetrahedron.push_back(Vec3::sZero());
 			tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
 			tetrahedron.push_back(Vec3(0, 0.2f, 0));
@@ -741,7 +774,7 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 
 	case EProbeShape::MutableCompound:
 		{
-			vector<Vec3> tetrahedron;
+			Array<Vec3> tetrahedron;
 			tetrahedron.push_back(Vec3::sZero());
 			tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
 			tetrahedron.push_back(Vec3(0, 0.2f, 0));
@@ -752,6 +785,10 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 			compound_settings.AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), convex);
 			shape = compound_settings.Create().Get();
 		}
+		break;
+
+	case EProbeShape::Mesh:
+		shape = ShapeCreator::CreateTorusMesh(2.0f, 0.25f);
 		break;
 	}
 
@@ -784,7 +821,7 @@ RefConst<Shape> SamplesApp::CreateShootObjectShape()
 
 	case EShootObjectShape::ConvexHull:
 		{
-			vector<Vec3> vertices = {
+			Array<Vec3> vertices = {
 				Vec3(-0.044661f, 0.001230f, 0.003877f),
 				Vec3(-0.024743f, -0.042562f, 0.003877f),
 				Vec3(-0.012336f, -0.021073f, 0.048484f),
@@ -920,6 +957,14 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, Vec3 &outPos
 					Vec3 perp2 = normal.Cross(perp1);
 					mDebugRenderer->DrawLine(outPosition - 0.1f * perp1, outPosition + 0.1f * perp1, color);
 					mDebugRenderer->DrawLine(outPosition - 0.1f * perp2, outPosition + 0.1f * perp2, color);
+
+					// Get and draw the result of GetSupportingFace
+					if (mDrawSupportingFace)
+					{
+						Shape::SupportingFace face;
+						hit_body.GetTransformedShape().GetSupportingFace(hit.mSubShapeID2, -normal, face);
+						mDebugRenderer->DrawWirePolygon(face, Color::sWhite, 0.01f);
+					}
 				}
 			}
 			else
@@ -940,7 +985,7 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, Vec3 &outPos
 			settings.mTreatConvexAsSolid = mTreatConvexAsSolid;
 
 			// Cast ray
-			vector<RayCastResult> hits;
+			Array<RayCastResult> hits;
 			if (mMaxHits == 0)
 			{
 				AnyHitCollisionCollector<CastRayCollector> collector;
@@ -1004,6 +1049,14 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, Vec3 &outPos
 						Vec3 perp2 = normal.Cross(perp1);
 						mDebugRenderer->DrawLine(position - 0.1f * perp1, position + 0.1f * perp1, color);
 						mDebugRenderer->DrawLine(position - 0.1f * perp2, position + 0.1f * perp2, color);
+
+						// Get and draw the result of GetSupportingFace
+						if (mDrawSupportingFace)
+						{
+							Shape::SupportingFace face;
+							hit_body.GetTransformedShape().GetSupportingFace(hit.mSubShapeID2, -normal, face);
+							mDebugRenderer->DrawWirePolygon(face, Color::sWhite, 0.01f);
+						}
 					}
 				}
 
@@ -1067,7 +1120,7 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, Vec3 &outPos
 			settings.mCollectFacesMode = mCollectFacesMode;
 			settings.mMaxSeparationDistance = mMaxSeparationDistance;
 
-			vector<CollideShapeResult> hits;
+			Array<CollideShapeResult> hits;
 			if (mMaxHits == 0)
 			{
 				AnyHitCollisionCollector<CollideShapeCollector> collector;
@@ -1156,7 +1209,7 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, Vec3 &outPos
 			settings.mCollectFacesMode = mCollectFacesMode;
 
 			// Cast shape
-			vector<ShapeCastResult> hits;
+			Array<ShapeCastResult> hits;
 			if (mMaxHits == 0)
 			{
 				AnyHitCollisionCollector<CastShapeCollector> collector;
@@ -1964,7 +2017,7 @@ void SamplesApp::DrawPhysics()
 					if (geometry == nullptr)
 					{
 						// Geometry not cached
-						vector<DebugRenderer::Triangle> triangles;
+						Array<DebugRenderer::Triangle> triangles;
 
 						// Start iterating all triangles of the shape
 						Shape::GetTrianglesContext context;
@@ -2052,7 +2105,7 @@ void SamplesApp::DrawPhysics()
 	}
 
 	// Replace the map with the newly created map so that shapes that we don't draw / were removed are released
-	mShapeToGeometry = move(shape_to_geometry);
+	mShapeToGeometry = std::move(shape_to_geometry);
 }
 
 void SamplesApp::StepPhysics(JobSystem *inJobSystem)
@@ -2178,4 +2231,4 @@ float SamplesApp::GetWorldScale() const
 	return mTest != nullptr? mTest->GetWorldScale() : 1.0f; 
 }
 
-ENTRY_POINT(SamplesApp)
+ENTRY_POINT(SamplesApp, RegisterCustomMemoryHook)

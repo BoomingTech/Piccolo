@@ -8,9 +8,11 @@
 JPH_NAMESPACE_BEGIN
 
 /// Holds a 4x4 matrix of floats, but supports also operations on the 3x3 upper left part of the matrix.
-class [[nodiscard]] Mat44
+class [[nodiscard]] alignas(JPH_VECTOR_ALIGNMENT) Mat44
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	// Underlying column type
 	using Type = Vec4::Type;
 
@@ -72,6 +74,12 @@ public:
 
 	/// Returns matrix MR so that \f$MR(q) \: p = p \: q\f$ (where p and q are quaternions)
 	static JPH_INLINE Mat44		sQuatRightMultiply(QuatArg inQ);
+
+	/// Returns a look at matrix that transforms from world space to view space
+	/// @param inPos Position of the camera
+	/// @param inTarget Target of the camera
+	/// @param inUp Up vector
+	static JPH_INLINE Mat44		sLookAt(Vec3Arg inPos, Vec3Arg inTarget, Vec3Arg inUp);
 
 	/// Get float component by element index
 	JPH_INLINE float			operator () (uint inRow, uint inColumn) const			{ JPH_ASSERT(inRow < 4); JPH_ASSERT(inColumn < 4); return mCol[inColumn].mF32[inRow]; }

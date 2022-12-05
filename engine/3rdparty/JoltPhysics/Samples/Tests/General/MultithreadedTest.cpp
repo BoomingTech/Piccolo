@@ -8,11 +8,12 @@
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Layers.h>
 #include <Jolt/Skeleton/Skeleton.h>
 #include <Jolt/Skeleton/SkeletalAnimation.h>
 #include <Jolt/Skeleton/SkeletonPose.h>
 #include <Jolt/Physics/Ragdoll/Ragdoll.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
+#include <Layers.h>
 #include <Utils/RagdollLoader.h>
 #include <Utils/Log.h>
 #include <Renderer/DebugRendererImp.h>
@@ -72,7 +73,7 @@ void MultithreadedTest::BoxSpawner()
 
 	default_random_engine random;
 
-	vector<BodyID> bodies;
+	Array<BodyID> bodies;
 
 	while (!mIsQuitting)
 	{
@@ -154,7 +155,7 @@ void MultithreadedTest::RagdollSpawner()
 
 	CollisionGroup::GroupID group_id = 1;
 
-	vector<Ref<Ragdoll>> ragdolls;
+	Array<Ref<Ragdoll>> ragdolls;
 
 	while (!mIsQuitting)
 	{
@@ -218,7 +219,7 @@ void MultithreadedTest::CasterMain()
 
 	default_random_engine random;
 
-	vector<BodyID> bodies;
+	Array<BodyID> bodies;
 
 	while (!mIsQuitting)
 	{

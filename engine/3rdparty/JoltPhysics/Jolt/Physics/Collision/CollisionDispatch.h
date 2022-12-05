@@ -28,11 +28,14 @@ public:
 	/// @param inSubShapeIDCreator2 Class that tracks the current sub shape ID for shape 2
 	/// @param inCollideShapeSettings Options for the CollideShape test
 	/// @param ioCollector The collector that receives the results.
-	static inline void		sCollideShapeVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+	/// @param inShapeFilter allows selectively disabling collisions between pairs of (sub) shapes.
+	static inline void		sCollideShapeVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { })
 	{
 		JPH_IF_TRACK_NARROWPHASE_STATS(TrackNarrowPhaseStat track(NarrowPhaseStat::sCollideShape[(int)inShape1->GetSubType()][(int)inShape2->GetSubType()]);)
 
-		sCollideShape[(int)inShape1->GetSubType()][(int)inShape2->GetSubType()](inShape1, inShape2, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1, inSubShapeIDCreator2, inCollideShapeSettings, ioCollector);
+		// Only test shape if it passes the shape filter
+		if (inShapeFilter.ShouldCollide(inSubShapeIDCreator1.GetID(), inSubShapeIDCreator2.GetID()))
+			sCollideShape[(int)inShape1->GetSubType()][(int)inShape2->GetSubType()](inShape1, inShape2, inScale1, inScale2, inCenterOfMassTransform1, inCenterOfMassTransform2, inSubShapeIDCreator1, inSubShapeIDCreator2, inCollideShapeSettings, ioCollector, inShapeFilter);
 	}
 
 	/// Cast a shape againt this shape, passes any hits found to ioCollector.
@@ -65,16 +68,25 @@ public:
 	}
 
 	/// Function that collides 2 shapes (see sCollideShapeVsShape) 
-	using CollideShape = void (*)(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector);
+	using CollideShape = void (*)(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter);
 
 	/// Function that casts a shape vs another shape (see sCastShapeVsShapeLocalSpace)
 	using CastShape = void (*)(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
+
+	/// Initialize all collision functions with a function that asserts and returns no collision
+	static void				sInit();
 
 	/// Register a collide shape function in the collision table
 	static void				sRegisterCollideShape(EShapeSubType inType1, EShapeSubType inType2, CollideShape inFunction)	{ sCollideShape[(int)inType1][(int)inType2] = inFunction; }
 
 	/// Register a cast shape function in the collision table
 	static void				sRegisterCastShape(EShapeSubType inType1, EShapeSubType inType2, CastShape inFunction)			{ sCastShape[(int)inType1][(int)inType2] = inFunction; }
+
+	/// An implementation of CollideShape that swaps inShape1 and inShape2 and swaps the result back, can be registered if the collision function only exists the other way around
+	static void				sReversedCollideShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter);
+
+	/// An implementation of CastShape that swaps inShape1 and inShape2 and swaps the result back, can be registered if the collision function only exists the other way around
+	static void				sReversedCastShape(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
 
 private:
 	static CollideShape		sCollideShape[NumSubShapeTypes][NumSubShapeTypes];

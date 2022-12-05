@@ -188,6 +188,67 @@ TEST_SUITE("PhysicsTests")
 		bi.DestroyBody(body0_id);
 	}
 
+	TEST_CASE("TestPhysicsBodyIDOverride")
+	{
+		PhysicsTestContext c(1.0f / 60.0f, 1, 1);
+		BodyInterface &bi = c.GetBodyInterface();
+
+		// Dummy creation settings
+		BodyCreationSettings bc(new BoxShape(Vec3::sReplicate(1.0f)), Vec3::sZero(), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+
+		// Create a body
+		Body *b1 = bi.CreateBody(bc);
+		CHECK(b1->GetID() == BodyID(0, 1));
+
+		// Create body with same ID and same sequence number
+		Body *b2 = bi.CreateBodyWithID(BodyID(0, 1), bc);
+		CHECK(b2 == nullptr);
+
+		// Create body with same ID and different sequence number
+		b2 = bi.CreateBodyWithID(BodyID(0, 2), bc);
+		CHECK(b2 == nullptr);
+
+		// Create body with different ID (leave 1 open slot)
+		b2 = bi.CreateBodyWithoutID(bc); // Using syntax that allows separation of allocation and assigning an ID
+		CHECK(b2 != nullptr);
+		CHECK(b2->GetID().IsInvalid());
+		bi.AssignBodyID(b2, BodyID(2, 1));
+		CHECK(b2->GetID() == BodyID(2, 1));
+
+		// Create another body and check that the open slot is returned
+		Body *b3 = bi.CreateBody(bc);
+		CHECK(b3->GetID() == BodyID(1, 1));
+
+		// Create another body and check that we do not hand out the body with specified ID
+		Body *b4 = bi.CreateBody(bc);
+		CHECK(b4->GetID() == BodyID(3, 1));
+
+		// Delete and recreate body 4
+		CHECK(bi.CreateBodyWithID(BodyID(3, 1), bc) == nullptr);
+		bi.DestroyBody(b4->GetID());
+		b4 = bi.CreateBodyWithID(BodyID(3, 1), bc);
+		CHECK(b4 != nullptr);
+		CHECK(b4->GetID() == BodyID(3, 1));
+
+		// Destroy 1st body
+		CHECK(bi.UnassignBodyID(b1->GetID()) == b1); // Use syntax that allows separation of unassigning and deallocation
+		CHECK(b1->GetID().IsInvalid());
+		bi.DestroyBodyWithoutID(b1);
+
+		// Clean up remaining bodies
+		bi.DestroyBody(b2->GetID());
+		bi.DestroyBody(b3->GetID());
+		bi.DestroyBody(b4->GetID());
+
+		// Recreate body 1
+		b1 = bi.CreateBodyWithID(BodyID(0, 1), bc);
+		CHECK(b1 != nullptr);
+		CHECK(b1->GetID() == BodyID(0, 1));
+
+		// Destroy last body
+		bi.DestroyBody(b1->GetID());
+	}
+
 	TEST_CASE("TestPhysicsBodyUserData")
 	{
 		PhysicsTestContext c(1.0f / 60.0f, 1, 1);
@@ -229,7 +290,7 @@ TEST_SUITE("PhysicsTests")
 		CHECK_APPROX_EQUAL(body->GetWorldTransform(), body_transform);
 		CHECK_APPROX_EQUAL(body->GetCenterOfMassPosition(), com_transform.GetTranslation());
 		CHECK_APPROX_EQUAL(body->GetCenterOfMassTransform(), com_transform);
-		CHECK_APPROX_EQUAL(body->GetInverseCenterOfMassTransform(), com_transform.InversedRotationTranslation());
+		CHECK_APPROX_EQUAL(body->GetInverseCenterOfMassTransform(), com_transform.InversedRotationTranslation(), 1.0e-5f);
 	}
 
 	TEST_CASE("TestPhysicsOverrideMassAndInertia")

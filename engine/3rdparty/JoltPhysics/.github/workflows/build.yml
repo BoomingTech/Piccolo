@@ -6,37 +6,35 @@ on:
     paths-ignore:
       - 'Docs/**'
       - '**.md'
-      - '**.txt'
   pull_request:
     branches: [ master ]
     paths-ignore:
       - 'Docs/**'
       - '**.md'
-      - '**.txt'
 
 jobs:
   linux-clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Linux Clang
     strategy:
         fail-fast: false
         matrix:
             build_type: [Debug, Release, Distribution, ReleaseASAN, ReleaseUBSAN]
-            clang_version: [clang++-10, clang++-12]
+            clang_version: [clang++-12, clang++-14]
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} Build
     - name: Build
-      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -j 2
     - name: Test
       working-directory: ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}}
       run: ctest --output-on-failure
 
   linux-gcc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Linux GCC
     strategy:
         fail-fast: false
@@ -46,15 +44,43 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} Build
     - name: Build
-      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+      run: cmake --build ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}} -j 2
     - name: Test
       working-directory: ${{github.workspace}}/Build/Linux_${{matrix.build_type}}_${{matrix.clang_version}}
       run: ctest --output-on-failure
 
+  msys2_mingw_gcc:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    name: MSYS2 MinGW GCC
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        install: mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
+        update: true
+    - name: Configure CMake
+      run: cmake -B Build/MSYS2_MinGW_GCC -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} Build
+    - name: Build
+      run: cmake --build Build/MSYS2_MinGW_GCC -j 2
+    - name: Test
+      working-directory: Build/MSYS2_MinGW_GCC
+      run: ctest --output-on-failure
+      
   msvc_cl:
     runs-on: windows-latest
     name: Visual Studio CL
@@ -65,7 +91,7 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Configure CMake
@@ -76,9 +102,66 @@ jobs:
       working-directory: ${{github.workspace}}/Build/VS2022_CL/${{matrix.build_type}}
       run: ./UnitTests.exe
 
+  msvc_cl_32_bit:
+    runs-on: windows-latest
+    name: Visual Studio CL 32-bit
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/VS2022_CL_32_BIT -G "Visual Studio 17 2022" -A Win32 -DUSE_SSE4_1=OFF -DUSE_SSE4_2=OFF -DUSE_AVX=OFF -DUSE_AVX2=OFF -DUSE_AVX512=OFF -DUSE_LZCNT=OFF -DUSE_TZCNT=OFF -DUSE_F16C=OFF -DUSE_FMADD=OFF Build
+    - name: Build
+      run: msbuild Build\VS2022_CL_32_BIT\JoltPhysics.sln /property:Configuration=${{matrix.build_type}}
+    - name: Test
+      working-directory: ${{github.workspace}}/Build/VS2022_CL_32_BIT/${{matrix.build_type}}
+      run: ./UnitTests.exe
+
+  msvc_cl_arm:
+    runs-on: windows-latest
+    name: Visual Studio CL ARM
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/VS2022_CL_ARM -G "Visual Studio 17 2022" -A ARM64 Build
+    - name: Build
+      run: msbuild Build\VS2022_CL_ARM\JoltPhysics.sln /property:Configuration=${{matrix.build_type}}
+
+  msvc_cl_arm_32_bit:
+    runs-on: windows-latest
+    name: Visual Studio CL ARM 32-bit
+    strategy:
+        fail-fast: false
+        matrix:
+            build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/Build/VS2022_CL_ARM_32_BIT -G "Visual Studio 17 2022" -A ARM Build
+    - name: Build
+      run: msbuild Build\VS2022_CL_ARM_32_BIT\JoltPhysics.sln /property:Configuration=${{matrix.build_type}}
+
   macos:
     runs-on: macos-latest
-    name: MacOS
+    name: macOS
     strategy:
         fail-fast: false
         matrix:
@@ -87,25 +170,25 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Configure CMake
       # github macos-latest runs on a 2013 Ivy Bridge CPU so doesn't have AVX2, LZCNT, TZCNT or FMADD
-      run: cmake -B ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} -DUSE_AVX2=OFF -DUSE_LZCNT=OFF -DUSE_TZCNT=OFF -DUSE_FMADD=OFF Build
+      run: cmake -B ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_COMPILER=${{matrix.clang_version}} -DUSE_AVX2=OFF -DUSE_AVX512=OFF -DUSE_LZCNT=OFF -DUSE_TZCNT=OFF -DUSE_FMADD=OFF Build
     - name: Build
-      run: cmake --build ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} --config ${{matrix.build_type}}
+      run: cmake --build ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}} -j 2
     - name: Test
       working-directory: ${{github.workspace}}/Build/MacOS_${{matrix.build_type}}_${{matrix.clang_version}}
       run: ctest --output-on-failure
 
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Android
     strategy:
         fail-fast: false
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Gradle Build
       working-directory: ${{github.workspace}}/Build/Android
       run: ./gradlew build
@@ -118,7 +201,7 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/Build/XCode_iOS -DTARGET_HELLO_WORLD=OFF -DTARGET_PERFORMANCE_TEST=OFF -DCMAKE_SYSTEM_NAME=iOS -GXcode Build
     - name: Build

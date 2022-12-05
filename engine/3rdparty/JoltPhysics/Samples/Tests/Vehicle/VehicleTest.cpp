@@ -6,9 +6,11 @@
 #include <Tests/Vehicle/VehicleTest.h>
 #include <Jolt/Physics/Constraints/DistanceConstraint.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/GroupFilterTable.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/PhysicsScene.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
 #include <Layers.h>
 #include <Application/DebugUI.h>
 #include <Utils/Log.h>
@@ -21,6 +23,7 @@ JPH_IMPLEMENT_RTTI_VIRTUAL(VehicleTest)
 const char *VehicleTest::sScenes[] =
 {
 	"Flat",
+	"Steep Slope",
 	"Playground",
 	"Terrain1",
 };
@@ -36,6 +39,13 @@ void VehicleTest::Initialize()
 		floor.SetFriction(1.0f);
 		mBodyInterface->AddBody(floor.GetID(), EActivation::DontActivate);
 	}
+	else if (strcmp(sSceneName, "Steep Slope") == 0)
+	{
+		// Steep slope test floor (20 degrees = 36% grade)
+		Body &floor = *mBodyInterface->CreateBody(BodyCreationSettings(new BoxShape(Vec3(1000.0f, 1.0f, 1000.0f), 0.0f), Vec3(0.0f, -1.0f, 0.0f), Quat::sRotation(Vec3::sAxisX(), DegreesToRadians(-20.0f)), EMotionType::Static, Layers::NON_MOVING));
+		floor.SetFriction(1.0f);
+		mBodyInterface->AddBody(floor.GetID(), EActivation::DontActivate);
+	}
 	else if (strcmp(sSceneName, "Playground") == 0)
 	{
 		// Scene with hilly terrain and some objects to drive into
@@ -45,12 +55,14 @@ void VehicleTest::Initialize()
 		CreateBridge();
 
 		CreateWall();
+
+		CreateRubble();
 	}	
 	else
 	{
 		// Load scene
 		Ref<PhysicsScene> scene;
-		if (!ObjectStreamIn::sReadObject((string("Assets/") + sSceneName + ".bof").c_str(), scene))
+		if (!ObjectStreamIn::sReadObject((String("Assets/") + sSceneName + ".bof").c_str(), scene))
 			FatalError("Failed to load scene");
 		for (BodyCreationSettings &body : scene->GetBodies())
 			body.mObjectLayer = Layers::NON_MOVING;
@@ -113,8 +125,34 @@ void VehicleTest::CreateWall()
 		for (int j = i / 2; j < 5 - (i + 1) / 2; ++j)
 		{
 			Vec3 position(2.0f + j * 1.0f + (i & 1? 0.5f : 0.0f), 2.0f + i * 1.0f, 10.0f);
-			Body &wall = *mBodyInterface->CreateBody(BodyCreationSettings(box_shape, position, Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING));
-			mBodyInterface->AddBody(wall.GetID(), EActivation::Activate);
+			mBodyInterface->CreateAndAddBody(BodyCreationSettings(box_shape, position, Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING), EActivation::Activate);
+		}
+}
+
+void VehicleTest::CreateRubble()
+{
+	// Flat and light objects
+	RefConst<Shape> box_shape = new BoxShape(Vec3(0.5f, 0.1f, 0.5f));
+	for (int i = 0; i < 5; ++i)
+		for (int j = 0; j < 5; ++j)
+		{
+			Vec3 position(-5.0f + j, 2.0f + i * 0.2f, 10.0f + 0.5f * i);
+			mBodyInterface->CreateAndAddBody(BodyCreationSettings(box_shape, position, Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING), EActivation::Activate);
+		}
+
+
+	// Light convex shapes
+	default_random_engine random;
+	uniform_real_distribution<float> hull_size(0.2f, 0.4f);
+	for (int i = 0; i < 10; ++i)
+		for (int j = 0; j < 10; ++j)
+		{
+			// Create random points
+			Array<Vec3> points;
+			for (int k = 0; k < 20; ++k)
+				points.push_back(hull_size(random) * Vec3::sRandom(random));
+
+			mBodyInterface->CreateAndAddBody(BodyCreationSettings(new ConvexHullShapeSettings(points), Vec3(-5.0f + 0.5f * j, 2.0f, 15.0f + 0.5f * i), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING), EActivation::Activate);
 		}
 }
 

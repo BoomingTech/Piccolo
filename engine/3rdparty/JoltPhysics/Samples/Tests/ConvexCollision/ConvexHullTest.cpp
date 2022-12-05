@@ -8,6 +8,10 @@
 #include <Utils/Log.h>
 #include <Renderer/DebugRendererImp.h>
 
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <fstream>
+JPH_SUPPRESS_WARNINGS_STD_END
+
 JPH_IMPLEMENT_RTTI_VIRTUAL(ConvexHullTest) 
 { 
 	JPH_ADD_BASE_CLASS(ConvexHullTest, Test) 
@@ -356,6 +360,55 @@ void ConvexHullTest::Initialize()
 			Vec3(-0.30392047f, -0.17969127f, 0.22713920f),
 			Vec3(-0.30392047f, -0.17969127f, 0.22713920f),
 			Vec3(-0.30392047f, -0.17969127f, 0.22713920f)
+		},
+		{
+			// A really small hull
+			Vec3(-0.00707678869f, 0.00559568405f, -0.0239779726f),
+			Vec3(0.0136205591f, 0.00541752577f, -0.0225500446f),
+			Vec3(0.0135576781f, 0.00559568405f, -0.0224227905f),
+			Vec3(-0.0108219199f, 0.00559568405f, -0.0223935191f),
+			Vec3(0.0137226451f, 0.00559568405f, -0.0220940933f),
+			Vec3(0.00301175844f, -0.0232942104f, -0.0214947499f),
+			Vec3(0.017349612f, 0.00559568405f, 0.0241708681f),
+			Vec3(0.00390899926f, -0.0368074179f, 0.0541367307f),
+			Vec3(-0.0164459459f, 0.00559568405f, 0.0607497096f),
+			Vec3(-0.0169881769f, 0.00559568405f, 0.0608173609f),
+			Vec3(-0.0168782212f, 0.0052883029f, 0.0613293499f),
+			Vec3(-0.00663783913f, 0.00559568405f, -0.024154868f),
+			Vec3(-0.00507298298f, 0.00559568405f, -0.0242112875f),
+			Vec3(-0.00565947127f, 0.00477081537f, -0.0243848339f),
+			Vec3(0.0118075963f, 0.00124305487f, -0.0258472487f),
+			Vec3(0.00860248506f, -0.00697988272f, -0.0276725553f),
+		},
+		{
+			// Nearly co-planar hull (but not enough to go through the 2d hull builder)
+			Vec3(0.129325435f, -0.213319957f, 0.00901593268f),
+			Vec3(0.129251331f, -0.213436425f, 0.00932094082f),
+			Vec3(0.160741553f, -0.171540618f, 0.0494558439f),
+			Vec3(0.160671368f, -0.17165187f, 0.049765937f),
+			Vec3(0.14228563f, 0.432965666f, 0.282429159f),
+			Vec3(0.142746598f, 0.433226734f, 0.283286631f),
+			Vec3(0.296031296f, 0.226935148f, 0.312804461f),
+			Vec3(0.296214104f, 0.227568939f, 0.313606918f),
+			Vec3(-0.00354258716f, -0.180767179f, -0.0762089267f),
+			Vec3(-0.00372517109f, -0.1805875f, -0.0766792595f),
+			Vec3(-0.0157070309f, -0.176182508f, -0.0833940506f),
+			Vec3(-0.0161666721f, -0.175898403f, -0.0840280354f),
+			Vec3(-0.342764735f, 0.0259497911f, -0.244388372f),
+			Vec3(-0.342298329f, 0.0256615728f, -0.24456653f),
+			Vec3(-0.366584063f, 0.0554589033f, -0.250078142f),
+			Vec3(-0.366478682f, 0.0556178838f, -0.250342518f),
+		},
+		{
+			// A hull with a very acute angle that won't properly build when using distance to plane only
+			Vec3(-0.0451235026f, -0.103826642f, -0.0346511155f),
+			Vec3(-0.0194563419f, -0.123563275f, -0.032212317f),
+			Vec3(0.0323024541f, -0.0468643308f, -0.0307639092f),
+			Vec3(0.0412166864f, -0.0884782523f, -0.0288816988f),
+			Vec3(-0.0564572513f, 0.0207469314f, 0.0169318169f),
+			Vec3(0.00537410378f, 0.105688639f, 0.0355164111f),
+			Vec3(0.0209896415f, 0.117749952f, 0.0365252197f),
+			Vec3(0.0211542398f, 0.118546993f, 0.0375355929f),
 		}
 	};
 
@@ -367,7 +420,7 @@ void ConvexHullTest::Initialize()
 			for (int y = 0; y < 10; ++y)
 				for (int z = 0; z < 10; ++z)
 					p.push_back(Vec3::sReplicate(-0.5f) * 0.1f * Vec3(float(x), float(y), float(z)));
-		mPoints.push_back(move(p));
+		mPoints.push_back(std::move(p));
 	}
 
 	// Add disc of many points
@@ -376,8 +429,20 @@ void ConvexHullTest::Initialize()
 		Mat44 rot = Mat44::sRotationZ(0.25f * JPH_PI);
 		for (float r = 0.0f; r < 2.0f; r += 0.1f)
 			for (float phi = 0.0f; phi <= 2.0f * JPH_PI; phi += 2.0f * JPH_PI / 20.0f)
-				p.push_back(rot * Vec3(r * cos(phi), r * sin(phi), 0));
-		mPoints.push_back(move(p));
+				p.push_back(rot * Vec3(r * Cos(phi), r * Sin(phi), 0));
+		mPoints.push_back(std::move(p));
+	}
+
+	// Add wedge shaped disc that is just above the hull tolerance on its widest side and zero on the other side
+	{
+		Points p;
+		for (float phi = 0.0f; phi <= 2.0f * JPH_PI; phi += 2.0f * JPH_PI / 40.0f)
+		{
+			Vec3 pos(2.0f * Cos(phi), 0, 2.0f * Sin(phi));
+			p.push_back(pos);
+			p.push_back(pos + Vec3(0, 2.0e-3f * (2.0f + pos.GetX()) / 4.0f, 0));
+		}
+		mPoints.push_back(std::move(p));
 	}
 
 	// Add a sphere of many points
@@ -386,7 +451,7 @@ void ConvexHullTest::Initialize()
 		for (float theta = 0.0f; theta <= JPH_PI; theta += JPH_PI / 20.0f)
 			for (float phi = 0.0f; phi <= 2.0f * JPH_PI; phi += 2.0f * JPH_PI / 20.0f)
 				p.push_back(Vec3::sUnitSpherical(theta, phi));
-		mPoints.push_back(move(p));
+		mPoints.push_back(std::move(p));
 	}
 
 	// Open the external file with hulls
@@ -412,7 +477,7 @@ void ConvexHullTest::Initialize()
 					points_stream.read((char *)&v, sizeof(v));
 					p.push_back(Vec3(v));
 				}
-				mPoints.push_back(move(p));
+				mPoints.push_back(std::move(p));
 			}
 		}
 	}

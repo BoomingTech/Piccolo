@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Jolt/Physics/Collision/CollisionCollector.h>
+#include <Jolt/Core/QuickSort.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -32,7 +33,7 @@ public:
 	/// Order hits on closest first
 	void				Sort()
 	{
-		sort(mHits.begin(), mHits.end(), [](const ResultType &inLHS, const ResultType &inRHS) { return inLHS.GetEarlyOutFraction() < inRHS.GetEarlyOutFraction(); });
+		QuickSort(mHits.begin(), mHits.end(), [](const ResultType &inLHS, const ResultType &inRHS) { return inLHS.GetEarlyOutFraction() < inRHS.GetEarlyOutFraction(); });
 	}
 
 	/// Check if any hits were collected
@@ -41,7 +42,7 @@ public:
 		return !mHits.empty();
 	}
 
-	vector<ResultType>	mHits;
+	Array<ResultType>	mHits;
 };
 
 /// Simple implementation that collects the closest / deepest hit

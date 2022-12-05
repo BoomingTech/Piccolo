@@ -124,11 +124,17 @@ const ConvexShape::Support *BoxShape::GetSupportFunction(ESupportMode inMode, Su
 	return nullptr;
 }
 
-void BoxShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const 
+void BoxShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const 
 { 
+	JPH_ASSERT(inSubShapeID.IsEmpty(), "Invalid subshape ID");
+
 	Vec3 scaled_half_extent = inScale.Abs() * mHalfExtent;
 	AABox box(-scaled_half_extent, scaled_half_extent);
 	box.GetSupportingFace(inDirection, outVertices); 
+
+	// Transform to world space
+	for (Vec3 &v : outVertices)
+		v = inCenterOfMassTransform * v;
 }
 
 MassProperties BoxShape::GetMassProperties() const
@@ -172,8 +178,12 @@ bool BoxShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShape
 	return false;
 }
 
-void BoxShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const
+void BoxShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	float min_fraction, max_fraction;
 	RayAABox(inRay.mOrigin, RayInvDirection(inRay.mDirection), -mHalfExtent, mHalfExtent, min_fraction, max_fraction);
 	if (min_fraction <= max_fraction // Ray should intersect
@@ -202,8 +212,12 @@ void BoxShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSet
 	}
 }
 
-void BoxShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void BoxShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	if (Vec3::sLessOrEqual(inPoint.Abs(), mHalfExtent).TestAllXYZTrue())
 		ioCollector.AddHit({ TransformedShape::sGetBodyID(ioCollector.GetContext()), inSubShapeIDCreator.GetID() });
 }

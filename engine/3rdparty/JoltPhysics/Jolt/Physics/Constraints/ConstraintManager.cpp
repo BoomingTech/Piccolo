@@ -8,6 +8,7 @@
 #include <Jolt/Physics/StateRecorder.h>
 #include <Jolt/Physics/PhysicsLock.h>
 #include <Jolt/Core/Profiler.h>
+#include <Jolt/Core/QuickSort.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -101,7 +102,7 @@ void ConstraintManager::sSortConstraints(Constraint **inActiveConstraints, uint3
 {
 	JPH_PROFILE_FUNCTION();
 
-	sort(inConstraintIdxBegin, inConstraintIdxEnd, [inActiveConstraints](uint32 inLHS, uint32 inRHS) { return inActiveConstraints[inLHS]->mConstraintIndex < inActiveConstraints[inRHS]->mConstraintIndex; });
+	QuickSort(inConstraintIdxBegin, inConstraintIdxEnd, [inActiveConstraints](uint32 inLHS, uint32 inRHS) { return inActiveConstraints[inLHS]->mConstraintIndex < inActiveConstraints[inRHS]->mConstraintIndex; });
 }
 
 void ConstraintManager::sSetupVelocityConstraints(Constraint **inActiveConstraints, uint32 inNumActiveConstraints, float inDeltaTime)
@@ -123,13 +124,14 @@ void ConstraintManager::sSetupVelocityConstraints(Constraint **inActiveConstrain
 	}
 }
 
-void ConstraintManager::sWarmStartVelocityConstraints(Constraint **inActiveConstraints, const uint32 *inConstraintIdxBegin, const uint32 *inConstraintIdxEnd, float inWarmStartImpulseRatio)
+void ConstraintManager::sWarmStartVelocityConstraints(Constraint **inActiveConstraints, const uint32 *inConstraintIdxBegin, const uint32 *inConstraintIdxEnd, float inWarmStartImpulseRatio, int &ioNumVelocitySteps)
 {
 	JPH_PROFILE_FUNCTION();
 
 	for (const uint32 *constraint_idx = inConstraintIdxBegin; constraint_idx < inConstraintIdxEnd; ++constraint_idx)
 	{
 		Constraint *c = inActiveConstraints[*constraint_idx];
+		ioNumVelocitySteps = max(ioNumVelocitySteps, c->GetNumVelocityStepsOverride());
 		c->WarmStartVelocityConstraint(inWarmStartImpulseRatio);
 	}
 }
@@ -158,6 +160,22 @@ bool ConstraintManager::sSolvePositionConstraints(Constraint **inActiveConstrain
 	for (const uint32 *constraint_idx = inConstraintIdxBegin; constraint_idx < inConstraintIdxEnd; ++constraint_idx)
 	{
 		Constraint *c = inActiveConstraints[*constraint_idx];
+		any_impulse_applied |= c->SolvePositionConstraint(inDeltaTime, inBaumgarte);
+	}
+
+	return any_impulse_applied;
+}
+
+bool ConstraintManager::sSolvePositionConstraints(Constraint **inActiveConstraints, const uint32 *inConstraintIdxBegin, const uint32 *inConstraintIdxEnd, float inDeltaTime, float inBaumgarte, int &ioNumPositionSteps)
+{
+	JPH_PROFILE_FUNCTION();
+
+	bool any_impulse_applied = false;
+
+	for (const uint32 *constraint_idx = inConstraintIdxBegin; constraint_idx < inConstraintIdxEnd; ++constraint_idx)
+	{
+		Constraint *c = inActiveConstraints[*constraint_idx];
+		ioNumPositionSteps = max(ioNumPositionSteps, c->GetNumPositionStepsOverride());
 		any_impulse_applied |= c->SolvePositionConstraint(inDeltaTime, inBaumgarte);
 	}
 

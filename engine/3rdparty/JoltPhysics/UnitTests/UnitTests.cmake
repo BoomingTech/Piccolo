@@ -4,9 +4,11 @@ set(UNIT_TESTS_ROOT ${PHYSICS_REPO_ROOT}/UnitTests)
 # Source files
 set(UNIT_TESTS_SRC_FILES
 	${UNIT_TESTS_ROOT}/Core/FPFlushDenormalsTest.cpp
+	${UNIT_TESTS_ROOT}/Core/InsertionSortTest.cpp
 	${UNIT_TESTS_ROOT}/Core/JobSystemTest.cpp
 	${UNIT_TESTS_ROOT}/Core/LinearCurveTest.cpp
 	${UNIT_TESTS_ROOT}/Core/StringToolsTest.cpp
+	${UNIT_TESTS_ROOT}/Core/QuickSortTest.cpp
 	${UNIT_TESTS_ROOT}/doctest.h
 	${UNIT_TESTS_ROOT}/Geometry/ConvexHullBuilderTest.cpp
 	${UNIT_TESTS_ROOT}/Geometry/EllipseTest.cpp
@@ -31,6 +33,7 @@ set(UNIT_TESTS_SRC_FILES
 	${UNIT_TESTS_ROOT}/Physics/ActiveEdgesTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/BroadPhaseTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/CastShapeTests.cpp
+	${UNIT_TESTS_ROOT}/Physics/CharacterVirtualTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/CollideShapeTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/CollidePointTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/CollisionGroupTests.cpp
@@ -48,6 +51,7 @@ set(UNIT_TESTS_SRC_FILES
 	${UNIT_TESTS_ROOT}/Physics/SliderConstraintTests.cpp
 	${UNIT_TESTS_ROOT}/Physics/SubShapeIDTest.cpp
 	${UNIT_TESTS_ROOT}/Physics/TransformedShapeTests.cpp
+	${UNIT_TESTS_ROOT}/Physics/WheeledVehicleTests.cpp
 	${UNIT_TESTS_ROOT}/PhysicsTestContext.cpp
 	${UNIT_TESTS_ROOT}/PhysicsTestContext.h
 	${UNIT_TESTS_ROOT}/UnitTestFramework.cpp

@@ -60,7 +60,7 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE			ConvertToGPUHandle(D3D12_CPU_DESCRIPTOR_HANDLE inHandle)
 	{
 		JPH_ASSERT(mGPUOffset != -1);
-		return { inHandle.ptr + mGPUOffset };
+		return { UINT64(inHandle.ptr) + mGPUOffset };
 	}
 
 	/// Access to the underlying DirectX structure
@@ -72,6 +72,6 @@ public:
 private:
 	ComPtr<ID3D12DescriptorHeap>		mHeap;
 	uint								mDescriptorSize;				///< The size (in bytes) of a single heap descriptor
-	vector<uint>						mFreeList;						///< List of indices in the heap that are still free
+	Array<uint>							mFreeList;						///< List of indices in the heap that are still free
 	INT64								mGPUOffset = -1;				///< Offset between CPU and GPU handles
 };

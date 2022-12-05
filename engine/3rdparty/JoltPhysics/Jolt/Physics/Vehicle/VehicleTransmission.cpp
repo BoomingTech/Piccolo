@@ -15,8 +15,10 @@ JPH_IMPLEMENT_SERIALIZABLE_NON_VIRTUAL(VehicleTransmissionSettings)
 	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mReverseGearRatios)
 	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mSwitchTime)
 	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mClutchReleaseTime)
+	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mSwitchLatency)
 	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mShiftUpRPM)
 	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mShiftDownRPM)
+	JPH_ADD_ATTRIBUTE(VehicleTransmissionSettings, mClutchStrength)
 }
 
 void VehicleTransmissionSettings::SaveBinaryState(StreamOut &inStream) const
@@ -26,8 +28,10 @@ void VehicleTransmissionSettings::SaveBinaryState(StreamOut &inStream) const
 	inStream.Write(mReverseGearRatios);
 	inStream.Write(mSwitchTime);
 	inStream.Write(mClutchReleaseTime);
+	inStream.Write(mSwitchLatency);
 	inStream.Write(mShiftUpRPM);
 	inStream.Write(mShiftDownRPM);
+	inStream.Write(mClutchStrength);
 }
 
 void VehicleTransmissionSettings::RestoreBinaryState(StreamIn &inStream)
@@ -37,11 +41,13 @@ void VehicleTransmissionSettings::RestoreBinaryState(StreamIn &inStream)
 	inStream.Read(mReverseGearRatios);
 	inStream.Read(mSwitchTime);
 	inStream.Read(mClutchReleaseTime);
+	inStream.Read(mSwitchLatency);
 	inStream.Read(mShiftUpRPM);
 	inStream.Read(mShiftDownRPM);
+	inStream.Read(mClutchStrength);
 }
 
-void VehicleTransmission::Update(float inDeltaTime, float inCurrentRPM, float inForwardInput, bool inEngineCanApplyTorque)
+void VehicleTransmission::Update(float inDeltaTime, float inCurrentRPM, float inForwardInput, bool inCanShiftUp)
 {
 	// Update current gear and calculate clutch friction
 	if (mMode == ETransmissionMode::Auto)
@@ -54,44 +60,48 @@ void VehicleTransmission::Update(float inDeltaTime, float inCurrentRPM, float in
 			// Switch to first gear or reverse depending on input
 			mCurrentGear = inForwardInput > 0.0f? 1 : (inForwardInput < 0.0f? -1 : 0);
 		}
-		else if (inEngineCanApplyTorque && inCurrentRPM > mShiftUpRPM)
+		else if (mGearSwitchLatencyTimeLeft == 0.0f) // If not in the timout after switching gears
 		{
-			if (mCurrentGear < 0)
+			if (inCanShiftUp && inCurrentRPM > mShiftUpRPM)
 			{
-				// Shift up, reverse
-				if (mCurrentGear > -(int)mReverseGearRatios.size())
-					mCurrentGear--;
+				if (mCurrentGear < 0)
+				{
+					// Shift up, reverse
+					if (mCurrentGear > -(int)mReverseGearRatios.size())
+						mCurrentGear--;
+				}
+				else
+				{
+					// Shift up, forward
+					if (mCurrentGear < (int)mGearRatios.size())
+						mCurrentGear++;
+				}
 			}
-			else
+			else if (inCurrentRPM < mShiftDownRPM)
 			{
-				// Shift up, forward
-				if (mCurrentGear < (int)mGearRatios.size())
-					mCurrentGear++;
-			}
-		}
-		else if (inCurrentRPM < mShiftDownRPM)
-		{
-			if (mCurrentGear < 0)
-			{
-				// Shift down, reverse
-				int max_gear = inForwardInput != 0.0f? -1 : 0;
-				if (mCurrentGear < max_gear)
-					mCurrentGear++;
-			}
-			else
-			{
-				// Shift down, forward
-				int min_gear = inForwardInput != 0.0f? 1 : 0;
-				if (mCurrentGear > min_gear)
-					mCurrentGear--;
+				if (mCurrentGear < 0)
+				{
+					// Shift down, reverse
+					int max_gear = inForwardInput != 0.0f? -1 : 0;
+					if (mCurrentGear < max_gear)
+						mCurrentGear++;
+				}
+				else
+				{
+					// Shift down, forward
+					int min_gear = inForwardInput != 0.0f? 1 : 0;
+					if (mCurrentGear > min_gear)
+						mCurrentGear--;
+				}
 			}
 		}
 
-		if (old_gear != mCurrentGear && old_gear != 0)
+		if (old_gear != mCurrentGear)
 		{
 			// We've shifted gear, start switch countdown
-			mGearSwitchTimeLeft = mSwitchTime;
+			mGearSwitchTimeLeft = old_gear != 0? mSwitchTime : 0.0f;
 			mClutchReleaseTimeLeft = mClutchReleaseTime;
+			mGearSwitchLatencyTimeLeft = mSwitchLatency;
 			mClutchFriction = 0.0f;
 		}
 		else if (mGearSwitchTimeLeft > 0.0f)
@@ -110,6 +120,9 @@ void VehicleTransmission::Update(float inDeltaTime, float inCurrentRPM, float in
 		{
 			// Clutch has full friction
 			mClutchFriction = 1.0f;
+
+			// Count down switch latency
+			mGearSwitchLatencyTimeLeft = max(0.0f, mGearSwitchLatencyTimeLeft - inDeltaTime);
 		}
 	}
 }
@@ -130,6 +143,7 @@ void VehicleTransmission::SaveState(StateRecorder &inStream) const
 	inStream.Write(mClutchFriction);
 	inStream.Write(mGearSwitchTimeLeft);
 	inStream.Write(mClutchReleaseTimeLeft);
+	inStream.Write(mGearSwitchLatencyTimeLeft);
 }
 
 void VehicleTransmission::RestoreState(StateRecorder &inStream)
@@ -138,6 +152,7 @@ void VehicleTransmission::RestoreState(StateRecorder &inStream)
 	inStream.Read(mClutchFriction);
 	inStream.Read(mGearSwitchTimeLeft);
 	inStream.Read(mClutchReleaseTimeLeft);
+	inStream.Read(mGearSwitchLatencyTimeLeft);
 }
 
 JPH_NAMESPACE_END

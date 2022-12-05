@@ -24,6 +24,7 @@
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
 #include <Jolt/Core/Profiler.h>
+#include <Jolt/Core/UnorderedMap.h>
 #include <Jolt/Geometry/AABox4.h>
 #include <Jolt/Geometry/RayAABox.h>
 #include <Jolt/Geometry/Indexify.h>
@@ -35,10 +36,6 @@
 #include <Jolt/AABBTree/TriangleCodec/TriangleCodecIndexed8BitPackSOA4Flags.h>
 #include <Jolt/AABBTree/NodeCodec/NodeCodecQuadTreeHalfFloat.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
-
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <unordered_map>
-JPH_SUPPRESS_WARNINGS_STD_END
 
 JPH_NAMESPACE_BEGIN
 
@@ -92,7 +89,7 @@ MeshShapeSettings::MeshShapeSettings(const VertexList &inVertices, const Indexed
 void MeshShapeSettings::Sanitize()
 {
 	// Remove degenerate and duplicate triangles
-	unordered_set<IndexedTriangle> triangles;
+	UnorderedSet<IndexedTriangle> triangles;
 	triangles.reserve(mIndexedTriangles.size());
 	for (int t = (int)mIndexedTriangles.size() - 1; t >= 0; --t)
 	{
@@ -146,9 +143,9 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 	if (!mMaterials.empty())
 	{
 		// Validate materials
-		if (mMaterials.size() > FLAGS_MATERIAL_MASK)
+		if (mMaterials.size() > (1 << FLAGS_MATERIAL_BITS))
 		{
-			outResult.SetError(StringFormat("Supporting max %d materials per mesh", FLAGS_ACTIVE_EDGE_MASK + 1));
+			outResult.SetError(StringFormat("Supporting max %d materials per mesh", 1 << FLAGS_MATERIAL_BITS));
 			return;
 		}
 		for (const IndexedTriangle &t : inSettings.mIndexedTriangles)
@@ -253,7 +250,7 @@ void MeshShape::sFindActiveEdges(const VertexList &inVertices, IndexedTriangleLi
 	};
 
 	// Build a list of edge to triangles
-	using EdgeToTriangle = unordered_map<Edge, TriangleIndices, EdgeHash>;
+	using EdgeToTriangle = UnorderedMap<Edge, TriangleIndices, EdgeHash>;
 	EdgeToTriangle edge_to_triangle;
 	edge_to_triangle.reserve(ioIndices.size() * 3);
 	for (uint triangle_idx = 0; triangle_idx < ioIndices.size(); ++triangle_idx)
@@ -386,6 +383,30 @@ Vec3 MeshShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocal
 
 	//  Calculate normal
 	return (v3 - v2).Cross(v1 - v2).Normalized();
+}
+
+void MeshShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const
+{
+	// Decode ID
+	const void *block_start;
+	uint32 triangle_idx;
+	DecodeSubShapeID(inSubShapeID, block_start, triangle_idx);
+
+	// Decode triangle	
+	const TriangleCodec::DecodingContext triangle_ctx(sGetTriangleHeader(mTree));
+	outVertices.resize(3);
+	triangle_ctx.GetTriangle(block_start, triangle_idx, outVertices[0], outVertices[1], outVertices[2]);
+
+	// Flip triangle if scaled inside out
+	if (ScaleHelpers::IsInsideOut(inScale))
+		swap(outVertices[1], outVertices[2]);
+
+	// Calculate transform with scale
+	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);
+
+	// Transform to world space
+	for (Vec3 &v : outVertices)
+		v = transform * v;
 }
 
 AABox MeshShape::GetLocalBounds() const
@@ -530,14 +551,14 @@ void MeshShape::Draw(DebugRenderer *inRenderer, Mat44Arg inCenterOfMassTransform
 				}
 			}
 
-			vector<DebugRenderer::Triangle> &		mTriangles;
+			Array<DebugRenderer::Triangle> &		mTriangles;
 			const PhysicsMaterialList &				mMaterials;
 			bool									mUseMaterialColors;
 			bool									mDrawTriangleGroups;
 			int										mColorIdx = 0;
 		};
 		
-		vector<DebugRenderer::Triangle> triangles;
+		Array<DebugRenderer::Triangle> triangles;
 		Visitor visitor { triangles, mMaterials, mCachedUseMaterialColors, mCachedTrianglesColoredPerGroup };
 		WalkTree(visitor);
 		mGeometry = new DebugRenderer::Geometry(inRenderer->CreateTriangleBatch(triangles), GetLocalBounds());
@@ -679,9 +700,13 @@ bool MeshShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShap
 	return visitor.mReturnValue;
 }
 
-void MeshShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const
+void MeshShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
 	JPH_PROFILE_FUNCTION();
+
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
 
 	struct Visitor
 	{
@@ -743,7 +768,7 @@ void MeshShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSe
 	WalkTreePerTriangle(inSubShapeIDCreator, visitor);
 }
 
-void MeshShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void MeshShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
 	// First test if we're inside our bounding box
 	AABox bounds = GetLocalBounds();
@@ -771,7 +796,7 @@ void MeshShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShap
 		settings.mBackFaceMode = EBackFaceMode::CollideWithBackFaces;
 
 		// Cast a ray that's 10% longer than the heigth of our bounding box
-		CastRay(RayCast { inPoint, 1.1f * bounds.GetSize().GetY() * Vec3::sAxisY() }, settings, inSubShapeIDCreator, collector);
+		CastRay(RayCast { inPoint, 1.1f * bounds.GetSize().GetY() * Vec3::sAxisY() }, settings, inSubShapeIDCreator, collector, inShapeFilter);
 
 		// Odd amount of hits means inside
 		if ((collector.mHitCount & 1) == 1)
@@ -1020,7 +1045,7 @@ int MeshShape::GetTrianglesNext(GetTrianglesContext &ioContext, int inMaxTriangl
 	return context.mNumTrianglesFound;
 }
 
-void MeshShape::sCollideConvexVsMesh(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void MeshShape::sCollideConvexVsMesh(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_PROFILE_FUNCTION();
 
@@ -1065,7 +1090,7 @@ void MeshShape::sCollideConvexVsMesh(const Shape *inShape1, const Shape *inShape
 	shape2->WalkTreePerTriangle(inSubShapeIDCreator2, visitor);
 }
 
-void MeshShape::sCollideSphereVsMesh(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void MeshShape::sCollideSphereVsMesh(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_PROFILE_FUNCTION();
 
@@ -1114,14 +1139,14 @@ void MeshShape::SaveBinaryState(StreamOut &inStream) const
 {
 	Shape::SaveBinaryState(inStream);
 
-	inStream.Write(static_cast<const ByteBufferVector &>(mTree)); // Make sure we use the vector<> overload
+	inStream.Write(static_cast<const ByteBufferVector &>(mTree)); // Make sure we use the Array<> overload
 }
 
 void MeshShape::RestoreBinaryState(StreamIn &inStream)
 {
 	Shape::RestoreBinaryState(inStream);
 
-	inStream.Read(static_cast<ByteBufferVector &>(mTree)); // Make sure we use the vector<> overload
+	inStream.Read(static_cast<ByteBufferVector &>(mTree)); // Make sure we use the Array<> overload
 }
 
 void MeshShape::SaveMaterialState(PhysicsMaterialList &outMaterials) const
@@ -1180,6 +1205,9 @@ void MeshShape::sRegister()
 	{
 		CollisionDispatch::sRegisterCollideShape(s, EShapeSubType::Mesh, sCollideConvexVsMesh);
 		CollisionDispatch::sRegisterCastShape(s, EShapeSubType::Mesh, sCastConvexVsMesh);
+
+		CollisionDispatch::sRegisterCastShape(EShapeSubType::Mesh, s, CollisionDispatch::sReversedCastShape);
+		CollisionDispatch::sRegisterCollideShape(EShapeSubType::Mesh, s, CollisionDispatch::sReversedCollideShape);
 	}
 
 	// Specialized collision functions

@@ -4,6 +4,9 @@
 #pragma once
 
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
+#ifdef JPH_DEBUG_RENDERER
+	#include <Jolt/Renderer/DebugRenderer.h>
+#endif // JPH_DEBUG_RENDERER
 
 JPH_NAMESPACE_BEGIN
 
@@ -36,6 +39,8 @@ class TaperedCapsuleShapeSettings final : public ConvexShapeSettings
 class TaperedCapsuleShape final : public ConvexShape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 							TaperedCapsuleShape() : ConvexShape(EShapeSubType::TaperedCapsule) { }
 							TaperedCapsuleShape(const TaperedCapsuleShapeSettings &inSettings, ShapeResult &outResult);
@@ -58,11 +63,11 @@ public:
 	// See Shape::GetSurfaceNormal
 	virtual Vec3			GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocalSurfacePosition) const override;
 
+	// See Shape::GetSupportingFace
+	virtual void			GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override;
+
 	// See ConvexShape::GetSupportFunction
 	virtual const Support *	GetSupportFunction(ESupportMode inMode, SupportBuffer &inBuffer, Vec3Arg inScale) const override;
-
-	// See ConvexShape::GetSupportingFace
-	virtual void			GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const override;
 
 #ifdef JPH_DEBUG_RENDERER
 	// See Shape::Draw

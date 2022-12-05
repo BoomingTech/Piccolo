@@ -217,7 +217,7 @@ void HeightFieldShape::CalculateActiveEdges()
 	memset(&mActiveEdges[0], 0, mActiveEdges.size());
 
 	// Calculate triangle normals and make normals zero for triangles that are missing
-	vector<Vec3> normals;
+	Array<Vec3> normals;
 	normals.resize(2 * count_min_1_sq);
 	memset(&normals[0], 0, normals.size() * sizeof(Vec3));
 	for (uint y = 0; y < count_min_1; ++y)
@@ -269,7 +269,7 @@ void HeightFieldShape::CalculateActiveEdges()
 		}
 }
 
-void HeightFieldShape::StoreMaterialIndices(const vector<uint8> &inMaterialIndices)
+void HeightFieldShape::StoreMaterialIndices(const Array<uint8> &inMaterialIndices)
 {
 	uint count_min_1 = mSampleCount - 1;
 
@@ -401,7 +401,7 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 	}
 
 	// Quantize to uint16
-	vector<uint16> quantized_samples;
+	Array<uint16> quantized_samples;
 	quantized_samples.reserve(mSampleCount * mSampleCount);
 	for (float h : inSettings.mHeightSamples)
 		if (h == cNoCollisionValue)
@@ -441,11 +441,11 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 	};
 
 	// Reserve size for temporary range data + reserve 1 extra for a 1x1 grid that we won't store but use for calculating the bounding box
-	vector<vector<Range>> ranges;
+	Array<Array<Range>> ranges;
 	ranges.resize(max_level + 1);
 
 	// Calculate highest detail grid by combining mBlockSize x mBlockSize height samples
-	vector<Range> *cur_range_vector = &ranges.back();
+	Array<Range> *cur_range_vector = &ranges.back();
 	cur_range_vector->resize(n * n);
 	Range *range_dst = &cur_range_vector->front();
 	for (uint y = 0; y < n; ++y)
@@ -829,6 +829,37 @@ Vec3 HeightFieldShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg 
 	return normal.Normalized();
 }
 
+void HeightFieldShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const
+{
+	// Decode ID
+	uint x, y, triangle;
+	DecodeSubShapeID(inSubShapeID, x, y, triangle);
+
+	// Fetch the triangle
+	outVertices.resize(3);
+	outVertices[0] = GetPosition(x, y);
+	Vec3 v2 = GetPosition(x + 1, y + 1);
+	if (triangle == 0)
+	{
+		outVertices[1] = GetPosition(x, y + 1);
+		outVertices[2] = v2;
+	}
+	else
+	{
+		outVertices[1] = v2;
+		outVertices[2] = GetPosition(x + 1, y);
+	}
+
+	// Flip triangle if scaled inside out
+	if (ScaleHelpers::IsInsideOut(inScale))
+		swap(outVertices[1], outVertices[2]);
+
+	// Transform to world space
+	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);
+	for (Vec3 &v : outVertices)
+		v = transform * v;
+}
+
 inline uint8 HeightFieldShape::GetEdgeFlags(uint inX, uint inY, uint inTriangle) const
 {
 	if (inTriangle == 0)
@@ -891,7 +922,7 @@ void HeightFieldShape::Draw(DebugRenderer *inRenderer, Mat44Arg inCenterOfMassTr
 			for (uint32 bx = 0; bx < mSampleCount; bx += block_size)
 			{
 				// Create vertices for a block
-				vector<DebugRenderer::Triangle> triangles;
+				Array<DebugRenderer::Triangle> triangles;
 				triangles.resize(block_size * block_size * 2);
 				DebugRenderer::Triangle *out_tri = &triangles[0];
 				for (uint32 y = by, max_y = min(by + block_size, mSampleCount - 1); y < max_y; ++y)
@@ -1435,9 +1466,13 @@ bool HeightFieldShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &in
 	return visitor.mReturnValue;
 }
 
-void HeightFieldShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const
+void HeightFieldShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
 	JPH_PROFILE_FUNCTION();
+
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
 
 	struct Visitor
 	{
@@ -1503,7 +1538,7 @@ void HeightFieldShape::CastRay(const RayCast &inRay, const RayCastSettings &inRa
 	WalkHeightField(visitor);
 }
 
-void HeightFieldShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void HeightFieldShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
 	// A height field doesn't have volume, so we can't test insideness
 }
@@ -1743,7 +1778,7 @@ int HeightFieldShape::GetTrianglesNext(GetTrianglesContext &ioContext, int inMax
 	return context.mNumTrianglesFound;
 }
 
-void HeightFieldShape::sCollideConvexVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void HeightFieldShape::sCollideConvexVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_PROFILE_FUNCTION();
 
@@ -1799,7 +1834,7 @@ void HeightFieldShape::sCollideConvexVsHeightField(const Shape *inShape1, const 
 	shape2->WalkHeightField(visitor);
 }
 
-void HeightFieldShape::sCollideSphereVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void HeightFieldShape::sCollideSphereVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_PROFILE_FUNCTION();
 

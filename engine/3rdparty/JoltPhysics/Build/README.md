@@ -24,19 +24,26 @@ There are a number of user configurable defines that turn on/off certain feature
 - JPH_EXTERNAL_PROFILE - Turns on the internal profiler but forwards the information to a user defined external system (see Profiler.h).
 - JPH_DEBUG_RENDERER - Adds support to draw lines and triangles, used to be able to debug draw the state of the world.
 - JPH_DISABLE_TEMP_ALLOCATOR - Disables the temporary memory allocator, used mainly to allow ASAN to do its job.
+- JPH_DISABLE_CUSTOM_ALLOCATOR - Disables the ability to override the memory allocator.
 - JPH_FLOATING_POINT_EXCEPTIONS_ENABLED - Turns on division by zero and invalid floating point exception support in order to detect bugs (Windows only).
-- JPH_USE_SSE4_1 - Enable SSE4.1 CPU instructions (x64 only)
-- JPH_USE_SSE4_2 - Enable SSE4.2 CPU instructions (x64 only)
-- JPH_USE_F16C - Enable half float CPU instructions (x64 only)
-- JPH_USE_LZCNT - Enable the lzcnt CPU instruction (x64 only)
-- JPH_USE_TZCNT - Enable the tzcnt CPU instruction (x64 only)
-- JPH_USE_AVX - Enable AVX CPU instructions (x64 only)
-- JPH_USE_AVX2 - Enable AVX2 CPU instructions (x64 only)
-- JPH_USE_FMADD - Enable fused multiply add CPU instructions (x64 only)
+- JPH_CROSS_PLATFORM_DETERMINISTIC - Turns on behavior to attempt cross platform determinism. If this is set, JPH_USE_FMADD is ignored.
+- JPH_USE_SSE4_1 - Enable SSE4.1 CPU instructions (x86/x64 only)
+- JPH_USE_SSE4_2 - Enable SSE4.2 CPU instructions (x86/x64 only)
+- JPH_USE_F16C - Enable half float CPU instructions (x86/x64 only)
+- JPH_USE_LZCNT - Enable the lzcnt CPU instruction (x86/x64 only)
+- JPH_USE_TZCNT - Enable the tzcnt CPU instruction (x86/x64 only)
+- JPH_USE_AVX - Enable AVX CPU instructions (x86/x64 only)
+- JPH_USE_AVX2 - Enable AVX2 CPU instructions (x86/x64 only)
+- JPH_USE_AVX512 - Enable AVX512F+AVX512VL CPU instructions (x86/x64 only)
+- JPH_USE_FMADD - Enable fused multiply add CPU instructions (x86/x64 only)
 
 ## Logging & Asserting
 
 To override the default trace and assert mechanism install your own custom handlers in Trace and AssertFailed (see IssueReporting.h).
+
+## Custom Memory Allocator
+
+To implement your custom memory allocator override Allocate, Free, AlignedAllocate and AlignedFree (see Memory.h).
 
 ## Building
 
@@ -46,6 +53,14 @@ To override the default trace and assert mechanism install your own custom handl
 - Download CMake 3.15+ (https://cmake.org/download/)
 - Run cmake_vs2022_cl.bat
 - Open the resulting project file VS2022_CL\JoltPhysics.sln
+- Compile and run either 'Samples' or 'UnitTests'
+
+### Windows 10+ (CL - 32 bit)
+
+- Download Visual Studio 2022 (Community or other edition)
+- Download CMake 3.15+ (https://cmake.org/download/)
+- Run cmake_vs2022_cl_32bit.bat
+- Open the resulting project file VS2022_CL_32BIT\JoltPhysics.sln
 - Compile and run either 'Samples' or 'UnitTests'
 
 ### Windows 10+ (Clang compiler)
@@ -66,6 +81,14 @@ To override the default trace and assert mechanism install your own custom handl
 - Open the resulting project file VS2022_UWP\JoltPhysics.sln
 - Compile and run 'UnitTests'
 
+### Windows 10+ (MinGW)
+
+- Follow download instructions for MSYS2 (https://www.msys2.org/)
+- From the MSYS2 MSYS app run: pacman -S --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
+- From the MSYS2 MINGW x64 app, in the Build folder run: ./cmake_windows_mingw.sh
+- Run: cmake --build MinGW_Debug
+- Run: MinGW_Debug/UnitTests.exe
+
 ### Linux (Debian flavor, x64 or ARM64)
 
 - Install clang (apt-get install clang)
@@ -74,6 +97,20 @@ To override the default trace and assert mechanism install your own custom handl
 - Go to the Linux_Debug folder
 - Run: make -j 8 && ./UnitTests
 
+### Linux (Debian flavor, MinGW Cross Compile)
+
+- This setup can be used to run samples on Linux using wine and vkd3d. Tested on Ubuntu 22.04
+- Graphics card must support Vulkan and related drivers must be installed
+- Install mingw-w64 (apt-get install mingw-w64)
+- Run: update-alternatives --config x86_64-w64-mingw32-g++ (Select /usr/bin/x86_64-w64-mingw32-g++-posix)
+- Install cmake (apt-get install cmake)
+- Install wine64 (apt-get install wine64)
+- Run: export WINEPATH="/usr/x86_64-w64-mingw32/lib;/usr/lib/gcc/x86_64-w64-mingw32/10-posix" (change it based on your environment)
+- Run: ./cmake_linux_mingw.sh Release (Debug doesn't work)
+- Go to the MinGW_Release folder
+- Run: make -j 8 && wine UnitTests.exe
+- Run: wine Samples.exe
+
 ### Android
 
 - Install Android Studio 2020.3.1+ (https://developer.android.com/studio/)
@@ -81,7 +118,7 @@ To override the default trace and assert mechanism install your own custom handl
 - Select 'Run' / 'Run...' and 'UnitTests'
 - If the screen turns green after a while the unit tests succeeded, when red they failed (see the android log for details)
 
-### MacOS
+### macOS
 
 - Install XCode
 - Download CMake 3.23+ (https://cmake.org/download/)
@@ -104,5 +141,4 @@ Note that you can also follow the steps in the 'Linux' section if you wish to bu
 Documentation can be generated through doxygen:
 
 - Install Doxygen (https://www.doxygen.nl/download.html)
-- Install Microsoft HTML Help Workshop (to generate a CHM file)
 - Run: run_doxygen.bat

@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include <Jolt/Core/UnorderedMap.h>
 #include <Image/Surface.h>
 #include <Renderer/Frustum.h>
 #include <Renderer/ConstantBuffer.h>
 #include <Renderer/PipelineState.h>
 #include <Renderer/CommandQueue.h>
 #include <Renderer/DescriptorHeap.h>
+#include <memory>
 
 // Forward declares
 class Texture;
@@ -23,7 +25,6 @@ struct CameraState
 	Vec3							mUp;								///< Camera up vector
 	float							mFOVY;								///< Field of view in radians in up direction
 	float							mFarPlane;							///< Distance of far plane
-	float							mNearPlane;							///< Distance of near plane
 };
 
 /// Responsible for rendering primitives to the screen
@@ -161,10 +162,10 @@ private:
     ComPtr<ID3D12Fence>				mFence;								///< Fence object, used to signal the end of a frame
 	UINT64							mFenceValues[cFrameCount] = {};		///< Values that were used to signal completion of one of the two frames
 
-	using ResourceCache = unordered_map<uint64, vector<ComPtr<ID3D12Resource>>>;
+	using ResourceCache = UnorderedMap<uint64, Array<ComPtr<ID3D12Resource>>>;
 
 	ResourceCache					mResourceCache;						///< Cache items ready to be reused
 	ResourceCache					mDelayCached[cFrameCount];			///< List of reusable ID3D12Resources that are potentially referenced by the GPU so can be used only when the GPU finishes
-	vector<ComPtr<ID3D12Object>>	mDelayReleased[cFrameCount];		///< Objects that are potentially referenced by the GPU so can only be freed when the GPU finishes
+	Array<ComPtr<ID3D12Object>>		mDelayReleased[cFrameCount];		///< Objects that are potentially referenced by the GPU so can only be freed when the GPU finishes
 	bool							mIsExiting = false;					///< When exiting we don't want to add references too buffers
 };

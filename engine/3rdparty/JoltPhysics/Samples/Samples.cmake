@@ -27,6 +27,8 @@ set(SAMPLES_SRC_FILES
 	${SAMPLES_ROOT}/Tests/Constraints/DistanceConstraintTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/FixedConstraintTest.cpp
 	${SAMPLES_ROOT}/Tests/Constraints/FixedConstraintTest.h
+	${SAMPLES_ROOT}/Tests/Constraints/GearConstraintTest.cpp
+	${SAMPLES_ROOT}/Tests/Constraints/GearConstraintTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/HingeConstraintTest.cpp
 	${SAMPLES_ROOT}/Tests/Constraints/HingeConstraintTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/PointConstraintTest.cpp
@@ -39,6 +41,10 @@ set(SAMPLES_SRC_FILES
 	${SAMPLES_ROOT}/Tests/Constraints/PoweredSwingTwistConstraintTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/PoweredSliderConstraintTest.cpp
 	${SAMPLES_ROOT}/Tests/Constraints/PoweredSliderConstraintTest.h
+	${SAMPLES_ROOT}/Tests/Constraints/PulleyConstraintTest.cpp
+	${SAMPLES_ROOT}/Tests/Constraints/PulleyConstraintTest.h
+	${SAMPLES_ROOT}/Tests/Constraints/RackAndPinionConstraintTest.cpp
+	${SAMPLES_ROOT}/Tests/Constraints/RackAndPinionConstraintTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/SwingTwistConstraintFrictionTest.cpp
 	${SAMPLES_ROOT}/Tests/Constraints/SwingTwistConstraintFrictionTest.h
 	${SAMPLES_ROOT}/Tests/Constraints/SwingTwistConstraintTest.cpp
@@ -81,6 +87,8 @@ set(SAMPLES_SRC_FILES
 	${SAMPLES_ROOT}/Tests/General/ContactManifoldTest.h
 	${SAMPLES_ROOT}/Tests/General/DampingTest.cpp
 	${SAMPLES_ROOT}/Tests/General/DampingTest.h
+	${SAMPLES_ROOT}/Tests/General/DynamicMeshTest.cpp
+	${SAMPLES_ROOT}/Tests/General/DynamicMeshTest.h
 	${SAMPLES_ROOT}/Tests/General/FrictionTest.cpp
 	${SAMPLES_ROOT}/Tests/General/FrictionTest.h
 	${SAMPLES_ROOT}/Tests/General/FrictionPerTriangleTest.cpp
@@ -129,6 +137,8 @@ set(SAMPLES_SRC_FILES
 	${SAMPLES_ROOT}/Tests/Rig/PoweredRigTest.h
 	${SAMPLES_ROOT}/Tests/Rig/RigPileTest.cpp
 	${SAMPLES_ROOT}/Tests/Rig/RigPileTest.h
+	${SAMPLES_ROOT}/Tests/Rig/SkeletonMapperTest.cpp
+	${SAMPLES_ROOT}/Tests/Rig/SkeletonMapperTest.h
 	${SAMPLES_ROOT}/Tests/Test.cpp
 	${SAMPLES_ROOT}/Tests/Test.h
 	${SAMPLES_ROOT}/Tests/Tools/LoadSnapshotTest.cpp
@@ -197,14 +207,9 @@ set(SAMPLES_SRC_FILES
 	${SAMPLES_ROOT}/Utils/ContactListenerImpl.h
 	${SAMPLES_ROOT}/Utils/RagdollLoader.cpp
 	${SAMPLES_ROOT}/Utils/RagdollLoader.h
+	${SAMPLES_ROOT}/Utils/ShapeCreator.cpp
+	${SAMPLES_ROOT}/Utils/ShapeCreator.h
 )
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	# Enable Precompiled Headers for Samples
-	set_source_files_properties(${SAMPLES_SRC_FILES} PROPERTIES COMPILE_FLAGS "/YuTestFramework.h")
-	set(SAMPLES_SRC_FILES ${SAMPLES_SRC_FILES} ${SAMPLES_ROOT}/pch.cpp)
-	set_source_files_properties(${SAMPLES_ROOT}/pch.cpp PROPERTIES COMPILE_FLAGS "/YcTestFramework.h")
-endif()
 
 # Group source files
 source_group(TREE ${SAMPLES_ROOT} FILES ${SAMPLES_SRC_FILES})	
@@ -212,7 +217,7 @@ source_group(TREE ${SAMPLES_ROOT} FILES ${SAMPLES_SRC_FILES})
 # Create Samples executable
 add_executable(Samples  ${SAMPLES_SRC_FILES})
 target_include_directories(Samples PUBLIC ${SAMPLES_ROOT})
-target_link_libraries (Samples LINK_PUBLIC TestFramework d3d12.lib shcore.lib)
+target_link_libraries(Samples LINK_PUBLIC TestFramework d3d12.lib shcore.lib)
 
 # Set the correct working directory
 set_property(TARGET Samples PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${PHYSICS_REPO_ROOT}")

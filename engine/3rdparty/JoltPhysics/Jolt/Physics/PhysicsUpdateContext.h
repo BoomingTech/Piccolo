@@ -8,6 +8,7 @@
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhase.h>
 #include <Jolt/Core/StaticArray.h>
 #include <Jolt/Core/JobSystem.h>
+#include <Jolt/Core/STLTempAllocator.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -21,10 +22,10 @@ class PhysicsUpdateContext : public NonCopyable
 {
 public:
 	/// Destructor
+	explicit				PhysicsUpdateContext(TempAllocator &inTempAllocator);
 							~PhysicsUpdateContext();
 
 	static constexpr int	cMaxConcurrency = 32;									///< Maximum supported amount of concurrent jobs
-	static constexpr int	cMaxSteps = 4;											///< Maximum supported amount of collision steps
 	static constexpr int	cMaxSubSteps = 4;										///< Maximum supported amount of integration sub steps
 
 	using JobHandleArray = StaticArray<JobHandle, cMaxConcurrency>;
@@ -38,6 +39,7 @@ public:
 
 		bool				mIsFirst;												///< If this is the first substep in the step
 		bool				mIsLast;												///< If this is the last substep in the step
+		bool				mIsFirstOfAll;											///< If this is the first substep of the first step
 		bool				mIsLastOfAll;											///< If this is the last substep in the last step
 
 		atomic<uint32>		mSolveVelocityConstraintsNextIsland { 0 };				///< Next island that needs to be processed for the solve velocity constraints step (doesn't need own cache line since position jobs don't run at same time)
@@ -80,8 +82,11 @@ public:
 
 	struct BodyPairQueue
 	{
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32> mWriteIdx { 0 };				///< Next index to write in mBodyPair array (need to add thread index * mMaxBodyPairsPerQueue and modulo mMaxBodyPairsPerQueue) (moved to own cache line to avoid conflicts with consumer jobs)
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32> mReadIdx { 0 };					///< Next index to read in mBodyPair array (need to add thread index * mMaxBodyPairsPerQueue and modulo mMaxBodyPairsPerQueue) (moved to own cache line to avoid conflicts with producer/consumer jobs)
+		atomic<uint32>		mWriteIdx { 0 };										///< Next index to write in mBodyPair array (need to add thread index * mMaxBodyPairsPerQueue and modulo mMaxBodyPairsPerQueue)
+		uint8				mPadding1[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Moved to own cache line to avoid conflicts with consumer jobs
+
+		atomic<uint32>		mReadIdx { 0 };											///< Next index to read in mBodyPair array (need to add thread index * mMaxBodyPairsPerQueue and modulo mMaxBodyPairsPerQueue)
+		uint8				mPadding2[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Moved to own cache line to avoid conflicts with producer/consumer jobs
 	};
 
 	using BodyPairQueues = StaticArray<BodyPairQueue, cMaxConcurrency>;
@@ -92,21 +97,29 @@ public:
 	/// Structure that contains data needed for each collision step.
 	struct Step
 	{
+							Step() = default;
+							Step(const Step &)										{ JPH_ASSERT(false); } // vector needs a copy constructor, but we're never going to call it
+
 		PhysicsUpdateContext *mContext;												///< The physics update context
 
 		BroadPhase::UpdateState	mBroadPhaseUpdateState;								///< Handle returned by Broadphase::UpdatePrepare
 
 		uint32				mNumActiveBodiesAtStepStart;							///< Number of bodies that were active at the start of the physics update step. Only these bodies will receive gravity (they are the first N in the active body list).
 
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32>	mConstraintReadIdx { 0 };		///< Next constraint for determine active constraints (moved to own cache line since its modified frequently by different jobs)
+		atomic<uint32>		mConstraintReadIdx { 0 };								///< Next constraint for determine active constraints
+		uint8				mPadding1[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Padding to avoid sharing cache line with the next atomic
+		
+		atomic<uint32>		mNumActiveConstraints { 0 };							///< Number of constraints in the mActiveConstraints array
+		uint8				mPadding2[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Padding to avoid sharing cache line with the next atomic
+		
+		atomic<uint32>		mStepListenerReadIdx { 0 };								///< Next step listener to call
+		uint8				mPadding3[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Padding to avoid sharing cache line with the next atomic
+		
+		atomic<uint32>		mApplyGravityReadIdx { 0 };								///< Next body to apply gravity to
+		uint8				mPadding4[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Padding to avoid sharing cache line with the next atomic
 
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32>	mNumActiveConstraints { 0 };	///< Number of constraints in the mActiveConstraints array
-
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32>	mStepListenerReadIdx { 0 };		///< Next step listener to call (moved to own cache line since its modified frequently by different jobs)
-
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32>	mApplyGravityReadIdx { 0 };		///< Next body to apply gravity to (moved to own cache line since its modified frequently by different jobs)
-
-		alignas(JPH_CACHE_LINE_SIZE) atomic<uint32>	mActiveBodyReadIdx { 0 };		///< Index of fist active body that has not yet been processed by the broadphase
+		atomic<uint32>		mActiveBodyReadIdx { 0 };								///< Index of fist active body that has not yet been processed by the broadphase
+		uint8				mPadding5[JPH_CACHE_LINE_SIZE - sizeof(atomic<uint32>)];///< Padding to avoid sharing cache line with the next atomic
 
 		BodyPairQueues		mBodyPairQueues;										///< Queues in which to put body pairs that need to be tested by the narrowphase
 
@@ -133,7 +146,7 @@ public:
 		JobHandle			mStartNextStep;											///< Job that kicks the next step (empty for the last step)
 	};
 
-	using Steps = StaticArray<Step, cMaxSteps>;
+	using Steps = std::vector<Step, STLTempAllocator<Step>>;
 
 	/// Maximum amount of concurrent jobs on this machine
 	int						GetMaxConcurrency() const								{ const int max_concurrency = PhysicsUpdateContext::cMaxConcurrency; return min(max_concurrency, mJobSystem->GetMaxConcurrency()); } ///< Need to put max concurrency in temp var as min requires a reference

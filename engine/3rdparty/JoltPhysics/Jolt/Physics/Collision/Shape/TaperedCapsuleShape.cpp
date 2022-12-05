@@ -126,7 +126,7 @@ TaperedCapsuleShape::TaperedCapsuleShape(const TaperedCapsuleShapeSettings &inSe
 	// See: TaperedCapsuleShape.gliffy
 	mSinAlpha = (mBottomRadius - mTopRadius) / (mTopCenter - mBottomCenter);
 	JPH_ASSERT(mSinAlpha >= -1.0f && mSinAlpha <= 1.0f);
-	mTanAlpha = tan(asin(mSinAlpha));
+	mTanAlpha = Tan(ASin(mSinAlpha));
 
 	outResult.Set(this);
 }
@@ -208,8 +208,9 @@ const ConvexShape::Support *TaperedCapsuleShape::GetSupportFunction(ESupportMode
 	return nullptr;
 }
 
-void TaperedCapsuleShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const
+void TaperedCapsuleShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const
 {	
+	JPH_ASSERT(inSubShapeID.IsEmpty(), "Invalid subshape ID");
 	JPH_ASSERT(IsValidScale(inScale));
 
 	// Check zero vector
@@ -237,8 +238,8 @@ void TaperedCapsuleShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale
 	// If projection is roughly equal then return line, otherwise we return nothing as there's only 1 point
 	if (abs(proj_top - proj_bottom) < cCapsuleProjectionSlop * len)
 	{
-		outVertices.push_back(support_top);
-		outVertices.push_back(support_bottom);
+		outVertices.push_back(inCenterOfMassTransform * support_top);
+		outVertices.push_back(inCenterOfMassTransform * support_bottom);
 	}
 }
 
@@ -267,7 +268,7 @@ Vec3 TaperedCapsuleShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3A
 	else
 	{
 		// Get perpendicular vector to the surface in the xz plane
-		Vec3 perpendicular = Vec3(inLocalSurfacePosition.GetX(), 0, inLocalSurfacePosition.GetZ()).Normalized();
+		Vec3 perpendicular = Vec3(inLocalSurfacePosition.GetX(), 0, inLocalSurfacePosition.GetZ()).NormalizedOr(Vec3::sAxisX());
 
 		// We know that the perpendicular has length 1 and that it needs a y component where tan(alpha) = y / 1 in order to align it to the surface
 		perpendicular.SetY(mTanAlpha);

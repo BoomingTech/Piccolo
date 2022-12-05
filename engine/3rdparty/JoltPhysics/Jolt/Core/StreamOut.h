@@ -27,22 +27,23 @@ public:
 
 	/// Write a vector of primitives from the binary stream
 	template <class T, class A>
-	void				Write(const vector<T, A> &inT)
+	void				Write(const std::vector<T, A> &inT)
 	{
-		typename vector<T>::size_type len = inT.size();
+		typename Array<T>::size_type len = inT.size();
 		Write(len);
 		if (!IsFailed())
-			for (typename vector<T>::size_type i = 0; i < len; ++i)
+			for (typename Array<T>::size_type i = 0; i < len; ++i)
 				Write(inT[i]);
 	}
 
 	/// Write a string to the binary stream (writes the number of characters and then the characters)
-	void				Write(const string &inString)
+	template <class Type, class Traits, class Allocator>
+	void				Write(const std::basic_string<Type, Traits, Allocator> &inString)
 	{
-		string::size_type len = inString.size();
+		typename std::basic_string<Type, Traits, Allocator>::size_type len = inString.size();
 		Write(len);
 		if (!IsFailed())
-			WriteBytes(inString.data(), len);
+			WriteBytes(inString.data(), len * sizeof(Type));
 	}
 
 	/// Write a Vec3 (don't write W)

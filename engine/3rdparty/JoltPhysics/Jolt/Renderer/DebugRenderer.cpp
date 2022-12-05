@@ -293,7 +293,7 @@ void DebugRenderer::DrawWireUnitSphereRecursive(Mat44Arg inMatrix, ColorArg inCo
 	}
 }
 
-void DebugRenderer::Create8thSphereRecursive(vector<uint32> &ioIndices, vector<Vertex> &ioVertices, Vec3Arg inDir1, uint32 &ioIdx1, Vec3Arg inDir2, uint32 &ioIdx2, Vec3Arg inDir3, uint32 &ioIdx3, const Float2 &inUV, SupportFunction inGetSupport, int inLevel)
+void DebugRenderer::Create8thSphereRecursive(Array<uint32> &ioIndices, Array<Vertex> &ioVertices, Vec3Arg inDir1, uint32 &ioIdx1, Vec3Arg inDir2, uint32 &ioIdx2, Vec3Arg inDir3, uint32 &ioIdx3, const Float2 &inUV, SupportFunction inGetSupport, int inLevel)
 {
 	if (inLevel == 0)
 	{
@@ -345,7 +345,7 @@ void DebugRenderer::Create8thSphereRecursive(vector<uint32> &ioIndices, vector<V
 	}
 }
 
-void DebugRenderer::Create8thSphere(vector<uint32> &ioIndices, vector<Vertex> &ioVertices, Vec3Arg inDir1, Vec3Arg inDir2, Vec3Arg inDir3, const Float2 &inUV, SupportFunction inGetSupport, int inLevel)
+void DebugRenderer::Create8thSphere(Array<uint32> &ioIndices, Array<Vertex> &ioVertices, Vec3Arg inDir1, Vec3Arg inDir2, Vec3Arg inDir3, const Float2 &inUV, SupportFunction inGetSupport, int inLevel)
 {
 	uint32 idx1 = 0xffffffff;
 	uint32 idx2 = 0xffffffff;
@@ -354,7 +354,7 @@ void DebugRenderer::Create8thSphere(vector<uint32> &ioIndices, vector<Vertex> &i
 	Create8thSphereRecursive(ioIndices, ioVertices, inDir1, idx1, inDir2, idx2, inDir3, idx3, inUV, inGetSupport, inLevel);
 }
 
-void DebugRenderer::CreateQuad(vector<uint32> &ioIndices, vector<Vertex> &ioVertices, Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, Vec3Arg inV4)
+void DebugRenderer::CreateQuad(Array<uint32> &ioIndices, Array<Vertex> &ioVertices, Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, Vec3Arg inV4)
 {
 	// Make room
 	uint32 start_idx = uint32(ioVertices.size());
@@ -396,8 +396,8 @@ void DebugRenderer::Initialize()
 {
 	// Box
 	{
-		vector<Vertex> box_vertices;
-		vector<uint32> box_indices;
+		Array<Vertex> box_vertices;
+		Array<uint32> box_indices;
 
 		// Get corner points
 		Vec3 v0 = Vec3(-1,  1, -1);
@@ -452,8 +452,8 @@ void DebugRenderer::Initialize()
 
 		// Capsule bottom half sphere
 		{
-			vector<Vertex> capsule_bottom_vertices;
-			vector<uint32> capsule_bottom_indices;
+			Array<Vertex> capsule_bottom_vertices;
+			Array<uint32> capsule_bottom_indices;
 			Create8thSphere(capsule_bottom_indices, capsule_bottom_vertices, -Vec3::sAxisX(), -Vec3::sAxisY(),  Vec3::sAxisZ(), Float2(0.25f, 0.25f), sphere_support, level);
 			Create8thSphere(capsule_bottom_indices, capsule_bottom_vertices, -Vec3::sAxisY(),  Vec3::sAxisX(),  Vec3::sAxisZ(), Float2(0.25f, 0.75f), sphere_support, level);
 			Create8thSphere(capsule_bottom_indices, capsule_bottom_vertices,  Vec3::sAxisX(), -Vec3::sAxisY(), -Vec3::sAxisZ(), Float2(0.25f, 0.25f), sphere_support, level);
@@ -463,8 +463,8 @@ void DebugRenderer::Initialize()
 
 		// Capsule top half sphere
 		{
-			vector<Vertex> capsule_top_vertices;
-			vector<uint32> capsule_top_indices;
+			Array<Vertex> capsule_top_vertices;
+			Array<uint32> capsule_top_indices;
 			Create8thSphere(capsule_top_indices, capsule_top_vertices,  Vec3::sAxisX(),  Vec3::sAxisY(),  Vec3::sAxisZ(), Float2(0.25f, 0.75f), sphere_support, level);
 			Create8thSphere(capsule_top_indices, capsule_top_vertices,  Vec3::sAxisY(), -Vec3::sAxisX(),  Vec3::sAxisZ(), Float2(0.25f, 0.25f), sphere_support, level);
 			Create8thSphere(capsule_top_indices, capsule_top_vertices,  Vec3::sAxisY(),  Vec3::sAxisX(), -Vec3::sAxisZ(), Float2(0.25f, 0.25f), sphere_support, level);
@@ -474,8 +474,8 @@ void DebugRenderer::Initialize()
 
 		// Capsule middle part
 		{
-			vector<Vertex> capsule_mid_vertices;
-			vector<uint32> capsule_mid_indices;
+			Array<Vertex> capsule_mid_vertices;
+			Array<uint32> capsule_mid_indices;
 			for (int q = 0; q < 4; ++q)
 			{
 				Float2 uv = (q & 1) == 0? Float2(0.25f, 0.25f) : Float2(0.25f, 0.75f);
@@ -486,8 +486,8 @@ void DebugRenderer::Initialize()
 				for (int i = 0; i <= num_parts; ++i)
 				{
 					float angle = 0.5f * JPH_PI * (float(q) + float(i) / num_parts);
-					float s = sin(angle);
-					float c = cos(angle);
+					float s = Sin(angle);
+					float c = Cos(angle);
 					Float3 vt(s, 1.0f, c);
 					Float3 vb(s, -1.0f, c);
 					Float3 n(s, 0, c);
@@ -514,8 +514,8 @@ void DebugRenderer::Initialize()
 
 		// Open cone
 		{
-			vector<Vertex> open_cone_vertices;
-			vector<uint32> open_cone_indices;
+			Array<Vertex> open_cone_vertices;
+			Array<uint32> open_cone_indices;
 			for (int q = 0; q < 4; ++q)
 			{
 				Float2 uv = (q & 1) == 0? Float2(0.25f, 0.25f) : Float2(0.25f, 0.75f);
@@ -528,8 +528,8 @@ void DebugRenderer::Initialize()
 				{
 					// Calculate bottom vertex
 					float angle = 0.5f * JPH_PI * (float(q) + float(i) / num_parts);
-					float s = sin(angle);
-					float c = cos(angle);
+					float s = Sin(angle);
+					float c = Cos(angle);
 					Float3 vb(s, 1.0f, c);
 
 					// Calculate normal
@@ -556,8 +556,8 @@ void DebugRenderer::Initialize()
 
 		// Cylinder
 		{
-			vector<Vertex> cylinder_vertices;
-			vector<uint32> cylinder_indices;
+			Array<Vertex> cylinder_vertices;
+			Array<uint32> cylinder_indices;
 			for (int q = 0; q < 4; ++q)
 			{
 				Float2 uv = (q & 1) == 0? Float2(0.25f, 0.75f) : Float2(0.25f, 0.25f);
@@ -575,8 +575,8 @@ void DebugRenderer::Initialize()
 				for (int i = 0; i <= num_parts; ++i)
 				{
 					float angle = 0.5f * JPH_PI * (float(q) + float(i) / num_parts);
-					float s = sin(angle);
-					float c = cos(angle);
+					float s = Sin(angle);
+					float c = Cos(angle);
 					Float3 vt(s, 1.0f, c);
 					Float3 vb(s, -1.0f, c);
 					Float3 n(s, 0, c);
@@ -628,7 +628,7 @@ DebugRenderer::Batch DebugRenderer::CreateTriangleBatch(const VertexList &inVert
 {
 	JPH_PROFILE_FUNCTION();
 
-	vector<Vertex> vertices;
+	Array<Vertex> vertices;
 
 	// Create render vertices
 	vertices.resize(inVertices.size());
@@ -667,8 +667,8 @@ DebugRenderer::Batch DebugRenderer::CreateTriangleBatchForConvex(SupportFunction
 {
 	JPH_PROFILE_FUNCTION();
 
-	vector<Vertex> vertices;
-	vector<uint32> indices;
+	Array<Vertex> vertices;
+	Array<uint32> indices;
 	Create8thSphere(indices, vertices,  Vec3::sAxisX(),  Vec3::sAxisY(),  Vec3::sAxisZ(), Float2(0.25f, 0.25f), inGetSupport, inLevel);
 	Create8thSphere(indices, vertices,  Vec3::sAxisY(), -Vec3::sAxisX(),  Vec3::sAxisZ(), Float2(0.25f, 0.75f), inGetSupport, inLevel);
 	Create8thSphere(indices, vertices, -Vec3::sAxisY(),  Vec3::sAxisX(),  Vec3::sAxisZ(), Float2(0.25f, 0.75f), inGetSupport, inLevel);
@@ -786,7 +786,7 @@ void DebugRenderer::DrawOpenCone(Vec3Arg inTop, Vec3Arg inAxis, Vec3Arg inPerpen
 	JPH_ASSERT(abs(inPerpendicular.Dot(inAxis)) < 1.0e-4f);
 
 	Vec3 axis = Sign(inHalfAngle) * inLength * inAxis;
-	float scale = inLength * tan(abs(inHalfAngle));
+	float scale = inLength * Tan(abs(inHalfAngle));
 	if (scale != 0.0f)
 	{
 		Vec3 perp1 = scale * inPerpendicular;
@@ -815,8 +815,8 @@ void DebugRenderer::DrawSwingLimits(Mat44Arg inMatrix, float inSwingYHalfAngle, 
 		int half_num_segments = num_segments / 2;
 
 		// The y and z values of the quaternion are limited to an ellipse, e1 and e2 are the radii of this ellipse
-		float e1 = sin(0.5f * inSwingZHalfAngle);
-		float e2 = sin(0.5f * inSwingYHalfAngle);
+		float e1 = Sin(0.5f * inSwingZHalfAngle);
+		float e2 = Sin(0.5f * inSwingYHalfAngle);
 
 		// Check if the limits will draw something
 		if ((e1 <= 0.0f && e2 <= 0.0f) || (e2 >= 1.0f && e1 >= 1.0f))
@@ -960,7 +960,7 @@ void DebugRenderer::DrawPie(Vec3Arg inCenter, float inRadius, Vec3Arg inNormal, 
 		{
 			float angle = float(i) / float(num_parts) * delta_angle;
 
-			Float3 pos = { cos(angle), 0, sin(angle) };
+			Float3 pos = { Cos(angle), 0, Sin(angle) };
 			*vertices++ = { pos, normal, { 0, 0 }, Color::sWhite };
 		}
 

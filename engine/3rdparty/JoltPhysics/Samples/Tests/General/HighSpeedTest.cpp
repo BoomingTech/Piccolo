@@ -56,7 +56,7 @@ void HighSpeedTest::CreateDominoBlocks(Vec3Arg inOffset, int inNumWalls, float i
 	mBodyInterface->CreateAndAddBody(box_settings, EActivation::DontActivate);
 }
 
-void HighSpeedTest::CreateDynamicObject(Vec3 inPosition, Vec3 inVelocity, Shape *inShape, EMotionQuality inMotionQuality)
+void HighSpeedTest::CreateDynamicObject(Vec3Arg inPosition, Vec3Arg inVelocity, Shape *inShape, EMotionQuality inMotionQuality)
 {
 	BodyCreationSettings creation_settings;
 	creation_settings.SetShape(inShape);
@@ -261,7 +261,7 @@ void HighSpeedTest::CreateSimpleScene()
 void HighSpeedTest::CreateFastSmallConvexObjects()
 {
 	// Create small convex hull
-	vector<Vec3> vertices = {
+	Array<Vec3> vertices = {
 		Vec3(-0.044661f, 0.001230f, 0.003877f),
 		Vec3(-0.024743f, -0.042562f, 0.003877f),
 		Vec3(-0.012336f, -0.021073f, 0.048484f),

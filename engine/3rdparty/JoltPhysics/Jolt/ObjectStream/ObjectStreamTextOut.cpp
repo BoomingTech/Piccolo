@@ -30,7 +30,7 @@ void ObjectStreamTextOut::WriteDataType(EOSDataType inType)
 	case EOSDataType::T_uint64:		WriteWord("uint64");		break;
 	case EOSDataType::T_float:		WriteWord("float");			break;
 	case EOSDataType::T_bool:		WriteWord("bool");			break;
-	case EOSDataType::T_string:		WriteWord("string");		break;
+	case EOSDataType::T_String:		WriteWord("string");		break;
 	case EOSDataType::T_Float3:		WriteWord("float3");		break;
 	case EOSDataType::T_Vec3:		WriteWord("vec3");			break;
 	case EOSDataType::T_Vec4:		WriteWord("vec4");			break;
@@ -43,7 +43,7 @@ void ObjectStreamTextOut::WriteDataType(EOSDataType inType)
 
 void ObjectStreamTextOut::WriteName(const char *inName)
 {
-	WriteWord(string(inName) + " ");
+	WriteWord(String(inName) + " ");
 }
 
 void ObjectStreamTextOut::WriteIdentifier(Identifier inIdentifier)
@@ -53,37 +53,37 @@ void ObjectStreamTextOut::WriteIdentifier(Identifier inIdentifier)
 
 void ObjectStreamTextOut::WriteCount(uint32 inCount)
 {
-	WriteWord(to_string(inCount));
+	WriteWord(std::to_string(inCount));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const uint8 &inPrimitive)
 {
-	WriteWord(to_string(inPrimitive));
+	WriteWord(std::to_string(inPrimitive));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const uint16 &inPrimitive)
 {
-	WriteWord(to_string(inPrimitive));
+	WriteWord(std::to_string(inPrimitive));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const int &inPrimitive)
 {
-	WriteWord(to_string(inPrimitive));
+	WriteWord(std::to_string(inPrimitive));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const uint32 &inPrimitive)
 {
-	WriteWord(to_string(inPrimitive));
+	WriteWord(std::to_string(inPrimitive));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const uint64 &inPrimitive)
 {
-	WriteWord(to_string(inPrimitive));
+	WriteWord(std::to_string(inPrimitive));
 }
 
 void ObjectStreamTextOut::WritePrimitiveData(const float &inPrimitive)
 {
-	ostringstream stream;
+	std::ostringstream stream;
 	stream.precision(9);
 	stream << inPrimitive;
 	WriteWord(stream.str());
@@ -145,14 +145,14 @@ void ObjectStreamTextOut::WritePrimitiveData(const Mat44 &inPrimitive)
 	WritePrimitiveData(inPrimitive.GetColumn4(3));
 }
 
-void ObjectStreamTextOut::WritePrimitiveData(const string &inPrimitive)
+void ObjectStreamTextOut::WritePrimitiveData(const String &inPrimitive)
 {
-	string temporary(inPrimitive);
+	String temporary(inPrimitive);
 	StringReplace(temporary, "\\", "\\\\");
 	StringReplace(temporary, "\n", "\\n");
 	StringReplace(temporary, "\t", "\\t");
 	StringReplace(temporary, "\"", "\\\"");
-	WriteWord(string("\"") + temporary + string("\""));
+	WriteWord(String("\"") + temporary + String("\""));
 }
 
 void ObjectStreamTextOut::HintNextItem()

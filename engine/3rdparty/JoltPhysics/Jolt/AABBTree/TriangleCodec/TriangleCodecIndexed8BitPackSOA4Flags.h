@@ -5,10 +5,6 @@
 
 #include <Jolt/Geometry/RayTriangle.h>
 
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <unordered_map>
-JPH_SUPPRESS_WARNINGS_STD_END
-
 JPH_NAMESPACE_BEGIN
 
 /// Store vertices in 64 bits and indices in 8 bits + 8 bit of flags per triangle like this:
@@ -214,12 +210,12 @@ public:
 		}
 
 	private:
-		using VertexMap = vector<uint32>;
+		using VertexMap = Array<uint32>;
 
 		uint						mNumTriangles = 0;
-		vector<uint32>				mVertices;				///< Output vertices as an index into the original vertex list (inVertices), sorted according to occurrence
+		Array<uint32>				mVertices;				///< Output vertices as an index into the original vertex list (inVertices), sorted according to occurrence
 		VertexMap					mVertexMap;				///< Maps from the original mesh vertex index (inVertices) to the index in our output vertices (mVertices)
-		vector<uint>				mOffsetsToPatch;		///< Offsets to the vertex buffer that need to be patched in once all nodes have been packed
+		Array<uint>					mOffsetsToPatch;		///< Offsets to the vertex buffer that need to be patched in once all nodes have been packed
 	};
 
 	/// This class is used to decode and decompress triangle data packed by the EncodingContext
@@ -227,7 +223,7 @@ public:
 	{
 	private:
 		/// Private helper functions to unpack the 1 vertex of 4 triangles (outX contains the x coordinate of triangle 0 .. 3 etc.)
-		JPH_INLINE void				Unpack(const VertexData *inVertices, UVec4 inIndex, Vec4 &outX, Vec4 &outY, Vec4 &outZ) const
+		JPH_INLINE void				Unpack(const VertexData *inVertices, UVec4Arg inIndex, Vec4 &outX, Vec4 &outY, Vec4 &outZ) const
 		{
 			// Get compressed data
 			UVec4 c1 = UVec4::sGatherInt4<8>(&inVertices->mVertexXY, inIndex);

@@ -6,9 +6,14 @@
 #include <Tests/Character/CharacterBaseTest.h>
 #include <Jolt/Physics/PhysicsScene.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 #include <Jolt/Core/StringTools.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
 #include <Application/DebugUI.h>
 #include <Layers.h>
 #include <Utils/Log.h>
@@ -42,12 +47,27 @@ static const Quat cRampOrientation = Quat::sRotation(Vec3::sAxisX(), -0.25f * JP
 static const Vec3 cRampBlocksStart = cRampPosition + Vec3(-3.0f, 3.0f, 1.5f);
 static const Vec3 cRampBlocksDelta = Vec3(2.0f, 0, 0);
 static const float cRampBlocksTime = 5.0f;
-static const Vec3 cBumpsPosition = Vec3(-5.0f, 0, 2.5f);
-static const float cBumpHeight = 0.05f;
-static const float cBumpWidth = 0.01f;
-static const float cBumpDelta = 0.5f;
-static const Vec3 cStairsPosition = Vec3(-10.0f, 0, 2.5f);
+static const Vec3 cSmallBumpsPosition = Vec3(-5.0f, 0, 2.5f);
+static const float cSmallBumpHeight = 0.05f;
+static const float cSmallBumpWidth = 0.01f;
+static const float cSmallBumpDelta = 0.5f;
+static const Vec3 cLargeBumpsPosition = Vec3(-10.0f, 0, 2.5f);
+static const float cLargeBumpHeight = 0.3f;
+static const float cLargeBumpWidth = 0.1f;
+static const float cLargeBumpDelta = 2.0f;
+static const Vec3 cStairsPosition = Vec3(-15.0f, 0, 2.5f);
 static const float cStairsStepHeight = 0.3f;
+static const Vec3 cMeshStairsPosition = Vec3(-20.0f, 0, 2.5f);
+static const Vec3 cNoStairsPosition = Vec3(-15.0f, 0, 10.0f);
+static const float cNoStairsStepHeight = 0.3f;
+static const float cNoStairsStepDelta = 0.05f;
+static const Vec3 cMeshNoStairsPosition = Vec3(-20.0f, 0, 10.0f);
+static const Vec3 cMeshWallPosition = Vec3(-25.0f, 0, -27.0f);
+static const float cMeshWallHeight = 3.0f;
+static const float cMeshWallWidth = 2.0f;
+static const float cMeshWallStepStart = 0.5f;
+static const float cMeshWallStepEnd = 4.0f;
+static const int cMeshWallSegments = 25;
 
 void CharacterBaseTest::Initialize()
 {
@@ -64,7 +84,7 @@ void CharacterBaseTest::Initialize()
 	else if (strcmp(sSceneName, "ObstacleCourse") == 0)
 	{
 		// Default terrain
-		CreateFloor();
+		CreateFloor(350.0f);
 
 		{
 			// Create ramps with different inclinations
@@ -77,8 +97,8 @@ void CharacterBaseTest::Initialize()
 			// Create wall consisting of vertical pillars
 			// Note: Convex radius 0 because otherwise it will be a bumpy wall
 			Ref<Shape> wall = new BoxShape(Vec3(0.1f, 2.5f, 0.1f), 0.0f); 
-			for (int z = 0; z < 40; ++z)
-				mBodyInterface->CreateAndAddBody(BodyCreationSettings(wall, Vec3(-10.0f, 2.5f, -10.0f + 0.2f * z), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+			for (int z = 0; z < 30; ++z)
+				mBodyInterface->CreateAndAddBody(BodyCreationSettings(wall, Vec3(0.0f, 2.5f, 2.0f + 0.2f * z), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
 		}
 
 		{
@@ -87,6 +107,15 @@ void CharacterBaseTest::Initialize()
 			mRotatingBody = mBodyInterface->CreateAndAddBody(BodyCreationSettings(kinematic, cRotatingPosition, cRotatingOrientation, EMotionType::Kinematic, Layers::MOVING), EActivation::Activate);
 			mVerticallyMovingBody = mBodyInterface->CreateAndAddBody(BodyCreationSettings(kinematic, cVerticallyMovingPosition, cVerticallyMovingOrientation, EMotionType::Kinematic, Layers::MOVING), EActivation::Activate);
 			mHorizontallyMovingBody = mBodyInterface->CreateAndAddBody(BodyCreationSettings(kinematic, cHorizontallyMovingPosition, cHorizontallyMovingOrientation, EMotionType::Kinematic, Layers::MOVING), EActivation::Activate);
+		}
+
+		{
+			// A rolling sphere towards the player
+			BodyCreationSettings bcs(new SphereShape(0.2f), Vec3(0.0f, 0.2f, -1.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+			bcs.mLinearVelocity = Vec3(0, 0, 2.0f);
+			bcs.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+			bcs.mMassPropertiesOverride.mMass = 10.0f;
+			mBodyInterface->CreateAndAddBody(bcs, EActivation::Activate);
 		}
 
 		{
@@ -99,6 +128,61 @@ void CharacterBaseTest::Initialize()
 				bcs.mMassPropertiesOverride.mMass = 10.0f;
 				mBodyInterface->CreateAndAddBody(bcs, EActivation::DontActivate);
 			}
+		}
+
+		{
+			// Dynamic block on a static step (to test pushing block on stairs)
+			mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3(0.5f, 0.15f, 0.5f)), Vec3(10.0f, 0.15f, 0.0f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+			BodyCreationSettings bcs(new BoxShape(Vec3::sReplicate(0.5f)), Vec3(10.0f, 0.8f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+			bcs.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+			bcs.mMassPropertiesOverride.mMass = 10.0f;
+			mBodyInterface->CreateAndAddBody(bcs, EActivation::DontActivate);
+		}
+
+		{
+			// Dynamic spheres to test player pushing stuff you can step on
+			float h = 0.0f;
+			for (int y = 0; y < 3; ++y)
+			{
+				float r = 0.4f - 0.1f * y;
+				h += r;
+				BodyCreationSettings bcs(new SphereShape(r), Vec3(15.0f, h, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+				h += r;
+				bcs.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+				bcs.mMassPropertiesOverride.mMass = 10.0f;
+				mBodyInterface->CreateAndAddBody(bcs, EActivation::DontActivate);
+			}
+		}
+
+		{
+			// A seesaw to test character gravity
+			BodyID b1 = mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3(1.0f, 0.2f, 0.05f)), Vec3(20.0f, 0.2f, 0.0f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+			BodyCreationSettings bcs(new BoxShape(Vec3(1.0f, 0.05f, 5.0f)), Vec3(20.0f, 0.45f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+			bcs.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+			bcs.mMassPropertiesOverride.mMass = 10.0f;
+			BodyID b2 = mBodyInterface->CreateAndAddBody(bcs, EActivation::Activate);
+
+			// Connect the parts with a hinge
+			HingeConstraintSettings hinge;
+			hinge.mPoint1 = hinge.mPoint2 = Vec3(20.0f, 0.4f, 0.0f);
+			hinge.mHingeAxis1 = hinge.mHingeAxis2 = Vec3::sAxisX();
+			mPhysicsSystem->AddConstraint(mBodyInterface->CreateConstraint(&hinge, b1, b2));
+		}
+
+		{
+			// A board above the character to crouch and jump up against
+			float h = 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching + 0.1f;
+			for (int x = 0; x < 2; ++x)
+				mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3(1.0f, h, 0.05f)), Vec3(25.0f, h, x == 0? -0.95f : 0.95f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+			BodyCreationSettings bcs(new BoxShape(Vec3(1.0f, 0.05f, 1.0f)), Vec3(25.0f, 2.0f * h + 0.05f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+			bcs.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+			bcs.mMassPropertiesOverride.mMass = 10.0f;
+			mBodyInterface->CreateAndAddBody(bcs, EActivation::Activate);
+		}
+
+		{
+			// A floating static block
+			mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3::sReplicate(0.5f)), Vec3(30.0f, 1.5f, 0.0f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
 		}
 
 		{
@@ -138,10 +222,20 @@ void CharacterBaseTest::Initialize()
 
 		// Create small bumps
 		{
-			BodyCreationSettings step(new BoxShape(Vec3(2.0f, 0.5f * cBumpHeight, 0.5f * cBumpWidth), 0.0f), Vec3::sZero(), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			BodyCreationSettings step(new BoxShape(Vec3(2.0f, 0.5f * cSmallBumpHeight, 0.5f * cSmallBumpWidth), 0.0f), Vec3::sZero(), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
 			for (int i = 0; i < 10; ++i)
 			{
-				step.mPosition = cBumpsPosition + Vec3(0, 0.5f * cBumpHeight, cBumpDelta * i);
+				step.mPosition = cSmallBumpsPosition + Vec3(0, 0.5f * cSmallBumpHeight, cSmallBumpDelta * i);
+				mBodyInterface->CreateAndAddBody(step, EActivation::DontActivate);
+			}
+		}
+
+		// Create large bumps
+		{
+			BodyCreationSettings step(new BoxShape(Vec3(2.0f, 0.5f * cLargeBumpHeight, 0.5f * cLargeBumpWidth)), Vec3::sZero(), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			for (int i = 0; i < 5; ++i)
+			{
+				step.mPosition = cLargeBumpsPosition + Vec3(0, 0.5f * cLargeBumpHeight, cLargeBumpDelta * i);
 				mBodyInterface->CreateAndAddBody(step, EActivation::DontActivate);
 			}
 		}
@@ -155,12 +249,124 @@ void CharacterBaseTest::Initialize()
 				mBodyInterface->CreateAndAddBody(step, EActivation::DontActivate);
 			}
 		}
+
+		// A wall beside the stairs
+		mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3(0.5f, 2.0f, 5.0f * cStairsStepHeight)), cStairsPosition + Vec3(-2.5f, 2.0f, 5.0f * cStairsStepHeight), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+
+		// Create stairs from triangles
+		{
+			TriangleList triangles;
+
+			float rear_z = 10 * cStairsStepHeight;
+
+			for (int i = 0; i < 10; ++i)
+			{
+				// Start of step
+				Vec3 base(0, cStairsStepHeight * i, cStairsStepHeight * i);
+
+				// Left side
+				Vec3 b1 = base + Vec3(2.0f, 0, 0);
+				Vec3 s1 = b1 + Vec3(0, cStairsStepHeight, 0);
+				Vec3 p1 = s1 + Vec3(0, 0, cStairsStepHeight);
+
+				// Right side
+				Vec3 width(-4.0f, 0, 0);
+				Vec3 b2 = b1 + width;
+				Vec3 s2 = s1 + width;
+				Vec3 p2 = p1 + width;
+
+				triangles.push_back(Triangle(s1, b1, s2));
+				triangles.push_back(Triangle(b1, b2, s2));
+				triangles.push_back(Triangle(s1, p2, p1));
+				triangles.push_back(Triangle(s1, s2, p2));
+
+				// Side of stairs
+				Vec3 rb2 = b2; rb2.SetZ(rear_z);
+				Vec3 rs2 = s2; rs2.SetZ(rear_z);
+
+				triangles.push_back(Triangle(s2, b2, rs2));
+				triangles.push_back(Triangle(rs2, b2, rb2));
+
+				p1 = p2;
+			}
+
+			MeshShapeSettings mesh(triangles);
+			mesh.SetEmbedded();
+			BodyCreationSettings mesh_stairs(&mesh, cMeshStairsPosition, Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			mBodyInterface->CreateAndAddBody(mesh_stairs, EActivation::DontActivate);
+		}
+
+		// A wall to the side and behind the stairs
+		mBodyInterface->CreateAndAddBody(BodyCreationSettings(new BoxShape(Vec3(0.5f, 2.0f, 0.25f)), cStairsPosition + Vec3(-7.5f, 2.0f, 10.0f * cStairsStepHeight + 0.25f), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING), EActivation::DontActivate);
+
+		// Create stairs with too little space between the steps
+		{
+			BodyCreationSettings step(new BoxShape(Vec3(2.0f, 0.5f * cNoStairsStepHeight, 0.5f * cNoStairsStepHeight)), Vec3::sZero(), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			for (int i = 0; i < 10; ++i)
+			{
+				step.mPosition = cNoStairsPosition + Vec3(0, cNoStairsStepHeight * (0.5f + i), cNoStairsStepDelta * i);
+				mBodyInterface->CreateAndAddBody(step, EActivation::DontActivate);
+			}
+		}
+
+		// Create stairs with too little space between the steps consisting of triangles
+		{
+			TriangleList triangles;
+
+			for (int i = 0; i < 10; ++i)
+			{
+				// Start of step
+				Vec3 base(0, cStairsStepHeight * i, cNoStairsStepDelta * i);
+
+				// Left side
+				Vec3 b1 = base - Vec3(2.0f, 0, 0);
+				Vec3 s1 = b1 + Vec3(0, cStairsStepHeight, 0);
+				Vec3 p1 = s1 + Vec3(0, 0, cNoStairsStepDelta);
+
+				// Right side
+				Vec3 width(4.0f, 0, 0);
+				Vec3 b2 = b1 + width;
+				Vec3 s2 = s1 + width;
+				Vec3 p2 = p1 + width;
+
+				triangles.push_back(Triangle(s1, s2, b1));
+				triangles.push_back(Triangle(b1, s2, b2));
+				triangles.push_back(Triangle(s1, p1, p2));
+				triangles.push_back(Triangle(s1, p2, s2));
+				p1 = p2;
+			}
+
+			MeshShapeSettings mesh(triangles);
+			mesh.SetEmbedded();
+			BodyCreationSettings mesh_stairs(&mesh, cMeshNoStairsPosition, Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			mBodyInterface->CreateAndAddBody(mesh_stairs, EActivation::DontActivate);
+		}
+
+		// Create mesh with walls at varying angles
+		{
+			TriangleList triangles;
+			Vec3 p1(0.5f * cMeshWallWidth, 0, 0);
+			Vec3 h(0, cMeshWallHeight, 0);
+			for (int i = 0; i < cMeshWallSegments; ++i)
+			{
+				float delta = cMeshWallStepStart + i * (cMeshWallStepEnd - cMeshWallStepStart) / (cMeshWallSegments - 1);
+				Vec3 p2 = Vec3((i & 1)? 0.5f * cMeshWallWidth : -0.5f * cMeshWallWidth, 0, p1.GetZ() + delta);
+				triangles.push_back(Triangle(p1, p1 + h, p2 + h));
+				triangles.push_back(Triangle(p1, p2 + h, p2));
+				p1 = p2;
+			}
+
+			MeshShapeSettings mesh(triangles);
+			mesh.SetEmbedded();
+			BodyCreationSettings wall(&mesh, cMeshWallPosition, Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+			mBodyInterface->CreateAndAddBody(wall, EActivation::DontActivate);
+		}
 	}
 	else
 	{
 		// Load scene
 		Ref<PhysicsScene> scene;
-		if (!ObjectStreamIn::sReadObject((string("Assets/") + sSceneName + ".bof").c_str(), scene))
+		if (!ObjectStreamIn::sReadObject((String("Assets/") + sSceneName + ".bof").c_str(), scene))
 			FatalError("Failed to load scene");
 		scene->FixInvalidScales();
 		for (BodyCreationSettings &settings : scene->GetBodies())
@@ -172,8 +378,23 @@ void CharacterBaseTest::Initialize()
 	}
 
 	// Create capsule shapes for all stances
-	mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightStanding, cCharacterRadiusStanding)).Create().Get();
-	mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightCrouching, cCharacterRadiusCrouching)).Create().Get();
+	switch (sShapeType)
+	{
+	case EType::Capsule:
+		mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightStanding, cCharacterRadiusStanding)).Create().Get();
+		mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CapsuleShape(0.5f * cCharacterHeightCrouching, cCharacterRadiusCrouching)).Create().Get();
+		break;
+
+	case EType::Cylinder:
+		mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding)).Create().Get();
+		mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new CylinderShape(0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching)).Create().Get();
+		break;
+
+	case EType::Box:
+		mStandingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusStanding, 0.5f * cCharacterHeightStanding + cCharacterRadiusStanding, cCharacterRadiusStanding))).Create().Get();
+		mCrouchingShape = RotatedTranslatedShapeSettings(Vec3(0, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, 0), Quat::sIdentity(), new BoxShape(Vec3(cCharacterRadiusCrouching, 0.5f * cCharacterHeightCrouching + cCharacterRadiusCrouching, cCharacterRadiusCrouching))).Create().Get();
+		break;
+	}
 }
 
 void CharacterBaseTest::PrePhysicsUpdate(const PreUpdateParams &inParams)
@@ -212,11 +433,11 @@ void CharacterBaseTest::PrePhysicsUpdate(const PreUpdateParams &inParams)
 
 	// Animate bodies
 	if (!mRotatingBody.IsInvalid())
-		mBodyInterface->MoveKinematic(mRotatingBody, cRotatingPosition, Quat::sRotation(Vec3::sAxisY(), JPH_PI * sin(mTime)), inParams.mDeltaTime);
+		mBodyInterface->MoveKinematic(mRotatingBody, cRotatingPosition, Quat::sRotation(Vec3::sAxisY(), JPH_PI * Sin(mTime)), inParams.mDeltaTime);
 	if (!mHorizontallyMovingBody.IsInvalid())
-		mBodyInterface->MoveKinematic(mHorizontallyMovingBody, cHorizontallyMovingPosition + Vec3(3.0f * sin(mTime), 0, 0), cHorizontallyMovingOrientation, inParams.mDeltaTime);
+		mBodyInterface->MoveKinematic(mHorizontallyMovingBody, cHorizontallyMovingPosition + Vec3(3.0f * Sin(mTime), 0, 0), cHorizontallyMovingOrientation, inParams.mDeltaTime);
 	if (!mVerticallyMovingBody.IsInvalid())
-		mBodyInterface->MoveKinematic(mVerticallyMovingBody, cVerticallyMovingPosition + Vec3(0, 1.75f * sin(mTime), 0), cVerticallyMovingOrientation, inParams.mDeltaTime);
+		mBodyInterface->MoveKinematic(mVerticallyMovingBody, cVerticallyMovingPosition + Vec3(0, 1.75f * Sin(mTime), 0), cVerticallyMovingOrientation, inParams.mDeltaTime);
 
 	// Reset ramp blocks
 	mRampBlocksTimeLeft -= inParams.mDeltaTime;
@@ -239,6 +460,15 @@ void CharacterBaseTest::CreateSettingsMenu(DebugUI *inUI, UIElement *inSubMenu)
 			inUI->CreateTextButton(scene_name, sScenes[i], [this, i]() { sSceneName = sScenes[i]; RestartTest(); });
 		inUI->ShowMenu(scene_name);
 	});
+
+	inUI->CreateTextButton(inSubMenu, "Configuration Settings", [=]() {
+		UIElement *configuration_settings = inUI->CreateMenu();
+
+		inUI->CreateComboBox(configuration_settings, "Shape Type", { "Capsule", "Cylinder", "Box" }, (int)sShapeType, [](int inItem) { sShapeType = (EType)inItem; });
+		AddConfigurationSettings(inUI, configuration_settings);
+		inUI->CreateTextButton(configuration_settings, "Accept Changes", [=]() { RestartTest(); });
+		inUI->ShowMenu(configuration_settings);
+	});
 }
 
 void CharacterBaseTest::GetInitialCamera(CameraState& ioState) const
@@ -251,7 +481,7 @@ void CharacterBaseTest::GetInitialCamera(CameraState& ioState) const
 Mat44 CharacterBaseTest::GetCameraPivot(float inCameraHeading, float inCameraPitch) const 
 {
 	// Pivot is center of character + distance behind based on the heading and pitch of the camera
-	Vec3 fwd = Vec3(cos(inCameraPitch) * cos(inCameraHeading), sin(inCameraPitch), cos(inCameraPitch) * sin(inCameraHeading));
+	Vec3 fwd = Vec3(Cos(inCameraPitch) * Cos(inCameraHeading), Sin(inCameraPitch), Cos(inCameraPitch) * Sin(inCameraHeading));
 	return Mat44::sTranslation(GetCharacterPosition() + Vec3(0, cCharacterHeightStanding + cCharacterRadiusStanding, 0) - 5.0f * fwd);
 }
 
@@ -271,7 +501,7 @@ void CharacterBaseTest::DrawCharacterState(const CharacterBase *inCharacter, Mat
 {
 	// Draw current location
 	// Drawing prior to update since the physics system state is also that prior to the simulation step (so that all detected collisions etc. make sense)
-	mDebugRenderer->DrawCoordinateSystem(inCharacterTransform);
+	mDebugRenderer->DrawCoordinateSystem(inCharacterTransform, 0.1f);
 
 	// Determine color
 	CharacterBase::EGroundState ground_state = inCharacter->GetGroundState();
@@ -281,7 +511,10 @@ void CharacterBaseTest::DrawCharacterState(const CharacterBase *inCharacter, Mat
 	case CharacterBase::EGroundState::OnGround:
 		color = Color::sGreen;
 		break;
-	case CharacterBase::EGroundState::Sliding:
+	case CharacterBase::EGroundState::OnSteepGround:
+		color = Color::sYellow;
+		break;
+	case CharacterBase::EGroundState::NotSupported:
 		color = Color::sOrange;
 		break;
 	case CharacterBase::EGroundState::InAir:
@@ -298,7 +531,7 @@ void CharacterBaseTest::DrawCharacterState(const CharacterBase *inCharacter, Mat
 		Vec3 ground_velocity = inCharacter->GetGroundVelocity();
 
 		// Draw ground position
-		mDebugRenderer->DrawWireSphere(ground_position, 0.1f, Color::sRed);
+		mDebugRenderer->DrawMarker(ground_position, Color::sRed, 0.1f);
 		mDebugRenderer->DrawArrow(ground_position, ground_position + 2.0f * ground_normal, Color::sGreen, 0.1f);
 
 		// Draw ground velocity
@@ -312,5 +545,7 @@ void CharacterBaseTest::DrawCharacterState(const CharacterBase *inCharacter, Mat
 
 	// Draw text info
 	const PhysicsMaterial *ground_material = inCharacter->GetGroundMaterial();
-	mDebugRenderer->DrawText3D(inCharacterTransform.GetTranslation(), StringFormat("Mat: %s\nVel: %.1f m/s", ground_material->GetDebugName(), (double)inCharacterVelocity.Length()), color, 0.25f);
+	Vec3 horizontal_velocity = inCharacterVelocity;
+	horizontal_velocity.SetY(0);
+	mDebugRenderer->DrawText3D(inCharacterTransform.GetTranslation(), StringFormat("Mat: %s\nHorizontal Vel: %.1f m/s\nVertical Vel: %.1f m/s", ground_material->GetDebugName(), (double)horizontal_velocity.Length(), (double)inCharacterVelocity.GetY()), color, 0.25f);
 }

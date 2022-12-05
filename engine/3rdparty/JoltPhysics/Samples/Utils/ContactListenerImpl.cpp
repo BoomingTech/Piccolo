@@ -6,6 +6,7 @@
 #include <Utils/ContactListenerImpl.h>
 #include <Renderer/DebugRendererImp.h>
 #include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Core/QuickSort.h>
 
 ValidateResult ContactListenerImpl::OnContactValidate(const Body &inBody1, const Body &inBody2, const CollideShapeResult &inCollisionResult)
 {
@@ -104,10 +105,10 @@ void ContactListenerImpl::SaveState(StateRecorder &inStream) const
 	inStream.Write(mState.size());
 
 	// Get and sort keys
-	vector<SubShapeIDPair> keys;
+	Array<SubShapeIDPair> keys;
 	for (const StateMap::value_type &kv : mState)
 		keys.push_back(kv.first);
-	sort(keys.begin(), keys.end());
+	QuickSort(keys.begin(), keys.end());
 
 	// Write key value pairs
 	for (const SubShapeIDPair &k : keys)
@@ -132,7 +133,7 @@ void ContactListenerImpl::RestoreState(StateRecorder &inStream)
 		length = mState.size();
 	inStream.Read(length);
 
-	vector<SubShapeIDPair> keys;
+	Array<SubShapeIDPair> keys;
 
 	// Clear the state and remember the old state for validation
 	StateMap old_state;
@@ -144,7 +145,7 @@ void ContactListenerImpl::RestoreState(StateRecorder &inStream)
 		// Get and sort keys
 		for (const StateMap::value_type &kv : old_state)
 			keys.push_back(kv.first);
-		sort(keys.begin(), keys.end());
+		QuickSort(keys.begin(), keys.end());
 	}
 
 	// Ensure we have the corect size

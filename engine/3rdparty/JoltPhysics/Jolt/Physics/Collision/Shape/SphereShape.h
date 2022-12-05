@@ -30,6 +30,8 @@ public:
 class SphereShape final : public ConvexShape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 							SphereShape() : ConvexShape(EShapeSubType::Sphere) { }
 							SphereShape(const SphereShapeSettings &inSettings, ShapeResult &outResult);
@@ -55,11 +57,11 @@ public:
 	// See Shape::GetSurfaceNormal
 	virtual Vec3			GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocalSurfacePosition) const override;
 
+	// See Shape::GetSupportingFace
+	virtual void			GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override { /* Hit is always a single point, no point in returning anything */ }
+
 	// See ConvexShape::GetSupportFunction
 	virtual const Support *	GetSupportFunction(ESupportMode inMode, SupportBuffer &inBuffer, Vec3Arg inScale) const override;
-
-	// See ConvexShape::GetSupportingFace
-	virtual void			GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const override	{ /* Hit is always a single point, no point in returning anything */ }
 
 	// See Shape::GetSubmergedVolume
 	virtual void			GetSubmergedVolume(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const Plane &inSurface, float &outTotalVolume, float &outSubmergedVolume, Vec3 &outCenterOfBuoyancy) const override;
@@ -71,10 +73,10 @@ public:
 
 	// See Shape::CastRay
 	virtual bool			CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShapeIDCreator, RayCastResult &ioHit) const override;
-	virtual void			CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const override;
+	virtual void			CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See: Shape::CollidePoint
-	virtual void			CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const override;
+	virtual void			CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See Shape::TransformShape
 	virtual void			TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const override;

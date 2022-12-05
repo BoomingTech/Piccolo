@@ -108,7 +108,7 @@ private:
 #endif // JPH_DEBUG_RENDERER
 
 	// Drawing using GetTriangles interface
-	using ShapeToGeometryMap = unordered_map<RefConst<Shape>, DebugRenderer::GeometryRef>;
+	using ShapeToGeometryMap = UnorderedMap<RefConst<Shape>, DebugRenderer::GeometryRef>;
 	ShapeToGeometryMap		mShapeToGeometry;
 
 	// The test to run
@@ -117,7 +117,7 @@ private:
 	UITextButton *			mTestSettingsButton = nullptr;								// Button that activates the menu that the test uses to configure additional settings
 
 	// Automatic cycling through tests
-	vector<const RTTI *>	mTestsToRun;												// The list of tests that are still waiting to be run
+	Array<const RTTI *>		mTestsToRun;												// The list of tests that are still waiting to be run
 	float					mTestTimeLeft = -1.0f;										// How many seconds the test is still supposed to run
 	bool					mExitAfterRunningTests = false;								// When true, the application will quit when mTestsToRun becomes empty
 	UITextButton *			mNextTestButton = nullptr;									// Button that activates the next test when we're running all tests
@@ -128,7 +128,7 @@ private:
 	// State recording and determinism checks
 	bool					mRecordState = false;										// When true, the state of the physics system is recorded in mPlaybackFrames every physics update
 	bool					mCheckDeterminism = false;									// When true, the physics state is rolled back after every update and run again to verify that the state is the same
-	vector<StateRecorderImpl> mPlaybackFrames;											// A list of recorded world states, one per physics simulation step
+	Array<StateRecorderImpl> mPlaybackFrames;											// A list of recorded world states, one per physics simulation step
 	enum class EPlaybackMode
 	{
 		Rewind,
@@ -173,6 +173,7 @@ private:
 		StaticCompound,
 		StaticCompound2,
 		MutableCompound,
+		Mesh,
 	};
 
 	// Probe settings
@@ -187,6 +188,7 @@ private:
 	bool					mTreatConvexAsSolid = true;									// For ray casts if the shape should be treated as solid or if the ray should only collide with the surface
 	bool					mReturnDeepestPoint = true;									// For shape casts, when true this will return the deepest point
 	bool					mUseShrunkenShapeAndConvexRadius = false;					// Shrink then expand the shape by the convex radius
+	bool					mDrawSupportingFace = false;								// Draw the result of GetSupportingFace
 	int						mMaxHits = 10;												// The maximum number of hits to request for a collision probe.
 
 	// Which object to shoot

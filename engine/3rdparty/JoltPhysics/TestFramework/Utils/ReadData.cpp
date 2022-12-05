@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: MIT
 
 #include <TestFramework.h>
-#include <fstream>
 #include <Utils/ReadData.h>
 #include <Utils/Log.h>
 
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <fstream>
+JPH_SUPPRESS_WARNINGS_STD_END
+
 // Read file contents
-vector<uint8> ReadData(const char *inFileName)
+Array<uint8> ReadData(const char *inFileName)
 {
-	vector<uint8> data;
+	Array<uint8> data;
 	ifstream input(inFileName, std::ios::binary);
 	if (!input)
 		FatalError("Unable to open file: %s", inFileName);

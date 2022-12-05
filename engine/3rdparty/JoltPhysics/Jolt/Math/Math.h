@@ -93,7 +93,7 @@ inline bool IsAligned(T inV, uint64 inAlignment)
 /// Compute number of trailing zero bits (how many low bits are zero)
 inline uint CountTrailingZeros(uint32 inValue)
 {
-#if defined(JPH_CPU_X64)
+#if defined(JPH_CPU_X86) || defined(JPH_CPU_WASM)
 	#if defined(JPH_USE_TZCNT)
 		return _tzcnt_u32(inValue);
 	#elif defined(JPH_COMPILER_MSVC)
@@ -107,8 +107,16 @@ inline uint CountTrailingZeros(uint32 inValue)
 			return 32;
 		return __builtin_ctz(inValue);
 	#endif
-#elif defined(JPH_CPU_ARM64)
-	return __builtin_clz(__builtin_bitreverse32(inValue));
+#elif defined(JPH_CPU_ARM)
+	#if defined(JPH_COMPILER_MSVC)
+		if (inValue == 0)
+			return 32;
+		unsigned long result;
+		_BitScanForward(&result, inValue);
+		return result;
+	#else
+		return __builtin_clz(__builtin_bitreverse32(inValue));
+	#endif
 #else
 	#error Undefined
 #endif
@@ -117,7 +125,7 @@ inline uint CountTrailingZeros(uint32 inValue)
 /// Compute the number of leading zero bits (how many high bits are zero)
 inline uint CountLeadingZeros(uint32 inValue)
 {
-#if defined(JPH_CPU_X64)
+#if defined(JPH_CPU_X86) || defined(JPH_CPU_WASM)
 	#if defined(JPH_USE_LZCNT)
 		return _lzcnt_u32(inValue);
 	#elif defined(JPH_COMPILER_MSVC)
@@ -131,8 +139,12 @@ inline uint CountLeadingZeros(uint32 inValue)
 			return 32;
 		return __builtin_clz(inValue);
 	#endif
-#elif defined(JPH_CPU_ARM64)
-	return __builtin_clz(inValue);
+#elif defined(JPH_CPU_ARM)
+	#if defined(JPH_COMPILER_MSVC)
+		return _CountLeadingZeros(inValue);
+	#else
+		return __builtin_clz(inValue);
+	#endif
 #else
 	#error Undefined
 #endif
@@ -146,6 +158,8 @@ inline uint CountBits(uint32 inValue)
 #elif defined(JPH_COMPILER_MSVC)
 	#if defined(JPH_USE_SSE4_2)
 		return _mm_popcnt_u32(inValue);
+	#elif defined(JPH_USE_NEON)
+		return _CountOneBits(inValue);
 	#else
 		inValue = inValue - ((inValue >> 1) & 0x55555555);
 		inValue = (inValue & 0x33333333) + ((inValue >> 2) & 0x33333333);

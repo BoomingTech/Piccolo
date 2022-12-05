@@ -23,6 +23,8 @@
     #else
         #define JPH_PLATFORM_IOS
     #endif
+#elif defined(__EMSCRIPTEN__)
+	#define JPH_PLATFORM_WASM
 #endif
 
 // Platform helper macros
@@ -35,6 +37,9 @@
 // Determine compiler
 #if defined(__clang__)
 	#define JPH_COMPILER_CLANG
+#elif defined(__MINGW64__) || defined (__MINGW32__)
+	#define JPH_COMPILER_GCC
+	#define JPH_COMPILER_MINGW
 #elif defined(__GNUC__)
 	#define JPH_COMPILER_GCC
 #elif defined(_MSC_VER)
@@ -42,48 +47,72 @@
 #endif
 
 // Detect CPU architecture
-#if defined(__x86_64__) || defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 	// X86 CPU architecture
-	#define JPH_CPU_X64
+	#define JPH_CPU_X86
+	#if defined(__x86_64__) || defined(_M_X64)
+		#define JPH_CPU_ADDRESS_BITS 64
+	#else
+		#define JPH_CPU_ADDRESS_BITS 32
+	#endif
 	#define JPH_USE_SSE
+	#define JPH_VECTOR_ALIGNMENT 16
 
 	// Detect enabled instruction sets
-	#if (defined(__F16C__) || defined(__AVX2__)) && !defined(JPH_USE_F16C)
-		#define JPH_USE_F16C
+	#if defined(__AVX512F__) && defined(__AVX512VL__) && defined(__AVX512DQ__) && !defined(JPH_USE_AVX512)
+		#define JPH_USE_AVX512
 	#endif
-	#if (defined(__LZCNT__) || defined(__AVX2__)) && !defined(JPH_USE_LZCNT)
-		#define JPH_USE_LZCNT
-	#endif
-	#if (defined(__BMI__) || defined(__AVX2__)) && !defined(JPH_USE_TZCNT)
-		#define JPH_USE_TZCNT
-	#endif
-	#if (defined(__SSE4_1__) || defined(__AVX__)) && !defined(JPH_USE_SSE4_1)
-		#define JPH_USE_SSE4_1
-	#endif
-	#if (defined(__SSE4_2__) || defined(__AVX__)) && !defined(JPH_USE_SSE4_2)
-		#define JPH_USE_SSE4_2
-	#endif
-	#if defined(__AVX__) && !defined(JPH_USE_AVX)
-		#define JPH_USE_AVX
-	#endif
-	#if defined(__AVX2__) && !defined(JPH_USE_AVX2)
+	#if (defined(__AVX2__) || defined(JPH_USE_AVX512)) && !defined(JPH_USE_AVX2)
 		#define JPH_USE_AVX2
 	#endif
-	#if defined(JPH_COMPILER_CLANG) || defined(JPH_COMPILER_GCC)
-		#if defined(__FMA__) && !defined(JPH_USE_FMADD)
-			#define JPH_USE_FMADD
-		#endif
-	#elif defined(JPH_COMPILER_MSVC)
-		#if defined(__AVX2__) && !defined(JPH_USE_FMADD) // AVX2 also enables fused multiply add
-			#define JPH_USE_FMADD
-		#endif
-	#else
-		#error Undefined compiler
+	#if (defined(__AVX__) || defined(JPH_USE_AVX2)) && !defined(JPH_USE_AVX)
+		#define JPH_USE_AVX
 	#endif
-#elif defined(__aarch64__) || defined(_M_ARM64)
-	// ARM64 CPU architecture
-	#define JPH_CPU_ARM64
-	#define JPH_USE_NEON
+	#if (defined(__SSE4_2__) || defined(JPH_USE_AVX)) && !defined(JPH_USE_SSE4_2)
+		#define JPH_USE_SSE4_2
+	#endif
+	#if (defined(__SSE4_1__) || defined(JPH_USE_SSE4_2)) && !defined(JPH_USE_SSE4_1)
+		#define JPH_USE_SSE4_1
+	#endif
+	#if (defined(__F16C__) || defined(JPH_USE_AVX2)) && !defined(JPH_USE_F16C)
+		#define JPH_USE_F16C
+	#endif
+	#if (defined(__LZCNT__) || defined(JPH_USE_AVX2)) && !defined(JPH_USE_LZCNT)
+		#define JPH_USE_LZCNT
+	#endif
+	#if (defined(__BMI__) || defined(JPH_USE_AVX2)) && !defined(JPH_USE_TZCNT)
+		#define JPH_USE_TZCNT
+	#endif
+	#ifndef JPH_CROSS_PLATFORM_DETERMINISTIC // FMA is not compatible with cross platform determinism
+		#if defined(JPH_COMPILER_CLANG) || defined(JPH_COMPILER_GCC)
+			#if defined(__FMA__) && !defined(JPH_USE_FMADD)
+				#define JPH_USE_FMADD
+			#endif
+		#elif defined(JPH_COMPILER_MSVC)
+			#if defined(__AVX2__) && !defined(JPH_USE_FMADD) // AVX2 also enables fused multiply add
+				#define JPH_USE_FMADD
+			#endif
+		#else
+			#error Undefined compiler
+		#endif
+	#endif
+#elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
+	// ARM CPU architecture
+	#define JPH_CPU_ARM
+	#if defined(__aarch64__) || defined(_M_ARM64)
+		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_USE_NEON
+		#define JPH_VECTOR_ALIGNMENT 16
+	#else
+		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_VECTOR_ALIGNMENT 8 // 32-bit ARM does not support aligning on the stack on 16 byte boundaries
+	#endif
+#elif defined(JPH_PLATFORM_WASM)
+	// WebAssembly CPU architecture
+	#define JPH_CPU_WASM
+	#define JPH_CPU_ADDRESS_BITS 32
+	#define JPH_VECTOR_ALIGNMENT 16
+	#define JPH_DISABLE_CUSTOM_ALLOCATOR
 #else
 	#error Unsupported CPU architecture
 #endif
@@ -135,14 +164,15 @@
 	JPH_CLANG_SUPPRESS_WARNING("-Wgnu-zero-variadic-macro-arguments")							\
 	JPH_CLANG_SUPPRESS_WARNING("-Wdocumentation-unknown-command")								\
 	JPH_CLANG_SUPPRESS_WARNING("-Wctad-maybe-unsupported")										\
+	JPH_CLANG_SUPPRESS_WARNING("-Wdeprecated-copy")												\
 	JPH_IF_NOT_ANDROID(JPH_CLANG_SUPPRESS_WARNING("-Wimplicit-int-float-conversion"))			\
 																								\
 	JPH_GCC_SUPPRESS_WARNING("-Wcomment")														\
 	JPH_GCC_SUPPRESS_WARNING("-Winvalid-offsetof")												\
 	JPH_GCC_SUPPRESS_WARNING("-Wclass-memaccess")												\
 																								\
+	JPH_MSVC_SUPPRESS_WARNING(4619) /* #pragma warning: there is no warning number 'XXXX' */	\
 	JPH_MSVC_SUPPRESS_WARNING(4514) /* 'X' : unreferenced inline function has been removed */	\
-	JPH_MSVC_SUPPRESS_WARNING(4619) /* #pragma warning: there is no warning number 'X'*/		\
 	JPH_MSVC_SUPPRESS_WARNING(4710) /* 'X' : function not inlined */							\
 	JPH_MSVC_SUPPRESS_WARNING(4711) /* function 'X' selected for automatic inline expansion */	\
 	JPH_MSVC_SUPPRESS_WARNING(4820) /* 'X': 'Y' bytes padding added after data member 'Z' */	\
@@ -159,7 +189,9 @@
 	JPH_MSVC_SUPPRESS_WARNING(5045) /* Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified */ \
 	JPH_MSVC_SUPPRESS_WARNING(4583) /* 'X': destructor is not implicitly called */				\
 	JPH_MSVC_SUPPRESS_WARNING(4582) /* 'X': constructor is not implicitly called */				\
-	JPH_MSVC_SUPPRESS_WARNING(5219) /* implicit conversion from 'X' to 'Y', possible loss of data  */
+	JPH_MSVC_SUPPRESS_WARNING(5219) /* implicit conversion from 'X' to 'Y', possible loss of data  */ \
+	JPH_MSVC_SUPPRESS_WARNING(4826) /* Conversion from 'X *' to 'JPH::uint64' is sign-extended. This may cause unexpected runtime behavior. (32-bit) */ \
+	JPH_MSVC_SUPPRESS_WARNING(5264) /* 'X': 'const' variable is not used */
 
 // OS-specific includes
 #if defined(JPH_PLATFORM_WINDOWS)
@@ -171,15 +203,13 @@
 	// (you only need to define JPH_BREAKPOINT, JPH_PLATFORM_BLUE_GET_TICKS and JPH_PLATFORM_BLUE_GET_TICK_FREQUENCY and include the right header).
 	#include <Jolt/Core/PlatformBlue.h> 
 #elif defined(JPH_PLATFORM_LINUX) || defined(JPH_PLATFORM_ANDROID) || defined(JPH_PLATFORM_MACOS) || defined(JPH_PLATFORM_IOS)
-	#include <float.h>
-	#include <limits.h>
-	#include <string.h>
-
-	#if defined(JPH_CPU_X64)
+	#if defined(JPH_CPU_X86)
 		#define JPH_BREAKPOINT		__asm volatile ("int $0x3")
-	#elif defined(JPH_CPU_ARM64)
+	#elif defined(JPH_CPU_ARM)
 		#define JPH_BREAKPOINT		__builtin_trap()
 	#endif
+#elif defined(JPH_PLATFORM_WASM)
+	#define JPH_BREAKPOINT		do { } while (false) // Not supported
 #else
 	#error Unknown platform
 #endif
@@ -188,45 +218,81 @@
 #define JPH_CRASH				do { int *ptr = nullptr; *ptr = 0; } while (false)
 
 // Begin the JPH namespace
-#define JPH_NAMESPACE_BEGIN					\
-	JPH_SUPPRESS_WARNING_PUSH				\
-	JPH_SUPPRESS_WARNINGS					\
+#define JPH_NAMESPACE_BEGIN																		\
+	JPH_SUPPRESS_WARNING_PUSH																	\
+	JPH_SUPPRESS_WARNINGS																		\
 	namespace JPH {
 
 // End the JPH namespace
-#define JPH_NAMESPACE_END					\
-	}										\
+#define JPH_NAMESPACE_END																		\
+	}																							\
 	JPH_SUPPRESS_WARNING_POP
 
-// On MSVC the std library generates warnings, use these macros to disable them
-#define JPH_SUPPRESS_WARNINGS_STD_BEGIN		\
-	JPH_SUPPRESS_WARNING_PUSH				\
-	JPH_MSVC_SUPPRESS_WARNING(4710)			\
-	JPH_MSVC_SUPPRESS_WARNING(4711)			\
-	JPH_MSVC_SUPPRESS_WARNING(4820)			\
-	JPH_MSVC_SUPPRESS_WARNING(4514)
+// Suppress warnings generated by the standard template library
+#define JPH_SUPPRESS_WARNINGS_STD_BEGIN															\
+	JPH_SUPPRESS_WARNING_PUSH																	\
+	JPH_MSVC_SUPPRESS_WARNING(4619)																\
+	JPH_MSVC_SUPPRESS_WARNING(4710)																\
+	JPH_MSVC_SUPPRESS_WARNING(4711)																\
+	JPH_MSVC_SUPPRESS_WARNING(4820)																\
+	JPH_MSVC_SUPPRESS_WARNING(4514)																\
+	JPH_MSVC_SUPPRESS_WARNING(5262)																\
+	JPH_MSVC_SUPPRESS_WARNING(5264)																\
+																								\
+	JPH_GCC_SUPPRESS_WARNING("-Wstringop-overflow=")
 
-#define JPH_SUPPRESS_WARNINGS_STD_END		\
+#define JPH_SUPPRESS_WARNINGS_STD_END															\
 	JPH_SUPPRESS_WARNING_POP
 
 // Standard C++ includes
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <vector>
-#include <algorithm>
 #include <utility>
 #include <cmath>
 #include <sstream>
 #include <functional>
+#include <algorithm>
 JPH_SUPPRESS_WARNINGS_STD_END
+#include <limits.h>
+#include <float.h>
+#include <string.h>
 #if defined(JPH_USE_SSE)
 	#include <immintrin.h>
 #elif defined(JPH_USE_NEON)
-	#include <arm_neon.h>
+	#ifdef JPH_COMPILER_MSVC
+		#include <intrin.h>
+		#include <arm64_neon.h>
+	#else
+		#include <arm_neon.h>
+	#endif
 #endif
 
 JPH_NAMESPACE_BEGIN
 
-using namespace std;
+// Commonly used STL types
+using std::pair;
+using std::min;
+using std::max;
+using std::abs;
+using std::sqrt;
+using std::ceil;
+using std::floor;
+using std::trunc;
+using std::round;
+using std::fmod;
+using std::swap;
+using std::size;
+using std::string;
+using std::string_view;
+using std::function;
+using std::numeric_limits;
+using std::isfinite;
+using std::isnan;
+using std::is_trivial;
+using std::is_trivially_constructible;
+using std::is_trivially_destructible;
+using std::ostream;
+using std::istream;
 
 // Standard types
 using uint = unsigned int;
@@ -241,7 +307,7 @@ static_assert(sizeof(uint8) == 1, "Invalid size of uint8");
 static_assert(sizeof(uint16) == 2, "Invalid size of uint16");
 static_assert(sizeof(uint32) == 4, "Invalid size of uint32");
 static_assert(sizeof(uint64) == 8, "Invalid size of uint64");
-static_assert(sizeof(void *) == 8, "Invalid size of pointer");
+static_assert(sizeof(void *) == (JPH_CPU_ADDRESS_BITS == 64? 8 : 4), "Invalid size of pointer" );
 
 // Define inline macro
 #if defined(JPH_COMPILER_CLANG) || defined(JPH_COMPILER_GCC)
@@ -272,15 +338,24 @@ static_assert(sizeof(void *) == 8, "Invalid size of pointer");
 // Shorthand for #ifdef _DEBUG / #endif
 #ifdef _DEBUG
 	#define JPH_IF_DEBUG(...)	__VA_ARGS__
+	#define JPH_IF_NOT_DEBUG(...)
 #else
 	#define JPH_IF_DEBUG(...)
+	#define JPH_IF_NOT_DEBUG(...) __VA_ARGS__
+#endif
+
+// Shorthand for #ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED / #endif
+#ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
+	#define JPH_IF_FLOATING_POINT_EXCEPTIONS_ENABLED(...)	__VA_ARGS__
+#else
+	#define JPH_IF_FLOATING_POINT_EXCEPTIONS_ENABLED(...)
 #endif
 
 // Macro to indicate that a parameter / variable is unused
 #define JPH_UNUSED(x)			(void)x
 
 // Macro to enable floating point precise mode and to disable fused multiply add instructions
-#if defined(JPH_COMPILER_CLANG) || defined(JPH_COMPILER_GCC)
+#if defined(JPH_COMPILER_CLANG) || defined(JPH_COMPILER_GCC) || defined(JPH_CROSS_PLATFORM_DETERMINISTIC)
 	// In clang it appears you cannot turn off -ffast-math and -ffp-contract=fast for a code block
 	// There is #pragma clang fp contract (off) but that doesn't seem to work under clang 9 & 10 when -ffast-math is specified on the commandline (you override it to turn it on, but not off)
 	// There is #pragma float_control(precise, on) but that doesn't work under clang 9.

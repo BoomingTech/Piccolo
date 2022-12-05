@@ -7,10 +7,12 @@
 #include <UI/UIManager.h>
 #include <Application/DebugUI.h>
 #include <Utils/Log.h>
+#include <Utils/CustomMemoryHook.h>
 #include <Jolt/Core/FPException.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
 #include <Renderer/DebugRendererImp.h>
+#include <crtdbg.h>
 
 // Constructor
 Application::Application() : 
@@ -43,33 +45,38 @@ Application::Application() :
 
 	// Register physics types with the factory
 	RegisterTypes();
-	
-	// Create renderer
-	mRenderer = new Renderer;
-	mRenderer->Initialize();
 
-	// Create font
-	Font *font = new Font(mRenderer);
-	font->Create("Arial", 24, "Assets");
-	mFont = font;
+	{
+		// Disable allocation checking
+		DisableCustomMemoryHook dcmh;
 
-	// Init debug renderer
-	mDebugRenderer = new DebugRendererImp(mRenderer, mFont, "Assets");
+		// Create renderer
+		mRenderer = new Renderer;
+		mRenderer->Initialize();
 
-	// Init keyboard
-	mKeyboard = new Keyboard;
-	mKeyboard->Initialize(mRenderer);
+		// Create font
+		Font *font = new Font(mRenderer);
+		font->Create("Arial", 24);
+		mFont = font;
 
-	// Init mouse
-	mMouse = new Mouse;
-	mMouse->Initialize(mRenderer);
+		// Init debug renderer
+		mDebugRenderer = new DebugRendererImp(mRenderer, mFont);
 
-	// Init UI
-	mUI = new UIManager(mRenderer);
-	mUI->SetVisible(false);
+		// Init keyboard
+		mKeyboard = new Keyboard;
+		mKeyboard->Initialize(mRenderer);
 
-	// Init debug UI
-	mDebugUI = new DebugUI(mUI, mFont);
+		// Init mouse
+		mMouse = new Mouse;
+		mMouse->Initialize(mRenderer);
+
+		// Init UI
+		mUI = new UIManager(mRenderer);
+		mUI->SetVisible(false);
+
+		// Init debug UI
+		mDebugUI = new DebugUI(mUI, mFont);
+	}
 
 	// Get initial time
 	mLastUpdateTicks = GetProcessorTickCount();
@@ -78,13 +85,19 @@ Application::Application() :
 // Destructor
 Application::~Application()
 {
-	delete mDebugUI;
-	delete mUI;
-	delete mMouse;
-	delete mKeyboard;
-	delete mDebugRenderer;
-	mFont = nullptr;
-	delete mRenderer;
+	{
+		// Disable allocation checking
+		DisableCustomMemoryHook dcmh;
+
+		delete mDebugUI;
+		delete mUI;
+		delete mMouse;
+		delete mKeyboard;
+		delete mDebugRenderer;
+		mFont = nullptr;
+		delete mRenderer;
+	}
+
 	delete Factory::sInstance;
 	Factory::sInstance = nullptr;
 }
@@ -194,9 +207,14 @@ void Application::Run()
 				mLeftMousePressed = left_pressed;
 				mUI->MouseMove(mMouse->GetX(), mMouse->GetY());
 
-				// Update and draw the menu
-				mUI->Update(clock_delta_time);
-				mUI->Draw();
+				{
+					// Disable allocation checking
+					DisableCustomMemoryHook dcmh;
+
+					// Update and draw the menu
+					mUI->Update(clock_delta_time);
+					mUI->Draw();
+				}
 			}
 			else
 			{
@@ -215,8 +233,8 @@ void Application::Run()
 
 void Application::GetCameraLocalHeadingAndPitch(float &outHeading, float &outPitch)
 {
-	outHeading = atan2(mLocalCamera.mForward.GetZ(), mLocalCamera.mForward.GetX());
-	outPitch = atan2(mLocalCamera.mForward.GetY(), Vec3(mLocalCamera.mForward.GetX(), 0, mLocalCamera.mForward.GetZ()).Length());
+	outHeading = ATan2(mLocalCamera.mForward.GetZ(), mLocalCamera.mForward.GetX());
+	outPitch = ATan2(mLocalCamera.mForward.GetY(), Vec3(mLocalCamera.mForward.GetX(), 0, mLocalCamera.mForward.GetZ()).Length());
 }
 
 void Application::ConvertCameraLocalToWorld(float inCameraHeading, float inCameraPitch)
@@ -267,7 +285,7 @@ void Application::UpdateCamera(float inDeltaTime)
 	GetCameraLocalHeadingAndPitch(heading, pitch);
 	heading += DegreesToRadians(mMouse->GetDX() * 0.5f);
 	pitch = Clamp(pitch - DegreesToRadians(mMouse->GetDY() * 0.5f), -0.49f * JPH_PI, 0.49f * JPH_PI);
-	mLocalCamera.mForward = Vec3(cos(pitch) * cos(heading), sin(pitch), cos(pitch) * sin(heading));
+	mLocalCamera.mForward = Vec3(Cos(pitch) * Cos(heading), Sin(pitch), Cos(pitch) * Sin(heading));
 
 	// Convert to world space
 	ConvertCameraLocalToWorld(heading, pitch);
@@ -295,7 +313,7 @@ void Application::DrawFPS(float inDeltaTime)
 	}
 
 	// Create string
-	string fps = StringFormat("%.1f", (double)mFPS);
+	String fps = StringFormat("%.1f", (double)mFPS);
 
 	// Get size of text on screen
 	Float2 text_size = mFont->MeasureText(fps);
@@ -315,7 +333,7 @@ void Application::DrawFPS(float inDeltaTime)
 	// Draw paused string if the app is paused
 	if (mIsPaused)
 	{
-		string paused_str = "P: Unpause, ESC: Menu";
+		string_view paused_str = "P: Unpause, ESC: Menu";
 		Float2 pause_size = mFont->MeasureText(paused_str);
 		mUI->DrawText(mRenderer->GetWindowWidth() - 5 - int(pause_size.x * mFont->GetCharHeight()), 5, paused_str, mFont);
 	}

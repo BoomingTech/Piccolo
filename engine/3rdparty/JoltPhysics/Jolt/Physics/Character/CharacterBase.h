@@ -19,6 +19,19 @@ class StateRecorder;
 class CharacterBaseSettings : public RefTarget<CharacterBaseSettings>
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
+	/// Virtual destructor
+	virtual								~CharacterBaseSettings() = default;
+
+	/// Vector indicating the up direction of the character
+	Vec3								mUp = Vec3::sAxisY();
+
+	/// Plane, defined in local space relative to the character. Every contact behind this plane can support the
+	/// character, every contact in front of this plane is treated as only colliding with the player.
+	/// Default: Accept any contact.
+	Plane								mSupportingVolume { Vec3::sAxisY(), -1.0e10f };
+
 	/// Maximum angle of slope that character can still walk on (radians).
 	float								mMaxSlopeAngle = DegreesToRadians(50.0f);
 
@@ -31,6 +44,8 @@ public:
 class CharacterBase : public RefTarget<CharacterBase>, public NonCopyable
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 										CharacterBase(const CharacterBaseSettings *inSettings, PhysicsSystem *inSystem);
 
@@ -38,22 +53,39 @@ public:
 	virtual								~CharacterBase() = default;
 
 	/// Set the maximum angle of slope that character can still walk on (radians)
-	void								SetMaxSlopeAngle(float inMaxSlopeAngle)					{ mCosMaxSlopeAngle = cos(inMaxSlopeAngle); }
+	void								SetMaxSlopeAngle(float inMaxSlopeAngle)					{ mCosMaxSlopeAngle = Cos(inMaxSlopeAngle); }
+	float								GetCosMaxSlopeAngle() const								{ return mCosMaxSlopeAngle; }
+
+	/// Set the up vector for the character
+	void								SetUp(Vec3Arg inUp)										{ mUp = inUp; }
+	Vec3								GetUp() const											{ return mUp; }
+
+	/// Check if the normal of the ground surface is too steep to walk on
+	bool								IsSlopeTooSteep(Vec3Arg inNormal) const
+	{
+		// If cos max slope angle is close to one the system is turned off,
+		// otherwise check the angle between the up and normal vector
+		return mCosMaxSlopeAngle < cNoMaxSlopeAngle && inNormal.Dot(mUp) < mCosMaxSlopeAngle;
+	}
 
 	/// Get the current shape that the character is using.
 	const Shape *						GetShape() const										{ return mShape; }
 
 	enum class EGroundState
 	{
-		OnGround,						///< Character is on the ground and can move freely
-		Sliding,						///< Character is on a slope that is too steep and should start sliding
-		InAir,							///< Character is in the air
+		OnGround,						///< Character is on the ground and can move freely.
+		OnSteepGround,					///< Character is on a slope that is too steep and can't climb up any further. The caller should start applying downward velocity if sliding from the slope is desired.
+		NotSupported,					///< Character is touching an object, but is not supported by it and should fall. The GetGroundXXX functions will return information about the touched object.
+		InAir,							///< Character is in the air and is not touching anything.
 	};
 
 	///@name Properties of the ground this character is standing on
 
 	/// Current ground state
 	EGroundState						GetGroundState() const									{ return mGroundState; }
+
+	/// Returns true if the player is supported by normal or steep ground
+	bool								IsSupported() const										{ return mGroundState == EGroundState::OnGround || mGroundState == EGroundState::OnSteepGround; }
 
 	/// Get the contact point with the ground
 	Vec3 								GetGroundPosition() const								{ return mGroundPosition; }
@@ -86,6 +118,15 @@ protected:
 
 	// The shape that the body currently has
 	RefConst<Shape>						mShape;
+
+	// The character's world space up axis
+	Vec3								mUp;
+
+	// Every contact behind this plane can support the character
+	Plane								mSupportingVolume;
+
+	// Beyond this value there is no max slope
+	static constexpr float				cNoMaxSlopeAngle = 0.9999f;
 
 	// Cosine of the maximum angle of slope that character can still walk on
 	float								mCosMaxSlopeAngle;

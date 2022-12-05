@@ -14,6 +14,11 @@ JPH_SUPPRESS_WARNINGS_STD_END
 
 JPH_NAMESPACE_BEGIN
 
+// Things we're using from STL
+using std::atomic;
+using std::thread;
+using std::condition_variable;
+
 /// Implementation of a JobSystem using a thread pool
 /// 
 /// Note that this is considered an example implementation. It is expected that when you integrate
@@ -22,6 +27,8 @@ JPH_NAMESPACE_BEGIN
 class JobSystemThreadPool final : public JobSystem
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Creates a thread pool.
 	/// @see JobSystemThreadPool::Init
 							JobSystemThreadPool(uint inMaxJobs, uint inMaxBarriers, int inNumThreads = -1);
@@ -84,6 +91,8 @@ private:
 	class BarrierImpl : public Barrier
 	{
 	public:
+		JPH_OVERRIDE_NEW_DELETE
+
 		/// Constructor
 							BarrierImpl();
 		virtual				~BarrierImpl() override;
@@ -106,7 +115,7 @@ private:
 		virtual void		OnJobFinished(Job *inJob) override;
 
 		/// Jobs queue for the barrier
-		static constexpr uint cMaxJobs = 1024;
+		static constexpr uint cMaxJobs = 2048;
 		static_assert(IsPowerOf2(cMaxJobs));								// We do bit operations and require max jobs to be a power of 2
 		atomic<Job *> 		mJobs[cMaxJobs];								///< List of jobs that are part of this barrier, nullptrs for empty slots
 		alignas(JPH_CACHE_LINE_SIZE) atomic<uint> mJobReadIndex { 0 };		///< First job that could be valid (modulo cMaxJobs), can be nullptr if other thread is still working on adding the job
@@ -120,7 +129,7 @@ private:
 	void					StopThreads();
 	
 	/// Entry point for a thread
-	void					ThreadMain(const char *inName, int inThreadIndex);
+	void					ThreadMain(int inThreadIndex);
 
 	/// Get the head of the thread that has processed the least amount of jobs
 	inline uint				GetHead() const;
@@ -137,7 +146,7 @@ private:
 	BarrierImpl *			mBarriers = nullptr;							///< List of the actual barriers
 
 	/// Threads running jobs
-	vector<thread>			mThreads;
+	Array<thread>			mThreads;
 
 	// The job queue
 	static constexpr uint32 cQueueLength = 1024;

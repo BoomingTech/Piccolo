@@ -35,6 +35,8 @@ class CapsuleShapeSettings final : public ConvexShapeSettings
 class CapsuleShape final : public ConvexShape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 							CapsuleShape() : ConvexShape(EShapeSubType::Capsule) { }
 							CapsuleShape(const CapsuleShapeSettings &inSettings, ShapeResult &outResult);
@@ -63,11 +65,11 @@ public:
 	// See Shape::GetSurfaceNormal
 	virtual Vec3			GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocalSurfacePosition) const override;
 
+	// See Shape::GetSupportingFace
+	virtual void			GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override;
+
 	// See ConvexShape::GetSupportFunction
 	virtual const Support *	GetSupportFunction(ESupportMode inMode, SupportBuffer &inBuffer, Vec3Arg inScale) const override;
-
-	// See ConvexShape::GetSupportingFace
-	virtual void			GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const override;
 
 #ifdef JPH_DEBUG_RENDERER
 	// See Shape::Draw
@@ -79,7 +81,7 @@ public:
 	virtual bool			CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShapeIDCreator, RayCastResult &ioHit) const override;
 
 	// See: Shape::CollidePoint
-	virtual void			CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const override;
+	virtual void			CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See Shape::TransformShape
 	virtual void			TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const override;

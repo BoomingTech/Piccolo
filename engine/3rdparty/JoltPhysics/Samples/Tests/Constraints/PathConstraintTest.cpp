@@ -27,9 +27,9 @@ void PathConstraintTest::Initialize()
 		// Create spiral path
 		Ref<PathConstraintPathHermite> path = new PathConstraintPathHermite;
 		Vec3 normal(0, 1, 0);
-		vector<Vec3> positions;
+		Array<Vec3> positions;
 		for (float a = -0.1f * JPH_PI; a < 4.0f * JPH_PI; a += 0.1f * JPH_PI)
-			positions.push_back(Vec3(5.0f * cos(a), -a, 5.0f * sin(a)));
+			positions.push_back(Vec3(5.0f * Cos(a), -a, 5.0f * Sin(a)));
 		for (int i = 1; i < int(positions.size() - 1); ++i)
 		{
 			Vec3 tangent = 0.5f * (positions[i + 1] - positions[i - 1]);
@@ -60,11 +60,11 @@ void PathConstraintTest::Initialize()
 		Ref<PathConstraintPathHermite> path = new PathConstraintPathHermite;
 		path->SetIsLooping(true);
 		Vec3 normal(0, 1, 0);
-		vector<Vec3> positions;
+		Array<Vec3> positions;
 		for (int i = -1; i < 11; ++i)
 		{
 			float a = 2.0f * JPH_PI * i / 10.0f;
-			positions.push_back(Vec3(5.0f * cos(a), 0.0f, 5.0f * sin(a)));
+			positions.push_back(Vec3(5.0f * Cos(a), 0.0f, 5.0f * Sin(a)));
 		}
 		for (int i = 1; i < int(positions.size() - 1); ++i)
 		{
@@ -108,7 +108,7 @@ void PathConstraintTest::PrePhysicsUpdate(const PreUpdateParams &inParams)
 
 void PathConstraintTest::CreateSettingsMenu(DebugUI *inUI, UIElement *inSubMenu)
 {
-	static vector<string> constraint_types = { "Free", "Tangent", "Normal", "Binormal", "Path", "Full" };
+	static Array<String> constraint_types = { "Free", "Tangent", "Normal", "Binormal", "Path", "Full" };
 
 	inUI->CreateTextButton(inSubMenu, "Configuration Settings", [=]() {
 		UIElement *configuration_settings = inUI->CreateMenu();

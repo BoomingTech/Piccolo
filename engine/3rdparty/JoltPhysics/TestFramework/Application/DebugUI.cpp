@@ -14,7 +14,10 @@
 #include <UI/UITextButton.h>
 #include <Image/LoadTGA.h>
 #include <Utils/Log.h>
+
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <fstream>
+JPH_SUPPRESS_WARNINGS_STD_END
 
 DebugUI::DebugUI(UIManager *inUIManager, const Font *inFont) :
 	mUI(inUIManager),
@@ -146,7 +149,7 @@ UISlider *DebugUI::CreateSlider(UIElement *inMenu, const string_view &inName, fl
 	return slider;
 }
 
-UIComboBox *DebugUI::CreateComboBox(UIElement *inMenu, const string_view &inName, const vector<string> &inItems, int inInitialItem, UIComboBox::ItemChangedAction inAction)
+UIComboBox *DebugUI::CreateComboBox(UIElement *inMenu, const string_view &inName, const Array<String> &inItems, int inInitialItem, UIComboBox::ItemChangedAction inAction)
 {
 	UIHorizontalStack *horiz = new UIHorizontalStack();
 	horiz->SetPaddingRight(24);

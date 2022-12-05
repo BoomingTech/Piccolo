@@ -8,6 +8,7 @@
 #include <Jolt/Physics/PhysicsScene.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
 
 // Local includes
 #include "PerformanceTestScene.h"
@@ -138,5 +139,5 @@ private:
 	Ref<SkeletalAnimation>	mAnimation;
 	SkeletonPose			mPose;
 	Ref<PhysicsScene>		mBackground;
-	vector<Ref<Ragdoll>>	mRagdolls;
+	Array<Ref<Ragdoll>>		mRagdolls;
 };

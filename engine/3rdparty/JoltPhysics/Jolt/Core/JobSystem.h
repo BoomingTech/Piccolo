@@ -8,10 +8,7 @@
 #include <Jolt/Core/Profiler.h>
 #include <Jolt/Core/NonCopyable.h>
 #include <Jolt/Core/StaticArray.h>
-
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <atomic>
-JPH_SUPPRESS_WARNINGS_STD_END
+#include <Jolt/Core/Atomics.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -47,6 +44,8 @@ protected:
 	class Job;
 
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// A job handle contains a reference to a job. The job will be deleted as soon as there are no JobHandles.
 	/// referring to the job and when it is not in the job queue / being processed.
 	class JobHandle : private Ref<Job>
@@ -55,14 +54,14 @@ public:
 		/// Constructor 
 		inline				JobHandle() = default;
 		inline				JobHandle(const JobHandle &inHandle) = default;
-		inline				JobHandle(JobHandle &&inHandle) noexcept	: Ref<Job>(move(inHandle)) { }
+		inline				JobHandle(JobHandle &&inHandle) noexcept	: Ref<Job>(std::move(inHandle)) { }
 
 		/// Constructor, only to be used by JobSystem
 		inline explicit		JobHandle(Job *inJob)						: Ref<Job>(inJob) { }
 
 		/// Assignment
 		inline JobHandle &	operator = (const JobHandle &inHandle)		{ Ref<Job>::operator = (inHandle); return *this; }
-		inline JobHandle &	operator = (JobHandle &&inHandle) noexcept	{ Ref<Job>::operator = (move(inHandle)); return *this; }
+		inline JobHandle &	operator = (JobHandle &&inHandle) noexcept	{ Ref<Job>::operator = (std::move(inHandle)); return *this; }
 
 		/// Check if this handle contains a job
 		inline bool			IsValid() const								{ return GetPtr() != nullptr; }
@@ -95,6 +94,8 @@ public:
 	class Barrier : public NonCopyable
 	{
 	public:
+		JPH_OVERRIDE_NEW_DELETE
+
 		/// Add a job to this barrier
 		/// Note that jobs can keep being added to the barrier while waiting for the barrier
 		virtual void		AddJob(const JobHandle &inJob) = 0;
@@ -141,6 +142,8 @@ protected:
 	class Job
 	{
 	public:
+		JPH_OVERRIDE_NEW_DELETE
+
 		/// Constructor
 							Job([[maybe_unused]] const char *inJobName, [[maybe_unused]] ColorArg inColor, JobSystem *inJobSystem, const JobFunction &inJobFunction, uint32 inNumDependencies) : 
 		#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)

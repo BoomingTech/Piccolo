@@ -7,6 +7,7 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
 #include <Utils/RagdollLoader.h>
 #include <Utils/Log.h>
 #include <Layers.h>
@@ -90,7 +91,7 @@ void SensorTest::PrePhysicsUpdate(const PreUpdateParams &inParams)
 	mTime += inParams.mDeltaTime;
 
 	// Move kinematic body
-	Vec3 kinematic_pos = Vec3(-20.0f * cos(mTime), 10, 0);
+	Vec3 kinematic_pos = Vec3(-20.0f * Cos(mTime), 10, 0);
 	mBodyInterface->MoveKinematic(mKinematicBodyID, kinematic_pos, Quat::sIdentity(), inParams.mDeltaTime);
 
 	// Draw if body is in sensor

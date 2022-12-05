@@ -6,6 +6,7 @@
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/RTTI.h>
+#include <Jolt/Physics/Collision/CollisionDispatch.h>
 #include <Jolt/Physics/Collision/Shape/TriangleShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -20,6 +21,7 @@
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <Jolt/Physics/Collision/PhysicsMaterialSimple.h>
 
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, Skeleton)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, SkeletalAnimation)
@@ -52,10 +54,12 @@ JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PathConstraintPath)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PathConstraintPathHermite)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, VehicleConstraintSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, WheeledVehicleControllerSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, RackAndPinionConstraintSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, GearConstraintSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PulleyConstraintSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, MotorSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PhysicsScene)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PhysicsMaterial)
-JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, PhysicsMaterialSimple)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, GroupFilter)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH, GroupFilterTable)
 
@@ -63,7 +67,14 @@ JPH_NAMESPACE_BEGIN
 
 void RegisterTypes()
 {
+#ifndef JPH_DISABLE_CUSTOM_ALLOCATOR
+	JPH_ASSERT(Allocate != nullptr && Free != nullptr && AlignedAllocate != nullptr && AlignedFree != nullptr, "Need to supply an allocator first or call RegisterDefaultAllocator()");
+#endif // !JPH_DISABLE_CUSTOM_ALLOCATOR
+
 	JPH_ASSERT(Factory::sInstance != nullptr, "Need to create a factory first!");
+
+	// Initialize dispatcher
+	CollisionDispatch::sInit();
 
 	// Register base classes first so that we can specialize them later
 	CompoundShape::sRegister();
@@ -122,6 +133,9 @@ void RegisterTypes()
 		JPH_RTTI(WheeledVehicleControllerSettings),
 		JPH_RTTI(PathConstraintPath),
 		JPH_RTTI(PathConstraintPathHermite),
+		JPH_RTTI(RackAndPinionConstraintSettings),
+		JPH_RTTI(GearConstraintSettings),
+		JPH_RTTI(PulleyConstraintSettings),
 		JPH_RTTI(MotorSettings),
 		JPH_RTTI(PhysicsScene),
 		JPH_RTTI(PhysicsMaterial),
@@ -132,6 +146,10 @@ void RegisterTypes()
 
 	// Register them all
 	Factory::sInstance->Register(types, (uint)size(types));
+
+	// Initialize default physics material
+	if (PhysicsMaterial::sDefault == nullptr)
+		PhysicsMaterial::sDefault = new PhysicsMaterialSimple("Default", Color::sGrey);
 }
 
 JPH_NAMESPACE_END

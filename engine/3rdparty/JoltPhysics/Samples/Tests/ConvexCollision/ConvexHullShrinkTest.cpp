@@ -9,6 +9,10 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Renderer/DebugRendererImp.h>
 
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <fstream>
+JPH_SUPPRESS_WARNINGS_STD_END
+
 JPH_IMPLEMENT_RTTI_VIRTUAL(ConvexHullShrinkTest) 
 { 
 	JPH_ADD_BASE_CLASS(ConvexHullShrinkTest, Test) 
@@ -106,7 +110,7 @@ void ConvexHullShrinkTest::Initialize()
 					points_stream.read((char *)&v, sizeof(v));
 					p.push_back(Vec3(v));
 				}
-				mPoints.push_back(move(p));
+				mPoints.push_back(std::move(p));
 			}
 		}
 	}
@@ -141,7 +145,7 @@ void ConvexHullShrinkTest::PrePhysicsUpdate(const PreUpdateParams &inParams)
 		float max_error = -FLT_MAX;
 		int max_error_plane = 0;
 		Vec3 max_error_support_point = Vec3::sZero();
-		const vector<Plane> &planes = shape->GetPlanes();
+		const Array<Plane> &planes = shape->GetPlanes();
 		for (int i = 0; i < (int)planes.size(); ++i)
 		{
 			const Plane &plane = planes[i];

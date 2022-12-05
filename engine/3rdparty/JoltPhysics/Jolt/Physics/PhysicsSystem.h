@@ -10,6 +10,7 @@
 #include <Jolt/Physics/Constraints/ConstraintManager.h>
 #include <Jolt/Physics/IslandBuilder.h>
 #include <Jolt/Physics/PhysicsUpdateContext.h>
+#include <Jolt/Physics/PhysicsSettings.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -24,6 +25,8 @@ class PhysicsStepListener;
 class PhysicsSystem : public NonCopyable
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor / Destructor
 								PhysicsSystem()												: mContactManager(mPhysicsSettings) { }
 								~PhysicsSystem();
@@ -111,7 +114,7 @@ public:
 	static bool					sDrawMotionQualityLinearCast;								///< Draw debug info for objects that perform continuous collision detection through the linear cast motion quality
 
 	/// Draw the state of the bodies (debugging purposes)
-	void						DrawBodies(const BodyManager::DrawSettings &inSettings, DebugRenderer *inRenderer) { mBodyManager.Draw(inSettings, mPhysicsSettings, inRenderer); }
+	void						DrawBodies(const BodyManager::DrawSettings &inSettings, DebugRenderer *inRenderer, const BodyDrawFilter *inBodyFilter = nullptr) { mBodyManager.Draw(inSettings, mPhysicsSettings, inRenderer, inBodyFilter); }
 
 	/// Draw the constraints only (debugging purposes)
 	void						DrawConstraints(DebugRenderer *inRenderer)					{ mConstraintManager.DrawConstraints(inRenderer); }
@@ -237,6 +240,9 @@ private:
 
 	/// The broadphase does quick collision detection between body pairs
 	BroadPhase *				mBroadPhase = nullptr;
+    
+    /// Simulation settings
+	PhysicsSettings				mPhysicsSettings;
 
 	/// The contact manager resolves all contacts during a simulation step
 	ContactConstraintManager	mContactManager;
@@ -251,7 +257,7 @@ private:
 	Mutex						mStepListenersMutex;
 
 	/// List of physics step listeners
-	using StepListeners = vector<PhysicsStepListener *>;
+	using StepListeners = Array<PhysicsStepListener *>;
 	StepListeners				mStepListeners;
 
 	/// This is the global gravity vector
@@ -259,9 +265,6 @@ private:
 
 	/// Previous frame's delta time of one sub step to allow scaling previous frame's constraint impulses
 	float						mPreviousSubStepDeltaTime = 0.0f;
-
-	/// Simulation settings
-	PhysicsSettings				mPhysicsSettings;
 };
 
 JPH_NAMESPACE_END

@@ -18,9 +18,6 @@ public:
 	// Update the test, called before the physics update
 	virtual void			PrePhysicsUpdate(const PreUpdateParams &inParams) override;
 
-	// Optional settings menu
-	virtual void			CreateSettingsMenu(DebugUI *inUI, UIElement *inSubMenu) override;
-
 	// Saving / restoring state for replay
 	virtual void			SaveState(StateRecorder &inStream) const override;
 	virtual void			RestoreState(StateRecorder &inStream) override;
@@ -28,12 +25,18 @@ public:
 	// Called whenever the character collides with a body. Returns true if the contact can push the character.
 	virtual void			OnContactAdded(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2, Vec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings &ioSettings) override;
 
+	// Called whenever the character movement is solved and a constraint is hit. Allows the listener to override the resulting character velocity (e.g. by preventing sliding along certain surfaces).
+	virtual void			OnContactSolve(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2, Vec3Arg inContactPosition, Vec3Arg inContactNormal, Vec3Arg inContactVelocity, const PhysicsMaterial *inContactMaterial, Vec3Arg inCharacterVelocity, Vec3 &ioNewCharacterVelocity) override;
+
 protected:
 	// Get position of the character
 	virtual Vec3			GetCharacterPosition() const override				{ return mCharacter->GetPosition(); }
 
 	// Handle user input to the character
 	virtual void			HandleInput(Vec3Arg inMovementDirection, bool inJump, bool inSwitchStance, float inDeltaTime) override;
+
+	// Add test configuration settings
+	virtual void			AddConfigurationSettings(DebugUI *inUI, UIElement *inSubMenu) override;
 
 private:
 	// Test settings
@@ -43,10 +46,14 @@ private:
 	static inline float		sPenetrationRecoverySpeed = 1.0f;
 	static inline float		sPredictiveContactDistance = 0.1f;
 	static inline bool		sEnableWalkStairs = true;
+	static inline bool		sEnableStickToFloor = true;
 
 	// The 'player' character
 	Ref<CharacterVirtual>	mCharacter;
 
 	// Smoothed value of the player input
-	Vec3					mSmoothMovementDirection = Vec3::sZero();
+	Vec3					mDesiredVelocity = Vec3::sZero();
+
+	// True when the player is pressing movement controls
+	bool					mAllowSliding = false;
 };

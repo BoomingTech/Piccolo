@@ -10,8 +10,9 @@
 #include <Jolt/Skeleton/Skeleton.h>
 #include <Jolt/Skeleton/SkeletalAnimation.h>
 #include <Jolt/Skeleton/SkeletonPose.h>
-#include <Utils/RagdollLoader.h>
 #include <Jolt/Core/StringTools.h>
+#include <Jolt/ObjectStream/ObjectStreamIn.h>
+#include <Utils/RagdollLoader.h>
 #include <Application/DebugUI.h>
 #include <Layers.h>
 #include <Utils/Log.h>
@@ -58,7 +59,7 @@ void RigPileTest::Initialize()
 	{
 		// Load scene
 		Ref<PhysicsScene> scene;
-		if (!ObjectStreamIn::sReadObject((string("Assets/") + sSceneName + ".bof").c_str(), scene))
+		if (!ObjectStreamIn::sReadObject((String("Assets/") + sSceneName + ".bof").c_str(), scene))
 			FatalError("Failed to load scene");
 		for (BodyCreationSettings &body : scene->GetBodies())
 			body.mObjectLayer = Layers::NON_MOVING;

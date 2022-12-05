@@ -27,6 +27,8 @@ class DecoratedShapeSettings : public ShapeSettings
 class DecoratedShape : public Shape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 	explicit						DecoratedShape(EShapeSubType inSubType) : Shape(EShapeType::Decorated, inSubType) { }
 									DecoratedShape(EShapeSubType inSubType, const Shape *inInnerShape) : Shape(EShapeType::Decorated, inSubType), mInnerShape(inInnerShape) { }
@@ -46,6 +48,9 @@ public:
 
 	// See Shape::GetMaterial
 	virtual const PhysicsMaterial *	GetMaterial(const SubShapeID &inSubShapeID) const override;
+
+	// See Shape::GetSupportingFace
+	virtual void					GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override;
 
 	// See Shape::GetSubShapeUserData
 	virtual uint64					GetSubShapeUserData(const SubShapeID &inSubShapeID) const override;

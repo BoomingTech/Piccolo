@@ -9,16 +9,18 @@
 
 JPH_NAMESPACE_BEGIN
 
-class [[nodiscard]] Vec4
+class [[nodiscard]] alignas(JPH_VECTOR_ALIGNMENT) Vec4
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	// Underlying vector type
 #if defined(JPH_USE_SSE)
 	using Type = __m128;
 #elif defined(JPH_USE_NEON)
 	using Type = float32x4_t;
 #else
-	#error Undefined
+	using Type = struct { float mData[4]; };
 #endif
 
 	/// Constructor
@@ -106,7 +108,10 @@ public:
 	JPH_INLINE float			GetZ() const									{ return vgetq_lane_f32(mValue, 2); }
 	JPH_INLINE float			GetW() const									{ return vgetq_lane_f32(mValue, 3); }
 #else
-	#error Undefined
+	JPH_INLINE float			GetX() const									{ return mF32[0]; }
+	JPH_INLINE float			GetY() const									{ return mF32[1]; }
+	JPH_INLINE float			GetZ() const									{ return mF32[2]; }
+	JPH_INLINE float			GetW() const									{ return mF32[3]; }
 #endif
 
 	/// Set individual components
@@ -231,6 +236,26 @@ public:
 
 	/// Get vector that contains the sign of each element (returns 1.0f if positive, -1.0f if negative)
 	JPH_INLINE Vec4				GetSign() const;
+
+	/// Calcluate the sine and cosine for each element of this vector (input in radians)
+	inline void					SinCos(Vec4 &outSin, Vec4 &outCos) const;
+
+	/// Calcluate the tangent for each element of this vector (input in radians)
+	inline Vec4					Tan() const;
+
+	/// Calculate the arc sine for each element of this vector (returns value in the range [-PI / 2, PI / 2])
+	/// Note that all input values will be clamped to the range [-1, 1] and this function will not return NaNs like std::asin
+	inline Vec4					ASin() const;
+
+	/// Calculate the arc cosine for each element of this vector (returns value in the range [0, PI])
+	/// Note that all input values will be clamped to the range [-1, 1] and this function will not return NaNs like std::acos
+	inline Vec4					ACos() const;
+
+	/// Calculate the arc tangent for each element of this vector (returns value in the range [-PI / 2, PI / 2])
+	inline Vec4					ATan() const;
+
+	/// Calculate the arc tangent of y / x using the signs of the arguments to determine the correct quadrant (returns value in the range [-PI, PI])
+	inline static Vec4			sATan2(Vec4Arg inY, Vec4Arg inX);
 
 	/// To String
 	friend ostream &			operator << (ostream &inStream, Vec4Arg inV)

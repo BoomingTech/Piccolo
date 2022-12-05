@@ -35,6 +35,7 @@ namespace Piccolo
     {
         static_assert(s_invalid_rigidbody_id == JPH::BodyID::cInvalidBodyID);
 
+        JPH::RegisterDefaultAllocator();
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
 

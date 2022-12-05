@@ -31,20 +31,20 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(CapsuleShapeSettings)
 
 static const int cCapsuleDetailLevel = 2;
 
-static const vector<Vec3> sCapsuleTopTriangles = []() { 
-	vector<Vec3> verts;	
+static const std::vector<Vec3> sCapsuleTopTriangles = []() { 
+	std::vector<Vec3> verts;	
 	GetTrianglesContextVertexList::sCreateHalfUnitSphereTop(verts, cCapsuleDetailLevel);
 	return verts;
 }();
 
-static const vector<Vec3> sCapsuleMiddleTriangles = []() { 
-	vector<Vec3> verts;
+static const std::vector<Vec3> sCapsuleMiddleTriangles = []() { 
+	std::vector<Vec3> verts;
 	GetTrianglesContextVertexList::sCreateUnitOpenCylinder(verts, cCapsuleDetailLevel);
 	return verts;
 }();
 
-static const vector<Vec3> sCapsuleBottomTriangles = []() { 
-	vector<Vec3> verts;	
+static const std::vector<Vec3> sCapsuleBottomTriangles = []() { 
+	std::vector<Vec3> verts;	
 	GetTrianglesContextVertexList::sCreateHalfUnitSphereBottom(verts, cCapsuleDetailLevel);
 	return verts;
 }();
@@ -170,8 +170,9 @@ const ConvexShape::Support *CapsuleShape::GetSupportFunction(ESupportMode inMode
 	return nullptr;
 }
 
-void CapsuleShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const
+void CapsuleShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const
 {	
+	JPH_ASSERT(inSubShapeID.IsEmpty(), "Invalid subshape ID");
 	JPH_ASSERT(IsValidScale(inScale));
 
 	// Get direction in horizontal plane
@@ -203,8 +204,8 @@ void CapsuleShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, Suppo
 	// If projection is roughly equal then return line, otherwise we return nothing as there's only 1 point
 	if (abs(proj_top - proj_bottom) < cCapsuleProjectionSlop * inDirection.Length())
 	{
-		outVertices.push_back(support_top);
-		outVertices.push_back(support_bottom);
+		outVertices.push_back(inCenterOfMassTransform * support_top);
+		outVertices.push_back(inCenterOfMassTransform * support_bottom);
 	}
 }
 
@@ -252,7 +253,7 @@ Vec3 CapsuleShape::GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLo
 	else if (inLocalSurfacePosition.GetY() < -mHalfHeightOfCylinder)
 		return (inLocalSurfacePosition - Vec3(0, -mHalfHeightOfCylinder, 0)).Normalized();
 	else
-		return Vec3(inLocalSurfacePosition.GetX(), 0, inLocalSurfacePosition.GetZ()).Normalized();
+		return Vec3(inLocalSurfacePosition.GetX(), 0, inLocalSurfacePosition.GetZ()).NormalizedOr(Vec3::sAxisX());
 }
 
 AABox CapsuleShape::GetLocalBounds() const
@@ -295,8 +296,12 @@ bool CapsuleShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubS
 	return false;
 }
 
-void CapsuleShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void CapsuleShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	float radius_sq = Square(mRadius);
 
 	// Get vertical distance to the top/bottom sphere centers

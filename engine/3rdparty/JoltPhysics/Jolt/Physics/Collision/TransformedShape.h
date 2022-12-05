@@ -23,6 +23,8 @@ class RayCastResult;
 class TransformedShape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 								TransformedShape() = default;
 								TransformedShape(Vec3Arg inPositionCOM, QuatArg inRotation, const Shape *inShape, const BodyID &inBodyID, const SubShapeIDCreator &inSubShapeIDCreator = SubShapeIDCreator()) : mShapePositionCOM(inPositionCOM), mShapeRotation(inRotation), mShape(inShape), mBodyID(inBodyID), mSubShapeIDCreator(inSubShapeIDCreator) { }
@@ -34,22 +36,22 @@ public:
 
 	/// Cast a ray, allows collecting multiple hits. Note that this version is more flexible but also slightly slower than the CastRay function that returns only a single hit.
 	/// If you want the surface normal of the hit use GetWorldSpaceSurfaceNormal(collected sub shape ID, inRay.GetPointOnRay(collected fraction)) on this object.
-	void						CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, CastRayCollector &ioCollector) const;
+	void						CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const;
 
 	/// Check if inPoint is inside any shapes. For this tests all shapes are treated as if they were solid. 
 	/// For a mesh shape, this test will only provide sensible information if the mesh is a closed manifold.
 	/// For each shape that collides, ioCollector will receive a hit
-	void						CollidePoint(Vec3Arg inPoint, CollidePointCollector &ioCollector) const;
+	void						CollidePoint(Vec3Arg inPoint, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const;
 
 	/// Collide a shape and report any hits to ioCollector
-	void						CollideShape(const Shape *inShape, Vec3Arg inShapeScale, Mat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector) const;
+	void						CollideShape(const Shape *inShape, Vec3Arg inShapeScale, Mat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const;
 
 	/// Cast a shape and report any hits to ioCollector
 	void						CastShape(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, CastShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const;
 
 	/// Collect the leaf transformed shapes of all leaf shapes of this shape
 	/// inBox is the world space axis aligned box which leaf shapes should collide with
-	void						CollectTransformedShapes(const AABox &inBox, TransformedShapeCollector &ioCollector) const;
+	void						CollectTransformedShapes(const AABox &inBox, TransformedShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const;
 
 	/// Use the context from Shape
 	using GetTrianglesContext = Shape::GetTrianglesContext;
@@ -125,6 +127,17 @@ public:
 		return inv_com.Multiply3x3Transposed(mShape->GetSurfaceNormal(MakeSubShapeIDRelativeToShape(inSubShapeID), (inv_com * inPosition) / scale) / scale).Normalized();
 	}
 
+	/// Get the vertices of the face that faces inDirection the most (includes any convex radius). Note that this function can only return faces of
+	/// convex shapes or triangles, which is why a sub shape ID to get to that leaf must be provided. 
+	/// @param inSubShapeID Sub shape ID of target shape
+	/// @param inDirection Direction that the face should be facing (in world space)
+	/// @param outVertices Resulting face. Note the returned face can have a single point if the shape doesn't have polygons to return (e.g. because it's a sphere). The face will be returned in world space.
+	void						GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Shape::SupportingFace &outVertices) const
+	{
+		Mat44 com = GetCenterOfMassTransform();
+		mShape->GetSupportingFace(MakeSubShapeIDRelativeToShape(inSubShapeID), com.Multiply3x3Transposed(inDirection), GetShapeScale(), com, outVertices);
+	}
+
 	/// Get material of a particular sub shape
 	inline const PhysicsMaterial *GetMaterial(const SubShapeID &inSubShapeID) const
 	{
@@ -158,6 +171,6 @@ public:
 };
 
 static_assert(sizeof(TransformedShape) == 64, "Not properly packed");
-static_assert(alignof(TransformedShape) == 16, "Not properly aligned");
+static_assert(alignof(TransformedShape) == JPH_VECTOR_ALIGNMENT, "Not properly aligned");
 
 JPH_NAMESPACE_END

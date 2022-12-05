@@ -39,6 +39,7 @@ static void TraceImpl(const char *inFMT, ...)
 	va_start(list, inFMT);
 	char buffer[1024];
 	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
 
 	// Print to the TTY
 	cout << buffer << endl;
@@ -197,6 +198,9 @@ public:
 // Program entry point
 int main(int argc, char** argv)
 {
+	// Register allocation hook
+	RegisterDefaultAllocator();
+
 	// Install callbacks
 	Trace = TraceImpl;
 	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
@@ -234,7 +238,7 @@ int main(int argc, char** argv)
 
 	// This is the maximum size of the contact constraint buffer. If more contacts (collisions between bodies) are detected than this
 	// number then these contacts will be ignored and bodies will start interpenetrating / fall through the world.
-	// Note: This value is low because this is a simple test. For a real project use something in the order of 65536.
+	// Note: This value is low because this is a simple test. For a real project use something in the order of 10240.
 	const uint cMaxContactConstraints = 1024;
 
 	// Create mapping table from object layer to broadphase layer

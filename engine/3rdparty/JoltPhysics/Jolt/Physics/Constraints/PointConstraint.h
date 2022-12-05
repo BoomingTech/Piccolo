@@ -39,6 +39,8 @@ protected:
 class PointConstraint final : public TwoBodyConstraint
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Construct point constraint
 								PointConstraint(Body &inBody1, Body &inBody2, const PointConstraintSettings &inSettings);
 
@@ -54,6 +56,18 @@ public:
 	virtual void				SaveState(StateRecorder &inStream) const override;
 	virtual void				RestoreState(StateRecorder &inStream) override;
 	virtual Ref<ConstraintSettings> GetConstraintSettings() const override;
+
+	/// Update the attachment point for body 1
+	void						SetPoint1(EConstraintSpace inSpace, Vec3Arg inPoint1);
+
+	/// Update the attachment point for body 2
+	void						SetPoint2(EConstraintSpace inSpace, Vec3Arg inPoint2);
+
+	/// Get the attachment point for body 1 relative to body 1 COM
+	inline Vec3					GetLocalSpacePoint1() const									{ return mLocalSpacePosition1; }
+
+	/// Get the attachment point for body 2 relative to body 2 COM
+	inline Vec3					GetLocalSpacePoint2() const									{ return mLocalSpacePosition2; }
 
 	// See: TwoBodyConstraint
 	virtual Mat44				GetConstraintToBody1Matrix() const override					{ return Mat44::sTranslation(mLocalSpacePosition1); }

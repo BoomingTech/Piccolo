@@ -155,11 +155,26 @@ const ConvexShape::Support *TriangleShape::GetSupportFunction(ESupportMode inMod
 	return nullptr;
 }
 
-void TriangleShape::GetSupportingFace(Vec3Arg inDirection, Vec3Arg inScale, SupportingFace &outVertices) const
+void TriangleShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const
 {
-	outVertices.push_back(inScale * mV1);
-	outVertices.push_back(inScale * mV2);
-	outVertices.push_back(inScale * mV3);
+	JPH_ASSERT(inSubShapeID.IsEmpty(), "Invalid subshape ID");
+
+	// Calculate transform with scale
+	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);
+
+	// Flip triangle if scaled inside out
+	if (ScaleHelpers::IsInsideOut(inScale))
+	{
+		outVertices.push_back(transform * mV1);
+		outVertices.push_back(transform * mV3);
+		outVertices.push_back(transform * mV2);
+	}
+	else
+	{
+		outVertices.push_back(transform * mV1);
+		outVertices.push_back(transform * mV2);
+		outVertices.push_back(transform * mV3);
+	}
 }
 
 MassProperties TriangleShape::GetMassProperties() const
@@ -213,8 +228,12 @@ bool TriangleShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSub
 	return false;
 }
 
-void TriangleShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const
+void TriangleShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
+	// Test shape filter
+	if (!inShapeFilter.ShouldCollide(inSubShapeIDCreator.GetID()))
+		return;
+
 	// Back facing check
 	if (inRayCastSettings.mBackFaceMode == EBackFaceMode::IgnoreBackFaces && (mV2 - mV1).Cross(mV3 - mV1).Dot(inRay.mDirection) > 0.0f)
 		return;
@@ -232,12 +251,12 @@ void TriangleShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCa
 	}
 }
 
-void TriangleShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const
+void TriangleShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
 	// Can't be inside a triangle
 }
 
-void TriangleShape::sCollideConvexVsTriangle(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void TriangleShape::sCollideConvexVsTriangle(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_ASSERT(inShape1->GetType() == EShapeType::Convex);
 	const ConvexShape *shape1 = static_cast<const ConvexShape *>(inShape1);
@@ -248,7 +267,7 @@ void TriangleShape::sCollideConvexVsTriangle(const Shape *inShape1, const Shape 
 	collider.Collide(shape2->mV1, shape2->mV2, shape2->mV3, 0b111, inSubShapeIDCreator2.GetID());
 }
 
-void TriangleShape::sCollideSphereVsTriangle(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector)
+void TriangleShape::sCollideSphereVsTriangle(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
 	JPH_ASSERT(inShape1->GetSubType() == EShapeSubType::Sphere);
 	const SphereShape *shape1 = static_cast<const SphereShape *>(inShape1);

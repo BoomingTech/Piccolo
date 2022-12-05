@@ -80,8 +80,8 @@ public:
 	/// Also note that increasing mBlockSize saves more memory than reducing the amount of bits per sample.
 	uint32							mBitsPerSample = 8;
 
-	vector<float>					mHeightSamples;
-	vector<uint8>					mMaterialIndices;
+	Array<float>					mHeightSamples;
+	Array<uint8>					mMaterialIndices;
 
 	/// The materials of square at (x, y) is: mMaterials[mMaterialIndices[x + y * (mSampleCount - 1)]]
 	PhysicsMaterialList				mMaterials;
@@ -91,6 +91,8 @@ public:
 class HeightFieldShape final : public Shape
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructor
 									HeightFieldShape() : Shape(EShapeType::HeightField, EShapeSubType::HeightField) { }
 									HeightFieldShape(const HeightFieldShapeSettings &inSettings, ShapeResult &outResult);
@@ -119,6 +121,9 @@ public:
 	// See Shape::GetSurfaceNormal
 	virtual Vec3					GetSurfaceNormal(const SubShapeID &inSubShapeID, Vec3Arg inLocalSurfacePosition) const override;
 
+	// See Shape::GetSupportingFace
+	virtual void					GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDirection, Vec3Arg inScale, Mat44Arg inCenterOfMassTransform, SupportingFace &outVertices) const override;
+
 	// See Shape::GetSubmergedVolume
 	virtual void					GetSubmergedVolume(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const Plane &inSurface, float &outTotalVolume, float &outSubmergedVolume, Vec3 &outCenterOfBuoyancy) const override { JPH_ASSERT(false, "Not supported"); }
 
@@ -129,10 +134,10 @@ public:
 
 	// See Shape::CastRay
 	virtual bool					CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShapeIDCreator, RayCastResult &ioHit) const override;
-	virtual void					CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector) const override;
+	virtual void					CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See: Shape::CollidePoint
-	virtual void					CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector) const override;
+	virtual void					CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See Shape::GetTrianglesStart
 	virtual void					GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) const override;
@@ -185,7 +190,7 @@ private:
 	void							CalculateActiveEdges();
 	
 	/// Store material indices in the least amount of bits per index possible
-	void							StoreMaterialIndices(const vector<uint8> &inMaterialIndices);
+	void							StoreMaterialIndices(const Array<uint8> &inMaterialIndices);
 
 	/// Get the amount of horizontal/vertical blocks
 	inline uint						GetNumBlocks() const					{ return mSampleCount / mBlockSize; }
@@ -216,8 +221,8 @@ private:
 	inline uint8					GetEdgeFlags(uint inX, uint inY, uint inTriangle) const;
 
 	// Helper functions called by CollisionDispatch
-	static void						sCollideConvexVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector);
-	static void						sCollideSphereVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector);
+	static void						sCollideConvexVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter);
+	static void						sCollideSphereVsHeightField(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter);
 	static void						sCastConvexVsHeightField(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
 	static void						sCastSphereVsHeightField(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
 
@@ -247,18 +252,18 @@ private:
 	uint8							mSampleMask = 0xff;					///< All bits set for a sample: (1 << mBitsPerSample) - 1, used to indicate that there's no collision
 	uint16							mMinSample = HeightFieldShapeConstants::cNoCollisionValue16;	///< Min and max value in mHeightSamples quantized to 16 bit, for calculating bounding box
 	uint16							mMaxSample = HeightFieldShapeConstants::cNoCollisionValue16;
-	vector<RangeBlock>				mRangeBlocks;						///< Hierarchical grid of range data describing the height variations within 1 block. The grid for level <level> starts at offset sGridOffsets[<level>]
-	vector<uint8>					mHeightSamples;						///< mBitsPerSample-bit height samples. Value [0, mMaxHeightValue] maps to highest detail grid in mRangeBlocks [mMin, mMax]. mNoCollisionValue is reserved to indicate no collision.
-	vector<uint8>					mActiveEdges;						///< (mSampleCount - 1)^2 * 3-bit active edge flags. 
+	Array<RangeBlock>				mRangeBlocks;						///< Hierarchical grid of range data describing the height variations within 1 block. The grid for level <level> starts at offset sGridOffsets[<level>]
+	Array<uint8>					mHeightSamples;						///< mBitsPerSample-bit height samples. Value [0, mMaxHeightValue] maps to highest detail grid in mRangeBlocks [mMin, mMax]. mNoCollisionValue is reserved to indicate no collision.
+	Array<uint8>					mActiveEdges;						///< (mSampleCount - 1)^2 * 3-bit active edge flags. 
 
 	/// Materials
 	PhysicsMaterialList				mMaterials;							///< The materials of square at (x, y) is: mMaterials[mMaterialIndices[x + y * (mSampleCount - 1)]]
-	vector<uint8>					mMaterialIndices;					///< Compressed to the minimum amount of bits per material index (mSampleCount - 1) * (mSampleCount - 1) * mNumBitsPerMaterialIndex bits of data
+	Array<uint8>					mMaterialIndices;					///< Compressed to the minimum amount of bits per material index (mSampleCount - 1) * (mSampleCount - 1) * mNumBitsPerMaterialIndex bits of data
 	uint32							mNumBitsPerMaterialIndex = 0;		///< Number of bits per material index
 
 #ifdef JPH_DEBUG_RENDERER
 	/// Temporary rendering data
-	mutable vector<DebugRenderer::GeometryRef>	mGeometry;
+	mutable Array<DebugRenderer::GeometryRef> mGeometry;
 	mutable bool					mCachedUseMaterialColors = false;	///< This is used to regenerate the triangle batch if the drawing settings change
 #endif // JPH_DEBUG_RENDERER
 };

@@ -14,6 +14,8 @@ JPH_NAMESPACE_BEGIN
 class TempAllocator : public NonCopyable
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Destructor
 	virtual							~TempAllocator() = default;
 
@@ -28,9 +30,11 @@ public:
 class TempAllocatorImpl final : public TempAllocator
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Constructs the allocator with a maximum allocatable size of inSize
 	explicit						TempAllocatorImpl(uint inSize) :
-		mBase(static_cast<uint8 *>(malloc(inSize))),
+		mBase(static_cast<uint8 *>(JPH::Allocate(inSize))),
 		mSize(inSize)
 	{
 	}
@@ -39,7 +43,7 @@ public:
 	virtual							~TempAllocatorImpl() override
 	{
 		JPH_ASSERT(mTop == 0);
-		free(mBase);
+		JPH::Free(mBase);
 	}
 
 	// See: TempAllocator
@@ -92,16 +96,18 @@ private:
 class TempAllocatorMalloc final : public TempAllocator
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	// See: TempAllocator
 	virtual void *					Allocate(uint inSize) override
 	{
-		return malloc(inSize);
+		return AlignedAllocate(inSize, 16);
 	}
 
 	// See: TempAllocator
 	virtual void					Free(void *inAddress, uint inSize) override
 	{
-		free(inAddress);
+		AlignedFree(inAddress);
 	}
 };
 

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/StateRecorder.h>
 
@@ -79,7 +78,6 @@ public:
 	/// @param inAxisY1 Reference axis Y for body 1
 	/// @param inAxisX2 Reference axis X for body 2
 	/// @param inAxisY2 Reference axis Y for body 2
-	/// @return 
 	static Quat					sGetInvInitialOrientationXY(Vec3Arg inAxisX1, Vec3Arg inAxisY1, Vec3Arg inAxisX2, Vec3Arg inAxisY2)
 	{
 		// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
@@ -121,7 +119,6 @@ public:
 	/// @param inAxisZ1 Reference axis Z for body 1
 	/// @param inAxisX2 Reference axis X for body 2
 	/// @param inAxisZ2 Reference axis Z for body 2
-	/// @return 
 	static Quat					sGetInvInitialOrientationXZ(Vec3Arg inAxisX1, Vec3Arg inAxisZ1, Vec3Arg inAxisX2, Vec3Arg inAxisZ2)
 	{
 		// See comment at sGetInvInitialOrientationXY

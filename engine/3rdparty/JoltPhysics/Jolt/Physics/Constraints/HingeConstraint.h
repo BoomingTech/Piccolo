@@ -57,6 +57,8 @@ protected:
 class HingeConstraint final : public TwoBodyConstraint
 {
 public:
+	JPH_OVERRIDE_NEW_DELETE
+
 	/// Construct hinge constraint
 								HingeConstraint(Body &inBody1, Body &inBody2, const HingeConstraintSettings &inSettings);
 
@@ -77,6 +79,9 @@ public:
 	// See: TwoBodyConstraint
 	virtual Mat44				GetConstraintToBody1Matrix() const override;
 	virtual Mat44				GetConstraintToBody2Matrix() const override;
+
+	/// Get the current rotation angle from the rest position
+	float						GetCurrentAngle() const;
 
 	// Friction control
 	void						SetMaxFrictionTorque(float inFrictionTorque)			{ mMaxFrictionTorque = inFrictionTorque; }

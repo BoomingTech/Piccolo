@@ -55,6 +55,9 @@ For more information see the [Architecture and API documentation](https://jrouwe
 	* Hinge.
 	* Slider (also called prismatic).
 	* Cone.
+	* Rack and Pinion.
+	* Gear.
+	* Pulley.
 	* Smooth spline paths.
 	* Swing-twist (for humanoid shoulders).
 	* 6 DOF.
@@ -69,6 +72,7 @@ For more information see the [Architecture and API documentation](https://jrouwe
 	* Hard keying (kinematic only rigid bodies).
 	* Soft keying (setting velocities on dynamic rigid bodies).
 	* Driving constraint motors to an animated pose.
+	* Mapping a high detail (animation) skeleton onto a low detail (ragdoll) skeleton and vice versa.
 * Game character simulation (capsule)
 	* Rigid body character. Moves during the physics simulation. Cheapest option and most accurate collision response between character and dynamic bodies.
 	* Virtual character. Does not have a rigid body in the world but simulates one using collision checks. Updated outside of the physics update for more control. Less accurate interaction with dynamic bodies.
@@ -77,16 +81,17 @@ For more information see the [Architecture and API documentation](https://jrouwe
 
 ## Supported Platforms
 
-* Windows (VS2019, VS2022) x64 (Desktop/UWP)
-* Linux (tested on Ubuntu 20.04) x64/ARM64
+* Windows (VS2019, VS2022) x86/x64/ARM/ARM64 (Desktop/UWP)
+* Linux (tested on Ubuntu 22.04) x64/ARM64
 * Android (tested on Android 10) x64/ARM64
 * Platform Blue (a popular game console) x64
-* MacOS (tested on Monterey) x64/ARM64
+* macOS (tested on Monterey) x64/ARM64
 * iOS (tested on iOS 15) x64/ARM64
+* WebAssembly, see [this](https://github.com/jrouwe/JoltPhysics.js) separate project.
 
 ## Required CPU features
 
-* On x86 the minimal requirements are SSE2 but the library can be compiled using SSE4.1, SSE4.2, AVX or AVX2.
+* On x86 the minimal requirements are SSE2 but the library can be compiled using SSE4.1, SSE4.2, AVX, AVX2, or AVX512.
 * On ARM64 the library requires NEON with FP16 support.
 
 ## Compiling
@@ -96,7 +101,7 @@ For more information see the [Architecture and API documentation](https://jrouwe
 * It doesn't make use of compiler generated RTTI or exceptions.
 * If you want to run on Platform Blue you'll need to provide your own build environment and PlatformBlue.h file due to NDA requirements (see Core.h for further info).
 
-For build instructions go to the [Build](Build/README.md) section.
+For build instructions go to the [Build](Build/README.md) section. When upgrading from an older version of the library go to the [API Changes](Docs/APIChanges.md) section.
 
 ## Folder Structure
 
@@ -111,6 +116,12 @@ For build instructions go to the [Build](Build/README.md) section.
 * TestFramework - A rendering framework to visualize the results of the physics engine. Used by Samples and JoltViewer. Currently available on Windows only.
 * UnitTests - A set of unit tests to validate the behavior of the physics engine.
 * WebIncludes - A number of JavaScript resources used by the internal profiling framework of the physics engine.
+
+## Bindings For Other Languages
+
+* [C#](https://github.com/amerkoleci/JoltPhysicsSharp)
+* [JavaScript](https://github.com/jrouwe/JoltPhysics.js)
+* [Zig](https://github.com/michal-z/zig-gamedev)
 
 ## License
 

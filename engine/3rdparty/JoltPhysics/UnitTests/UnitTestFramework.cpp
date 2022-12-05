@@ -3,15 +3,21 @@
 
 #include <Jolt/Jolt.h>
 
-#include <cstdarg>
 #include <Jolt/Core/FPException.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
+#ifdef JPH_PLATFORM_WINDOWS
+#include <crtdbg.h>
+#endif // JPH_PLATFORM_WINDOWS
 #ifdef JPH_PLATFORM_ANDROID
 #include <Jolt/Core/Color.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
 #endif // JPH_PLATFORM_ANDROID
+
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <cstdarg>
+JPH_SUPPRESS_WARNINGS_STD_END
 
 using namespace JPH;
 
@@ -19,7 +25,9 @@ using namespace JPH;
 #define DOCTEST_CONFIG_IMPLEMENT
 #define DOCTEST_CONFIG_NO_WINDOWS_SEH
 
+JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include "doctest.h"
+JPH_SUPPRESS_WARNINGS_STD_END
 
 using namespace doctest;
 
@@ -28,12 +36,13 @@ JPH_SUPPRESS_WARNINGS
 
 // Callback for traces
 static void TraceImpl(const char *inFMT, ...)
-{ 
+{
 	// Format the message
 	va_list list;
 	va_start(list, inFMT);
 	char buffer[1024];
 	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
 
 	// Forward to doctest
 	MESSAGE(buffer);
@@ -43,7 +52,7 @@ static void TraceImpl(const char *inFMT, ...)
 
 // Callback for asserts
 static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
-{ 
+{
 	// Format message
 	char buffer[1024];
 	snprintf(buffer, sizeof(buffer), "%s:%u: (%s) %s", inFile, inLine, inExpression, inMessage != nullptr? inMessage : "");
@@ -59,34 +68,105 @@ static bool AssertFailedImpl(const char *inExpression, const char *inMessage, co
 
 #ifdef JPH_PLATFORM_WINDOWS_UWP
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+JPH_SUPPRESS_WARNING_PUSH
+JPH_MSVC_SUPPRESS_WARNING(4265) // warning C4265: 'winrt::impl::implements_delegate<winrt::Windows::UI::Core::DispatchedHandler,H>': class has virtual functions, but its non-trivial destructor is not virtual; instances of this class may not be destructed correctly
+JPH_MSVC_SUPPRESS_WARNING(4668) // warning C4668: '_MANAGED' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+JPH_MSVC_SUPPRESS_WARNING(4946) // warning C4946: reinterpret_cast used between related classes: 'winrt::impl::abi<winrt::Windows::ApplicationModel::Core::IFrameworkViewSource,void>::type' and 'winrt::impl::abi<winrt::Windows::Foundation::IUnknown,void>::type'
+JPH_MSVC_SUPPRESS_WARNING(5039) // winbase.h(13179): warning C5039: 'TpSetCallbackCleanupGroup': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
+JPH_MSVC_SUPPRESS_WARNING(5204) // warning C5204: 'winrt::impl::produce_base<D,winrt::Windows::ApplicationModel::Core::IFrameworkViewSource,void>': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly
+JPH_MSVC_SUPPRESS_WARNING(5246) // warning C5246: '_Elems': the initialization of a subobject should be wrapped in braces
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.ApplicationModel.Core.h>
+#include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Composition.h>
+#include <winrt/Windows.UI.Input.h>
+JPH_SUPPRESS_WARNING_POP
+
+using namespace winrt;
+using namespace Windows;
+using namespace Windows::ApplicationModel::Core;
+using namespace Windows::UI;
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Composition;
+
+struct App : implements<App, IFrameworkViewSource, IFrameworkView>
 {
-	// Install callbacks
-	Trace = TraceImpl;
-	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
+	CompositionTarget mTarget { nullptr };
+
+	IFrameworkView CreateView()
+	{
+		return *this;
+	}
+
+	void Initialize(CoreApplicationView const&)
+	{
+	}
+
+	void Load(hstring const&)
+	{
+	}
+
+	void Uninitialize()
+	{
+	}
+
+	void Run()
+	{
+		CoreWindow window = CoreWindow::GetForCurrentThread();
+		window.Activate();
+
+		CoreDispatcher dispatcher = window.Dispatcher();
+		dispatcher.ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
+	}
+
+	void SetWindow(CoreWindow const& inWindow)
+	{
+		// Register allocation hook
+		RegisterDefaultAllocator();
+
+		// Install callbacks
+		Trace = TraceImpl;
+		JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
 
 #ifdef _DEBUG
-	// Enable leak detection
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+		// Enable leak detection
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	// Enable floating point exceptions
-	FPExceptionsEnable enable_exceptions;
-	JPH_UNUSED(enable_exceptions);
+		// Enable floating point exceptions
+		FPExceptionsEnable enable_exceptions;
+		JPH_UNUSED(enable_exceptions);
 
-	// Create a factory
-	Factory::sInstance = new Factory();
+		// Create a factory
+		Factory::sInstance = new Factory();
 
-	// Register physics types
-	RegisterTypes();
+		// Register physics types
+		RegisterTypes();
 
-	int rv = Context().run();
+		// Run the tests
+		int rv = Context().run();
 
-	// Destroy the factory
-	delete Factory::sInstance;
-	Factory::sInstance = nullptr;
+		// Destroy the factory
+		delete Factory::sInstance;
+		Factory::sInstance = nullptr;
 
-	return rv;
+		// Color the screen according to the result
+		Compositor compositor;
+		ContainerVisual root = compositor.CreateContainerVisual();
+		mTarget = compositor.CreateTargetForCurrentView();
+		mTarget.Root(root);
+		SpriteVisual visual = compositor.CreateSpriteVisual();
+		visual.Brush(compositor.CreateColorBrush(rv != 0 ? Windows::UI::Color { 0xff, 0xff, 0x00, 0x00 } : Windows::UI::Color { 0xff, 0x00, 0xff, 0x00 }));
+		visual.Size({ inWindow.Bounds().Width, inWindow.Bounds().Height });
+		visual.Offset({ 0, 0, 0, });
+		root.Children().InsertAtTop(visual);
+	}
+};
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+    CoreApplication::Run(make<App>());
 }
 
 #elif !defined(JPH_PLATFORM_ANDROID)
@@ -94,6 +174,49 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 // Generic entry point
 int main(int argc, char** argv)
 {
+	// Show used instruction sets
+	std::cout << JPH_CPU_ADDRESS_BITS << "-bit build with instructions: ";
+#ifdef JPH_USE_NEON
+	std::cout << "NEON ";
+#endif
+#ifdef JPH_USE_SSE
+	std::cout << "SSE2 ";
+#endif
+#ifdef JPH_USE_SSE4_1
+	std::cout << "SSE4.1 ";
+#endif
+#ifdef JPH_USE_SSE4_2
+	std::cout << "SSE4.2 ";
+#endif
+#ifdef JPH_USE_AVX
+	std::cout << "AVX ";
+#endif
+#ifdef JPH_USE_AVX2
+	std::cout << "AVX2 ";
+#endif
+#ifdef JPH_USE_AVX512
+	std::cout << "AVX512 ";
+#endif
+#ifdef JPH_USE_F16C
+	std::cout << "F16C ";
+#endif
+#ifdef JPH_USE_LZCNT
+	std::cout << "LZCNT ";
+#endif
+#ifdef JPH_USE_TZCNT
+	std::cout << "TZCNT ";
+#endif
+#ifdef JPH_USE_FMADD
+	std::cout << "FMADD ";
+#endif
+#ifdef JPH_CROSS_PLATFORM_DETERMINISTIC
+	std::cout << "(Cross Platform Deterministic)";
+#endif
+	std::cout << std::endl;
+
+	// Register allocation hook
+	RegisterDefaultAllocator();
+
 	// Install callbacks
 	Trace = TraceImpl;
 	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
@@ -113,7 +236,7 @@ int main(int argc, char** argv)
 	// Register physics types
 	RegisterTypes();
 
-	int rv = Context(argc, argv).run(); 
+	int rv = Context(argc, argv).run();
 
 	// Destroy the factory
 	delete Factory::sInstance;
@@ -127,8 +250,8 @@ int main(int argc, char** argv)
 // Reporter that writes logs to the Android log
 struct LogReporter : public ConsoleReporter
 {
-	LogReporter(const ContextOptions &inOptions) : 
-		ConsoleReporter(inOptions, mStream) 
+	LogReporter(const ContextOptions &inOptions) :
+		ConsoleReporter(inOptions, mStream)
 	{
 	}
 
@@ -136,9 +259,9 @@ struct LogReporter : public ConsoleReporter
 	void func(type arg) override								\
 	{															\
 		ConsoleReporter::func(arg);								\
-		const char *str = mStream.str().c_str();				\
-		if (str[0] != 0)										\
-			__android_log_write(ANDROID_LOG_INFO, "Jolt", str);	\
+		string str = mStream.str();								\
+		if (!str.empty())										\
+			__android_log_write(ANDROID_LOG_INFO, "Jolt", str.c_str());	\
 		mStream.str("");										\
 	}
 
@@ -164,6 +287,9 @@ DOCTEST_REGISTER_REPORTER("android_log", 0, LogReporter);
 
 void AndroidInitialize(android_app *inApp)
 {
+	// Register allocation hook
+	RegisterDefaultAllocator();
+
 	// Install callbacks
 	Trace = TraceImpl;
 	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)

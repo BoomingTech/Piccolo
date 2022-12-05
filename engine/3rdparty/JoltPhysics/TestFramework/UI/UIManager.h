@@ -6,6 +6,7 @@
 #include <UI/UIElement.h>
 #include <UI/UITexturedQuad.h>
 #include <Renderer/PipelineState.h>
+#include <memory>
 
 class Font;
 
@@ -72,7 +73,7 @@ public:
 private:
 	Renderer *					mRenderer;
 	UIEventListener *			mListener;
-	vector<UIElementVector>		mInactiveElements;
+	Array<UIElementVector>		mInactiveElements;
 	bool						mDrawInactiveElements = true;
 	unique_ptr<PipelineState>	mTextured;
 	unique_ptr<PipelineState>	mUntextured;
