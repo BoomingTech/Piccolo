@@ -158,25 +158,8 @@ namespace Piccolo
         m_lua_state.set_function("invoke", &LuaComponent::invoke);
         m_lua_state["GameObject"] = m_parent_object;
 
-        if (m_is_url)
-        {
-            std::string file_dir = g_runtime_global_context.m_config_manager->getAssetFolder().generic_string();
-            file_dir += "/" + m_lua_script;
-
-            LOG_DEBUG("open lua script: " + file_dir);
-
-            std::ifstream fin;
-            std::string   temp;
-            m_lua_script = "";
-            fin.open(file_dir, std::ios::in);
-            while (std::getline(fin, temp))
-            {
-                m_lua_script += temp;
-                m_lua_script += "\n";
-            }
-
-            LOG_DEBUG("script content:\n" + m_lua_script);
-        }
+        // load scripts
+        m_lua_script_res.loadScriptContent();
     }
 
     void LuaComponent::tick(float delta_time)
@@ -184,7 +167,7 @@ namespace Piccolo
         if (!m_parent_object.lock())
             return;
 
-        m_lua_state.script(m_lua_script);
+        m_lua_state.script(m_lua_script_res.m_script_content);
     }
 
 } // namespace Piccolo
