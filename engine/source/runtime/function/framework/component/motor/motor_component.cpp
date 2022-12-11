@@ -47,6 +47,11 @@ namespace Piccolo
         }
     }
 
+    void MotorComponent::getOffStuckState()
+    {
+        LOG_INFO("try to get off stuck state");
+    }
+
     void MotorComponent::tick(float delta_time) { tickPlayerMotor(delta_time); }
 
     void MotorComponent::tickPlayerMotor(float delta_time)

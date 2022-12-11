@@ -14,12 +14,12 @@ namespace Piccolo
 #define META(...) __attribute__((annotate(#__VA_ARGS__)))
 #define CLASS(class_name, ...) class __attribute__((annotate(#__VA_ARGS__))) class_name
 #define STRUCT(struct_name, ...) struct __attribute__((annotate(#__VA_ARGS__))) struct_name
-//#define CLASS(class_name,...) class __attribute__((annotate(#__VA_ARGS__))) class_name:public Reflection::object
+// #define CLASS(class_name,...) class __attribute__((annotate(#__VA_ARGS__))) class_name:public Reflection::object
 #else
 #define META(...)
 #define CLASS(class_name, ...) class class_name
 #define STRUCT(struct_name, ...) struct struct_name
-//#define CLASS(class_name,...) class class_name:public Reflection::object
+// #define CLASS(class_name,...) class class_name:public Reflection::object
 #endif // __REFLECTION_PARSER__
 
 #define REFLECTION_BODY(class_name) \
@@ -37,6 +37,7 @@ namespace Piccolo
     };
 
 #define REGISTER_FIELD_TO_MAP(name, value) TypeMetaRegisterinterface::registerToFieldMap(name, value);
+#define REGISTER_METHOD_TO_MAP(name, value) TypeMetaRegisterinterface::registerToMethodMap(name, value);
 #define REGISTER_BASE_CLASS_TO_MAP(name, value) TypeMetaRegisterinterface::registerToClassMap(name, value);
 #define REGISTER_ARRAY_TO_MAP(name, value) TypeMetaRegisterinterface::registerToArrayMap(name, value);
 #define UNREGISTER_ALL TypeMetaRegisterinterface::unregisterAll();
@@ -52,11 +53,12 @@ namespace Piccolo
     *static_cast<type*>(dst_ptr) = *static_cast<type*>(src_ptr.getPtr());
 
 #define TypeMetaDef(class_name, ptr) \
-    Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)
+    Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), \
+                                            (class_name*)ptr)
 
 #define TypeMetaDefPtr(class_name, ptr) \
     new Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), \
-                                              (class_name*)ptr)
+                                                (class_name*)ptr)
 
     template<typename T, typename U, typename = void>
     struct is_safely_castable : std::false_type
@@ -80,16 +82,17 @@ namespace Piccolo
     typedef std::function<void*(int, void*)>       GetArrayFunc;
     typedef std::function<int(void*)>              GetSizeFunc;
     typedef std::function<bool()>                  GetBoolFunc;
+    typedef std::function<void(void*)>             InvokeFunction;
 
-    typedef std::function<void*(const Json&)>                          ConstructorWithJson;
-    typedef std::function<Json(void*)>                                 WriteJsonByName;
+    typedef std::function<void*(const Json&)>                           ConstructorWithJson;
+    typedef std::function<Json(void*)>                                  WriteJsonByName;
     typedef std::function<int(Reflection::ReflectionInstance*&, void*)> GetBaseClassReflectionInstanceListFunc;
 
     typedef std::tuple<SetFuncion, GetFuncion, GetNameFuncion, GetNameFuncion, GetNameFuncion, GetBoolFunc>
-        FieldFunctionTuple;
-    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName>
-                                                                                                ClassFunctionTuple;
-    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion> ArrayFunctionTuple;
+                                                       FieldFunctionTuple;
+    typedef std::tuple<GetNameFuncion, InvokeFunction> MethodFunctionTuple;
+    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName> ClassFunctionTuple;
+    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion>      ArrayFunctionTuple;
 
     namespace Reflection
     {
@@ -98,6 +101,7 @@ namespace Piccolo
         public:
             static void registerToClassMap(const char* name, ClassFunctionTuple* value);
             static void registerToFieldMap(const char* name, FieldFunctionTuple* value);
+            static void registerToMethodMap(const char* name, MethodFunctionTuple* value);
             static void registerToArrayMap(const char* name, ArrayFunctionTuple* value);
 
             static void unregisterAll();
@@ -105,6 +109,7 @@ namespace Piccolo
         class TypeMeta
         {
             friend class FieldAccessor;
+            friend class MethodAccessor;
             friend class ArrayAccessor;
             friend class TypeMetaRegisterinterface;
 
@@ -117,15 +122,19 @@ namespace Piccolo
 
             static bool               newArrayAccessorFromName(std::string array_type_name, ArrayAccessor& accessor);
             static ReflectionInstance newFromNameAndJson(std::string type_name, const Json& json_context);
-            static Json              writeByName(std::string type_name, void* instance);
+            static Json               writeByName(std::string type_name, void* instance);
 
             std::string getTypeName();
 
             int getFieldsList(FieldAccessor*& out_list);
 
+            int getMethodsList(MethodAccessor*& out_list);
+
             int getBaseClassReflectionInstanceList(ReflectionInstance*& out_list, void* instance);
 
             FieldAccessor getFieldByName(const char* name);
+
+            MethodAccessor getMethodByName(const char* name);
 
             bool isValid() { return m_is_valid; }
 
@@ -135,7 +144,8 @@ namespace Piccolo
             TypeMeta(std::string type_name);
 
         private:
-            std::vector<FieldAccessor, std::allocator<FieldAccessor>> m_fields;
+            std::vector<FieldAccessor, std::allocator<FieldAccessor>>   m_fields;
+            std::vector<MethodAccessor, std::allocator<MethodAccessor>> m_methods;
 
             std::string m_type_name;
 
@@ -176,6 +186,29 @@ namespace Piccolo
             FieldFunctionTuple* m_functions;
             const char*         m_field_name;
             const char*         m_field_type_name;
+        };
+
+        class MethodAccessor
+        {
+            friend class TypeMeta;
+
+        public:
+            MethodAccessor();
+
+            void invoke(void* instance);
+
+            TypeMeta getOwnerTypeMeta();
+
+            const char* getMethodName() const;
+
+            MethodAccessor& operator=(const MethodAccessor& dest);
+
+        private:
+            MethodAccessor(MethodFunctionTuple* functions);
+
+        private:
+            MethodFunctionTuple* m_functions;
+            const char*          m_method_name;
         };
 
         /**
