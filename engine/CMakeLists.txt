@@ -57,6 +57,8 @@ add_subdirectory(source/editor)
 add_subdirectory(source/meta_parser)
 #add_subdirectory(source/test)
 
+add_subdirectory(source/playground)
+
 set(CODEGEN_TARGET "PiccoloPreCompile")
 include(source/precompile/precompile.cmake)
 set_target_properties("${CODEGEN_TARGET}" PROPERTIES FOLDER "Engine" )

@@ -72,7 +72,6 @@ target_include_directories(
 )
 
 
-
 target_include_directories(
   ${TARGET_NAME} 
   PUBLIC $<BUILD_INTERFACE:${JSON_INCLUDE}>
