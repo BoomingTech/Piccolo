@@ -21,7 +21,7 @@ namespace Piccolo
     };
 
     REFLECTION_TYPE(MotorComponent)
-    CLASS(MotorComponent : public Component, WhiteListFields)
+    CLASS(MotorComponent : public Component, WhiteListFields,WhiteListMethods)
     {
         REFLECTION_BODY(MotorComponent)
     public:
@@ -38,6 +38,9 @@ namespace Piccolo
 
         float getSpeedRatio() const { return m_move_speed_ratio; }
         bool  getIsMoving() const { return m_is_moving; }
+
+        META(Enable)
+        void getOffStuckDead();
 
     private:
         void calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time);
@@ -64,6 +67,7 @@ namespace Piccolo
         ControllerType m_controller_type {ControllerType::none};
         Controller*    m_controller {nullptr};
 
+        META(Enable)
         bool m_is_moving {false};
     };
 } // namespace Piccolo
