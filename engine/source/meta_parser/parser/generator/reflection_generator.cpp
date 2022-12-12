@@ -47,7 +47,7 @@ namespace Generator
         // class defs
         for (auto class_temp : schema.classes)
         {
-            if (!class_temp->shouldCompileFilds())
+            if (!class_temp->shouldCompile())
                 continue;
 
             class_names.insert_or_assign(class_temp->getClassName(), false);

@@ -22,7 +22,8 @@ namespace Piccolo
         template<typename T>
         static T get(std::weak_ptr<GObject> game_object, const char* name);
 
-            protected:
+        static void invoke(std::weak_ptr<GObject> game_object, const char* name);
+    protected:
         sol::state m_lua_state;
         META(Enable)
         std::string m_lua_script;
