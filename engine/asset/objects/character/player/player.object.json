@@ -129,6 +129,14 @@
                 }
             },
             "$typeName": "LuaComponent"
+        },
+        {
+            "$context": {
+                "lua_script_res": {
+                    "script_url": "scripts/player/hello_world.lua"
+                }
+            },
+            "$typeName": "LuaComponent"
         }
     ]
 }

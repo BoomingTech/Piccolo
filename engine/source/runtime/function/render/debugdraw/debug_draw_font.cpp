@@ -44,7 +44,7 @@ namespace Piccolo
         stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
         ascent = roundf(ascent * scale);
         descent = roundf(descent * scale);
-        
+
 
         int x = 0;
         for (unsigned char character = m_range_l; character <= m_range_r; character++)

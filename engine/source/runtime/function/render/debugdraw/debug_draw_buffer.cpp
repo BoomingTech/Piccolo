@@ -11,6 +11,7 @@ namespace Piccolo
         m_font = font;
         setupDescriptorSet(); 
     }
+
     void DebugDrawAllocator::destory()
     {
         clear();
