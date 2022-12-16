@@ -4,6 +4,7 @@
 #include "runtime/function/global/global_context.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include <exception>
 #include <fstream>
 
 namespace Piccolo
@@ -167,7 +168,14 @@ namespace Piccolo
         if (!m_parent_object.lock())
             return;
 
-        m_lua_state.script(m_lua_script_res.m_script_content);
+        try
+        {
+            m_lua_state.script(m_lua_script_res.m_script_content);
+        }
+        catch (std::exception& e)
+        {
+            LOG_ERROR("lua script error: " + e.what());
+        }
     }
 
 } // namespace Piccolo
