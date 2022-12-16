@@ -25,13 +25,14 @@ namespace Piccolo
             auto  meta           = Reflection::TypeMeta::newMetaFromName(current_name);
             void* field_instance = component_iter->getPtr();
 
+            // find target field
             while (std::getline(iss, current_name, '.'))
             {
                 Reflection::FieldAccessor* fields;
                 int                        fields_count = meta.getFieldsList(fields);
                 auto                       field_iter   = std::find_if(
                     fields, fields + fields_count, [current_name](auto f) { return f.getFieldName() == current_name; });
-                if (field_iter == fields + fields_count)
+                if (field_iter == fields + fields_count) // not found
                 {
                     delete[] fields;
                     return false;
@@ -105,7 +106,6 @@ namespace Piccolo
 
             auto component_iter = std::find_if(
                 components.begin(), components.end(), [target_name](auto c) { return c.getTypeName() == target_name; });
-
             if (component_iter != components.end())
             {
                 meta            = Reflection::TypeMeta::newMetaFromName(target_name);

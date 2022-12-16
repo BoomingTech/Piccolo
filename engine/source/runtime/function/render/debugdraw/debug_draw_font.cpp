@@ -22,11 +22,11 @@ namespace Piccolo
         uint64_t size = ftell(fontFile);
         fseek(fontFile, 0, SEEK_SET);
 
-        stbtt_fontinfo fontInfo;
         unsigned char* fontBuffer = (unsigned char*)calloc(size, sizeof(unsigned char));
         fread(fontBuffer, size, 1, fontFile);
         fclose(fontFile);
-        
+
+        stbtt_fontinfo fontInfo;
         if (!stbtt_InitFont(&fontInfo, fontBuffer, 0))
         {
             std::runtime_error("debug draw stb init font failed\n");
@@ -44,7 +44,6 @@ namespace Piccolo
         stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
         ascent = roundf(ascent * scale);
         descent = roundf(descent * scale);
-
 
         int x = 0;
         for (unsigned char character = m_range_l; character <= m_range_r; character++)

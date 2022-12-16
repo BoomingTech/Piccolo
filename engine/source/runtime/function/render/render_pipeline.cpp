@@ -110,7 +110,6 @@ namespace Piccolo
         fxaa_init_info.input_attachment =
             _main_camera_pass->getFramebufferImageViews()[_main_camera_pass_post_process_buffer_odd];
         m_fxaa_pass->initialize(&fxaa_init_info);
-
     }
 
     void RenderPipeline::forwardRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource)

@@ -24,7 +24,6 @@ namespace Piccolo
         static T get(std::weak_ptr<GObject> game_object, const char* name);
 
         static void invoke(std::weak_ptr<GObject> game_object, const char* name);
-
     protected:
         sol::state m_lua_state;
 

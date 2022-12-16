@@ -21,7 +21,7 @@ namespace Piccolo
     };
 
     REFLECTION_TYPE(MotorComponent)
-    CLASS(MotorComponent : public Component, WhiteListFields, WhiteListMethods)
+    CLASS(MotorComponent : public Component, WhiteListFields,WhiteListMethods)
     {
         REFLECTION_BODY(MotorComponent)
     public:

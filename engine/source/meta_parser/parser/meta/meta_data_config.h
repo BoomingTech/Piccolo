@@ -5,7 +5,6 @@ namespace NativeProperty
     const auto All = "All";
 
     const auto Fields = "Fields";
-
     const auto Methods = "Methods";
 
     const auto Enable  = "Enable";

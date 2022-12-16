@@ -72,6 +72,7 @@ namespace Piccolo
     {
         class TypeMeta;
         class FieldAccessor;
+        class MethodAccessor;
         class ArrayAccessor;
         class ReflectionInstance;
     } // namespace Reflection
@@ -106,6 +107,7 @@ namespace Piccolo
 
             static void unregisterAll();
         };
+
         class TypeMeta
         {
             friend class FieldAccessor;
@@ -127,13 +129,11 @@ namespace Piccolo
             std::string getTypeName();
 
             int getFieldsList(FieldAccessor*& out_list);
-
             int getMethodsList(MethodAccessor*& out_list);
 
             int getBaseClassReflectionInstanceList(ReflectionInstance*& out_list, void* instance);
 
-            FieldAccessor getFieldByName(const char* name);
-
+            FieldAccessor  getFieldByName(const char* name);
             MethodAccessor getMethodByName(const char* name);
 
             bool isValid() { return m_is_valid; }
@@ -148,8 +148,7 @@ namespace Piccolo
             std::vector<MethodAccessor, std::allocator<MethodAccessor>> m_methods;
 
             std::string m_type_name;
-
-            bool m_is_valid;
+            bool        m_is_valid;
         };
 
         class FieldAccessor
@@ -210,7 +209,6 @@ namespace Piccolo
             MethodFunctionTuple* m_functions;
             const char*          m_method_name;
         };
-
         /**
          *  Function reflection is not implemented, so use this as an std::vector accessor
          */
