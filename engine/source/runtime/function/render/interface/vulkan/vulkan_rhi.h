@@ -354,7 +354,7 @@ namespace Piccolo
 
         // command pool and buffers
         uint8_t         m_current_frame_index {0};
-        VkCommandPool   m_command_pools[k_max_frames_in_flight];
+        VkCommandPool   m_vk_command_pools[k_max_frames_in_flight];
         VkCommandBuffer m_vk_command_buffers[k_max_frames_in_flight];
         VkSemaphore     m_image_available_for_render_semaphores[k_max_frames_in_flight];
         VkSemaphore     m_image_finished_for_presentation_semaphores[k_max_frames_in_flight];

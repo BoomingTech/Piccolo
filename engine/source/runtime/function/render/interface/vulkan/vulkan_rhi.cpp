@@ -418,7 +418,7 @@ namespace Piccolo
 
     void VulkanRHI::resetCommandPool()
     {
-        VkResult res_reset_command_pool = _vkResetCommandPool(m_device, m_command_pools[m_current_frame_index], 0);
+        VkResult res_reset_command_pool = _vkResetCommandPool(m_device, m_vk_command_pools[m_current_frame_index], 0);
         if (VK_SUCCESS != res_reset_command_pool)
         {
             LOG_ERROR("failed to synchronize");
@@ -714,6 +714,12 @@ namespace Piccolo
         instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
         instance_create_info.ppEnabledExtensionNames = extensions.data();
 
+        LOG_DEBUG("Vulkan RHI available extensions: ");
+        for (auto extension : extensions)
+        {
+            LOG_DEBUG("\textension: " + extension);
+        }
+
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo {};
         if (m_enable_validation_Layers)
         {
@@ -830,7 +836,7 @@ namespace Piccolo
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos; // all queues that need to be created
         std::set<uint32_t>                   queue_families = {m_queue_indices.graphics_family.value(),
                                                                m_queue_indices.present_family.value(),
-                                                               m_queue_indices.m_compute_family.value()};
+                                                               m_queue_indices.compute_family.value()};
 
         float queue_priority = 1.0f;
         for (uint32_t queue_family : queue_families) // for every queue family
@@ -885,7 +891,7 @@ namespace Piccolo
         vkGetDeviceQueue(m_device, m_queue_indices.present_family.value(), 0, &m_present_queue);
 
         VkQueue vk_compute_queue;
-        vkGetDeviceQueue(m_device, m_queue_indices.m_compute_family.value(), 0, &vk_compute_queue);
+        vkGetDeviceQueue(m_device, m_queue_indices.compute_family.value(), 0, &vk_compute_queue);
         m_compute_queue = new VulkanQueue();
         ((VulkanQueue*)m_compute_queue)->setResource(vk_compute_queue);
 
@@ -941,7 +947,8 @@ namespace Piccolo
 
             for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
             {
-                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_command_pools[i]) != VK_SUCCESS)
+                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_vk_command_pools[i]) !=
+                    VK_SUCCESS)
                 {
                     LOG_ERROR("vk create command pool");
                 }
@@ -2844,7 +2851,7 @@ namespace Piccolo
 
         for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
         {
-            command_buffer_allocate_info.commandPool = m_command_pools[i];
+            command_buffer_allocate_info.commandPool = m_vk_command_pools[i];
             VkCommandBuffer vk_command_buffer;
             if (vkAllocateCommandBuffers(m_device, &command_buffer_allocate_info, &vk_command_buffer) != VK_SUCCESS)
             {
@@ -3679,7 +3686,7 @@ namespace Piccolo
 
             if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT) // if support compute command queue
             {
-                indices.m_compute_family = i;
+                indices.compute_family = i;
             }
 
             VkBool32 is_present_support = false;
@@ -3827,7 +3834,6 @@ namespace Piccolo
                 return VK_PRESENT_MODE_MAILBOX_KHR;
             }
         }
-
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

@@ -5,6 +5,8 @@
 #include "runtime/resource/asset_manager/asset_manager.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include "runtime/function/global/global_context.h"
+#include "runtime/function/render/debugdraw/debug_draw_manager.h"
 #include "runtime/function/render/render_camera.h"
 #include "runtime/function/render/render_pass.h"
 #include "runtime/function/render/render_pipeline.h"
@@ -12,8 +14,6 @@
 #include "runtime/function/render/render_resource_base.h"
 #include "runtime/function/render/render_scene.h"
 #include "runtime/function/render/window_system.h"
-#include "runtime/function/global/global_context.h"
-#include "runtime/function/render/debugdraw/debug_draw_manager.h"
 
 #include "runtime/function/render/passes/main_camera_pass.h"
 #include "runtime/function/render/passes/particle_pass.h"
@@ -22,10 +22,7 @@
 
 namespace Piccolo
 {
-    RenderSystem::~RenderSystem()
-    {
-        clear();
-    }
+    RenderSystem::~RenderSystem() { clear(); }
 
     void RenderSystem::initialize(RenderSystemInitInfo init_info)
     {
@@ -148,7 +145,7 @@ namespace Piccolo
             m_render_resource->clear();
         }
         m_render_resource.reset();
-        
+
         if (m_render_pipeline)
         {
             m_render_pipeline->clear();
@@ -162,7 +159,7 @@ namespace Piccolo
 
     std::shared_ptr<RenderCamera> RenderSystem::getRenderCamera() const { return m_render_camera; }
 
-    std::shared_ptr<RHI>          RenderSystem::getRHI() const { return m_rhi; }
+    std::shared_ptr<RHI> RenderSystem::getRHI() const { return m_rhi; }
 
     void RenderSystem::updateEngineContentViewport(float offset_x, float offset_y, float width, float height)
     {

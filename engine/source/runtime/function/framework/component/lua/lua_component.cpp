@@ -54,7 +54,7 @@ namespace Piccolo
     }
 
     template<typename T>
-    static void LuaComponent::set(std::weak_ptr<GObject> game_object, const char* name, T value)
+    void LuaComponent::set(std::weak_ptr<GObject> game_object, const char* name, T value)
     {
         LOG_INFO(name);
         Reflection::FieldAccessor field_accessor;
@@ -66,11 +66,12 @@ namespace Piccolo
         else
         {
             LOG_ERROR("cannot find target field");
+            throw new std::exception("LuaComponent::set cannot find target field");
         }
     }
 
     template<typename T>
-    static T LuaComponent::get(std::weak_ptr<GObject> game_object, const char* name)
+    T LuaComponent::get(std::weak_ptr<GObject> game_object, const char* name)
     {
         LOG_INFO(name);
         Reflection::FieldAccessor field_accessor;
@@ -82,6 +83,7 @@ namespace Piccolo
         else
         {
             LOG_ERROR("cannot find target field");
+            throw new std::exception("LuaComponent::get cannot find target field");
         }
     }
 
