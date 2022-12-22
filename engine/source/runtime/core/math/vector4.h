@@ -70,10 +70,7 @@ namespace Piccolo
 
         Vector4 operator-() const { return Vector4(-x, -y, -z, -w); }
 
-        friend Vector4 operator*(float scalar, const Vector4& rhs)
-        {
-            return Vector4(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w);
-        }
+        friend Vector4 operator*(float scalar, const Vector4& rhs) { return Vector4(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z, scalar * rhs.w); }
 
         friend Vector4 operator/(float scalar, const Vector4& rhs)
         {
@@ -81,25 +78,13 @@ namespace Piccolo
             return Vector4(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z, scalar / rhs.w);
         }
 
-        friend Vector4 operator+(const Vector4& lhs, float rhs)
-        {
-            return Vector4(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs);
-        }
+        friend Vector4 operator+(const Vector4& lhs, float rhs) { return Vector4(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs); }
 
-        friend Vector4 operator+(float lhs, const Vector4& rhs)
-        {
-            return Vector4(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z, lhs + rhs.w);
-        }
+        friend Vector4 operator+(float lhs, const Vector4& rhs) { return Vector4(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z, lhs + rhs.w); }
 
-        friend Vector4 operator-(const Vector4& lhs, float rhs)
-        {
-            return Vector4(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs);
-        }
+        friend Vector4 operator-(const Vector4& lhs, float rhs) { return Vector4(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs); }
 
-        friend Vector4 operator-(float lhs, const Vector4& rhs)
-        {
-            return Vector4(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z, lhs - rhs.w);
-        }
+        friend Vector4 operator-(float lhs, const Vector4& rhs) { return Vector4(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z, lhs - rhs.w); }
 
         // arithmetic updates
         Vector4& operator+=(const Vector4& rhs)

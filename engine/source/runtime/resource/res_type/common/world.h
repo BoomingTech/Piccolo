@@ -11,7 +11,7 @@ namespace Piccolo
 
     public:
         // world name
-        std::string              m_name;
+        std::string m_name;
 
         // all level urls for this world
         std::vector<std::string> m_level_urls;

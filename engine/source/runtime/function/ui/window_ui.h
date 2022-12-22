@@ -17,6 +17,6 @@ namespace Piccolo
     {
     public:
         virtual void initialize(WindowUIInitInfo init_info) = 0;
-        virtual void preRender() = 0;
+        virtual void preRender()                            = 0;
     };
 } // namespace Piccolo

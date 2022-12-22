@@ -31,9 +31,9 @@ namespace Piccolo
         void tick(float delta_time) override;
 
         CameraMode getCameraMode() const { return m_camera_mode; }
-        void setCameraMode(CameraMode mode) { m_camera_mode = mode; }
-        Vector3 getPosition() const { return m_position; }
-        Vector3 getForward() const { return m_forward; }
+        void       setCameraMode(CameraMode mode) { m_camera_mode = mode; }
+        Vector3    getPosition() const { return m_position; }
+        Vector3    getForward() const { return m_forward; }
 
     private:
         void tickFirstPersonCamera(float delta_time);

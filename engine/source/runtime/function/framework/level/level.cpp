@@ -119,8 +119,7 @@ namespace Piccolo
             }
         }
 
-        const bool is_save_success =
-            g_runtime_global_context.m_asset_manager->saveAsset(output_level_res, m_level_res_url);
+        const bool is_save_success = g_runtime_global_context.m_asset_manager->saveAsset(output_level_res, m_level_res_url);
 
         if (is_save_success == false)
         {

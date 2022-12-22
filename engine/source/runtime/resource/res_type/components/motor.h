@@ -42,12 +42,12 @@ namespace Piccolo
         MotorComponentRes() = default;
         ~MotorComponentRes();
 
-        float m_move_speed { 0.f};
+        float m_move_speed {0.f};
         float m_jump_height {0.f};
-        float m_max_move_speed_ratio { 0.f};
-        float m_max_sprint_speed_ratio { 0.f};
+        float m_max_move_speed_ratio {0.f};
+        float m_max_sprint_speed_ratio {0.f};
         float m_move_acceleration {0.f};
-        float m_sprint_acceleration { 0.f};
+        float m_sprint_acceleration {0.f};
 
         Reflection::ReflectionPtr<ControllerConfig> m_controller_config;
     };

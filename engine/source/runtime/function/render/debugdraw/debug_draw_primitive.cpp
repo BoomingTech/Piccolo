@@ -14,7 +14,8 @@ namespace Piccolo
                 m_rendered = true;
                 return false;
             }
-            else return true;
+            else
+                return true;
         }
         else
         {
@@ -42,4 +43,4 @@ namespace Piccolo
             m_life_time = in_life_time;
         }
     }
-}
+} // namespace Piccolo

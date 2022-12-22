@@ -39,7 +39,7 @@ namespace Piccolo
     protected:
         std::shared_ptr<RHI> m_rhi;
 
-        std::shared_ptr<RenderPassBase> m_directional_light_pass;
+        std::shared_ptr<RenderPassBase> m_directional_light_shadow_pass;
         std::shared_ptr<RenderPassBase> m_point_light_shadow_pass;
         std::shared_ptr<RenderPassBase> m_main_camera_pass;
         std::shared_ptr<RenderPassBase> m_color_grading_pass;
@@ -49,6 +49,5 @@ namespace Piccolo
         std::shared_ptr<RenderPassBase> m_combine_ui_pass;
         std::shared_ptr<RenderPassBase> m_pick_pass;
         std::shared_ptr<RenderPassBase> m_particle_pass;
-
     };
 } // namespace Piccolo

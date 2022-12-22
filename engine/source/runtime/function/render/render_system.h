@@ -22,16 +22,16 @@ namespace Piccolo
 
     struct RenderSystemInitInfo
     {
-        std::shared_ptr<WindowSystem> window_system;
+        std::shared_ptr<WindowSystem>     window_system;
         std::shared_ptr<DebugDrawManager> debugdraw_manager;
     };
 
     struct EngineContentViewport
     {
-        float x { 0.f};
-        float y { 0.f};
-        float width { 0.f};
-        float height { 0.f};
+        float x {0.f};
+        float y {0.f};
+        float width {0.f};
+        float height {0.f};
     };
 
     class RenderSystem
@@ -57,9 +57,9 @@ namespace Piccolo
 
         EngineContentViewport getEngineContentViewport() const;
 
-        void createAxis(std::array<RenderEntity, 3> axis_entities, std::array<RenderMeshData, 3> mesh_datas);
-        void setVisibleAxis(std::optional<RenderEntity> axis);
-        void setSelectedAxis(size_t selected_axis);
+        void                             createAxis(std::array<RenderEntity, 3> axis_entities, std::array<RenderMeshData, 3> mesh_datas);
+        void                             setVisibleAxis(std::optional<RenderEntity> axis);
+        void                             setSelectedAxis(size_t selected_axis);
         GuidAllocator<GameObjectPartId>& getGOInstanceIdAllocator();
         GuidAllocator<MeshSourceDesc>&   getMeshAssetIdAllocator();
 

@@ -106,24 +106,18 @@ namespace Piccolo
     public:
         void clear() override final;
 
-        virtual void uploadGlobalRenderResource(std::shared_ptr<RHI> rhi,
-                                                LevelResourceDesc    level_resource_desc) override final;
+        virtual void uploadGlobalRenderResource(std::shared_ptr<RHI> rhi, LevelResourceDesc level_resource_desc) override final;
 
         virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
                                                     RenderEntity         render_entity,
                                                     RenderMeshData       mesh_data,
                                                     RenderMaterialData   material_data) override final;
 
-        virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
-                                                    RenderEntity         render_entity,
-                                                    RenderMeshData       mesh_data) override final;
+        virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, RenderMeshData mesh_data) override final;
 
-        virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
-                                                    RenderEntity         render_entity,
-                                                    RenderMaterialData   material_data) override final;
+        virtual void uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, RenderMaterialData material_data) override final;
 
-        virtual void updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
-                                          std::shared_ptr<RenderCamera> camera) override final;
+        virtual void updatePerFrameBuffer(std::shared_ptr<RenderScene> render_scene, std::shared_ptr<RenderCamera> camera) override final;
 
         VulkanMesh& getEntityMesh(RenderEntity entity);
 
@@ -135,14 +129,13 @@ namespace Piccolo
         GlobalRenderResource m_global_render_resource;
 
         // storage buffer objects
-        MeshPerframeStorageBufferObject                 m_mesh_perframe_storage_buffer_object;
-        MeshPointLightShadowPerframeStorageBufferObject m_mesh_point_light_shadow_perframe_storage_buffer_object;
-        MeshDirectionalLightShadowPerframeStorageBufferObject
-                                                       m_mesh_directional_light_shadow_perframe_storage_buffer_object;
-        AxisStorageBufferObject                        m_axis_storage_buffer_object;
-        MeshInefficientPickPerframeStorageBufferObject m_mesh_inefficient_pick_perframe_storage_buffer_object;
-        ParticleBillboardPerframeStorageBufferObject   m_particlebillboard_perframe_storage_buffer_object;
-        ParticleCollisionPerframeStorageBufferObject   m_particle_collision_perframe_storage_buffer_object;
+        MeshPerframeStorageBufferObject                       m_mesh_perframe_storage_buffer_object;
+        MeshPointLightShadowPerframeStorageBufferObject       m_mesh_point_light_shadow_perframe_storage_buffer_object;
+        MeshDirectionalLightShadowPerframeStorageBufferObject m_mesh_directional_light_shadow_perframe_storage_buffer_object;
+        AxisStorageBufferObject                               m_axis_storage_buffer_object;
+        MeshInefficientPickPerframeStorageBufferObject        m_mesh_inefficient_pick_perframe_storage_buffer_object;
+        ParticleBillboardPerframeStorageBufferObject          m_particlebillboard_perframe_storage_buffer_object;
+        ParticleCollisionPerframeStorageBufferObject          m_particle_collision_perframe_storage_buffer_object;
 
         // cached mesh and material
         std::map<size_t, VulkanMesh>        m_vulkan_meshes;
@@ -159,9 +152,8 @@ namespace Piccolo
                                std::array<std::shared_ptr<TextureData>, 6> irradiance_maps,
                                std::array<std::shared_ptr<TextureData>, 6> specular_maps);
 
-        VulkanMesh& getOrCreateVulkanMesh(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMeshData mesh_data);
-        VulkanPBRMaterial&
-        getOrCreateVulkanMaterial(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMaterialData material_data);
+        VulkanMesh&        getOrCreateVulkanMesh(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMeshData mesh_data);
+        VulkanPBRMaterial& getOrCreateVulkanMaterial(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMaterialData material_data);
 
         void updateMeshData(std::shared_ptr<RHI>                          rhi,
                             bool                                          enable_vertex_blending,
@@ -181,10 +173,7 @@ namespace Piccolo
                                 uint32_t                                      index_buffer_size,
                                 uint16_t*                                     index_buffer_data,
                                 VulkanMesh&                                   now_mesh);
-        void updateIndexBuffer(std::shared_ptr<RHI> rhi,
-                               uint32_t             index_buffer_size,
-                               void*                index_buffer_data,
-                               VulkanMesh&          now_mesh);
+        void updateIndexBuffer(std::shared_ptr<RHI> rhi, uint32_t index_buffer_size, void* index_buffer_data, VulkanMesh& now_mesh);
         void updateTextureImageData(std::shared_ptr<RHI> rhi, const TextureDataToUpdate& texture_data);
     };
 } // namespace Piccolo

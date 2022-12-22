@@ -45,8 +45,7 @@ std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor& cursor
         {
             continue;
         }
-        ret_list.emplace_back(temp_string,
-                              item_details.size() > 1 ? Utils::trim(item_details[1], white_space_string) : "");
+        ret_list.emplace_back(temp_string, item_details.size() > 1 ? Utils::trim(item_details[1], white_space_string) : "");
     }
     return ret_list;
 }

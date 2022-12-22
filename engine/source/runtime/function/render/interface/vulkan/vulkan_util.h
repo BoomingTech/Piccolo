@@ -14,8 +14,7 @@ namespace Piccolo
     class VulkanUtil
     {
     public:
-        static uint32_t
-        findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties_flag);
+        static uint32_t       findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties_flag);
         static VkShaderModule createShaderModule(VkDevice device, const std::vector<unsigned char>& shader_code);
         static void           createBuffer(VkPhysicalDevice      physical_device,
                                            VkDevice              device,
@@ -33,12 +32,7 @@ namespace Piccolo
                                                         VkDeviceSize          size,
                                                         void*                 data     = nullptr,
                                                         int                   datasize = 0);
-        static void           copyBuffer(RHI*         rhi,
-                                         VkBuffer     srcBuffer,
-                                         VkBuffer     dstBuffer,
-                                         VkDeviceSize srcOffset,
-                                         VkDeviceSize dstOffset,
-                                         VkDeviceSize size);
+        static void           copyBuffer(RHI* rhi, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size);
         static void           createImage(VkPhysicalDevice      physical_device,
                                           VkDevice              device,
                                           uint32_t              image_width,
@@ -59,15 +53,15 @@ namespace Piccolo
                                               VkImageViewType    view_type,
                                               uint32_t           layout_count,
                                               uint32_t           miplevels);
-        static void           createGlobalImage(RHI*               rhi,
-                                                VkImage&           image,
-                                                VkImageView&       image_view,
-                                                VmaAllocation&     image_allocation,
-                                                uint32_t           texture_image_width,
-                                                uint32_t           texture_image_height,
-                                                void*              texture_image_pixels,
-                                                RHIFormat texture_image_format,
-                                                uint32_t           miplevels = 0);
+        static void           createGlobalImage(RHI*           rhi,
+                                                VkImage&       image,
+                                                VkImageView&   image_view,
+                                                VmaAllocation& image_allocation,
+                                                uint32_t       texture_image_width,
+                                                uint32_t       texture_image_height,
+                                                void*          texture_image_pixels,
+                                                RHIFormat      texture_image_format,
+                                                uint32_t       miplevels = 0);
         static void           createCubeMap(RHI*                 rhi,
                                             VkImage&             image,
                                             VkImageView&         image_view,
@@ -75,7 +69,7 @@ namespace Piccolo
                                             uint32_t             texture_image_width,
                                             uint32_t             texture_image_height,
                                             std::array<void*, 6> texture_image_pixels,
-                                            RHIFormat   texture_image_format,
+                                            RHIFormat            texture_image_format,
                                             uint32_t             miplevels);
         static void           generateTextureMipMaps(RHI*     rhi,
                                                      VkImage  image,
@@ -91,16 +85,10 @@ namespace Piccolo
                                                     uint32_t           layer_count,
                                                     uint32_t           miplevels,
                                                     VkImageAspectFlags aspect_mask_bits);
-        static void           copyBufferToImage(RHI*     rhi,
-                                                VkBuffer buffer,
-                                                VkImage  image,
-                                                uint32_t width,
-                                                uint32_t height,
-                                                uint32_t layer_count);
-        static void genMipmappedImage(RHI* rhi, VkImage image, uint32_t width, uint32_t height, uint32_t mip_levels);
+        static void           copyBufferToImage(RHI* rhi, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layer_count);
+        static void           genMipmappedImage(RHI* rhi, VkImage image, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-        static VkSampler
-        getOrCreateMipmapSampler(VkPhysicalDevice physical_device, VkDevice device, uint32_t width, uint32_t height);
+        static VkSampler getOrCreateMipmapSampler(VkPhysicalDevice physical_device, VkDevice device, uint32_t width, uint32_t height);
         static void      destroyMipmappedSampler(VkDevice device);
         static VkSampler getOrCreateNearestSampler(VkPhysicalDevice physical_device, VkDevice device);
         static VkSampler getOrCreateLinearSampler(VkPhysicalDevice physical_device, VkDevice device);

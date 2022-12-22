@@ -5,7 +5,7 @@ namespace Piccolo
     public:
         struct Animation
         {
-            bool show_skeleton = false;
+            bool show_skeleton  = false;
             bool show_bone_name = false;
         };
         struct Camera
@@ -17,8 +17,8 @@ namespace Piccolo
             bool show_bounding_box = false;
         };
 
-        Animation animation;
-        Camera camera;
+        Animation  animation;
+        Camera     camera;
         GameObject gameObject;
     };
-}
+} // namespace Piccolo

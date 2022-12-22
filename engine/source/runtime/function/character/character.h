@@ -16,8 +16,8 @@ namespace Piccolo
     public:
         Character(std::shared_ptr<GObject> character_object);
 
-        GObjectID getObjectID() const;
-        void      setObject(std::shared_ptr<GObject> gobject);
+        GObjectID              getObjectID() const;
+        void                   setObject(std::shared_ptr<GObject> gobject);
         std::weak_ptr<GObject> getObject() const { return m_character_object; }
 
         void setPosition(const Vector3& position) { m_position = position; }
@@ -41,6 +41,6 @@ namespace Piccolo
         bool       m_rotation_dirty {false};
 
         CameraMode m_original_camera_mode;
-        bool       m_is_free_camera{false};
+        bool       m_is_free_camera {false};
     };
 } // namespace Piccolo

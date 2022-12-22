@@ -23,22 +23,22 @@ namespace Piccolo
         createAndMapStorageBuffer(rhi);
 
         // sky box irradiance
-        SkyBoxIrradianceMap skybox_irradiance_map = level_resource_desc.m_ibl_resource_desc.m_skybox_irradiance_map;
-        std::shared_ptr<TextureData> irradiace_pos_x_map = loadTextureHDR(skybox_irradiance_map.m_positive_x_map);
-        std::shared_ptr<TextureData> irradiace_neg_x_map = loadTextureHDR(skybox_irradiance_map.m_negative_x_map);
-        std::shared_ptr<TextureData> irradiace_pos_y_map = loadTextureHDR(skybox_irradiance_map.m_positive_y_map);
-        std::shared_ptr<TextureData> irradiace_neg_y_map = loadTextureHDR(skybox_irradiance_map.m_negative_y_map);
-        std::shared_ptr<TextureData> irradiace_pos_z_map = loadTextureHDR(skybox_irradiance_map.m_positive_z_map);
-        std::shared_ptr<TextureData> irradiace_neg_z_map = loadTextureHDR(skybox_irradiance_map.m_negative_z_map);
+        SkyBoxIrradianceMap          skybox_irradiance_map = level_resource_desc.m_ibl_resource_desc.m_skybox_irradiance_map;
+        std::shared_ptr<TextureData> irradiace_pos_x_map   = loadTextureHDR(skybox_irradiance_map.m_positive_x_map);
+        std::shared_ptr<TextureData> irradiace_neg_x_map   = loadTextureHDR(skybox_irradiance_map.m_negative_x_map);
+        std::shared_ptr<TextureData> irradiace_pos_y_map   = loadTextureHDR(skybox_irradiance_map.m_positive_y_map);
+        std::shared_ptr<TextureData> irradiace_neg_y_map   = loadTextureHDR(skybox_irradiance_map.m_negative_y_map);
+        std::shared_ptr<TextureData> irradiace_pos_z_map   = loadTextureHDR(skybox_irradiance_map.m_positive_z_map);
+        std::shared_ptr<TextureData> irradiace_neg_z_map   = loadTextureHDR(skybox_irradiance_map.m_negative_z_map);
 
         // sky box specular
-        SkyBoxSpecularMap skybox_specular_map           = level_resource_desc.m_ibl_resource_desc.m_skybox_specular_map;
-        std::shared_ptr<TextureData> specular_pos_x_map = loadTextureHDR(skybox_specular_map.m_positive_x_map);
-        std::shared_ptr<TextureData> specular_neg_x_map = loadTextureHDR(skybox_specular_map.m_negative_x_map);
-        std::shared_ptr<TextureData> specular_pos_y_map = loadTextureHDR(skybox_specular_map.m_positive_y_map);
-        std::shared_ptr<TextureData> specular_neg_y_map = loadTextureHDR(skybox_specular_map.m_negative_y_map);
-        std::shared_ptr<TextureData> specular_pos_z_map = loadTextureHDR(skybox_specular_map.m_positive_z_map);
-        std::shared_ptr<TextureData> specular_neg_z_map = loadTextureHDR(skybox_specular_map.m_negative_z_map);
+        SkyBoxSpecularMap            skybox_specular_map = level_resource_desc.m_ibl_resource_desc.m_skybox_specular_map;
+        std::shared_ptr<TextureData> specular_pos_x_map  = loadTextureHDR(skybox_specular_map.m_positive_x_map);
+        std::shared_ptr<TextureData> specular_neg_x_map  = loadTextureHDR(skybox_specular_map.m_negative_x_map);
+        std::shared_ptr<TextureData> specular_pos_y_map  = loadTextureHDR(skybox_specular_map.m_positive_y_map);
+        std::shared_ptr<TextureData> specular_neg_y_map  = loadTextureHDR(skybox_specular_map.m_negative_y_map);
+        std::shared_ptr<TextureData> specular_pos_z_map  = loadTextureHDR(skybox_specular_map.m_positive_z_map);
+        std::shared_ptr<TextureData> specular_neg_z_map  = loadTextureHDR(skybox_specular_map.m_negative_z_map);
 
         // brdf
         std::shared_ptr<TextureData> brdf_map = loadTextureHDR(level_resource_desc.m_ibl_resource_desc.m_brdf_map);
@@ -47,18 +47,10 @@ namespace Piccolo
         createIBLSamplers(rhi);
 
         // create IBL textures, take care of the texture order
-        std::array<std::shared_ptr<TextureData>, 6> irradiance_maps = {irradiace_pos_x_map,
-                                                                       irradiace_neg_x_map,
-                                                                       irradiace_pos_z_map,
-                                                                       irradiace_neg_z_map,
-                                                                       irradiace_pos_y_map,
-                                                                       irradiace_neg_y_map};
-        std::array<std::shared_ptr<TextureData>, 6> specular_maps   = {specular_pos_x_map,
-                                                                       specular_neg_x_map,
-                                                                       specular_pos_z_map,
-                                                                       specular_neg_z_map,
-                                                                       specular_pos_y_map,
-                                                                       specular_neg_y_map};
+        std::array<std::shared_ptr<TextureData>, 6> irradiance_maps = {
+            irradiace_pos_x_map, irradiace_neg_x_map, irradiace_pos_z_map, irradiace_neg_z_map, irradiace_pos_y_map, irradiace_neg_y_map};
+        std::array<std::shared_ptr<TextureData>, 6> specular_maps = {
+            specular_pos_x_map, specular_neg_x_map, specular_pos_z_map, specular_neg_z_map, specular_pos_y_map, specular_neg_y_map};
         createIBLTextures(rhi, irradiance_maps, specular_maps);
 
         // create brdf lut texture
@@ -71,18 +63,16 @@ namespace Piccolo
                                brdf_map->m_format);
 
         // color grading
-        std::shared_ptr<TextureData> color_grading_map =
-            loadTexture(level_resource_desc.m_color_grading_resource_desc.m_color_grading_map);
+        std::shared_ptr<TextureData> color_grading_map = loadTexture(level_resource_desc.m_color_grading_resource_desc.m_color_grading_map);
 
         // create color grading texture
-        rhi->createGlobalImage(
-            m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image,
-            m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_view,
-            m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_allocation,
-            color_grading_map->m_width,
-            color_grading_map->m_height,
-            color_grading_map->m_pixels,
-            color_grading_map->m_format);
+        rhi->createGlobalImage(m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image,
+                               m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_view,
+                               m_global_render_resource._color_grading_resource._color_grading_LUT_texture_image_allocation,
+                               color_grading_map->m_width,
+                               color_grading_map->m_height,
+                               color_grading_map->m_pixels,
+                               color_grading_map->m_format);
     }
 
     void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
@@ -94,22 +84,17 @@ namespace Piccolo
         getOrCreateVulkanMaterial(rhi, render_entity, material_data);
     }
 
-    void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
-                                                        RenderEntity         render_entity,
-                                                        RenderMeshData       mesh_data)
+    void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, RenderMeshData mesh_data)
     {
         getOrCreateVulkanMesh(rhi, render_entity, mesh_data);
     }
 
-    void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi,
-                                                        RenderEntity         render_entity,
-                                                        RenderMaterialData   material_data)
+    void RenderResource::uploadGameObjectRenderResource(std::shared_ptr<RHI> rhi, RenderEntity render_entity, RenderMaterialData material_data)
     {
         getOrCreateVulkanMaterial(rhi, render_entity, material_data);
     }
 
-    void RenderResource::updatePerFrameBuffer(std::shared_ptr<RenderScene>  render_scene,
-                                              std::shared_ptr<RenderCamera> camera)
+    void RenderResource::updatePerFrameBuffer(std::shared_ptr<RenderScene> render_scene, std::shared_ptr<RenderCamera> camera)
     {
         Matrix4x4 view_matrix      = camera->getViewMatrix();
         Matrix4x4 proj_matrix      = camera->getPersProjMatrix();
@@ -143,14 +128,12 @@ namespace Piccolo
             m_mesh_perframe_storage_buffer_object.scene_point_lights[i].radius    = radius;
             m_mesh_perframe_storage_buffer_object.scene_point_lights[i].intensity = point_light_intensity;
 
-            m_mesh_point_light_shadow_perframe_storage_buffer_object.point_lights_position_and_radius[i] =
-                Vector4(point_light_position, radius);
+            m_mesh_point_light_shadow_perframe_storage_buffer_object.point_lights_position_and_radius[i] = Vector4(point_light_position, radius);
         }
 
         // directional light
-        m_mesh_perframe_storage_buffer_object.scene_directional_light.direction =
-            render_scene->m_directional_light.m_direction.normalisedCopy();
-        m_mesh_perframe_storage_buffer_object.scene_directional_light.color = render_scene->m_directional_light.m_color;
+        m_mesh_perframe_storage_buffer_object.scene_directional_light.direction = render_scene->m_directional_light.m_direction.normalisedCopy();
+        m_mesh_perframe_storage_buffer_object.scene_directional_light.color     = render_scene->m_directional_light.m_color;
 
         // pick pass view projection matrix
         m_mesh_inefficient_pick_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
@@ -189,8 +172,7 @@ namespace Piccolo
             rhi->destroySampler(m_global_render_resource._ibl_resource._brdfLUT_texture_sampler);
         }
 
-        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._brdfLUT_texture_sampler) !=
-            RHI_SUCCESS)
+        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._brdfLUT_texture_sampler) != RHI_SUCCESS)
         {
             throw std::runtime_error("vk create sampler");
         }
@@ -204,8 +186,7 @@ namespace Piccolo
             rhi->destroySampler(m_global_render_resource._ibl_resource._irradiance_texture_sampler);
         }
 
-        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._irradiance_texture_sampler) !=
-            RHI_SUCCESS)
+        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._irradiance_texture_sampler) != RHI_SUCCESS)
         {
             throw std::runtime_error("vk create sampler");
         }
@@ -215,8 +196,7 @@ namespace Piccolo
             rhi->destroySampler(m_global_render_resource._ibl_resource._specular_texture_sampler);
         }
 
-        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._specular_texture_sampler) !=
-            RHI_SUCCESS)
+        if (rhi->createSampler(&samplerInfo, m_global_render_resource._ibl_resource._specular_texture_sampler) != RHI_SUCCESS)
         {
             throw std::runtime_error("vk create sampler");
         }
@@ -228,9 +208,7 @@ namespace Piccolo
     {
         // assume all textures have same width, height and format
         uint32_t irradiance_cubemap_miplevels =
-            static_cast<uint32_t>(
-                std::floor(log2(std::max(irradiance_maps[0]->m_width, irradiance_maps[0]->m_height)))) +
-            1;
+            static_cast<uint32_t>(std::floor(log2(std::max(irradiance_maps[0]->m_width, irradiance_maps[0]->m_height)))) + 1;
         rhi->createCubeMap(m_global_render_resource._ibl_resource._irradiance_texture_image,
                            m_global_render_resource._ibl_resource._irradiance_texture_image_view,
                            m_global_render_resource._ibl_resource._irradiance_texture_image_allocation,
@@ -245,9 +223,7 @@ namespace Piccolo
                            irradiance_maps[0]->m_format,
                            irradiance_cubemap_miplevels);
 
-        uint32_t specular_cubemap_miplevels =
-            static_cast<uint32_t>(std::floor(log2(std::max(specular_maps[0]->m_width, specular_maps[0]->m_height)))) +
-            1;
+        uint32_t specular_cubemap_miplevels = static_cast<uint32_t>(std::floor(log2(std::max(specular_maps[0]->m_width, specular_maps[0]->m_height)))) + 1;
         rhi->createCubeMap(m_global_render_resource._ibl_resource._specular_texture_image,
                            m_global_render_resource._ibl_resource._specular_texture_image_view,
                            m_global_render_resource._ibl_resource._specular_texture_image_allocation,
@@ -263,8 +239,7 @@ namespace Piccolo
                            specular_cubemap_miplevels);
     }
 
-    VulkanMesh&
-    RenderResource::getOrCreateVulkanMesh(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMeshData mesh_data)
+    VulkanMesh& RenderResource::getOrCreateVulkanMesh(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMeshData mesh_data)
     {
         size_t assetid = entity.m_mesh_asset_id;
 
@@ -282,15 +257,14 @@ namespace Piccolo
             uint32_t index_buffer_size = static_cast<uint32_t>(mesh_data.m_static_mesh_data.m_index_buffer->m_size);
             void*    index_buffer_data = mesh_data.m_static_mesh_data.m_index_buffer->m_data;
 
-            uint32_t vertex_buffer_size = static_cast<uint32_t>(mesh_data.m_static_mesh_data.m_vertex_buffer->m_size);
-            MeshVertexDataDefinition* vertex_buffer_data =
-                reinterpret_cast<MeshVertexDataDefinition*>(mesh_data.m_static_mesh_data.m_vertex_buffer->m_data);
+            uint32_t                  vertex_buffer_size = static_cast<uint32_t>(mesh_data.m_static_mesh_data.m_vertex_buffer->m_size);
+            MeshVertexDataDefinition* vertex_buffer_data = reinterpret_cast<MeshVertexDataDefinition*>(mesh_data.m_static_mesh_data.m_vertex_buffer->m_data);
 
             VulkanMesh& now_mesh = res.first->second;
 
             if (mesh_data.m_skeleton_binding_buffer)
             {
-                uint32_t joint_binding_buffer_size = (uint32_t)mesh_data.m_skeleton_binding_buffer->m_size;
+                uint32_t                         joint_binding_buffer_size = (uint32_t)mesh_data.m_skeleton_binding_buffer->m_size;
                 MeshVertexBindingDataDefinition* joint_binding_buffer_data =
                     reinterpret_cast<MeshVertexBindingDataDefinition*>(mesh_data.m_skeleton_binding_buffer->m_data);
                 updateMeshData(rhi,
@@ -305,24 +279,14 @@ namespace Piccolo
             }
             else
             {
-                updateMeshData(rhi,
-                               false,
-                               index_buffer_size,
-                               index_buffer_data,
-                               vertex_buffer_size,
-                               vertex_buffer_data,
-                               0,
-                               NULL,
-                               now_mesh);
+                updateMeshData(rhi, false, index_buffer_size, index_buffer_data, vertex_buffer_size, vertex_buffer_data, 0, NULL, now_mesh);
             }
 
             return now_mesh;
         }
     }
 
-    VulkanPBRMaterial& RenderResource::getOrCreateVulkanMaterial(std::shared_ptr<RHI> rhi,
-                                                                 RenderEntity         entity,
-                                                                 RenderMaterialData   material_data)
+    VulkanPBRMaterial& RenderResource::getOrCreateVulkanMaterial(std::shared_ptr<RHI> rhi, RenderEntity entity, RenderMaterialData material_data)
     {
         VulkanRHI* vulkan_context = static_cast<VulkanRHI*>(rhi.get());
 
@@ -360,9 +324,9 @@ namespace Piccolo
             if (material_data.m_metallic_roughness_texture)
             {
                 metallic_roughness_image_pixels = material_data.m_metallic_roughness_texture->m_pixels;
-                metallic_roughness_width  = static_cast<uint32_t>(material_data.m_metallic_roughness_texture->m_width);
-                metallic_roughness_height = static_cast<uint32_t>(material_data.m_metallic_roughness_texture->m_height);
-                metallic_roughness_format = material_data.m_metallic_roughness_texture->m_format;
+                metallic_roughness_width        = static_cast<uint32_t>(material_data.m_metallic_roughness_texture->m_width);
+                metallic_roughness_height       = static_cast<uint32_t>(material_data.m_metallic_roughness_texture->m_height);
+                metallic_roughness_format       = material_data.m_metallic_roughness_texture->m_format;
             }
 
             void*     normal_roughness_image_pixels = empty_image;
@@ -424,35 +388,33 @@ namespace Piccolo
                 void* staging_buffer_data = nullptr;
                 rhi->mapMemory(inefficient_staging_buffer_memory, 0, buffer_size, 0, &staging_buffer_data);
 
-                MeshPerMaterialUniformBufferObject& material_uniform_buffer_info =
-                    (*static_cast<MeshPerMaterialUniformBufferObject*>(staging_buffer_data));
-                material_uniform_buffer_info.is_blend          = entity.m_blend;
-                material_uniform_buffer_info.is_double_sided   = entity.m_double_sided;
-                material_uniform_buffer_info.baseColorFactor   = entity.m_base_color_factor;
-                material_uniform_buffer_info.metallicFactor    = entity.m_metallic_factor;
-                material_uniform_buffer_info.roughnessFactor   = entity.m_roughness_factor;
-                material_uniform_buffer_info.normalScale       = entity.m_normal_scale;
-                material_uniform_buffer_info.occlusionStrength = entity.m_occlusion_strength;
-                material_uniform_buffer_info.emissiveFactor    = entity.m_emissive_factor;
+                MeshPerMaterialUniformBufferObject& material_uniform_buffer_info = (*static_cast<MeshPerMaterialUniformBufferObject*>(staging_buffer_data));
+                material_uniform_buffer_info.is_blend                            = entity.m_blend;
+                material_uniform_buffer_info.is_double_sided                     = entity.m_double_sided;
+                material_uniform_buffer_info.baseColorFactor                     = entity.m_base_color_factor;
+                material_uniform_buffer_info.metallicFactor                      = entity.m_metallic_factor;
+                material_uniform_buffer_info.roughnessFactor                     = entity.m_roughness_factor;
+                material_uniform_buffer_info.normalScale                         = entity.m_normal_scale;
+                material_uniform_buffer_info.occlusionStrength                   = entity.m_occlusion_strength;
+                material_uniform_buffer_info.emissiveFactor                      = entity.m_emissive_factor;
 
                 rhi->unmapMemory(inefficient_staging_buffer_memory);
 
                 // use the vmaAllocator to allocate asset uniform buffer
                 RHIBufferCreateInfo bufferInfo = {RHI_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
                 bufferInfo.size                = buffer_size;
-                bufferInfo.usage = RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
+                bufferInfo.usage               = RHI_BUFFER_USAGE_UNIFORM_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT;
 
                 VmaAllocationCreateInfo allocInfo = {};
                 allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-                rhi->createBufferWithAlignmentVMA(
-                    vulkan_context->m_assets_allocator,
-                    &bufferInfo,
-                    &allocInfo,
-                    m_global_render_resource._storage_buffer._min_uniform_buffer_offset_alignment,
-                    now_material.material_uniform_buffer,
-                    &now_material.material_uniform_buffer_allocation,
-                    NULL);
+                rhi->createBufferWithAlignmentVMA(vulkan_context->m_assets_allocator,
+                                                  &bufferInfo,
+                                                  &allocInfo,
+                                                  m_global_render_resource._storage_buffer._min_uniform_buffer_offset_alignment,
+                                                  now_material.material_uniform_buffer,
+                                                  &now_material.material_uniform_buffer_allocation,
+                                                  NULL);
 
                 // use the data from staging buffer
                 rhi->copyBuffer(inefficient_staging_buffer, now_material.material_uniform_buffer, 0, 0, buffer_size);
@@ -494,8 +456,7 @@ namespace Piccolo
             material_descriptor_set_alloc_info.descriptorSetCount = 1;
             material_descriptor_set_alloc_info.pSetLayouts        = m_material_descriptor_set_layout;
 
-            if (RHI_SUCCESS !=
-                rhi->allocateDescriptorSets(&material_descriptor_set_alloc_info, now_material.material_descriptor_set))
+            if (RHI_SUCCESS != rhi->allocateDescriptorSets(&material_descriptor_set_alloc_info, now_material.material_descriptor_set))
             {
                 throw std::runtime_error("allocate material descriptor set");
             }
@@ -508,30 +469,27 @@ namespace Piccolo
             RHIDescriptorImageInfo base_color_image_info = {};
             base_color_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             base_color_image_info.imageView              = now_material.base_color_image_view;
-            base_color_image_info.sampler =
-                rhi->getOrCreateMipmapSampler(base_color_image_width, base_color_image_height);
+            base_color_image_info.sampler                = rhi->getOrCreateMipmapSampler(base_color_image_width, base_color_image_height);
 
             RHIDescriptorImageInfo metallic_roughness_image_info = {};
             metallic_roughness_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             metallic_roughness_image_info.imageView              = now_material.metallic_roughness_image_view;
-            metallic_roughness_image_info.sampler =
-                rhi->getOrCreateMipmapSampler(metallic_roughness_width, metallic_roughness_height);
+            metallic_roughness_image_info.sampler                = rhi->getOrCreateMipmapSampler(metallic_roughness_width, metallic_roughness_height);
 
             RHIDescriptorImageInfo normal_roughness_image_info = {};
             normal_roughness_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             normal_roughness_image_info.imageView              = now_material.normal_image_view;
-            normal_roughness_image_info.sampler =
-                rhi->getOrCreateMipmapSampler(normal_roughness_width, normal_roughness_height);
+            normal_roughness_image_info.sampler                = rhi->getOrCreateMipmapSampler(normal_roughness_width, normal_roughness_height);
 
             RHIDescriptorImageInfo occlusion_image_info = {};
             occlusion_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             occlusion_image_info.imageView              = now_material.occlusion_image_view;
-            occlusion_image_info.sampler = rhi->getOrCreateMipmapSampler(occlusion_image_width, occlusion_image_height);
+            occlusion_image_info.sampler                = rhi->getOrCreateMipmapSampler(occlusion_image_width, occlusion_image_height);
 
             RHIDescriptorImageInfo emissive_image_info = {};
             emissive_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             emissive_image_info.imageView              = now_material.emissive_image_view;
-            emissive_image_info.sampler = rhi->getOrCreateMipmapSampler(emissive_image_width, emissive_image_height);
+            emissive_image_info.sampler                = rhi->getOrCreateMipmapSampler(emissive_image_width, emissive_image_height);
 
             RHIWriteDescriptorSet mesh_descriptor_writes_info[6];
 
@@ -621,25 +579,19 @@ namespace Piccolo
             assert(0 == (index_buffer_size % sizeof(uint16_t)));
             uint32_t index_count = index_buffer_size / sizeof(uint16_t);
 
-            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
-            RHIDeviceSize vertex_varying_enable_blending_buffer_size =
-                sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
-            RHIDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
-            RHIDeviceSize vertex_joint_binding_buffer_size =
-                sizeof(MeshVertex::VulkanMeshVertexJointBinding) * index_count;
+            RHIDeviceSize vertex_position_buffer_size                = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            RHIDeviceSize vertex_varying_enable_blending_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
+            RHIDeviceSize vertex_varying_buffer_size                 = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
+            RHIDeviceSize vertex_joint_binding_buffer_size           = sizeof(MeshVertex::VulkanMeshVertexJointBinding) * index_count;
 
-            RHIDeviceSize vertex_position_buffer_offset = 0;
-            RHIDeviceSize vertex_varying_enable_blending_buffer_offset =
-                vertex_position_buffer_offset + vertex_position_buffer_size;
-            RHIDeviceSize vertex_varying_buffer_offset =
-                vertex_varying_enable_blending_buffer_offset + vertex_varying_enable_blending_buffer_size;
-            RHIDeviceSize vertex_joint_binding_buffer_offset =
-                vertex_varying_buffer_offset + vertex_varying_buffer_size;
+            RHIDeviceSize vertex_position_buffer_offset                = 0;
+            RHIDeviceSize vertex_varying_enable_blending_buffer_offset = vertex_position_buffer_offset + vertex_position_buffer_size;
+            RHIDeviceSize vertex_varying_buffer_offset       = vertex_varying_enable_blending_buffer_offset + vertex_varying_enable_blending_buffer_size;
+            RHIDeviceSize vertex_joint_binding_buffer_offset = vertex_varying_buffer_offset + vertex_varying_buffer_size;
 
             // temporary staging buffer
             RHIDeviceSize inefficient_staging_buffer_size =
-                vertex_position_buffer_size + vertex_varying_enable_blending_buffer_size + vertex_varying_buffer_size +
-                vertex_joint_binding_buffer_size;
+                vertex_position_buffer_size + vertex_varying_enable_blending_buffer_size + vertex_varying_buffer_size + vertex_joint_binding_buffer_size;
             RHIBuffer*       inefficient_staging_buffer        = RHI_NULL_HANDLE;
             RHIDeviceMemory* inefficient_staging_buffer_memory = RHI_NULL_HANDLE;
             rhi->createBuffer(inefficient_staging_buffer_size,
@@ -651,38 +603,28 @@ namespace Piccolo
             void* inefficient_staging_buffer_data;
             rhi->mapMemory(inefficient_staging_buffer_memory, 0, RHI_WHOLE_SIZE, 0, &inefficient_staging_buffer_data);
 
-            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
+            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions = reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
+                reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
             MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
-                    vertex_varying_enable_blending_buffer_offset);
-            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
-            MeshVertex::VulkanMeshVertexJointBinding* mesh_vertex_joint_binding =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexJointBinding*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_joint_binding_buffer_offset);
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
+                                                                                     vertex_varying_enable_blending_buffer_offset);
+            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings = reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
+                reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
+            MeshVertex::VulkanMeshVertexJointBinding* mesh_vertex_joint_binding = reinterpret_cast<MeshVertex::VulkanMeshVertexJointBinding*>(
+                reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_joint_binding_buffer_offset);
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
             {
-                Vector3 normal  = Vector3(vertex_buffer_data[vertex_index].nx,
-                                         vertex_buffer_data[vertex_index].ny,
-                                         vertex_buffer_data[vertex_index].nz);
-                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx,
-                                          vertex_buffer_data[vertex_index].ty,
-                                          vertex_buffer_data[vertex_index].tz);
+                Vector3 normal  = Vector3(vertex_buffer_data[vertex_index].nx, vertex_buffer_data[vertex_index].ny, vertex_buffer_data[vertex_index].nz);
+                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx, vertex_buffer_data[vertex_index].ty, vertex_buffer_data[vertex_index].tz);
 
-                mesh_vertex_positions[vertex_index].position = Vector3(vertex_buffer_data[vertex_index].x,
-                                                                       vertex_buffer_data[vertex_index].y,
-                                                                       vertex_buffer_data[vertex_index].z);
+                mesh_vertex_positions[vertex_index].position =
+                    Vector3(vertex_buffer_data[vertex_index].x, vertex_buffer_data[vertex_index].y, vertex_buffer_data[vertex_index].z);
 
                 mesh_vertex_blending_varyings[vertex_index].normal  = normal;
                 mesh_vertex_blending_varyings[vertex_index].tangent = tangent;
 
-                mesh_vertex_varyings[vertex_index].texcoord =
-                    Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
+                mesh_vertex_varyings[vertex_index].texcoord = Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
             }
 
             for (uint32_t index_index = 0; index_index < index_count; ++index_index)
@@ -691,27 +633,20 @@ namespace Piccolo
 
                 // TODO: move to assets loading process
 
-                mesh_vertex_joint_binding[index_index].indices[0] =
-                    joint_binding_buffer_data[vertex_buffer_index].m_index0;
-                mesh_vertex_joint_binding[index_index].indices[1] =
-                    joint_binding_buffer_data[vertex_buffer_index].m_index1;
-                mesh_vertex_joint_binding[index_index].indices[2] =
-                    joint_binding_buffer_data[vertex_buffer_index].m_index2;
-                mesh_vertex_joint_binding[index_index].indices[3] =
-                    joint_binding_buffer_data[vertex_buffer_index].m_index3;
+                mesh_vertex_joint_binding[index_index].indices[0] = joint_binding_buffer_data[vertex_buffer_index].m_index0;
+                mesh_vertex_joint_binding[index_index].indices[1] = joint_binding_buffer_data[vertex_buffer_index].m_index1;
+                mesh_vertex_joint_binding[index_index].indices[2] = joint_binding_buffer_data[vertex_buffer_index].m_index2;
+                mesh_vertex_joint_binding[index_index].indices[3] = joint_binding_buffer_data[vertex_buffer_index].m_index3;
 
-                float inv_total_weight = joint_binding_buffer_data[vertex_buffer_index].m_weight0 +
-                                         joint_binding_buffer_data[vertex_buffer_index].m_weight1 +
-                                         joint_binding_buffer_data[vertex_buffer_index].m_weight2 +
-                                         joint_binding_buffer_data[vertex_buffer_index].m_weight3;
+                float inv_total_weight = joint_binding_buffer_data[vertex_buffer_index].m_weight0 + joint_binding_buffer_data[vertex_buffer_index].m_weight1 +
+                                         joint_binding_buffer_data[vertex_buffer_index].m_weight2 + joint_binding_buffer_data[vertex_buffer_index].m_weight3;
 
                 inv_total_weight = (inv_total_weight != 0.0) ? 1 / inv_total_weight : 1.0;
 
-                mesh_vertex_joint_binding[index_index].weights =
-                    Vector4(joint_binding_buffer_data[vertex_buffer_index].m_weight0 * inv_total_weight,
-                            joint_binding_buffer_data[vertex_buffer_index].m_weight1 * inv_total_weight,
-                            joint_binding_buffer_data[vertex_buffer_index].m_weight2 * inv_total_weight,
-                            joint_binding_buffer_data[vertex_buffer_index].m_weight3 * inv_total_weight);
+                mesh_vertex_joint_binding[index_index].weights = Vector4(joint_binding_buffer_data[vertex_buffer_index].m_weight0 * inv_total_weight,
+                                                                         joint_binding_buffer_data[vertex_buffer_index].m_weight1 * inv_total_weight,
+                                                                         joint_binding_buffer_data[vertex_buffer_index].m_weight2 * inv_total_weight,
+                                                                         joint_binding_buffer_data[vertex_buffer_index].m_weight3 * inv_total_weight);
             }
 
             rhi->unmapMemory(inefficient_staging_buffer_memory);
@@ -755,26 +690,15 @@ namespace Piccolo
                                  NULL);
 
             // use the data from staging buffer
-            rhi->copyBuffer(inefficient_staging_buffer,
-                            now_mesh.mesh_vertex_position_buffer,
-                            vertex_position_buffer_offset,
-                            0,
-                            vertex_position_buffer_size);
+            rhi->copyBuffer(inefficient_staging_buffer, now_mesh.mesh_vertex_position_buffer, vertex_position_buffer_offset, 0, vertex_position_buffer_size);
             rhi->copyBuffer(inefficient_staging_buffer,
                             now_mesh.mesh_vertex_varying_enable_blending_buffer,
                             vertex_varying_enable_blending_buffer_offset,
                             0,
                             vertex_varying_enable_blending_buffer_size);
-            rhi->copyBuffer(inefficient_staging_buffer,
-                            now_mesh.mesh_vertex_varying_buffer,
-                            vertex_varying_buffer_offset,
-                            0,
-                            vertex_varying_buffer_size);
-            rhi->copyBuffer(inefficient_staging_buffer,
-                            now_mesh.mesh_vertex_joint_binding_buffer,
-                            vertex_joint_binding_buffer_offset,
-                            0,
-                            vertex_joint_binding_buffer_size);
+            rhi->copyBuffer(inefficient_staging_buffer, now_mesh.mesh_vertex_varying_buffer, vertex_varying_buffer_offset, 0, vertex_varying_buffer_size);
+            rhi->copyBuffer(
+                inefficient_staging_buffer, now_mesh.mesh_vertex_joint_binding_buffer, vertex_joint_binding_buffer_offset, 0, vertex_joint_binding_buffer_size);
 
             // release staging buffer
             rhi->destroyBuffer(inefficient_staging_buffer);
@@ -782,15 +706,14 @@ namespace Piccolo
 
             // update descriptor set
             RHIDescriptorSetAllocateInfo mesh_vertex_blending_per_mesh_descriptor_set_alloc_info;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType =
-                RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->m_descriptor_pool;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext              = NULL;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool     = vulkan_context->m_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
 
-            if (RHI_SUCCESS != rhi->allocateDescriptorSets(&mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
-                                                           now_mesh.mesh_vertex_blending_descriptor_set))
+            if (RHI_SUCCESS !=
+                rhi->allocateDescriptorSets(&mesh_vertex_blending_per_mesh_descriptor_set_alloc_info, now_mesh.mesh_vertex_blending_descriptor_set))
             {
                 throw std::runtime_error("allocate mesh vertex blending per mesh descriptor set");
             }
@@ -798,46 +721,37 @@ namespace Piccolo
             RHIDescriptorBufferInfo mesh_vertex_Joint_binding_storage_buffer_info = {};
             mesh_vertex_Joint_binding_storage_buffer_info.offset                  = 0;
             mesh_vertex_Joint_binding_storage_buffer_info.range                   = vertex_joint_binding_buffer_size;
-            mesh_vertex_Joint_binding_storage_buffer_info.buffer = now_mesh.mesh_vertex_joint_binding_buffer;
-            assert(mesh_vertex_Joint_binding_storage_buffer_info.range <
-                   m_global_render_resource._storage_buffer._max_storage_buffer_range);
+            mesh_vertex_Joint_binding_storage_buffer_info.buffer                  = now_mesh.mesh_vertex_joint_binding_buffer;
+            assert(mesh_vertex_Joint_binding_storage_buffer_info.range < m_global_render_resource._storage_buffer._max_storage_buffer_range);
 
             RHIDescriptorSet* descriptor_set_to_write = now_mesh.mesh_vertex_blending_descriptor_set;
 
             RHIWriteDescriptorSet descriptor_writes[1];
 
-            RHIWriteDescriptorSet& mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info =
-                descriptor_writes[0];
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.sType =
-                RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pNext      = NULL;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstSet     = descriptor_set_to_write;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstBinding = 0;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstArrayElement = 0;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorType =
-                RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorCount = 1;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo =
-                &mesh_vertex_Joint_binding_storage_buffer_info;
+            RHIWriteDescriptorSet& mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info = descriptor_writes[0];
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pNext                  = NULL;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstSet                 = descriptor_set_to_write;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstBinding             = 0;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstArrayElement        = 0;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorCount        = 1;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo            = &mesh_vertex_Joint_binding_storage_buffer_info;
 
-            rhi->updateDescriptorSets(
-                (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])), descriptor_writes, 0, NULL);
+            rhi->updateDescriptorSets((sizeof(descriptor_writes) / sizeof(descriptor_writes[0])), descriptor_writes, 0, NULL);
         }
         else
         {
             assert(0 == (vertex_buffer_size % sizeof(MeshVertexDataDefinition)));
             uint32_t vertex_count = vertex_buffer_size / sizeof(MeshVertexDataDefinition);
 
-            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
-            RHIDeviceSize vertex_varying_enable_blending_buffer_size =
-                sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
-            RHIDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
+            RHIDeviceSize vertex_position_buffer_size                = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            RHIDeviceSize vertex_varying_enable_blending_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
+            RHIDeviceSize vertex_varying_buffer_size                 = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
 
-            RHIDeviceSize vertex_position_buffer_offset = 0;
-            RHIDeviceSize vertex_varying_enable_blending_buffer_offset =
-                vertex_position_buffer_offset + vertex_position_buffer_size;
-            RHIDeviceSize vertex_varying_buffer_offset =
-                vertex_varying_enable_blending_buffer_offset + vertex_varying_enable_blending_buffer_size;
+            RHIDeviceSize vertex_position_buffer_offset                = 0;
+            RHIDeviceSize vertex_varying_enable_blending_buffer_offset = vertex_position_buffer_offset + vertex_position_buffer_size;
+            RHIDeviceSize vertex_varying_buffer_offset = vertex_varying_enable_blending_buffer_offset + vertex_varying_enable_blending_buffer_size;
 
             // temporary staging buffer
             RHIDeviceSize inefficient_staging_buffer_size =
@@ -853,35 +767,26 @@ namespace Piccolo
             void* inefficient_staging_buffer_data;
             rhi->mapMemory(inefficient_staging_buffer_memory, 0, RHI_WHOLE_SIZE, 0, &inefficient_staging_buffer_data);
 
-            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
+            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions = reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
+                reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
             MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
-                    vertex_varying_enable_blending_buffer_offset);
-            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
-                    reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
+                reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) +
+                                                                                     vertex_varying_enable_blending_buffer_offset);
+            MeshVertex::VulkanMeshVertexVarying* mesh_vertex_varyings = reinterpret_cast<MeshVertex::VulkanMeshVertexVarying*>(
+                reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_varying_buffer_offset);
 
             for (uint32_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
             {
-                Vector3 normal  = Vector3(vertex_buffer_data[vertex_index].nx,
-                                         vertex_buffer_data[vertex_index].ny,
-                                         vertex_buffer_data[vertex_index].nz);
-                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx,
-                                          vertex_buffer_data[vertex_index].ty,
-                                          vertex_buffer_data[vertex_index].tz);
+                Vector3 normal  = Vector3(vertex_buffer_data[vertex_index].nx, vertex_buffer_data[vertex_index].ny, vertex_buffer_data[vertex_index].nz);
+                Vector3 tangent = Vector3(vertex_buffer_data[vertex_index].tx, vertex_buffer_data[vertex_index].ty, vertex_buffer_data[vertex_index].tz);
 
-                mesh_vertex_positions[vertex_index].position = Vector3(vertex_buffer_data[vertex_index].x,
-                                                                       vertex_buffer_data[vertex_index].y,
-                                                                       vertex_buffer_data[vertex_index].z);
+                mesh_vertex_positions[vertex_index].position =
+                    Vector3(vertex_buffer_data[vertex_index].x, vertex_buffer_data[vertex_index].y, vertex_buffer_data[vertex_index].z);
 
                 mesh_vertex_blending_varyings[vertex_index].normal  = normal;
                 mesh_vertex_blending_varyings[vertex_index].tangent = tangent;
 
-                mesh_vertex_varyings[vertex_index].texcoord =
-                    Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
+                mesh_vertex_varyings[vertex_index].texcoord = Vector2(vertex_buffer_data[vertex_index].u, vertex_buffer_data[vertex_index].v);
             }
 
             rhi->unmapMemory(inefficient_staging_buffer_memory);
@@ -916,21 +821,13 @@ namespace Piccolo
                                  NULL);
 
             // use the data from staging buffer
-            rhi->copyBuffer(inefficient_staging_buffer,
-                            now_mesh.mesh_vertex_position_buffer,
-                            vertex_position_buffer_offset,
-                            0,
-                            vertex_position_buffer_size);
+            rhi->copyBuffer(inefficient_staging_buffer, now_mesh.mesh_vertex_position_buffer, vertex_position_buffer_offset, 0, vertex_position_buffer_size);
             rhi->copyBuffer(inefficient_staging_buffer,
                             now_mesh.mesh_vertex_varying_enable_blending_buffer,
                             vertex_varying_enable_blending_buffer_offset,
                             0,
                             vertex_varying_enable_blending_buffer_size);
-            rhi->copyBuffer(inefficient_staging_buffer,
-                            now_mesh.mesh_vertex_varying_buffer,
-                            vertex_varying_buffer_offset,
-                            0,
-                            vertex_varying_buffer_size);
+            rhi->copyBuffer(inefficient_staging_buffer, now_mesh.mesh_vertex_varying_buffer, vertex_varying_buffer_offset, 0, vertex_varying_buffer_size);
 
             // release staging buffer
             rhi->destroyBuffer(inefficient_staging_buffer);
@@ -938,15 +835,14 @@ namespace Piccolo
 
             // update descriptor set
             RHIDescriptorSetAllocateInfo mesh_vertex_blending_per_mesh_descriptor_set_alloc_info;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType =
-                RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext          = NULL;
-            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool = vulkan_context->m_descriptor_pool;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pNext              = NULL;
+            mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorPool     = vulkan_context->m_descriptor_pool;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.descriptorSetCount = 1;
             mesh_vertex_blending_per_mesh_descriptor_set_alloc_info.pSetLayouts        = m_mesh_descriptor_set_layout;
 
-            if (RHI_SUCCESS != rhi->allocateDescriptorSets(&mesh_vertex_blending_per_mesh_descriptor_set_alloc_info,
-                                                           now_mesh.mesh_vertex_blending_descriptor_set))
+            if (RHI_SUCCESS !=
+                rhi->allocateDescriptorSets(&mesh_vertex_blending_per_mesh_descriptor_set_alloc_info, now_mesh.mesh_vertex_blending_descriptor_set))
             {
                 throw std::runtime_error("allocate mesh vertex blending per mesh descriptor set");
             }
@@ -954,38 +850,28 @@ namespace Piccolo
             RHIDescriptorBufferInfo mesh_vertex_Joint_binding_storage_buffer_info = {};
             mesh_vertex_Joint_binding_storage_buffer_info.offset                  = 0;
             mesh_vertex_Joint_binding_storage_buffer_info.range                   = 1;
-            mesh_vertex_Joint_binding_storage_buffer_info.buffer =
-                m_global_render_resource._storage_buffer._global_null_descriptor_storage_buffer;
-            assert(mesh_vertex_Joint_binding_storage_buffer_info.range <
-                   m_global_render_resource._storage_buffer._max_storage_buffer_range);
+            mesh_vertex_Joint_binding_storage_buffer_info.buffer = m_global_render_resource._storage_buffer._global_null_descriptor_storage_buffer;
+            assert(mesh_vertex_Joint_binding_storage_buffer_info.range < m_global_render_resource._storage_buffer._max_storage_buffer_range);
 
             RHIDescriptorSet* descriptor_set_to_write = now_mesh.mesh_vertex_blending_descriptor_set;
 
             RHIWriteDescriptorSet descriptor_writes[1];
 
-            RHIWriteDescriptorSet& mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info =
-                descriptor_writes[0];
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.sType =
-                RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pNext      = NULL;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstSet     = descriptor_set_to_write;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstBinding = 0;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstArrayElement = 0;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorType =
-                RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorCount = 1;
-            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo =
-                &mesh_vertex_Joint_binding_storage_buffer_info;
+            RHIWriteDescriptorSet& mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info = descriptor_writes[0];
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pNext                  = NULL;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstSet                 = descriptor_set_to_write;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstBinding             = 0;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.dstArrayElement        = 0;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.descriptorCount        = 1;
+            mesh_vertex_blending_vertex_Joint_binding_storage_buffer_write_info.pBufferInfo            = &mesh_vertex_Joint_binding_storage_buffer_info;
 
-            rhi->updateDescriptorSets(
-                (sizeof(descriptor_writes) / sizeof(descriptor_writes[0])), descriptor_writes, 0, NULL);
+            rhi->updateDescriptorSets((sizeof(descriptor_writes) / sizeof(descriptor_writes[0])), descriptor_writes, 0, NULL);
         }
     }
 
-    void RenderResource::updateIndexBuffer(std::shared_ptr<RHI> rhi,
-                                           uint32_t             index_buffer_size,
-                                           void*                index_buffer_data,
-                                           VulkanMesh&          now_mesh)
+    void RenderResource::updateIndexBuffer(std::shared_ptr<RHI> rhi, uint32_t index_buffer_size, void* index_buffer_data, VulkanMesh& now_mesh)
     {
         VulkanRHI* vulkan_context = static_cast<VulkanRHI*>(rhi.get());
 
@@ -1013,12 +899,8 @@ namespace Piccolo
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        rhi->createBufferVMA(vulkan_context->m_assets_allocator,
-                             &bufferInfo,
-                             &allocInfo,
-                             now_mesh.mesh_index_buffer,
-                             &now_mesh.mesh_index_buffer_allocation,
-                             NULL);
+        rhi->createBufferVMA(
+            vulkan_context->m_assets_allocator, &bufferInfo, &allocInfo, now_mesh.mesh_index_buffer, &now_mesh.mesh_index_buffer_allocation, NULL);
 
         // use the data from staging buffer
         rhi->copyBuffer(inefficient_staging_buffer, now_mesh.mesh_index_buffer, 0, 0, buffer_size);
@@ -1116,12 +998,10 @@ namespace Piccolo
         RHIPhysicalDeviceProperties properties;
         rhi->getPhysicalDeviceProperties(&properties);
 
-        _storage_buffer._min_uniform_buffer_offset_alignment =
-            static_cast<uint32_t>(properties.limits.minUniformBufferOffsetAlignment);
-        _storage_buffer._min_storage_buffer_offset_alignment =
-            static_cast<uint32_t>(properties.limits.minStorageBufferOffsetAlignment);
-        _storage_buffer._max_storage_buffer_range = properties.limits.maxStorageBufferRange;
-        _storage_buffer._non_coherent_atom_size   = properties.limits.nonCoherentAtomSize;
+        _storage_buffer._min_uniform_buffer_offset_alignment = static_cast<uint32_t>(properties.limits.minUniformBufferOffsetAlignment);
+        _storage_buffer._min_storage_buffer_offset_alignment = static_cast<uint32_t>(properties.limits.minStorageBufferOffsetAlignment);
+        _storage_buffer._max_storage_buffer_range            = properties.limits.maxStorageBufferRange;
+        _storage_buffer._non_coherent_atom_size              = properties.limits.nonCoherentAtomSize;
 
         // In Vulkan, the storage buffer should be pre-allocated.
         // The size is 128MB in NVIDIA D3D11
@@ -1140,8 +1020,7 @@ namespace Piccolo
         {
             _storage_buffer._global_upload_ringbuffers_begin[i] = (global_storage_buffer_size * i) / frames_in_flight;
             _storage_buffer._global_upload_ringbuffers_size[i] =
-                (global_storage_buffer_size * (i + 1)) / frames_in_flight -
-                (global_storage_buffer_size * i) / frames_in_flight;
+                (global_storage_buffer_size * (i + 1)) / frames_in_flight - (global_storage_buffer_size * i) / frames_in_flight;
         }
 
         // axis
@@ -1159,17 +1038,10 @@ namespace Piccolo
                           _storage_buffer._global_null_descriptor_storage_buffer_memory);
 
         // TODO: Unmap when program terminates
-        rhi->mapMemory(_storage_buffer._global_upload_ringbuffer_memory,
-                       0,
-                       RHI_WHOLE_SIZE,
-                       0,
-                       &_storage_buffer._global_upload_ringbuffer_memory_pointer);
+        rhi->mapMemory(_storage_buffer._global_upload_ringbuffer_memory, 0, RHI_WHOLE_SIZE, 0, &_storage_buffer._global_upload_ringbuffer_memory_pointer);
 
-        rhi->mapMemory(_storage_buffer._axis_inefficient_storage_buffer_memory,
-                       0,
-                       RHI_WHOLE_SIZE,
-                       0,
-                       &_storage_buffer._axis_inefficient_storage_buffer_memory_pointer);
+        rhi->mapMemory(
+            _storage_buffer._axis_inefficient_storage_buffer_memory, 0, RHI_WHOLE_SIZE, 0, &_storage_buffer._axis_inefficient_storage_buffer_memory_pointer);
 
         static_assert(64 >= sizeof(MeshVertex::VulkanMeshVertexJointBinding), "");
     }

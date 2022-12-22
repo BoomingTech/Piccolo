@@ -46,15 +46,13 @@ MetaParser::MetaParser(const std::string project_input_file,
                        const std::string module_name,
                        bool              is_show_errors) :
     m_project_input_file(project_input_file),
-    m_source_include_file_name(include_file_path), m_index(nullptr), m_translation_unit(nullptr),
-    m_sys_include(sys_include), m_module_name(module_name), m_is_show_errors(is_show_errors)
+    m_source_include_file_name(include_file_path), m_index(nullptr), m_translation_unit(nullptr), m_sys_include(sys_include), m_module_name(module_name),
+    m_is_show_errors(is_show_errors)
 {
     m_work_paths = Utils::split(include_path, ";");
 
-    m_generators.emplace_back(new Generator::SerializerGenerator(
-        m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
-    m_generators.emplace_back(new Generator::ReflectionGenerator(
-        m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
+    m_generators.emplace_back(new Generator::SerializerGenerator(m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
+    m_generators.emplace_back(new Generator::ReflectionGenerator(m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
 }
 
 MetaParser::~MetaParser(void)

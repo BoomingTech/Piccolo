@@ -210,7 +210,5 @@ namespace Piccolo
         std::vector<onDropFunc>        m_onDropFunc;
         std::vector<onWindowSizeFunc>  m_onWindowSizeFunc;
         std::vector<onWindowCloseFunc> m_onWindowCloseFunc;
-
-
     };
 } // namespace Piccolo

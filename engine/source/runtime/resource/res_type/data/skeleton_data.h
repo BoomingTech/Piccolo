@@ -29,8 +29,8 @@ namespace Piccolo
         std::vector<RawBone> bones_map;
         bool                 is_flat = false; //"bone.index" equals index in bones_map
         int                  root_index;
-        bool in_topological_order = false; // TODO: if not in topological order, we need to topology sort in skeleton
-                                           // build process
+        bool                 in_topological_order = false; // TODO: if not in topological order, we need to topology sort in skeleton
+                                                           // build process
     };
 
 } // namespace Piccolo

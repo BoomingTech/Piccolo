@@ -9,7 +9,7 @@ namespace Piccolo
     class EditorUI;
     class PiccoloEngine;
 
-    class PiccoloEditor 
+    class PiccoloEditor
     {
         friend class EditorUI;
 
@@ -24,6 +24,6 @@ namespace Piccolo
 
     protected:
         std::shared_ptr<EditorUI> m_editor_ui;
-        PiccoloEngine* m_engine_runtime{ nullptr };
+        PiccoloEngine*            m_engine_runtime {nullptr};
     };
 } // namespace Piccolo

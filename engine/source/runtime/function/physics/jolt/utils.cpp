@@ -74,8 +74,7 @@ namespace Piccolo
             case Layers::NON_MOVING:
                 return inLayer2 == BroadPhaseLayers::MOVING;
             case Layers::MOVING:
-                return inLayer2 == BroadPhaseLayers::NON_MOVING || inLayer2 == BroadPhaseLayers::MOVING ||
-                       inLayer2 == BroadPhaseLayers::SENSOR;
+                return inLayer2 == BroadPhaseLayers::NON_MOVING || inLayer2 == BroadPhaseLayers::MOVING || inLayer2 == BroadPhaseLayers::SENSOR;
             case Layers::DEBRIS:
                 return inLayer2 == BroadPhaseLayers::NON_MOVING;
             case Layers::SENSOR:
@@ -122,9 +121,7 @@ namespace Piccolo
             const Box* box_geometry = static_cast<const Box*>(shape.m_geometry.getPtr());
             if (box_geometry)
             {
-                JPH::Vec3 jph_box(scale.x * box_geometry->m_half_extents.x,
-                                  scale.y * box_geometry->m_half_extents.y,
-                                  scale.z * box_geometry->m_half_extents.z);
+                JPH::Vec3 jph_box(scale.x * box_geometry->m_half_extents.x, scale.y * box_geometry->m_half_extents.y, scale.z * box_geometry->m_half_extents.z);
                 jph_shape = new JPH::BoxShape(jph_box, 0.f);
             }
         }
@@ -133,8 +130,7 @@ namespace Piccolo
             const Sphere* sphere_geometry = static_cast<const Sphere*>(shape.m_geometry.getPtr());
             if (sphere_geometry)
             {
-                jph_shape = new JPH::SphereShape((scale.x + scale.y + scale.z) / 3 *
-                                                 sphere_geometry->m_radius);
+                jph_shape = new JPH::SphereShape((scale.x + scale.y + scale.z) / 3 * sphere_geometry->m_radius);
             }
         }
         else if (shape_type_str == "Capsule")
@@ -142,8 +138,7 @@ namespace Piccolo
             const Capsule* capsule_geometry = static_cast<const Capsule*>(shape.m_geometry.getPtr());
             if (capsule_geometry)
             {
-                jph_shape = new JPH::CapsuleShape(scale.z * capsule_geometry->m_half_height,
-                                                  (scale.x + scale.y) / 2 * capsule_geometry->m_radius);
+                jph_shape = new JPH::CapsuleShape(scale.z * capsule_geometry->m_half_height, (scale.x + scale.y) / 2 * capsule_geometry->m_radius);
             }
         }
         else

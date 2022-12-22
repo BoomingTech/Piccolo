@@ -63,8 +63,7 @@ namespace Piccolo
         /// @ray_length: ray length, anything beyond this length will not be reported as a hit
         /// @out_hits: the found hits, sorted by distance
         /// @return: true if any hits found, else false
-        bool
-        raycast(Vector3 ray_origin, Vector3 ray_direction, float ray_length, std::vector<PhysicsHitInfo>& out_hits);
+        bool raycast(Vector3 ray_origin, Vector3 ray_direction, float ray_length, std::vector<PhysicsHitInfo>& out_hits);
 
         /// cast a shape and find the hits
         /// @shape: the casted rigidbody shape

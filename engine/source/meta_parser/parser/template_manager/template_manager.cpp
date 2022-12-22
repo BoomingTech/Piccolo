@@ -3,8 +3,7 @@
 
 void TemplateManager::loadTemplates(std::string path, std::string template_name)
 {
-    m_template_pool.insert_or_assign(template_name,
-                                     Utils::loadFile(path + "/../template/" + template_name + ".mustache"));
+    m_template_pool.insert_or_assign(template_name, Utils::loadFile(path + "/../template/" + template_name + ".mustache"));
 }
 
 std::string TemplateManager::renderByTemplate(std::string template_name, Mustache::data& template_data)

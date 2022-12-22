@@ -65,15 +65,7 @@ namespace Piccolo
             m_mat[2][2] = float_array[8];
         }
 
-        Matrix3x3(float entry00,
-                  float entry01,
-                  float entry02,
-                  float entry10,
-                  float entry11,
-                  float entry12,
-                  float entry20,
-                  float entry21,
-                  float entry22)
+        Matrix3x3(float entry00, float entry01, float entry02, float entry10, float entry11, float entry12, float entry20, float entry21, float entry22)
         {
             m_mat[0][0] = entry00;
             m_mat[0][1] = entry01;
@@ -213,8 +205,7 @@ namespace Piccolo
             {
                 for (size_t col_index = 0; col_index < 3; col_index++)
                 {
-                    prod.m_mat[row_index][col_index] = m_mat[row_index][0] * rhs.m_mat[0][col_index] +
-                                                       m_mat[row_index][1] * rhs.m_mat[1][col_index] +
+                    prod.m_mat[row_index][col_index] = m_mat[row_index][0] * rhs.m_mat[0][col_index] + m_mat[row_index][1] * rhs.m_mat[1][col_index] +
                                                        m_mat[row_index][2] * rhs.m_mat[2][col_index];
                 }
             }
@@ -227,8 +218,7 @@ namespace Piccolo
             Vector3 prod;
             for (size_t row_index = 0; row_index < 3; row_index++)
             {
-                prod[row_index] =
-                    m_mat[row_index][0] * rhs.x + m_mat[row_index][1] * rhs.y + m_mat[row_index][2] * rhs.z;
+                prod[row_index] = m_mat[row_index][0] * rhs.x + m_mat[row_index][1] * rhs.y + m_mat[row_index][2] * rhs.z;
             }
             return prod;
         }
@@ -239,8 +229,7 @@ namespace Piccolo
             Vector3 prod;
             for (size_t row_index = 0; row_index < 3; row_index++)
             {
-                prod[row_index] = point.x * rhs.m_mat[0][row_index] + point.y * rhs.m_mat[1][row_index] +
-                                  point.z * rhs.m_mat[2][row_index];
+                prod[row_index] = point.x * rhs.m_mat[0][row_index] + point.y * rhs.m_mat[1][row_index] + point.z * rhs.m_mat[2][row_index];
             }
             return prod;
         }

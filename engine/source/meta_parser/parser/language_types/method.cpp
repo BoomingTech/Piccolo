@@ -11,9 +11,7 @@ bool Method::shouldCompile(void) const { return isAccessible(); }
 
 bool Method::isAccessible(void) const
 {
-    return ((m_parent->m_meta_data.getFlag(NativeProperty::Methods) ||
-             m_parent->m_meta_data.getFlag(NativeProperty::All)) &&
+    return ((m_parent->m_meta_data.getFlag(NativeProperty::Methods) || m_parent->m_meta_data.getFlag(NativeProperty::All)) &&
             !m_meta_data.getFlag(NativeProperty::Disable)) ||
-           (m_parent->m_meta_data.getFlag(NativeProperty::WhiteListMethods) &&
-            m_meta_data.getFlag(NativeProperty::Enable));
+           (m_parent->m_meta_data.getFlag(NativeProperty::WhiteListMethods) && m_meta_data.getFlag(NativeProperty::Enable));
 }

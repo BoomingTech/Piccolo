@@ -14,15 +14,9 @@ namespace Piccolo
         static std::multimap<std::string, MethodFunctionTuple*> m_method_map;
         static std::map<std::string, ArrayFunctionTuple*>       m_array_map;
 
-        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, FieldFunctionTuple* value)
-        {
-            m_field_map.insert(std::make_pair(name, value));
-        }
+        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, FieldFunctionTuple* value) { m_field_map.insert(std::make_pair(name, value)); }
 
-        void TypeMetaRegisterinterface::registerToMethodMap(const char* name, MethodFunctionTuple* value)
-        {
-            m_method_map.insert(std::make_pair(name, value));
-        }
+        void TypeMetaRegisterinterface::registerToMethodMap(const char* name, MethodFunctionTuple* value) { m_method_map.insert(std::make_pair(name, value)); }
 
         void TypeMetaRegisterinterface::registerToArrayMap(const char* name, ArrayFunctionTuple* value)
         {
@@ -185,9 +179,7 @@ namespace Piccolo
 
         FieldAccessor TypeMeta::getFieldByName(const char* name)
         {
-            const auto it = std::find_if(m_fields.begin(), m_fields.end(), [&](const auto& i) {
-                return std::strcmp(i.getFieldName(), name) == 0;
-            });
+            const auto it = std::find_if(m_fields.begin(), m_fields.end(), [&](const auto& i) { return std::strcmp(i.getFieldName(), name) == 0; });
             if (it != m_fields.end())
                 return *it;
             return FieldAccessor(nullptr);
@@ -195,9 +187,7 @@ namespace Piccolo
 
         MethodAccessor TypeMeta::getMethodByName(const char* name)
         {
-            const auto it = std::find_if(m_methods.begin(), m_methods.end(), [&](const auto& i) {
-                return std::strcmp(i.getMethodName(), name) == 0;
-            });
+            const auto it = std::find_if(m_methods.begin(), m_methods.end(), [&](const auto& i) { return std::strcmp(i.getMethodName(), name) == 0; });
             if (it != m_methods.end())
                 return *it;
             return MethodAccessor(nullptr);
@@ -326,9 +316,7 @@ namespace Piccolo
             return *this;
         }
 
-        ArrayAccessor::ArrayAccessor() :
-            m_func(nullptr), m_array_type_name("UnKnownType"), m_element_type_name("UnKnownType")
-        {}
+        ArrayAccessor::ArrayAccessor() : m_func(nullptr), m_array_type_name("UnKnownType"), m_element_type_name("UnKnownType") {}
 
         ArrayAccessor::ArrayAccessor(ArrayFunctionTuple* array_func) : m_func(array_func)
         {

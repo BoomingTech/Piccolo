@@ -170,16 +170,14 @@ namespace Piccolo
 
     void VulkanRHI::waitForFences()
     {
-        VkResult res_wait_for_fences =
-            _vkWaitForFences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index], VK_TRUE, UINT64_MAX);
+        VkResult res_wait_for_fences = _vkWaitForFences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index], VK_TRUE, UINT64_MAX);
         if (VK_SUCCESS != res_wait_for_fences)
         {
             LOG_ERROR("failed to synchronize!");
         }
     }
 
-    bool
-    VulkanRHI::waitForFences(uint32_t fenceCount, const RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout)
+    bool VulkanRHI::waitForFences(uint32_t fenceCount, const RHIFence* const* pFences, RHIBool32 waitAll, uint64_t timeout)
     {
         // fence
         int                  fence_size = fenceCount;
@@ -223,113 +221,76 @@ namespace Piccolo
         {
             pProperties->pipelineCacheUUID[i] = vk_physical_device_properties.pipelineCacheUUID[i];
         }
-        pProperties->sparseProperties.residencyStandard2DBlockShape =
-            (VkBool32)vk_physical_device_properties.sparseProperties.residencyStandard2DBlockShape;
+        pProperties->sparseProperties.residencyStandard2DBlockShape = (VkBool32)vk_physical_device_properties.sparseProperties.residencyStandard2DBlockShape;
         pProperties->sparseProperties.residencyStandard2DMultisampleBlockShape =
             (VkBool32)vk_physical_device_properties.sparseProperties.residencyStandard2DMultisampleBlockShape;
-        pProperties->sparseProperties.residencyStandard3DBlockShape =
-            (VkBool32)vk_physical_device_properties.sparseProperties.residencyStandard3DBlockShape;
-        pProperties->sparseProperties.residencyAlignedMipSize =
-            (VkBool32)vk_physical_device_properties.sparseProperties.residencyAlignedMipSize;
-        pProperties->sparseProperties.residencyNonResidentStrict =
-            (VkBool32)vk_physical_device_properties.sparseProperties.residencyNonResidentStrict;
+        pProperties->sparseProperties.residencyStandard3DBlockShape = (VkBool32)vk_physical_device_properties.sparseProperties.residencyStandard3DBlockShape;
+        pProperties->sparseProperties.residencyAlignedMipSize       = (VkBool32)vk_physical_device_properties.sparseProperties.residencyAlignedMipSize;
+        pProperties->sparseProperties.residencyNonResidentStrict    = (VkBool32)vk_physical_device_properties.sparseProperties.residencyNonResidentStrict;
 
-        pProperties->limits.maxImageDimension1D       = vk_physical_device_properties.limits.maxImageDimension1D;
-        pProperties->limits.maxImageDimension2D       = vk_physical_device_properties.limits.maxImageDimension2D;
-        pProperties->limits.maxImageDimension3D       = vk_physical_device_properties.limits.maxImageDimension3D;
-        pProperties->limits.maxImageDimensionCube     = vk_physical_device_properties.limits.maxImageDimensionCube;
-        pProperties->limits.maxImageArrayLayers       = vk_physical_device_properties.limits.maxImageArrayLayers;
-        pProperties->limits.maxTexelBufferElements    = vk_physical_device_properties.limits.maxTexelBufferElements;
-        pProperties->limits.maxUniformBufferRange     = vk_physical_device_properties.limits.maxUniformBufferRange;
-        pProperties->limits.maxStorageBufferRange     = vk_physical_device_properties.limits.maxStorageBufferRange;
-        pProperties->limits.maxPushConstantsSize      = vk_physical_device_properties.limits.maxPushConstantsSize;
-        pProperties->limits.maxMemoryAllocationCount  = vk_physical_device_properties.limits.maxMemoryAllocationCount;
-        pProperties->limits.maxSamplerAllocationCount = vk_physical_device_properties.limits.maxSamplerAllocationCount;
-        pProperties->limits.bufferImageGranularity =
-            (VkDeviceSize)vk_physical_device_properties.limits.bufferImageGranularity;
-        pProperties->limits.sparseAddressSpaceSize =
-            (VkDeviceSize)vk_physical_device_properties.limits.sparseAddressSpaceSize;
-        pProperties->limits.maxBoundDescriptorSets = vk_physical_device_properties.limits.maxBoundDescriptorSets;
-        pProperties->limits.maxPerStageDescriptorSamplers =
-            vk_physical_device_properties.limits.maxPerStageDescriptorSamplers;
-        pProperties->limits.maxPerStageDescriptorUniformBuffers =
-            vk_physical_device_properties.limits.maxPerStageDescriptorUniformBuffers;
-        pProperties->limits.maxPerStageDescriptorStorageBuffers =
-            vk_physical_device_properties.limits.maxPerStageDescriptorStorageBuffers;
-        pProperties->limits.maxPerStageDescriptorSampledImages =
-            vk_physical_device_properties.limits.maxPerStageDescriptorSampledImages;
-        pProperties->limits.maxPerStageDescriptorStorageImages =
-            vk_physical_device_properties.limits.maxPerStageDescriptorStorageImages;
-        pProperties->limits.maxPerStageDescriptorInputAttachments =
-            vk_physical_device_properties.limits.maxPerStageDescriptorInputAttachments;
-        pProperties->limits.maxPerStageResources     = vk_physical_device_properties.limits.maxPerStageResources;
-        pProperties->limits.maxDescriptorSetSamplers = vk_physical_device_properties.limits.maxDescriptorSetSamplers;
-        pProperties->limits.maxDescriptorSetUniformBuffers =
-            vk_physical_device_properties.limits.maxDescriptorSetUniformBuffers;
-        pProperties->limits.maxDescriptorSetUniformBuffersDynamic =
-            vk_physical_device_properties.limits.maxDescriptorSetUniformBuffersDynamic;
-        pProperties->limits.maxDescriptorSetStorageBuffers =
-            vk_physical_device_properties.limits.maxDescriptorSetStorageBuffers;
-        pProperties->limits.maxDescriptorSetStorageBuffersDynamic =
-            vk_physical_device_properties.limits.maxDescriptorSetStorageBuffersDynamic;
-        pProperties->limits.maxDescriptorSetSampledImages =
-            vk_physical_device_properties.limits.maxDescriptorSetSampledImages;
-        pProperties->limits.maxDescriptorSetStorageImages =
-            vk_physical_device_properties.limits.maxDescriptorSetStorageImages;
-        pProperties->limits.maxDescriptorSetInputAttachments =
-            vk_physical_device_properties.limits.maxDescriptorSetInputAttachments;
-        pProperties->limits.maxVertexInputAttributes = vk_physical_device_properties.limits.maxVertexInputAttributes;
-        pProperties->limits.maxVertexInputBindings   = vk_physical_device_properties.limits.maxVertexInputBindings;
-        pProperties->limits.maxVertexInputAttributeOffset =
-            vk_physical_device_properties.limits.maxVertexInputAttributeOffset;
-        pProperties->limits.maxVertexInputBindingStride =
-            vk_physical_device_properties.limits.maxVertexInputBindingStride;
-        pProperties->limits.maxVertexOutputComponents = vk_physical_device_properties.limits.maxVertexOutputComponents;
-        pProperties->limits.maxTessellationGenerationLevel =
-            vk_physical_device_properties.limits.maxTessellationGenerationLevel;
-        pProperties->limits.maxTessellationPatchSize = vk_physical_device_properties.limits.maxTessellationPatchSize;
+        pProperties->limits.maxImageDimension1D                   = vk_physical_device_properties.limits.maxImageDimension1D;
+        pProperties->limits.maxImageDimension2D                   = vk_physical_device_properties.limits.maxImageDimension2D;
+        pProperties->limits.maxImageDimension3D                   = vk_physical_device_properties.limits.maxImageDimension3D;
+        pProperties->limits.maxImageDimensionCube                 = vk_physical_device_properties.limits.maxImageDimensionCube;
+        pProperties->limits.maxImageArrayLayers                   = vk_physical_device_properties.limits.maxImageArrayLayers;
+        pProperties->limits.maxTexelBufferElements                = vk_physical_device_properties.limits.maxTexelBufferElements;
+        pProperties->limits.maxUniformBufferRange                 = vk_physical_device_properties.limits.maxUniformBufferRange;
+        pProperties->limits.maxStorageBufferRange                 = vk_physical_device_properties.limits.maxStorageBufferRange;
+        pProperties->limits.maxPushConstantsSize                  = vk_physical_device_properties.limits.maxPushConstantsSize;
+        pProperties->limits.maxMemoryAllocationCount              = vk_physical_device_properties.limits.maxMemoryAllocationCount;
+        pProperties->limits.maxSamplerAllocationCount             = vk_physical_device_properties.limits.maxSamplerAllocationCount;
+        pProperties->limits.bufferImageGranularity                = (VkDeviceSize)vk_physical_device_properties.limits.bufferImageGranularity;
+        pProperties->limits.sparseAddressSpaceSize                = (VkDeviceSize)vk_physical_device_properties.limits.sparseAddressSpaceSize;
+        pProperties->limits.maxBoundDescriptorSets                = vk_physical_device_properties.limits.maxBoundDescriptorSets;
+        pProperties->limits.maxPerStageDescriptorSamplers         = vk_physical_device_properties.limits.maxPerStageDescriptorSamplers;
+        pProperties->limits.maxPerStageDescriptorUniformBuffers   = vk_physical_device_properties.limits.maxPerStageDescriptorUniformBuffers;
+        pProperties->limits.maxPerStageDescriptorStorageBuffers   = vk_physical_device_properties.limits.maxPerStageDescriptorStorageBuffers;
+        pProperties->limits.maxPerStageDescriptorSampledImages    = vk_physical_device_properties.limits.maxPerStageDescriptorSampledImages;
+        pProperties->limits.maxPerStageDescriptorStorageImages    = vk_physical_device_properties.limits.maxPerStageDescriptorStorageImages;
+        pProperties->limits.maxPerStageDescriptorInputAttachments = vk_physical_device_properties.limits.maxPerStageDescriptorInputAttachments;
+        pProperties->limits.maxPerStageResources                  = vk_physical_device_properties.limits.maxPerStageResources;
+        pProperties->limits.maxDescriptorSetSamplers              = vk_physical_device_properties.limits.maxDescriptorSetSamplers;
+        pProperties->limits.maxDescriptorSetUniformBuffers        = vk_physical_device_properties.limits.maxDescriptorSetUniformBuffers;
+        pProperties->limits.maxDescriptorSetUniformBuffersDynamic = vk_physical_device_properties.limits.maxDescriptorSetUniformBuffersDynamic;
+        pProperties->limits.maxDescriptorSetStorageBuffers        = vk_physical_device_properties.limits.maxDescriptorSetStorageBuffers;
+        pProperties->limits.maxDescriptorSetStorageBuffersDynamic = vk_physical_device_properties.limits.maxDescriptorSetStorageBuffersDynamic;
+        pProperties->limits.maxDescriptorSetSampledImages         = vk_physical_device_properties.limits.maxDescriptorSetSampledImages;
+        pProperties->limits.maxDescriptorSetStorageImages         = vk_physical_device_properties.limits.maxDescriptorSetStorageImages;
+        pProperties->limits.maxDescriptorSetInputAttachments      = vk_physical_device_properties.limits.maxDescriptorSetInputAttachments;
+        pProperties->limits.maxVertexInputAttributes              = vk_physical_device_properties.limits.maxVertexInputAttributes;
+        pProperties->limits.maxVertexInputBindings                = vk_physical_device_properties.limits.maxVertexInputBindings;
+        pProperties->limits.maxVertexInputAttributeOffset         = vk_physical_device_properties.limits.maxVertexInputAttributeOffset;
+        pProperties->limits.maxVertexInputBindingStride           = vk_physical_device_properties.limits.maxVertexInputBindingStride;
+        pProperties->limits.maxVertexOutputComponents             = vk_physical_device_properties.limits.maxVertexOutputComponents;
+        pProperties->limits.maxTessellationGenerationLevel        = vk_physical_device_properties.limits.maxTessellationGenerationLevel;
+        pProperties->limits.maxTessellationPatchSize              = vk_physical_device_properties.limits.maxTessellationPatchSize;
         pProperties->limits.maxTessellationControlPerVertexInputComponents =
             vk_physical_device_properties.limits.maxTessellationControlPerVertexInputComponents;
         pProperties->limits.maxTessellationControlPerVertexOutputComponents =
             vk_physical_device_properties.limits.maxTessellationControlPerVertexOutputComponents;
         pProperties->limits.maxTessellationControlPerPatchOutputComponents =
             vk_physical_device_properties.limits.maxTessellationControlPerPatchOutputComponents;
-        pProperties->limits.maxTessellationControlTotalOutputComponents =
-            vk_physical_device_properties.limits.maxTessellationControlTotalOutputComponents;
-        pProperties->limits.maxTessellationEvaluationInputComponents =
-            vk_physical_device_properties.limits.maxTessellationEvaluationInputComponents;
-        pProperties->limits.maxTessellationEvaluationOutputComponents =
-            vk_physical_device_properties.limits.maxTessellationEvaluationOutputComponents;
-        pProperties->limits.maxGeometryShaderInvocations =
-            vk_physical_device_properties.limits.maxGeometryShaderInvocations;
-        pProperties->limits.maxGeometryInputComponents =
-            vk_physical_device_properties.limits.maxGeometryInputComponents;
-        pProperties->limits.maxGeometryOutputComponents =
-            vk_physical_device_properties.limits.maxGeometryOutputComponents;
-        pProperties->limits.maxGeometryOutputVertices = vk_physical_device_properties.limits.maxGeometryOutputVertices;
-        pProperties->limits.maxGeometryTotalOutputComponents =
-            vk_physical_device_properties.limits.maxGeometryTotalOutputComponents;
-        pProperties->limits.maxFragmentInputComponents =
-            vk_physical_device_properties.limits.maxFragmentInputComponents;
-        pProperties->limits.maxFragmentOutputAttachments =
-            vk_physical_device_properties.limits.maxFragmentOutputAttachments;
-        pProperties->limits.maxFragmentDualSrcAttachments =
-            vk_physical_device_properties.limits.maxFragmentDualSrcAttachments;
-        pProperties->limits.maxFragmentCombinedOutputResources =
-            vk_physical_device_properties.limits.maxFragmentCombinedOutputResources;
-        pProperties->limits.maxComputeSharedMemorySize =
-            vk_physical_device_properties.limits.maxComputeSharedMemorySize;
+        pProperties->limits.maxTessellationControlTotalOutputComponents = vk_physical_device_properties.limits.maxTessellationControlTotalOutputComponents;
+        pProperties->limits.maxTessellationEvaluationInputComponents    = vk_physical_device_properties.limits.maxTessellationEvaluationInputComponents;
+        pProperties->limits.maxTessellationEvaluationOutputComponents   = vk_physical_device_properties.limits.maxTessellationEvaluationOutputComponents;
+        pProperties->limits.maxGeometryShaderInvocations                = vk_physical_device_properties.limits.maxGeometryShaderInvocations;
+        pProperties->limits.maxGeometryInputComponents                  = vk_physical_device_properties.limits.maxGeometryInputComponents;
+        pProperties->limits.maxGeometryOutputComponents                 = vk_physical_device_properties.limits.maxGeometryOutputComponents;
+        pProperties->limits.maxGeometryOutputVertices                   = vk_physical_device_properties.limits.maxGeometryOutputVertices;
+        pProperties->limits.maxGeometryTotalOutputComponents            = vk_physical_device_properties.limits.maxGeometryTotalOutputComponents;
+        pProperties->limits.maxFragmentInputComponents                  = vk_physical_device_properties.limits.maxFragmentInputComponents;
+        pProperties->limits.maxFragmentOutputAttachments                = vk_physical_device_properties.limits.maxFragmentOutputAttachments;
+        pProperties->limits.maxFragmentDualSrcAttachments               = vk_physical_device_properties.limits.maxFragmentDualSrcAttachments;
+        pProperties->limits.maxFragmentCombinedOutputResources          = vk_physical_device_properties.limits.maxFragmentCombinedOutputResources;
+        pProperties->limits.maxComputeSharedMemorySize                  = vk_physical_device_properties.limits.maxComputeSharedMemorySize;
         for (uint32_t i = 0; i < 3; i++)
         {
-            pProperties->limits.maxComputeWorkGroupCount[i] =
-                vk_physical_device_properties.limits.maxComputeWorkGroupCount[i];
+            pProperties->limits.maxComputeWorkGroupCount[i] = vk_physical_device_properties.limits.maxComputeWorkGroupCount[i];
         }
-        pProperties->limits.maxComputeWorkGroupInvocations =
-            vk_physical_device_properties.limits.maxComputeWorkGroupInvocations;
+        pProperties->limits.maxComputeWorkGroupInvocations = vk_physical_device_properties.limits.maxComputeWorkGroupInvocations;
         for (uint32_t i = 0; i < 3; i++)
         {
-            pProperties->limits.maxComputeWorkGroupSize[i] =
-                vk_physical_device_properties.limits.maxComputeWorkGroupSize[i];
+            pProperties->limits.maxComputeWorkGroupSize[i] = vk_physical_device_properties.limits.maxComputeWorkGroupSize[i];
         }
         pProperties->limits.subPixelPrecisionBits    = vk_physical_device_properties.limits.subPixelPrecisionBits;
         pProperties->limits.subTexelPrecisionBits    = vk_physical_device_properties.limits.subTexelPrecisionBits;
@@ -341,60 +302,45 @@ namespace Piccolo
         pProperties->limits.maxViewports             = vk_physical_device_properties.limits.maxViewports;
         for (uint32_t i = 0; i < 2; i++)
         {
-            pProperties->limits.maxViewportDimensions[i] =
-                vk_physical_device_properties.limits.maxViewportDimensions[i];
+            pProperties->limits.maxViewportDimensions[i] = vk_physical_device_properties.limits.maxViewportDimensions[i];
         }
         for (uint32_t i = 0; i < 2; i++)
         {
             pProperties->limits.viewportBoundsRange[i] = vk_physical_device_properties.limits.viewportBoundsRange[i];
         }
-        pProperties->limits.viewportSubPixelBits  = vk_physical_device_properties.limits.viewportSubPixelBits;
-        pProperties->limits.minMemoryMapAlignment = vk_physical_device_properties.limits.minMemoryMapAlignment;
-        pProperties->limits.minTexelBufferOffsetAlignment =
-            (VkDeviceSize)vk_physical_device_properties.limits.minTexelBufferOffsetAlignment;
-        pProperties->limits.minUniformBufferOffsetAlignment =
-            (VkDeviceSize)vk_physical_device_properties.limits.minUniformBufferOffsetAlignment;
-        pProperties->limits.minStorageBufferOffsetAlignment =
-            (VkDeviceSize)vk_physical_device_properties.limits.minStorageBufferOffsetAlignment;
-        pProperties->limits.minTexelOffset         = vk_physical_device_properties.limits.minTexelOffset;
-        pProperties->limits.maxTexelOffset         = vk_physical_device_properties.limits.maxTexelOffset;
-        pProperties->limits.minTexelGatherOffset   = vk_physical_device_properties.limits.minTexelGatherOffset;
-        pProperties->limits.maxTexelGatherOffset   = vk_physical_device_properties.limits.maxTexelGatherOffset;
-        pProperties->limits.minInterpolationOffset = vk_physical_device_properties.limits.minInterpolationOffset;
-        pProperties->limits.maxInterpolationOffset = vk_physical_device_properties.limits.maxInterpolationOffset;
-        pProperties->limits.subPixelInterpolationOffsetBits =
-            vk_physical_device_properties.limits.subPixelInterpolationOffsetBits;
-        pProperties->limits.maxFramebufferWidth  = vk_physical_device_properties.limits.maxFramebufferWidth;
-        pProperties->limits.maxFramebufferHeight = vk_physical_device_properties.limits.maxFramebufferHeight;
-        pProperties->limits.maxFramebufferLayers = vk_physical_device_properties.limits.maxFramebufferLayers;
-        pProperties->limits.framebufferColorSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferColorSampleCounts;
-        pProperties->limits.framebufferDepthSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferDepthSampleCounts;
-        pProperties->limits.framebufferStencilSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferStencilSampleCounts;
+        pProperties->limits.viewportSubPixelBits            = vk_physical_device_properties.limits.viewportSubPixelBits;
+        pProperties->limits.minMemoryMapAlignment           = vk_physical_device_properties.limits.minMemoryMapAlignment;
+        pProperties->limits.minTexelBufferOffsetAlignment   = (VkDeviceSize)vk_physical_device_properties.limits.minTexelBufferOffsetAlignment;
+        pProperties->limits.minUniformBufferOffsetAlignment = (VkDeviceSize)vk_physical_device_properties.limits.minUniformBufferOffsetAlignment;
+        pProperties->limits.minStorageBufferOffsetAlignment = (VkDeviceSize)vk_physical_device_properties.limits.minStorageBufferOffsetAlignment;
+        pProperties->limits.minTexelOffset                  = vk_physical_device_properties.limits.minTexelOffset;
+        pProperties->limits.maxTexelOffset                  = vk_physical_device_properties.limits.maxTexelOffset;
+        pProperties->limits.minTexelGatherOffset            = vk_physical_device_properties.limits.minTexelGatherOffset;
+        pProperties->limits.maxTexelGatherOffset            = vk_physical_device_properties.limits.maxTexelGatherOffset;
+        pProperties->limits.minInterpolationOffset          = vk_physical_device_properties.limits.minInterpolationOffset;
+        pProperties->limits.maxInterpolationOffset          = vk_physical_device_properties.limits.maxInterpolationOffset;
+        pProperties->limits.subPixelInterpolationOffsetBits = vk_physical_device_properties.limits.subPixelInterpolationOffsetBits;
+        pProperties->limits.maxFramebufferWidth             = vk_physical_device_properties.limits.maxFramebufferWidth;
+        pProperties->limits.maxFramebufferHeight            = vk_physical_device_properties.limits.maxFramebufferHeight;
+        pProperties->limits.maxFramebufferLayers            = vk_physical_device_properties.limits.maxFramebufferLayers;
+        pProperties->limits.framebufferColorSampleCounts    = (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferColorSampleCounts;
+        pProperties->limits.framebufferDepthSampleCounts    = (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferDepthSampleCounts;
+        pProperties->limits.framebufferStencilSampleCounts  = (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferStencilSampleCounts;
         pProperties->limits.framebufferNoAttachmentsSampleCounts =
             (VkSampleCountFlags)vk_physical_device_properties.limits.framebufferNoAttachmentsSampleCounts;
-        pProperties->limits.maxColorAttachments = vk_physical_device_properties.limits.maxColorAttachments;
-        pProperties->limits.sampledImageColorSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageColorSampleCounts;
-        pProperties->limits.sampledImageIntegerSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageIntegerSampleCounts;
-        pProperties->limits.sampledImageDepthSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageDepthSampleCounts;
-        pProperties->limits.sampledImageStencilSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageStencilSampleCounts;
-        pProperties->limits.storageImageSampleCounts =
-            (VkSampleCountFlags)vk_physical_device_properties.limits.storageImageSampleCounts;
-        pProperties->limits.maxSampleMaskWords = vk_physical_device_properties.limits.maxSampleMaskWords;
-        pProperties->limits.timestampComputeAndGraphics =
-            (VkBool32)vk_physical_device_properties.limits.timestampComputeAndGraphics;
-        pProperties->limits.timestampPeriod  = vk_physical_device_properties.limits.timestampPeriod;
-        pProperties->limits.maxClipDistances = vk_physical_device_properties.limits.maxClipDistances;
-        pProperties->limits.maxCullDistances = vk_physical_device_properties.limits.maxCullDistances;
-        pProperties->limits.maxCombinedClipAndCullDistances =
-            vk_physical_device_properties.limits.maxCombinedClipAndCullDistances;
-        pProperties->limits.discreteQueuePriorities = vk_physical_device_properties.limits.discreteQueuePriorities;
+        pProperties->limits.maxColorAttachments             = vk_physical_device_properties.limits.maxColorAttachments;
+        pProperties->limits.sampledImageColorSampleCounts   = (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageColorSampleCounts;
+        pProperties->limits.sampledImageIntegerSampleCounts = (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageIntegerSampleCounts;
+        pProperties->limits.sampledImageDepthSampleCounts   = (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageDepthSampleCounts;
+        pProperties->limits.sampledImageStencilSampleCounts = (VkSampleCountFlags)vk_physical_device_properties.limits.sampledImageStencilSampleCounts;
+        pProperties->limits.storageImageSampleCounts        = (VkSampleCountFlags)vk_physical_device_properties.limits.storageImageSampleCounts;
+        pProperties->limits.maxSampleMaskWords              = vk_physical_device_properties.limits.maxSampleMaskWords;
+        pProperties->limits.timestampComputeAndGraphics     = (VkBool32)vk_physical_device_properties.limits.timestampComputeAndGraphics;
+        pProperties->limits.timestampPeriod                 = vk_physical_device_properties.limits.timestampPeriod;
+        pProperties->limits.maxClipDistances                = vk_physical_device_properties.limits.maxClipDistances;
+        pProperties->limits.maxCullDistances                = vk_physical_device_properties.limits.maxCullDistances;
+        pProperties->limits.maxCombinedClipAndCullDistances = vk_physical_device_properties.limits.maxCombinedClipAndCullDistances;
+        pProperties->limits.discreteQueuePriorities         = vk_physical_device_properties.limits.discreteQueuePriorities;
         for (uint32_t i = 0; i < 2; i++)
         {
             pProperties->limits.pointSizeRange[i] = vk_physical_device_properties.limits.pointSizeRange[i];
@@ -403,17 +349,13 @@ namespace Piccolo
         {
             pProperties->limits.lineWidthRange[i] = vk_physical_device_properties.limits.lineWidthRange[i];
         }
-        pProperties->limits.pointSizeGranularity = vk_physical_device_properties.limits.pointSizeGranularity;
-        pProperties->limits.lineWidthGranularity = vk_physical_device_properties.limits.lineWidthGranularity;
-        pProperties->limits.strictLines          = (VkBool32)vk_physical_device_properties.limits.strictLines;
-        pProperties->limits.standardSampleLocations =
-            (VkBool32)vk_physical_device_properties.limits.standardSampleLocations;
-        pProperties->limits.optimalBufferCopyOffsetAlignment =
-            (VkDeviceSize)vk_physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
-        pProperties->limits.optimalBufferCopyRowPitchAlignment =
-            (VkDeviceSize)vk_physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
-        pProperties->limits.nonCoherentAtomSize =
-            (VkDeviceSize)vk_physical_device_properties.limits.nonCoherentAtomSize;
+        pProperties->limits.pointSizeGranularity               = vk_physical_device_properties.limits.pointSizeGranularity;
+        pProperties->limits.lineWidthGranularity               = vk_physical_device_properties.limits.lineWidthGranularity;
+        pProperties->limits.strictLines                        = (VkBool32)vk_physical_device_properties.limits.strictLines;
+        pProperties->limits.standardSampleLocations            = (VkBool32)vk_physical_device_properties.limits.standardSampleLocations;
+        pProperties->limits.optimalBufferCopyOffsetAlignment   = (VkDeviceSize)vk_physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
+        pProperties->limits.optimalBufferCopyRowPitchAlignment = (VkDeviceSize)vk_physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
+        pProperties->limits.nonCoherentAtomSize                = (VkDeviceSize)vk_physical_device_properties.limits.nonCoherentAtomSize;
     }
 
     void VulkanRHI::resetCommandPool()
@@ -427,13 +369,12 @@ namespace Piccolo
 
     bool VulkanRHI::prepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)
     {
-        VkResult acquire_image_result =
-            vkAcquireNextImageKHR(m_device,
-                                  m_swapchain,
-                                  UINT64_MAX,
-                                  m_image_available_for_render_semaphores[m_current_frame_index],
-                                  VK_NULL_HANDLE,
-                                  &m_current_swapchain_image_index);
+        VkResult acquire_image_result = vkAcquireNextImageKHR(m_device,
+                                                              m_swapchain,
+                                                              UINT64_MAX,
+                                                              m_image_available_for_render_semaphores[m_current_frame_index],
+                                                              VK_NULL_HANDLE,
+                                                              &m_current_swapchain_image_index);
 
         if (VK_ERROR_OUT_OF_DATE_KHR == acquire_image_result)
         {
@@ -458,18 +399,15 @@ namespace Piccolo
             submit_info.signalSemaphoreCount   = 0;
             submit_info.pSignalSemaphores      = NULL;
 
-            VkResult res_reset_fences =
-                _vkResetFences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
+            VkResult res_reset_fences = _vkResetFences(m_device, 1, &m_is_frame_in_flight_fences[m_current_frame_index]);
             if (VK_SUCCESS != res_reset_fences)
             {
                 LOG_ERROR("_vkResetFences failed!");
                 return false;
             }
 
-            VkResult res_queue_submit = vkQueueSubmit(((VulkanQueue*)m_graphics_queue)->getResource(),
-                                                      1,
-                                                      &submit_info,
-                                                      m_is_frame_in_flight_fences[m_current_frame_index]);
+            VkResult res_queue_submit =
+                vkQueueSubmit(((VulkanQueue*)m_graphics_queue)->getResource(), 1, &submit_info, m_is_frame_in_flight_fences[m_current_frame_index]);
             if (VK_SUCCESS != res_queue_submit)
             {
                 LOG_ERROR("vkQueueSubmit failed!");
@@ -493,8 +431,7 @@ namespace Piccolo
         command_buffer_begin_info.flags            = 0;
         command_buffer_begin_info.pInheritanceInfo = nullptr;
 
-        VkResult res_begin_command_buffer =
-            _vkBeginCommandBuffer(m_vk_command_buffers[m_current_frame_index], &command_buffer_begin_info);
+        VkResult res_begin_command_buffer = _vkBeginCommandBuffer(m_vk_command_buffers[m_current_frame_index], &command_buffer_begin_info);
 
         if (VK_SUCCESS != res_begin_command_buffer)
         {
@@ -514,9 +451,8 @@ namespace Piccolo
             return;
         }
 
-        VkSemaphore semaphores[2] = {
-            ((VulkanSemaphore*)m_image_available_for_texturescopy_semaphores[m_current_frame_index])->getResource(),
-            m_image_finished_for_presentation_semaphores[m_current_frame_index]};
+        VkSemaphore semaphores[2] = {((VulkanSemaphore*)m_image_available_for_texturescopy_semaphores[m_current_frame_index])->getResource(),
+                                     m_image_finished_for_presentation_semaphores[m_current_frame_index]};
 
         // submit command buffer
         VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -537,10 +473,8 @@ namespace Piccolo
             LOG_ERROR("_vkResetFences failed!");
             return;
         }
-        VkResult res_queue_submit = vkQueueSubmit(((VulkanQueue*)m_graphics_queue)->getResource(),
-                                                  1,
-                                                  &submit_info,
-                                                  m_is_frame_in_flight_fences[m_current_frame_index]);
+        VkResult res_queue_submit =
+            vkQueueSubmit(((VulkanQueue*)m_graphics_queue)->getResource(), 1, &submit_info, m_is_frame_in_flight_fences[m_current_frame_index]);
 
         if (VK_SUCCESS != res_queue_submit)
         {
@@ -677,12 +611,10 @@ namespace Piccolo
 
     void VulkanRHI::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
-        createInfo       = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity =
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType =
-            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo                 = {};
+        createInfo.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         createInfo.pfnUserCallback = debugCallback;
     }
 
@@ -756,10 +688,8 @@ namespace Piccolo
 
         if (m_enable_debug_utils_label)
         {
-            _vkCmdBeginDebugUtilsLabelEXT =
-                (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdBeginDebugUtilsLabelEXT");
-            _vkCmdEndDebugUtilsLabelEXT =
-                (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdEndDebugUtilsLabelEXT");
+            _vkCmdBeginDebugUtilsLabelEXT = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdBeginDebugUtilsLabelEXT");
+            _vkCmdEndDebugUtilsLabelEXT   = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_instance, "vkCmdEndDebugUtilsLabelEXT");
         }
     }
 
@@ -807,9 +737,7 @@ namespace Piccolo
 
             std::sort(ranked_physical_devices.begin(),
                       ranked_physical_devices.end(),
-                      [](const std::pair<int, VkPhysicalDevice>& p1, const std::pair<int, VkPhysicalDevice>& p2) {
-                          return p1 > p2;
-                      });
+                      [](const std::pair<int, VkPhysicalDevice>& p1, const std::pair<int, VkPhysicalDevice>& p2) { return p1 > p2; });
 
             for (const auto& device : ranked_physical_devices)
             {
@@ -834,9 +762,8 @@ namespace Piccolo
         m_queue_indices = findQueueFamilies(m_physical_device);
 
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos; // all queues that need to be created
-        std::set<uint32_t>                   queue_families = {m_queue_indices.graphics_family.value(),
-                                                               m_queue_indices.present_family.value(),
-                                                               m_queue_indices.compute_family.value()};
+        std::set<uint32_t>                   queue_families = {
+            m_queue_indices.graphics_family.value(), m_queue_indices.present_family.value(), m_queue_indices.compute_family.value()};
 
         float queue_priority = 1.0f;
         for (uint32_t queue_family : queue_families) // for every queue family
@@ -896,23 +823,22 @@ namespace Piccolo
         ((VulkanQueue*)m_compute_queue)->setResource(vk_compute_queue);
 
         // more efficient pointer
-        _vkResetCommandPool     = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
-        _vkBeginCommandBuffer   = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
-        _vkEndCommandBuffer     = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
-        _vkCmdBeginRenderPass   = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
-        _vkCmdNextSubpass       = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
-        _vkCmdEndRenderPass     = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
-        _vkCmdBindPipeline      = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
-        _vkCmdSetViewport       = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
-        _vkCmdSetScissor        = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
-        _vkWaitForFences        = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
-        _vkResetFences          = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
-        _vkCmdDrawIndexed       = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
-        _vkCmdBindVertexBuffers = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
-        _vkCmdBindIndexBuffer   = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
-        _vkCmdBindDescriptorSets =
-            (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
-        _vkCmdClearAttachments = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
+        _vkResetCommandPool      = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
+        _vkBeginCommandBuffer    = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
+        _vkEndCommandBuffer      = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
+        _vkCmdBeginRenderPass    = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
+        _vkCmdNextSubpass        = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
+        _vkCmdEndRenderPass      = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
+        _vkCmdBindPipeline       = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
+        _vkCmdSetViewport        = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
+        _vkCmdSetScissor         = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
+        _vkWaitForFences         = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
+        _vkResetFences           = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
+        _vkCmdDrawIndexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
+        _vkCmdBindVertexBuffers  = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
+        _vkCmdBindIndexBuffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
+        _vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
+        _vkCmdClearAttachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
 
         m_depth_image_format = (RHIFormat)findDepthFormat();
     }
@@ -947,8 +873,7 @@ namespace Piccolo
 
             for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
             {
-                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_vk_command_pools[i]) !=
-                    VK_SUCCESS)
+                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_vk_command_pools[i]) != VK_SUCCESS)
                 {
                     LOG_ERROR("vk create command pool");
                 }
@@ -980,8 +905,7 @@ namespace Piccolo
         }
     }
 
-    bool VulkanRHI::createDescriptorPool(const RHIDescriptorPoolCreateInfo* pCreateInfo,
-                                         RHIDescriptorPool*&                pDescriptorPool)
+    bool VulkanRHI::createDescriptorPool(const RHIDescriptorPoolCreateInfo* pCreateInfo, RHIDescriptorPool*& pDescriptorPool)
     {
         int                               size = pCreateInfo->poolSizeCount;
         std::vector<VkDescriptorPoolSize> descriptor_pool_size(size);
@@ -1018,13 +942,11 @@ namespace Piccolo
         }
     }
 
-    bool VulkanRHI::createDescriptorSetLayout(const RHIDescriptorSetLayoutCreateInfo* pCreateInfo,
-                                              RHIDescriptorSetLayout*&                pSetLayout)
+    bool VulkanRHI::createDescriptorSetLayout(const RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout*& pSetLayout)
     {
         // descriptor_set_layout_binding
         int                                       descriptor_set_layout_binding_size = pCreateInfo->bindingCount;
-        std::vector<VkDescriptorSetLayoutBinding> vk_descriptor_set_layout_binding_list(
-            descriptor_set_layout_binding_size);
+        std::vector<VkDescriptorSetLayoutBinding> vk_descriptor_set_layout_binding_list(descriptor_set_layout_binding_size);
 
         int sampler_count = 0;
         for (int i = 0; i < descriptor_set_layout_binding_size; ++i)
@@ -1058,12 +980,10 @@ namespace Piccolo
                     sampler_current++;
                 };
             }
-            vk_descriptor_set_layout_binding_element.binding = rhi_descriptor_set_layout_binding_element.binding;
-            vk_descriptor_set_layout_binding_element.descriptorType =
-                (VkDescriptorType)rhi_descriptor_set_layout_binding_element.descriptorType;
-            vk_descriptor_set_layout_binding_element.descriptorCount =
-                rhi_descriptor_set_layout_binding_element.descriptorCount;
-            vk_descriptor_set_layout_binding_element.stageFlags = rhi_descriptor_set_layout_binding_element.stageFlags;
+            vk_descriptor_set_layout_binding_element.binding         = rhi_descriptor_set_layout_binding_element.binding;
+            vk_descriptor_set_layout_binding_element.descriptorType  = (VkDescriptorType)rhi_descriptor_set_layout_binding_element.descriptorType;
+            vk_descriptor_set_layout_binding_element.descriptorCount = rhi_descriptor_set_layout_binding_element.descriptorCount;
+            vk_descriptor_set_layout_binding_element.stageFlags      = rhi_descriptor_set_layout_binding_element.stageFlags;
         };
 
         if (sampler_count != sampler_current)
@@ -1081,7 +1001,7 @@ namespace Piccolo
 
         pSetLayout = new VulkanDescriptorSetLayout();
         VkDescriptorSetLayout vk_descriptorSetLayout;
-        VkResult result = vkCreateDescriptorSetLayout(m_device, &create_info, nullptr, &vk_descriptorSetLayout);
+        VkResult              result = vkCreateDescriptorSetLayout(m_device, &create_info, nullptr, &vk_descriptorSetLayout);
         ((VulkanDescriptorSetLayout*)pSetLayout)->setResource(vk_descriptorSetLayout);
 
         if (result == VK_SUCCESS)
@@ -1165,8 +1085,7 @@ namespace Piccolo
     {
         // pipeline_shader_stage_create_info
         int                                          pipeline_shader_stage_create_info_size = pCreateInfo->stageCount;
-        std::vector<VkPipelineShaderStageCreateInfo> vk_pipeline_shader_stage_create_info_list(
-            pipeline_shader_stage_create_info_size);
+        std::vector<VkPipelineShaderStageCreateInfo> vk_pipeline_shader_stage_create_info_list(pipeline_shader_stage_create_info_size);
 
         int specialization_map_entry_size_total = 0;
         int specialization_info_total           = 0;
@@ -1176,8 +1095,7 @@ namespace Piccolo
             if (rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo != nullptr)
             {
                 specialization_info_total++;
-                specialization_map_entry_size_total +=
-                    rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount;
+                specialization_map_entry_size_total += rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount;
             }
         }
         std::vector<VkSpecializationInfo>     vk_specialization_info_list(specialization_info_total);
@@ -1192,27 +1110,19 @@ namespace Piccolo
 
             if (rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo != nullptr)
             {
-                vk_pipeline_shader_stage_create_info_element.pSpecializationInfo =
-                    &vk_specialization_info_list[specialization_info_current];
+                vk_pipeline_shader_stage_create_info_element.pSpecializationInfo = &vk_specialization_info_list[specialization_info_current];
 
                 VkSpecializationInfo vk_specialization_info {};
-                vk_specialization_info.mapEntryCount =
-                    rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount;
-                vk_specialization_info.pMapEntries =
-                    &vk_specialization_map_entry_list[specialization_map_entry_current];
-                vk_specialization_info.dataSize =
-                    rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->dataSize;
-                vk_specialization_info.pData =
-                    (const void*)rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->pData;
+                vk_specialization_info.mapEntryCount = rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount;
+                vk_specialization_info.pMapEntries   = &vk_specialization_map_entry_list[specialization_map_entry_current];
+                vk_specialization_info.dataSize      = rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->dataSize;
+                vk_specialization_info.pData         = (const void*)rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->pData;
 
                 // specialization_map_entry
-                for (int i = 0; i < rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount;
-                     ++i)
+                for (int i = 0; i < rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->mapEntryCount; ++i)
                 {
-                    const auto& rhi_specialization_map_entry_element =
-                        rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->pMapEntries[i];
-                    auto& vk_specialization_map_entry_element =
-                        vk_specialization_map_entry_list[specialization_map_entry_current];
+                    const auto& rhi_specialization_map_entry_element = rhi_pipeline_shader_stage_create_info_element.pSpecializationInfo->pMapEntries[i];
+                    auto&       vk_specialization_map_entry_element  = vk_specialization_map_entry_list[specialization_map_entry_current];
 
                     vk_specialization_map_entry_element.constantID = rhi_specialization_map_entry_element->constantID;
                     vk_specialization_map_entry_element.offset     = rhi_specialization_map_entry_element->offset;
@@ -1227,21 +1137,15 @@ namespace Piccolo
             {
                 vk_pipeline_shader_stage_create_info_element.pSpecializationInfo = nullptr;
             }
-            vk_pipeline_shader_stage_create_info_element.sType =
-                (VkStructureType)rhi_pipeline_shader_stage_create_info_element.sType;
-            vk_pipeline_shader_stage_create_info_element.pNext =
-                (const void*)rhi_pipeline_shader_stage_create_info_element.pNext;
-            vk_pipeline_shader_stage_create_info_element.flags =
-                (VkPipelineShaderStageCreateFlags)rhi_pipeline_shader_stage_create_info_element.flags;
-            vk_pipeline_shader_stage_create_info_element.stage =
-                (VkShaderStageFlagBits)rhi_pipeline_shader_stage_create_info_element.stage;
-            vk_pipeline_shader_stage_create_info_element.module =
-                ((VulkanShader*)rhi_pipeline_shader_stage_create_info_element.module)->getResource();
-            vk_pipeline_shader_stage_create_info_element.pName = rhi_pipeline_shader_stage_create_info_element.pName;
+            vk_pipeline_shader_stage_create_info_element.sType  = (VkStructureType)rhi_pipeline_shader_stage_create_info_element.sType;
+            vk_pipeline_shader_stage_create_info_element.pNext  = (const void*)rhi_pipeline_shader_stage_create_info_element.pNext;
+            vk_pipeline_shader_stage_create_info_element.flags  = (VkPipelineShaderStageCreateFlags)rhi_pipeline_shader_stage_create_info_element.flags;
+            vk_pipeline_shader_stage_create_info_element.stage  = (VkShaderStageFlagBits)rhi_pipeline_shader_stage_create_info_element.stage;
+            vk_pipeline_shader_stage_create_info_element.module = ((VulkanShader*)rhi_pipeline_shader_stage_create_info_element.module)->getResource();
+            vk_pipeline_shader_stage_create_info_element.pName  = rhi_pipeline_shader_stage_create_info_element.pName;
         };
 
-        if (!((specialization_map_entry_size_total == specialization_map_entry_current) &&
-              (specialization_info_total == specialization_info_current)))
+        if (!((specialization_map_entry_size_total == specialization_map_entry_current) && (specialization_info_total == specialization_info_current)))
         {
             LOG_ERROR("(specialization_map_entry_size_total == specialization_map_entry_current)&& "
                       "(specialization_info_total == specialization_info_current)");
@@ -1249,75 +1153,56 @@ namespace Piccolo
         }
 
         // vertex_input_binding_description
-        int vertex_input_binding_description_size = pCreateInfo->pVertexInputState->vertexBindingDescriptionCount;
-        std::vector<VkVertexInputBindingDescription> vk_vertex_input_binding_description_list(
-            vertex_input_binding_description_size);
+        int                                          vertex_input_binding_description_size = pCreateInfo->pVertexInputState->vertexBindingDescriptionCount;
+        std::vector<VkVertexInputBindingDescription> vk_vertex_input_binding_description_list(vertex_input_binding_description_size);
         for (int i = 0; i < vertex_input_binding_description_size; ++i)
         {
-            const auto& rhi_vertex_input_binding_description_element =
-                pCreateInfo->pVertexInputState->pVertexBindingDescriptions[i];
-            auto& vk_vertex_input_binding_description_element = vk_vertex_input_binding_description_list[i];
+            const auto& rhi_vertex_input_binding_description_element = pCreateInfo->pVertexInputState->pVertexBindingDescriptions[i];
+            auto&       vk_vertex_input_binding_description_element  = vk_vertex_input_binding_description_list[i];
 
-            vk_vertex_input_binding_description_element.binding = rhi_vertex_input_binding_description_element.binding;
-            vk_vertex_input_binding_description_element.stride  = rhi_vertex_input_binding_description_element.stride;
-            vk_vertex_input_binding_description_element.inputRate =
-                (VkVertexInputRate)rhi_vertex_input_binding_description_element.inputRate;
+            vk_vertex_input_binding_description_element.binding   = rhi_vertex_input_binding_description_element.binding;
+            vk_vertex_input_binding_description_element.stride    = rhi_vertex_input_binding_description_element.stride;
+            vk_vertex_input_binding_description_element.inputRate = (VkVertexInputRate)rhi_vertex_input_binding_description_element.inputRate;
         };
 
         // vertex_input_attribute_description
         int vertex_input_attribute_description_size = pCreateInfo->pVertexInputState->vertexAttributeDescriptionCount;
-        std::vector<VkVertexInputAttributeDescription> vk_vertex_input_attribute_description_list(
-            vertex_input_attribute_description_size);
+        std::vector<VkVertexInputAttributeDescription> vk_vertex_input_attribute_description_list(vertex_input_attribute_description_size);
         for (int i = 0; i < vertex_input_attribute_description_size; ++i)
         {
-            const auto& rhi_vertex_input_attribute_description_element =
-                pCreateInfo->pVertexInputState->pVertexAttributeDescriptions[i];
-            auto& vk_vertex_input_attribute_description_element = vk_vertex_input_attribute_description_list[i];
+            const auto& rhi_vertex_input_attribute_description_element = pCreateInfo->pVertexInputState->pVertexAttributeDescriptions[i];
+            auto&       vk_vertex_input_attribute_description_element  = vk_vertex_input_attribute_description_list[i];
 
-            vk_vertex_input_attribute_description_element.location =
-                rhi_vertex_input_attribute_description_element.location;
-            vk_vertex_input_attribute_description_element.binding =
-                rhi_vertex_input_attribute_description_element.binding;
-            vk_vertex_input_attribute_description_element.format =
-                (VkFormat)rhi_vertex_input_attribute_description_element.format;
-            vk_vertex_input_attribute_description_element.offset =
-                rhi_vertex_input_attribute_description_element.offset;
+            vk_vertex_input_attribute_description_element.location = rhi_vertex_input_attribute_description_element.location;
+            vk_vertex_input_attribute_description_element.binding  = rhi_vertex_input_attribute_description_element.binding;
+            vk_vertex_input_attribute_description_element.format   = (VkFormat)rhi_vertex_input_attribute_description_element.format;
+            vk_vertex_input_attribute_description_element.offset   = rhi_vertex_input_attribute_description_element.offset;
         };
 
         VkPipelineVertexInputStateCreateInfo vk_pipeline_vertex_input_state_create_info {};
-        vk_pipeline_vertex_input_state_create_info.sType = (VkStructureType)pCreateInfo->pVertexInputState->sType;
-        vk_pipeline_vertex_input_state_create_info.pNext = (const void*)pCreateInfo->pVertexInputState->pNext;
-        vk_pipeline_vertex_input_state_create_info.flags =
-            (VkPipelineVertexInputStateCreateFlags)pCreateInfo->pVertexInputState->flags;
-        vk_pipeline_vertex_input_state_create_info.vertexBindingDescriptionCount =
-            pCreateInfo->pVertexInputState->vertexBindingDescriptionCount;
-        vk_pipeline_vertex_input_state_create_info.pVertexBindingDescriptions =
-            vk_vertex_input_binding_description_list.data();
-        vk_pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount =
-            pCreateInfo->pVertexInputState->vertexAttributeDescriptionCount;
-        vk_pipeline_vertex_input_state_create_info.pVertexAttributeDescriptions =
-            vk_vertex_input_attribute_description_list.data();
+        vk_pipeline_vertex_input_state_create_info.sType                         = (VkStructureType)pCreateInfo->pVertexInputState->sType;
+        vk_pipeline_vertex_input_state_create_info.pNext                         = (const void*)pCreateInfo->pVertexInputState->pNext;
+        vk_pipeline_vertex_input_state_create_info.flags                         = (VkPipelineVertexInputStateCreateFlags)pCreateInfo->pVertexInputState->flags;
+        vk_pipeline_vertex_input_state_create_info.vertexBindingDescriptionCount = pCreateInfo->pVertexInputState->vertexBindingDescriptionCount;
+        vk_pipeline_vertex_input_state_create_info.pVertexBindingDescriptions    = vk_vertex_input_binding_description_list.data();
+        vk_pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount = pCreateInfo->pVertexInputState->vertexAttributeDescriptionCount;
+        vk_pipeline_vertex_input_state_create_info.pVertexAttributeDescriptions    = vk_vertex_input_attribute_description_list.data();
 
         VkPipelineInputAssemblyStateCreateInfo vk_pipeline_input_assembly_state_create_info {};
-        vk_pipeline_input_assembly_state_create_info.sType = (VkStructureType)pCreateInfo->pInputAssemblyState->sType;
-        vk_pipeline_input_assembly_state_create_info.pNext = (const void*)pCreateInfo->pInputAssemblyState->pNext;
-        vk_pipeline_input_assembly_state_create_info.flags =
-            (VkPipelineInputAssemblyStateCreateFlags)pCreateInfo->pInputAssemblyState->flags;
-        vk_pipeline_input_assembly_state_create_info.topology =
-            (VkPrimitiveTopology)pCreateInfo->pInputAssemblyState->topology;
-        vk_pipeline_input_assembly_state_create_info.primitiveRestartEnable =
-            (VkBool32)pCreateInfo->pInputAssemblyState->primitiveRestartEnable;
+        vk_pipeline_input_assembly_state_create_info.sType                  = (VkStructureType)pCreateInfo->pInputAssemblyState->sType;
+        vk_pipeline_input_assembly_state_create_info.pNext                  = (const void*)pCreateInfo->pInputAssemblyState->pNext;
+        vk_pipeline_input_assembly_state_create_info.flags                  = (VkPipelineInputAssemblyStateCreateFlags)pCreateInfo->pInputAssemblyState->flags;
+        vk_pipeline_input_assembly_state_create_info.topology               = (VkPrimitiveTopology)pCreateInfo->pInputAssemblyState->topology;
+        vk_pipeline_input_assembly_state_create_info.primitiveRestartEnable = (VkBool32)pCreateInfo->pInputAssemblyState->primitiveRestartEnable;
 
         const VkPipelineTessellationStateCreateInfo* vk_pipeline_tessellation_state_create_info_ptr = nullptr;
         VkPipelineTessellationStateCreateInfo        vk_pipeline_tessellation_state_create_info {};
         if (pCreateInfo->pTessellationState != nullptr)
         {
-            vk_pipeline_tessellation_state_create_info.sType = (VkStructureType)pCreateInfo->pTessellationState->sType;
-            vk_pipeline_tessellation_state_create_info.pNext = (const void*)pCreateInfo->pTessellationState->pNext;
-            vk_pipeline_tessellation_state_create_info.flags =
-                (VkPipelineTessellationStateCreateFlags)pCreateInfo->pTessellationState->flags;
-            vk_pipeline_tessellation_state_create_info.patchControlPoints =
-                pCreateInfo->pTessellationState->patchControlPoints;
+            vk_pipeline_tessellation_state_create_info.sType              = (VkStructureType)pCreateInfo->pTessellationState->sType;
+            vk_pipeline_tessellation_state_create_info.pNext              = (const void*)pCreateInfo->pTessellationState->pNext;
+            vk_pipeline_tessellation_state_create_info.flags              = (VkPipelineTessellationStateCreateFlags)pCreateInfo->pTessellationState->flags;
+            vk_pipeline_tessellation_state_create_info.patchControlPoints = pCreateInfo->pTessellationState->patchControlPoints;
 
             vk_pipeline_tessellation_state_create_info_ptr = &vk_pipeline_tessellation_state_create_info;
         }
@@ -1359,55 +1244,39 @@ namespace Piccolo
         };
 
         VkPipelineViewportStateCreateInfo vk_pipeline_viewport_state_create_info {};
-        vk_pipeline_viewport_state_create_info.sType = (VkStructureType)pCreateInfo->pViewportState->sType;
-        vk_pipeline_viewport_state_create_info.pNext = (const void*)pCreateInfo->pViewportState->pNext;
-        vk_pipeline_viewport_state_create_info.flags =
-            (VkPipelineViewportStateCreateFlags)pCreateInfo->pViewportState->flags;
+        vk_pipeline_viewport_state_create_info.sType         = (VkStructureType)pCreateInfo->pViewportState->sType;
+        vk_pipeline_viewport_state_create_info.pNext         = (const void*)pCreateInfo->pViewportState->pNext;
+        vk_pipeline_viewport_state_create_info.flags         = (VkPipelineViewportStateCreateFlags)pCreateInfo->pViewportState->flags;
         vk_pipeline_viewport_state_create_info.viewportCount = pCreateInfo->pViewportState->viewportCount;
         vk_pipeline_viewport_state_create_info.pViewports    = vk_viewport_list.data();
         vk_pipeline_viewport_state_create_info.scissorCount  = pCreateInfo->pViewportState->scissorCount;
         vk_pipeline_viewport_state_create_info.pScissors     = vk_rect_2d_list.data();
 
         VkPipelineRasterizationStateCreateInfo vk_pipeline_rasterization_state_create_info {};
-        vk_pipeline_rasterization_state_create_info.sType = (VkStructureType)pCreateInfo->pRasterizationState->sType;
-        vk_pipeline_rasterization_state_create_info.pNext = (const void*)pCreateInfo->pRasterizationState->pNext;
-        vk_pipeline_rasterization_state_create_info.flags =
-            (VkPipelineRasterizationStateCreateFlags)pCreateInfo->pRasterizationState->flags;
-        vk_pipeline_rasterization_state_create_info.depthClampEnable =
-            (VkBool32)pCreateInfo->pRasterizationState->depthClampEnable;
-        vk_pipeline_rasterization_state_create_info.rasterizerDiscardEnable =
-            (VkBool32)pCreateInfo->pRasterizationState->rasterizerDiscardEnable;
-        vk_pipeline_rasterization_state_create_info.polygonMode =
-            (VkPolygonMode)pCreateInfo->pRasterizationState->polygonMode;
-        vk_pipeline_rasterization_state_create_info.cullMode =
-            (VkCullModeFlags)pCreateInfo->pRasterizationState->cullMode;
-        vk_pipeline_rasterization_state_create_info.frontFace =
-            (VkFrontFace)pCreateInfo->pRasterizationState->frontFace;
-        vk_pipeline_rasterization_state_create_info.depthBiasEnable =
-            (VkBool32)pCreateInfo->pRasterizationState->depthBiasEnable;
-        vk_pipeline_rasterization_state_create_info.depthBiasConstantFactor =
-            pCreateInfo->pRasterizationState->depthBiasConstantFactor;
-        vk_pipeline_rasterization_state_create_info.depthBiasClamp = pCreateInfo->pRasterizationState->depthBiasClamp;
-        vk_pipeline_rasterization_state_create_info.depthBiasSlopeFactor =
-            pCreateInfo->pRasterizationState->depthBiasSlopeFactor;
-        vk_pipeline_rasterization_state_create_info.lineWidth = pCreateInfo->pRasterizationState->lineWidth;
+        vk_pipeline_rasterization_state_create_info.sType                   = (VkStructureType)pCreateInfo->pRasterizationState->sType;
+        vk_pipeline_rasterization_state_create_info.pNext                   = (const void*)pCreateInfo->pRasterizationState->pNext;
+        vk_pipeline_rasterization_state_create_info.flags                   = (VkPipelineRasterizationStateCreateFlags)pCreateInfo->pRasterizationState->flags;
+        vk_pipeline_rasterization_state_create_info.depthClampEnable        = (VkBool32)pCreateInfo->pRasterizationState->depthClampEnable;
+        vk_pipeline_rasterization_state_create_info.rasterizerDiscardEnable = (VkBool32)pCreateInfo->pRasterizationState->rasterizerDiscardEnable;
+        vk_pipeline_rasterization_state_create_info.polygonMode             = (VkPolygonMode)pCreateInfo->pRasterizationState->polygonMode;
+        vk_pipeline_rasterization_state_create_info.cullMode                = (VkCullModeFlags)pCreateInfo->pRasterizationState->cullMode;
+        vk_pipeline_rasterization_state_create_info.frontFace               = (VkFrontFace)pCreateInfo->pRasterizationState->frontFace;
+        vk_pipeline_rasterization_state_create_info.depthBiasEnable         = (VkBool32)pCreateInfo->pRasterizationState->depthBiasEnable;
+        vk_pipeline_rasterization_state_create_info.depthBiasConstantFactor = pCreateInfo->pRasterizationState->depthBiasConstantFactor;
+        vk_pipeline_rasterization_state_create_info.depthBiasClamp          = pCreateInfo->pRasterizationState->depthBiasClamp;
+        vk_pipeline_rasterization_state_create_info.depthBiasSlopeFactor    = pCreateInfo->pRasterizationState->depthBiasSlopeFactor;
+        vk_pipeline_rasterization_state_create_info.lineWidth               = pCreateInfo->pRasterizationState->lineWidth;
 
         VkPipelineMultisampleStateCreateInfo vk_pipeline_multisample_state_create_info {};
-        vk_pipeline_multisample_state_create_info.sType = (VkStructureType)pCreateInfo->pMultisampleState->sType;
-        vk_pipeline_multisample_state_create_info.pNext = (const void*)pCreateInfo->pMultisampleState->pNext;
-        vk_pipeline_multisample_state_create_info.flags =
-            (VkPipelineMultisampleStateCreateFlags)pCreateInfo->pMultisampleState->flags;
-        vk_pipeline_multisample_state_create_info.rasterizationSamples =
-            (VkSampleCountFlagBits)pCreateInfo->pMultisampleState->rasterizationSamples;
-        vk_pipeline_multisample_state_create_info.sampleShadingEnable =
-            (VkBool32)pCreateInfo->pMultisampleState->sampleShadingEnable;
-        vk_pipeline_multisample_state_create_info.minSampleShading = pCreateInfo->pMultisampleState->minSampleShading;
-        vk_pipeline_multisample_state_create_info.pSampleMask =
-            (const RHISampleMask*)pCreateInfo->pMultisampleState->pSampleMask;
-        vk_pipeline_multisample_state_create_info.alphaToCoverageEnable =
-            (VkBool32)pCreateInfo->pMultisampleState->alphaToCoverageEnable;
-        vk_pipeline_multisample_state_create_info.alphaToOneEnable =
-            (VkBool32)pCreateInfo->pMultisampleState->alphaToOneEnable;
+        vk_pipeline_multisample_state_create_info.sType                 = (VkStructureType)pCreateInfo->pMultisampleState->sType;
+        vk_pipeline_multisample_state_create_info.pNext                 = (const void*)pCreateInfo->pMultisampleState->pNext;
+        vk_pipeline_multisample_state_create_info.flags                 = (VkPipelineMultisampleStateCreateFlags)pCreateInfo->pMultisampleState->flags;
+        vk_pipeline_multisample_state_create_info.rasterizationSamples  = (VkSampleCountFlagBits)pCreateInfo->pMultisampleState->rasterizationSamples;
+        vk_pipeline_multisample_state_create_info.sampleShadingEnable   = (VkBool32)pCreateInfo->pMultisampleState->sampleShadingEnable;
+        vk_pipeline_multisample_state_create_info.minSampleShading      = pCreateInfo->pMultisampleState->minSampleShading;
+        vk_pipeline_multisample_state_create_info.pSampleMask           = (const RHISampleMask*)pCreateInfo->pMultisampleState->pSampleMask;
+        vk_pipeline_multisample_state_create_info.alphaToCoverageEnable = (VkBool32)pCreateInfo->pMultisampleState->alphaToCoverageEnable;
+        vk_pipeline_multisample_state_create_info.alphaToOneEnable      = (VkBool32)pCreateInfo->pMultisampleState->alphaToOneEnable;
 
         VkStencilOpState stencil_op_state_front {};
         stencil_op_state_front.failOp      = (VkStencilOp)pCreateInfo->pDepthStencilState->front.failOp;
@@ -1428,65 +1297,53 @@ namespace Piccolo
         stencil_op_state_back.reference   = pCreateInfo->pDepthStencilState->back.reference;
 
         VkPipelineDepthStencilStateCreateInfo vk_pipeline_depth_stencil_state_create_info {};
-        vk_pipeline_depth_stencil_state_create_info.sType = (VkStructureType)pCreateInfo->pDepthStencilState->sType;
-        vk_pipeline_depth_stencil_state_create_info.pNext = (const void*)pCreateInfo->pDepthStencilState->pNext;
-        vk_pipeline_depth_stencil_state_create_info.flags =
-            (VkPipelineDepthStencilStateCreateFlags)pCreateInfo->pDepthStencilState->flags;
-        vk_pipeline_depth_stencil_state_create_info.depthTestEnable =
-            (VkBool32)pCreateInfo->pDepthStencilState->depthTestEnable;
-        vk_pipeline_depth_stencil_state_create_info.depthWriteEnable =
-            (VkBool32)pCreateInfo->pDepthStencilState->depthWriteEnable;
-        vk_pipeline_depth_stencil_state_create_info.depthCompareOp =
-            (VkCompareOp)pCreateInfo->pDepthStencilState->depthCompareOp;
-        vk_pipeline_depth_stencil_state_create_info.depthBoundsTestEnable =
-            (VkBool32)pCreateInfo->pDepthStencilState->depthBoundsTestEnable;
-        vk_pipeline_depth_stencil_state_create_info.stencilTestEnable =
-            (VkBool32)pCreateInfo->pDepthStencilState->stencilTestEnable;
-        vk_pipeline_depth_stencil_state_create_info.front          = stencil_op_state_front;
-        vk_pipeline_depth_stencil_state_create_info.back           = stencil_op_state_back;
-        vk_pipeline_depth_stencil_state_create_info.minDepthBounds = pCreateInfo->pDepthStencilState->minDepthBounds;
-        vk_pipeline_depth_stencil_state_create_info.maxDepthBounds = pCreateInfo->pDepthStencilState->maxDepthBounds;
+        vk_pipeline_depth_stencil_state_create_info.sType                 = (VkStructureType)pCreateInfo->pDepthStencilState->sType;
+        vk_pipeline_depth_stencil_state_create_info.pNext                 = (const void*)pCreateInfo->pDepthStencilState->pNext;
+        vk_pipeline_depth_stencil_state_create_info.flags                 = (VkPipelineDepthStencilStateCreateFlags)pCreateInfo->pDepthStencilState->flags;
+        vk_pipeline_depth_stencil_state_create_info.depthTestEnable       = (VkBool32)pCreateInfo->pDepthStencilState->depthTestEnable;
+        vk_pipeline_depth_stencil_state_create_info.depthWriteEnable      = (VkBool32)pCreateInfo->pDepthStencilState->depthWriteEnable;
+        vk_pipeline_depth_stencil_state_create_info.depthCompareOp        = (VkCompareOp)pCreateInfo->pDepthStencilState->depthCompareOp;
+        vk_pipeline_depth_stencil_state_create_info.depthBoundsTestEnable = (VkBool32)pCreateInfo->pDepthStencilState->depthBoundsTestEnable;
+        vk_pipeline_depth_stencil_state_create_info.stencilTestEnable     = (VkBool32)pCreateInfo->pDepthStencilState->stencilTestEnable;
+        vk_pipeline_depth_stencil_state_create_info.front                 = stencil_op_state_front;
+        vk_pipeline_depth_stencil_state_create_info.back                  = stencil_op_state_back;
+        vk_pipeline_depth_stencil_state_create_info.minDepthBounds        = pCreateInfo->pDepthStencilState->minDepthBounds;
+        vk_pipeline_depth_stencil_state_create_info.maxDepthBounds        = pCreateInfo->pDepthStencilState->maxDepthBounds;
 
         // pipeline_color_blend_attachment_state
-        int pipeline_color_blend_attachment_state_size = pCreateInfo->pColorBlendState->attachmentCount;
-        std::vector<VkPipelineColorBlendAttachmentState> vk_pipeline_color_blend_attachment_state_list(
-            pipeline_color_blend_attachment_state_size);
+        int                                              pipeline_color_blend_attachment_state_size = pCreateInfo->pColorBlendState->attachmentCount;
+        std::vector<VkPipelineColorBlendAttachmentState> vk_pipeline_color_blend_attachment_state_list(pipeline_color_blend_attachment_state_size);
         for (int i = 0; i < pipeline_color_blend_attachment_state_size; ++i)
         {
-            const auto& rhi_pipeline_color_blend_attachment_state_element =
-                pCreateInfo->pColorBlendState->pAttachments[i];
-            auto& vk_pipeline_color_blend_attachment_state_element = vk_pipeline_color_blend_attachment_state_list[i];
+            const auto& rhi_pipeline_color_blend_attachment_state_element = pCreateInfo->pColorBlendState->pAttachments[i];
+            auto&       vk_pipeline_color_blend_attachment_state_element  = vk_pipeline_color_blend_attachment_state_list[i];
 
-            vk_pipeline_color_blend_attachment_state_element.blendEnable =
-                (VkBool32)rhi_pipeline_color_blend_attachment_state_element.blendEnable;
+            vk_pipeline_color_blend_attachment_state_element.blendEnable = (VkBool32)rhi_pipeline_color_blend_attachment_state_element.blendEnable;
             vk_pipeline_color_blend_attachment_state_element.srcColorBlendFactor =
                 (VkBlendFactor)rhi_pipeline_color_blend_attachment_state_element.srcColorBlendFactor;
             vk_pipeline_color_blend_attachment_state_element.dstColorBlendFactor =
                 (VkBlendFactor)rhi_pipeline_color_blend_attachment_state_element.dstColorBlendFactor;
-            vk_pipeline_color_blend_attachment_state_element.colorBlendOp =
-                (VkBlendOp)rhi_pipeline_color_blend_attachment_state_element.colorBlendOp;
+            vk_pipeline_color_blend_attachment_state_element.colorBlendOp = (VkBlendOp)rhi_pipeline_color_blend_attachment_state_element.colorBlendOp;
             vk_pipeline_color_blend_attachment_state_element.srcAlphaBlendFactor =
                 (VkBlendFactor)rhi_pipeline_color_blend_attachment_state_element.srcAlphaBlendFactor;
             vk_pipeline_color_blend_attachment_state_element.dstAlphaBlendFactor =
                 (VkBlendFactor)rhi_pipeline_color_blend_attachment_state_element.dstAlphaBlendFactor;
-            vk_pipeline_color_blend_attachment_state_element.alphaBlendOp =
-                (VkBlendOp)rhi_pipeline_color_blend_attachment_state_element.alphaBlendOp;
+            vk_pipeline_color_blend_attachment_state_element.alphaBlendOp = (VkBlendOp)rhi_pipeline_color_blend_attachment_state_element.alphaBlendOp;
             vk_pipeline_color_blend_attachment_state_element.colorWriteMask =
                 (VkColorComponentFlags)rhi_pipeline_color_blend_attachment_state_element.colorWriteMask;
         };
 
         VkPipelineColorBlendStateCreateInfo vk_pipeline_color_blend_state_create_info {};
-        vk_pipeline_color_blend_state_create_info.sType         = (VkStructureType)pCreateInfo->pColorBlendState->sType;
-        vk_pipeline_color_blend_state_create_info.pNext         = pCreateInfo->pColorBlendState->pNext;
-        vk_pipeline_color_blend_state_create_info.flags         = pCreateInfo->pColorBlendState->flags;
-        vk_pipeline_color_blend_state_create_info.logicOpEnable = pCreateInfo->pColorBlendState->logicOpEnable;
-        vk_pipeline_color_blend_state_create_info.logicOp       = (VkLogicOp)pCreateInfo->pColorBlendState->logicOp;
+        vk_pipeline_color_blend_state_create_info.sType           = (VkStructureType)pCreateInfo->pColorBlendState->sType;
+        vk_pipeline_color_blend_state_create_info.pNext           = pCreateInfo->pColorBlendState->pNext;
+        vk_pipeline_color_blend_state_create_info.flags           = pCreateInfo->pColorBlendState->flags;
+        vk_pipeline_color_blend_state_create_info.logicOpEnable   = pCreateInfo->pColorBlendState->logicOpEnable;
+        vk_pipeline_color_blend_state_create_info.logicOp         = (VkLogicOp)pCreateInfo->pColorBlendState->logicOp;
         vk_pipeline_color_blend_state_create_info.attachmentCount = pCreateInfo->pColorBlendState->attachmentCount;
-        vk_pipeline_color_blend_state_create_info.pAttachments = vk_pipeline_color_blend_attachment_state_list.data();
+        vk_pipeline_color_blend_state_create_info.pAttachments    = vk_pipeline_color_blend_attachment_state_list.data();
         for (int i = 0; i < 4; ++i)
         {
-            vk_pipeline_color_blend_state_create_info.blendConstants[i] =
-                pCreateInfo->pColorBlendState->blendConstants[i];
+            vk_pipeline_color_blend_state_create_info.blendConstants[i] = pCreateInfo->pColorBlendState->blendConstants[i];
         };
 
         // dynamic_state
@@ -1501,10 +1358,9 @@ namespace Piccolo
         };
 
         VkPipelineDynamicStateCreateInfo vk_pipeline_dynamic_state_create_info {};
-        vk_pipeline_dynamic_state_create_info.sType = (VkStructureType)pCreateInfo->pDynamicState->sType;
-        vk_pipeline_dynamic_state_create_info.pNext = pCreateInfo->pDynamicState->pNext;
-        vk_pipeline_dynamic_state_create_info.flags =
-            (VkPipelineDynamicStateCreateFlags)pCreateInfo->pDynamicState->flags;
+        vk_pipeline_dynamic_state_create_info.sType             = (VkStructureType)pCreateInfo->pDynamicState->sType;
+        vk_pipeline_dynamic_state_create_info.pNext             = pCreateInfo->pDynamicState->pNext;
+        vk_pipeline_dynamic_state_create_info.flags             = (VkPipelineDynamicStateCreateFlags)pCreateInfo->pDynamicState->flags;
         vk_pipeline_dynamic_state_create_info.dynamicStateCount = pCreateInfo->pDynamicState->dynamicStateCount;
         vk_pipeline_dynamic_state_create_info.pDynamicStates    = vk_dynamic_state_list.data();
 
@@ -1543,8 +1399,7 @@ namespace Piccolo
         {
             vk_pipeline_cache = ((VulkanPipelineCache*)pipelineCache)->getResource();
         }
-        VkResult result = vkCreateGraphicsPipelines(
-            m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
+        VkResult result = vkCreateGraphicsPipelines(m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
         ((VulkanPipeline*)pPipelines)->setResource(vk_pipelines);
 
         if (result == VK_SUCCESS)
@@ -1604,8 +1459,7 @@ namespace Piccolo
         {
             vk_pipeline_cache = ((VulkanPipelineCache*)pipelineCache)->getResource();
         }
-        VkResult result = vkCreateComputePipelines(
-            m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
+        VkResult result = vkCreateComputePipelines(m_device, vk_pipeline_cache, createInfoCount, &create_info, nullptr, &vk_pipelines);
         ((VulkanPipeline*)pPipelines)->setResource(vk_pipelines);
 
         if (result == VK_SUCCESS)
@@ -1619,8 +1473,7 @@ namespace Piccolo
         }
     }
 
-    bool VulkanRHI::createPipelineLayout(const RHIPipelineLayoutCreateInfo* pCreateInfo,
-                                         RHIPipelineLayout*&                pPipelineLayout)
+    bool VulkanRHI::createPipelineLayout(const RHIPipelineLayoutCreateInfo* pCreateInfo, RHIPipelineLayout*& pPipelineLayout)
     {
         // descriptor_set_layout
         int                                descriptor_set_layout_size = pCreateInfo->setLayoutCount;
@@ -1630,8 +1483,7 @@ namespace Piccolo
             const auto& rhi_descriptor_set_layout_element = pCreateInfo->pSetLayouts[i];
             auto&       vk_descriptor_set_layout_element  = vk_descriptor_set_layout_list[i];
 
-            vk_descriptor_set_layout_element =
-                ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element)->getResource();
+            vk_descriptor_set_layout_element = ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element)->getResource();
         };
 
         VkPipelineLayoutCreateInfo create_info {};
@@ -1925,8 +1777,7 @@ namespace Piccolo
 
     bool VulkanRHI::resetCommandPoolPFN(RHICommandPool* commandPool, RHICommandPoolResetFlags flags)
     {
-        VkResult result = _vkResetCommandPool(
-            m_device, ((VulkanCommandPool*)commandPool)->getResource(), (VkCommandPoolResetFlags)flags);
+        VkResult result = _vkResetCommandPool(m_device, ((VulkanCommandPool*)commandPool)->getResource(), (VkCommandPoolResetFlags)flags);
 
         if (result == VK_SUCCESS)
         {
@@ -1945,18 +1796,14 @@ namespace Piccolo
         VkCommandBufferInheritanceInfo  command_buffer_inheritance_info {};
         if (pBeginInfo->pInheritanceInfo != nullptr)
         {
-            command_buffer_inheritance_info.sType = (VkStructureType)pBeginInfo->pInheritanceInfo->sType;
-            command_buffer_inheritance_info.pNext = (const void*)pBeginInfo->pInheritanceInfo->pNext;
-            command_buffer_inheritance_info.renderPass =
-                ((VulkanRenderPass*)pBeginInfo->pInheritanceInfo->renderPass)->getResource();
-            command_buffer_inheritance_info.subpass = pBeginInfo->pInheritanceInfo->subpass;
-            command_buffer_inheritance_info.framebuffer =
-                ((VulkanFramebuffer*)pBeginInfo->pInheritanceInfo->framebuffer)->getResource();
-            command_buffer_inheritance_info.occlusionQueryEnable =
-                (VkBool32)pBeginInfo->pInheritanceInfo->occlusionQueryEnable;
-            command_buffer_inheritance_info.queryFlags = (VkQueryControlFlags)pBeginInfo->pInheritanceInfo->queryFlags;
-            command_buffer_inheritance_info.pipelineStatistics =
-                (VkQueryPipelineStatisticFlags)pBeginInfo->pInheritanceInfo->pipelineStatistics;
+            command_buffer_inheritance_info.sType                = (VkStructureType)pBeginInfo->pInheritanceInfo->sType;
+            command_buffer_inheritance_info.pNext                = (const void*)pBeginInfo->pInheritanceInfo->pNext;
+            command_buffer_inheritance_info.renderPass           = ((VulkanRenderPass*)pBeginInfo->pInheritanceInfo->renderPass)->getResource();
+            command_buffer_inheritance_info.subpass              = pBeginInfo->pInheritanceInfo->subpass;
+            command_buffer_inheritance_info.framebuffer          = ((VulkanFramebuffer*)pBeginInfo->pInheritanceInfo->framebuffer)->getResource();
+            command_buffer_inheritance_info.occlusionQueryEnable = (VkBool32)pBeginInfo->pInheritanceInfo->occlusionQueryEnable;
+            command_buffer_inheritance_info.queryFlags           = (VkQueryControlFlags)pBeginInfo->pInheritanceInfo->queryFlags;
+            command_buffer_inheritance_info.pipelineStatistics   = (VkQueryPipelineStatisticFlags)pBeginInfo->pInheritanceInfo->pipelineStatistics;
 
             command_buffer_inheritance_info_ptr = &command_buffer_inheritance_info;
         }
@@ -1966,8 +1813,7 @@ namespace Piccolo
         command_buffer_begin_info.pNext            = (const void*)pBeginInfo->pNext;
         command_buffer_begin_info.flags            = (VkCommandBufferUsageFlags)pBeginInfo->flags;
         command_buffer_begin_info.pInheritanceInfo = command_buffer_inheritance_info_ptr;
-        VkResult result =
-            _vkBeginCommandBuffer(((VulkanCommandBuffer*)commandBuffer)->getResource(), &command_buffer_begin_info);
+        VkResult result                            = _vkBeginCommandBuffer(((VulkanCommandBuffer*)commandBuffer)->getResource(), &command_buffer_begin_info);
 
         if (result == VK_SUCCESS)
         {
@@ -1995,9 +1841,7 @@ namespace Piccolo
         }
     }
 
-    void VulkanRHI::cmdBeginRenderPassPFN(RHICommandBuffer*             commandBuffer,
-                                          const RHIRenderPassBeginInfo* pRenderPassBegin,
-                                          RHISubpassContents            contents)
+    void VulkanRHI::cmdBeginRenderPassPFN(RHICommandBuffer* commandBuffer, const RHIRenderPassBeginInfo* pRenderPassBegin, RHISubpassContents contents)
     {
         VkOffset2D offset_2d {};
         offset_2d.x = pRenderPassBegin->renderArea.offset.x;
@@ -2050,9 +1894,7 @@ namespace Piccolo
         vk_render_pass_begin_info.clearValueCount = pRenderPassBegin->clearValueCount;
         vk_render_pass_begin_info.pClearValues    = vk_clear_value_list.data();
 
-        return _vkCmdBeginRenderPass(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                     &vk_render_pass_begin_info,
-                                     (VkSubpassContents)contents);
+        return _vkCmdBeginRenderPass(((VulkanCommandBuffer*)commandBuffer)->getResource(), &vk_render_pass_begin_info, (VkSubpassContents)contents);
     }
 
     void VulkanRHI::cmdNextSubpassPFN(RHICommandBuffer* commandBuffer, RHISubpassContents contents)
@@ -2060,24 +1902,15 @@ namespace Piccolo
         return _vkCmdNextSubpass(((VulkanCommandBuffer*)commandBuffer)->getResource(), ((VkSubpassContents)contents));
     }
 
-    void VulkanRHI::cmdEndRenderPassPFN(RHICommandBuffer* commandBuffer)
+    void VulkanRHI::cmdEndRenderPassPFN(RHICommandBuffer* commandBuffer) { return _vkCmdEndRenderPass(((VulkanCommandBuffer*)commandBuffer)->getResource()); }
+
+    void VulkanRHI::cmdBindPipelinePFN(RHICommandBuffer* commandBuffer, RHIPipelineBindPoint pipelineBindPoint, RHIPipeline* pipeline)
     {
-        return _vkCmdEndRenderPass(((VulkanCommandBuffer*)commandBuffer)->getResource());
+        return _vkCmdBindPipeline(
+            ((VulkanCommandBuffer*)commandBuffer)->getResource(), (VkPipelineBindPoint)pipelineBindPoint, ((VulkanPipeline*)pipeline)->getResource());
     }
 
-    void VulkanRHI::cmdBindPipelinePFN(RHICommandBuffer*    commandBuffer,
-                                       RHIPipelineBindPoint pipelineBindPoint,
-                                       RHIPipeline*         pipeline)
-    {
-        return _vkCmdBindPipeline(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                  (VkPipelineBindPoint)pipelineBindPoint,
-                                  ((VulkanPipeline*)pipeline)->getResource());
-    }
-
-    void VulkanRHI::cmdSetViewportPFN(RHICommandBuffer*  commandBuffer,
-                                      uint32_t           firstViewport,
-                                      uint32_t           viewportCount,
-                                      const RHIViewport* pViewports)
+    void VulkanRHI::cmdSetViewportPFN(RHICommandBuffer* commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const RHIViewport* pViewports)
     {
         // viewport
         int                     viewport_size = viewportCount;
@@ -2095,16 +1928,10 @@ namespace Piccolo
             vk_viewport_element.maxDepth = rhi_viewport_element.maxDepth;
         };
 
-        return _vkCmdSetViewport(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                 firstViewport,
-                                 viewportCount,
-                                 vk_viewport_list.data());
+        return _vkCmdSetViewport(((VulkanCommandBuffer*)commandBuffer)->getResource(), firstViewport, viewportCount, vk_viewport_list.data());
     }
 
-    void VulkanRHI::cmdSetScissorPFN(RHICommandBuffer* commandBuffer,
-                                     uint32_t          firstScissor,
-                                     uint32_t          scissorCount,
-                                     const RHIRect2D*  pScissors)
+    void VulkanRHI::cmdSetScissorPFN(RHICommandBuffer* commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const RHIRect2D* pScissors)
     {
         // rect_2d
         int                   rect_2d_size = scissorCount;
@@ -2126,8 +1953,7 @@ namespace Piccolo
             vk_rect_2d_element.extent = (VkExtent2D)extent_2d;
         };
 
-        return _vkCmdSetScissor(
-            ((VulkanCommandBuffer*)commandBuffer)->getResource(), firstScissor, scissorCount, vk_rect_2d_list.data());
+        return _vkCmdSetScissor(((VulkanCommandBuffer*)commandBuffer)->getResource(), firstScissor, scissorCount, vk_rect_2d_list.data());
     }
 
     void VulkanRHI::cmdBindVertexBuffersPFN(RHICommandBuffer*    commandBuffer,
@@ -2158,22 +1984,14 @@ namespace Piccolo
             vk_offset_element = rhi_offset_element;
         };
 
-        return _vkCmdBindVertexBuffers(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                       firstBinding,
-                                       bindingCount,
-                                       vk_buffer_list.data(),
-                                       vk_device_size_list.data());
+        return _vkCmdBindVertexBuffers(
+            ((VulkanCommandBuffer*)commandBuffer)->getResource(), firstBinding, bindingCount, vk_buffer_list.data(), vk_device_size_list.data());
     }
 
-    void VulkanRHI::cmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer,
-                                          RHIBuffer*        buffer,
-                                          RHIDeviceSize     offset,
-                                          RHIIndexType      indexType)
+    void VulkanRHI::cmdBindIndexBufferPFN(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset, RHIIndexType indexType)
     {
-        return _vkCmdBindIndexBuffer(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                     ((VulkanBuffer*)buffer)->getResource(),
-                                     (VkDeviceSize)offset,
-                                     (VkIndexType)indexType);
+        return _vkCmdBindIndexBuffer(
+            ((VulkanCommandBuffer*)commandBuffer)->getResource(), ((VulkanBuffer*)buffer)->getResource(), (VkDeviceSize)offset, (VkIndexType)indexType);
     }
 
     void VulkanRHI::cmdBindDescriptorSetsPFN(RHICommandBuffer*              commandBuffer,
@@ -2224,12 +2042,7 @@ namespace Piccolo
                                       int32_t           vertexOffset,
                                       uint32_t          firstInstance)
     {
-        return _vkCmdDrawIndexed(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                 indexCount,
-                                 instanceCount,
-                                 firstIndex,
-                                 vertexOffset,
-                                 firstInstance);
+        return _vkCmdDrawIndexed(((VulkanCommandBuffer*)commandBuffer)->getResource(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
     void VulkanRHI::cmdClearAttachmentsPFN(RHICommandBuffer*         commandBuffer,
@@ -2292,11 +2105,8 @@ namespace Piccolo
             vk_clear_rect_element.layerCount     = rhi_clear_rect_element.layerCount;
         };
 
-        return _vkCmdClearAttachments(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                                      attachmentCount,
-                                      vk_clear_attachment_list.data(),
-                                      rectCount,
-                                      vk_clear_rect_list.data());
+        return _vkCmdClearAttachments(
+            ((VulkanCommandBuffer*)commandBuffer)->getResource(), attachmentCount, vk_clear_attachment_list.data(), rectCount, vk_clear_rect_list.data());
     }
 
     bool VulkanRHI::beginCommandBuffer(RHICommandBuffer* commandBuffer, const RHICommandBufferBeginInfo* pBeginInfo)
@@ -2305,18 +2115,14 @@ namespace Piccolo
         const VkCommandBufferInheritanceInfo* command_buffer_inheritance_info_ptr = nullptr;
         if (pBeginInfo->pInheritanceInfo != nullptr)
         {
-            command_buffer_inheritance_info.sType = (VkStructureType)(pBeginInfo->pInheritanceInfo->sType);
-            command_buffer_inheritance_info.pNext = (const void*)pBeginInfo->pInheritanceInfo->pNext;
-            command_buffer_inheritance_info.renderPass =
-                ((VulkanRenderPass*)pBeginInfo->pInheritanceInfo->renderPass)->getResource();
-            command_buffer_inheritance_info.subpass = pBeginInfo->pInheritanceInfo->subpass;
-            command_buffer_inheritance_info.framebuffer =
-                ((VulkanFramebuffer*)(pBeginInfo->pInheritanceInfo->framebuffer))->getResource();
-            command_buffer_inheritance_info.occlusionQueryEnable =
-                (VkBool32)pBeginInfo->pInheritanceInfo->occlusionQueryEnable;
-            command_buffer_inheritance_info.queryFlags = (VkQueryControlFlags)pBeginInfo->pInheritanceInfo->queryFlags;
-            command_buffer_inheritance_info.pipelineStatistics =
-                (VkQueryPipelineStatisticFlags)pBeginInfo->pInheritanceInfo->pipelineStatistics;
+            command_buffer_inheritance_info.sType                = (VkStructureType)(pBeginInfo->pInheritanceInfo->sType);
+            command_buffer_inheritance_info.pNext                = (const void*)pBeginInfo->pInheritanceInfo->pNext;
+            command_buffer_inheritance_info.renderPass           = ((VulkanRenderPass*)pBeginInfo->pInheritanceInfo->renderPass)->getResource();
+            command_buffer_inheritance_info.subpass              = pBeginInfo->pInheritanceInfo->subpass;
+            command_buffer_inheritance_info.framebuffer          = ((VulkanFramebuffer*)(pBeginInfo->pInheritanceInfo->framebuffer))->getResource();
+            command_buffer_inheritance_info.occlusionQueryEnable = (VkBool32)pBeginInfo->pInheritanceInfo->occlusionQueryEnable;
+            command_buffer_inheritance_info.queryFlags           = (VkQueryControlFlags)pBeginInfo->pInheritanceInfo->queryFlags;
+            command_buffer_inheritance_info.pipelineStatistics   = (VkQueryPipelineStatisticFlags)pBeginInfo->pInheritanceInfo->pipelineStatistics;
 
             command_buffer_inheritance_info_ptr = &command_buffer_inheritance_info;
         }
@@ -2327,8 +2133,7 @@ namespace Piccolo
         command_buffer_begin_info.flags            = (VkCommandBufferUsageFlags)pBeginInfo->flags;
         command_buffer_begin_info.pInheritanceInfo = command_buffer_inheritance_info_ptr;
 
-        VkResult result =
-            vkBeginCommandBuffer(((VulkanCommandBuffer*)commandBuffer)->getResource(), &command_buffer_begin_info);
+        VkResult result = vkBeginCommandBuffer(((VulkanCommandBuffer*)commandBuffer)->getResource(), &command_buffer_begin_info);
 
         if (result == VK_SUCCESS)
         {
@@ -2398,13 +2203,10 @@ namespace Piccolo
                 }
                 else
                 {
-                    vk_descriptor_image_info.sampler =
-                        ((VulkanSampler*)rhi_write_descriptor_set_element.pImageInfo->sampler)->getResource();
+                    vk_descriptor_image_info.sampler = ((VulkanSampler*)rhi_write_descriptor_set_element.pImageInfo->sampler)->getResource();
                 }
-                vk_descriptor_image_info.imageView =
-                    ((VulkanImageView*)rhi_write_descriptor_set_element.pImageInfo->imageView)->getResource();
-                vk_descriptor_image_info.imageLayout =
-                    (VkImageLayout)rhi_write_descriptor_set_element.pImageInfo->imageLayout;
+                vk_descriptor_image_info.imageView   = ((VulkanImageView*)rhi_write_descriptor_set_element.pImageInfo->imageView)->getResource();
+                vk_descriptor_image_info.imageLayout = (VkImageLayout)rhi_write_descriptor_set_element.pImageInfo->imageLayout;
 
                 vk_descriptor_image_info_ptr = &vk_descriptor_image_info;
                 image_info_current++;
@@ -2413,9 +2215,8 @@ namespace Piccolo
             const VkDescriptorBufferInfo* vk_descriptor_buffer_info_ptr = nullptr;
             if (rhi_write_descriptor_set_element.pBufferInfo != nullptr)
             {
-                auto& vk_descriptor_buffer_info = vk_descriptor_buffer_info_list[buffer_info_current];
-                vk_descriptor_buffer_info.buffer =
-                    ((VulkanBuffer*)rhi_write_descriptor_set_element.pBufferInfo->buffer)->getResource();
+                auto& vk_descriptor_buffer_info  = vk_descriptor_buffer_info_list[buffer_info_current];
+                vk_descriptor_buffer_info.buffer = ((VulkanBuffer*)rhi_write_descriptor_set_element.pBufferInfo->buffer)->getResource();
                 vk_descriptor_buffer_info.offset = (VkDeviceSize)rhi_write_descriptor_set_element.pBufferInfo->offset;
                 vk_descriptor_buffer_info.range  = (VkDeviceSize)rhi_write_descriptor_set_element.pBufferInfo->range;
 
@@ -2423,17 +2224,15 @@ namespace Piccolo
                 buffer_info_current++;
             }
 
-            vk_write_descriptor_set_element.sType = (VkStructureType)rhi_write_descriptor_set_element.sType;
-            vk_write_descriptor_set_element.pNext = (const void*)rhi_write_descriptor_set_element.pNext;
-            vk_write_descriptor_set_element.dstSet =
-                ((VulkanDescriptorSet*)rhi_write_descriptor_set_element.dstSet)->getResource();
+            vk_write_descriptor_set_element.sType           = (VkStructureType)rhi_write_descriptor_set_element.sType;
+            vk_write_descriptor_set_element.pNext           = (const void*)rhi_write_descriptor_set_element.pNext;
+            vk_write_descriptor_set_element.dstSet          = ((VulkanDescriptorSet*)rhi_write_descriptor_set_element.dstSet)->getResource();
             vk_write_descriptor_set_element.dstBinding      = rhi_write_descriptor_set_element.dstBinding;
             vk_write_descriptor_set_element.dstArrayElement = rhi_write_descriptor_set_element.dstArrayElement;
             vk_write_descriptor_set_element.descriptorCount = rhi_write_descriptor_set_element.descriptorCount;
-            vk_write_descriptor_set_element.descriptorType =
-                (VkDescriptorType)rhi_write_descriptor_set_element.descriptorType;
-            vk_write_descriptor_set_element.pImageInfo  = vk_descriptor_image_info_ptr;
-            vk_write_descriptor_set_element.pBufferInfo = vk_descriptor_buffer_info_ptr;
+            vk_write_descriptor_set_element.descriptorType  = (VkDescriptorType)rhi_write_descriptor_set_element.descriptorType;
+            vk_write_descriptor_set_element.pImageInfo      = vk_descriptor_image_info_ptr;
+            vk_write_descriptor_set_element.pBufferInfo     = vk_descriptor_buffer_info_ptr;
             // vk_write_descriptor_set_element.pTexelBufferView =
             // &((VulkanBufferView*)rhi_write_descriptor_set_element.pTexelBufferView)->getResource();
         };
@@ -2452,24 +2251,18 @@ namespace Piccolo
             const auto& rhi_copy_descriptor_set_element = pDescriptorCopies[i];
             auto&       vk_copy_descriptor_set_element  = vk_copy_descriptor_set_list[i];
 
-            vk_copy_descriptor_set_element.sType = (VkStructureType)rhi_copy_descriptor_set_element.sType;
-            vk_copy_descriptor_set_element.pNext = (const void*)rhi_copy_descriptor_set_element.pNext;
-            vk_copy_descriptor_set_element.srcSet =
-                ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.srcSet)->getResource();
+            vk_copy_descriptor_set_element.sType           = (VkStructureType)rhi_copy_descriptor_set_element.sType;
+            vk_copy_descriptor_set_element.pNext           = (const void*)rhi_copy_descriptor_set_element.pNext;
+            vk_copy_descriptor_set_element.srcSet          = ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.srcSet)->getResource();
             vk_copy_descriptor_set_element.srcBinding      = rhi_copy_descriptor_set_element.srcBinding;
             vk_copy_descriptor_set_element.srcArrayElement = rhi_copy_descriptor_set_element.srcArrayElement;
-            vk_copy_descriptor_set_element.dstSet =
-                ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.dstSet)->getResource();
+            vk_copy_descriptor_set_element.dstSet          = ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.dstSet)->getResource();
             vk_copy_descriptor_set_element.dstBinding      = rhi_copy_descriptor_set_element.dstBinding;
             vk_copy_descriptor_set_element.dstArrayElement = rhi_copy_descriptor_set_element.dstArrayElement;
             vk_copy_descriptor_set_element.descriptorCount = rhi_copy_descriptor_set_element.descriptorCount;
         };
 
-        vkUpdateDescriptorSets(m_device,
-                               descriptorWriteCount,
-                               vk_write_descriptor_set_list.data(),
-                               descriptorCopyCount,
-                               vk_copy_descriptor_set_list.data());
+        vkUpdateDescriptorSets(m_device, descriptorWriteCount, vk_write_descriptor_set_list.data(), descriptorCopyCount, vk_copy_descriptor_set_list.data());
     }
 
     bool VulkanRHI::queueSubmit(RHIQueue* queue, uint32_t submitCount, const RHISubmitInfo* pSubmits, RHIFence* fence)
@@ -2512,12 +2305,12 @@ namespace Piccolo
             if (rhi_submit_info_element.commandBufferCount > 0)
             {
                 vk_submit_info_element.commandBufferCount = rhi_submit_info_element.commandBufferCount;
-                vk_submit_info_element.pCommandBuffers = &vk_command_buffer_list_external[command_buffer_size_current];
-                int command_buffer_size                = rhi_submit_info_element.commandBufferCount;
+                vk_submit_info_element.pCommandBuffers    = &vk_command_buffer_list_external[command_buffer_size_current];
+                int command_buffer_size                   = rhi_submit_info_element.commandBufferCount;
                 for (int i = 0; i < command_buffer_size; ++i)
                 {
                     const auto& rhi_command_buffer_element = rhi_submit_info_element.pCommandBuffers[i];
-                    auto& vk_command_buffer_element = vk_command_buffer_list_external[command_buffer_size_current];
+                    auto&       vk_command_buffer_element  = vk_command_buffer_list_external[command_buffer_size_current];
 
                     vk_command_buffer_element = ((VulkanCommandBuffer*)rhi_command_buffer_element)->getResource();
 
@@ -2546,14 +2339,12 @@ namespace Piccolo
             if (rhi_submit_info_element.signalSemaphoreCount > 0)
             {
                 vk_submit_info_element.signalSemaphoreCount = rhi_submit_info_element.signalSemaphoreCount;
-                vk_submit_info_element.pSignalSemaphores =
-                    &vk_signal_semaphore_list_external[signal_semaphore_size_current];
-                int signal_semaphore_size = rhi_submit_info_element.signalSemaphoreCount;
+                vk_submit_info_element.pSignalSemaphores    = &vk_signal_semaphore_list_external[signal_semaphore_size_current];
+                int signal_semaphore_size                   = rhi_submit_info_element.signalSemaphoreCount;
                 for (int i = 0; i < signal_semaphore_size; ++i)
                 {
                     const auto& rhi_signal_semaphore_element = rhi_submit_info_element.pSignalSemaphores[i];
-                    auto&       vk_signal_semaphore_element =
-                        vk_signal_semaphore_list_external[signal_semaphore_size_current];
+                    auto&       vk_signal_semaphore_element  = vk_signal_semaphore_list_external[signal_semaphore_size_current];
 
                     vk_signal_semaphore_element = ((VulkanSemaphore*)rhi_signal_semaphore_element)->getResource();
 
@@ -2564,14 +2355,12 @@ namespace Piccolo
             // pipeline_stage_flags
             if (rhi_submit_info_element.waitSemaphoreCount > 0)
             {
-                vk_submit_info_element.pWaitDstStageMask =
-                    &vk_pipeline_stage_flags_list_external[pipeline_stage_flags_size_current];
-                int pipeline_stage_flags_size = rhi_submit_info_element.waitSemaphoreCount;
+                vk_submit_info_element.pWaitDstStageMask = &vk_pipeline_stage_flags_list_external[pipeline_stage_flags_size_current];
+                int pipeline_stage_flags_size            = rhi_submit_info_element.waitSemaphoreCount;
                 for (int i = 0; i < pipeline_stage_flags_size; ++i)
                 {
                     const auto& rhi_pipeline_stage_flags_element = rhi_submit_info_element.pWaitDstStageMask[i];
-                    auto&       vk_pipeline_stage_flags_element =
-                        vk_pipeline_stage_flags_list_external[pipeline_stage_flags_size_current];
+                    auto&       vk_pipeline_stage_flags_element  = vk_pipeline_stage_flags_list_external[pipeline_stage_flags_size_current];
 
                     vk_pipeline_stage_flags_element = (VkPipelineStageFlags)rhi_pipeline_stage_flags_element;
 
@@ -2580,10 +2369,8 @@ namespace Piccolo
             }
         };
 
-        if ((command_buffer_size_total != command_buffer_size_current) ||
-            (semaphore_size_total != semaphore_size_current) ||
-            (signal_semaphore_size_total != signal_semaphore_size_current) ||
-            (pipeline_stage_flags_size_total != pipeline_stage_flags_size_current))
+        if ((command_buffer_size_total != command_buffer_size_current) || (semaphore_size_total != semaphore_size_current) ||
+            (signal_semaphore_size_total != signal_semaphore_size_current) || (pipeline_stage_flags_size_total != pipeline_stage_flags_size_current))
         {
             LOG_ERROR("submit info is not right!");
             return false;
@@ -2595,8 +2382,7 @@ namespace Piccolo
             vk_fence = ((VulkanFence*)fence)->getResource();
         }
 
-        VkResult result =
-            vkQueueSubmit(((VulkanQueue*)queue)->getResource(), submitCount, vk_submit_info_list.data(), vk_fence);
+        VkResult result = vkQueueSubmit(((VulkanQueue*)queue)->getResource(), submitCount, vk_submit_info_list.data(), vk_fence);
 
         if (result == VK_SUCCESS)
         {
@@ -2658,20 +2444,15 @@ namespace Piccolo
             const auto& rhi_buffer_memory_barrier_element = pBufferMemoryBarriers[i];
             auto&       vk_buffer_memory_barrier_element  = vk_buffer_memory_barrier_list[i];
 
-            vk_buffer_memory_barrier_element.sType = (VkStructureType)rhi_buffer_memory_barrier_element.sType;
-            vk_buffer_memory_barrier_element.pNext = (const void*)rhi_buffer_memory_barrier_element.pNext;
-            vk_buffer_memory_barrier_element.srcAccessMask =
-                (VkAccessFlags)rhi_buffer_memory_barrier_element.srcAccessMask;
-            vk_buffer_memory_barrier_element.dstAccessMask =
-                (VkAccessFlags)rhi_buffer_memory_barrier_element.dstAccessMask;
-            vk_buffer_memory_barrier_element.srcQueueFamilyIndex =
-                rhi_buffer_memory_barrier_element.srcQueueFamilyIndex;
-            vk_buffer_memory_barrier_element.dstQueueFamilyIndex =
-                rhi_buffer_memory_barrier_element.dstQueueFamilyIndex;
-            vk_buffer_memory_barrier_element.buffer =
-                ((VulkanBuffer*)rhi_buffer_memory_barrier_element.buffer)->getResource();
-            vk_buffer_memory_barrier_element.offset = (VkDeviceSize)rhi_buffer_memory_barrier_element.offset;
-            vk_buffer_memory_barrier_element.size   = (VkDeviceSize)rhi_buffer_memory_barrier_element.size;
+            vk_buffer_memory_barrier_element.sType               = (VkStructureType)rhi_buffer_memory_barrier_element.sType;
+            vk_buffer_memory_barrier_element.pNext               = (const void*)rhi_buffer_memory_barrier_element.pNext;
+            vk_buffer_memory_barrier_element.srcAccessMask       = (VkAccessFlags)rhi_buffer_memory_barrier_element.srcAccessMask;
+            vk_buffer_memory_barrier_element.dstAccessMask       = (VkAccessFlags)rhi_buffer_memory_barrier_element.dstAccessMask;
+            vk_buffer_memory_barrier_element.srcQueueFamilyIndex = rhi_buffer_memory_barrier_element.srcQueueFamilyIndex;
+            vk_buffer_memory_barrier_element.dstQueueFamilyIndex = rhi_buffer_memory_barrier_element.dstQueueFamilyIndex;
+            vk_buffer_memory_barrier_element.buffer              = ((VulkanBuffer*)rhi_buffer_memory_barrier_element.buffer)->getResource();
+            vk_buffer_memory_barrier_element.offset              = (VkDeviceSize)rhi_buffer_memory_barrier_element.offset;
+            vk_buffer_memory_barrier_element.size                = (VkDeviceSize)rhi_buffer_memory_barrier_element.size;
         };
 
         // image_memory_barrier
@@ -2683,26 +2464,22 @@ namespace Piccolo
             auto&       vk_image_memory_barrier_element  = vk_image_memory_barrier_list[i];
 
             VkImageSubresourceRange image_subresource_range {};
-            image_subresource_range.aspectMask =
-                (VkImageAspectFlags)rhi_image_memory_barrier_element.subresourceRange.aspectMask;
+            image_subresource_range.aspectMask     = (VkImageAspectFlags)rhi_image_memory_barrier_element.subresourceRange.aspectMask;
             image_subresource_range.baseMipLevel   = rhi_image_memory_barrier_element.subresourceRange.baseMipLevel;
             image_subresource_range.levelCount     = rhi_image_memory_barrier_element.subresourceRange.levelCount;
             image_subresource_range.baseArrayLayer = rhi_image_memory_barrier_element.subresourceRange.baseArrayLayer;
             image_subresource_range.layerCount     = rhi_image_memory_barrier_element.subresourceRange.layerCount;
 
-            vk_image_memory_barrier_element.sType = (VkStructureType)rhi_image_memory_barrier_element.sType;
-            vk_image_memory_barrier_element.pNext = (const void*)rhi_image_memory_barrier_element.pNext;
-            vk_image_memory_barrier_element.srcAccessMask =
-                (VkAccessFlags)rhi_image_memory_barrier_element.srcAccessMask;
-            vk_image_memory_barrier_element.dstAccessMask =
-                (VkAccessFlags)rhi_image_memory_barrier_element.dstAccessMask;
-            vk_image_memory_barrier_element.oldLayout = (VkImageLayout)rhi_image_memory_barrier_element.oldLayout;
-            vk_image_memory_barrier_element.newLayout = (VkImageLayout)rhi_image_memory_barrier_element.newLayout;
+            vk_image_memory_barrier_element.sType               = (VkStructureType)rhi_image_memory_barrier_element.sType;
+            vk_image_memory_barrier_element.pNext               = (const void*)rhi_image_memory_barrier_element.pNext;
+            vk_image_memory_barrier_element.srcAccessMask       = (VkAccessFlags)rhi_image_memory_barrier_element.srcAccessMask;
+            vk_image_memory_barrier_element.dstAccessMask       = (VkAccessFlags)rhi_image_memory_barrier_element.dstAccessMask;
+            vk_image_memory_barrier_element.oldLayout           = (VkImageLayout)rhi_image_memory_barrier_element.oldLayout;
+            vk_image_memory_barrier_element.newLayout           = (VkImageLayout)rhi_image_memory_barrier_element.newLayout;
             vk_image_memory_barrier_element.srcQueueFamilyIndex = rhi_image_memory_barrier_element.srcQueueFamilyIndex;
             vk_image_memory_barrier_element.dstQueueFamilyIndex = rhi_image_memory_barrier_element.dstQueueFamilyIndex;
-            vk_image_memory_barrier_element.image =
-                ((VulkanImage*)rhi_image_memory_barrier_element.image)->getResource();
-            vk_image_memory_barrier_element.subresourceRange = image_subresource_range;
+            vk_image_memory_barrier_element.image               = ((VulkanImage*)rhi_image_memory_barrier_element.image)->getResource();
+            vk_image_memory_barrier_element.subresourceRange    = image_subresource_range;
         };
 
         vkCmdPipelineBarrier(((VulkanCommandBuffer*)commandBuffer)->getResource(),
@@ -2717,31 +2494,19 @@ namespace Piccolo
                              vk_image_memory_barrier_list.data());
     }
 
-    void VulkanRHI::cmdDraw(RHICommandBuffer* commandBuffer,
-                            uint32_t          vertexCount,
-                            uint32_t          instanceCount,
-                            uint32_t          firstVertex,
-                            uint32_t          firstInstance)
+    void VulkanRHI::cmdDraw(RHICommandBuffer* commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
     {
-        vkCmdDraw(((VulkanCommandBuffer*)commandBuffer)->getResource(),
-                  vertexCount,
-                  instanceCount,
-                  firstVertex,
-                  firstInstance);
+        vkCmdDraw(((VulkanCommandBuffer*)commandBuffer)->getResource(), vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
-    void VulkanRHI::cmdDispatch(RHICommandBuffer* commandBuffer,
-                                uint32_t          groupCountX,
-                                uint32_t          groupCountY,
-                                uint32_t          groupCountZ)
+    void VulkanRHI::cmdDispatch(RHICommandBuffer* commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
     {
         vkCmdDispatch(((VulkanCommandBuffer*)commandBuffer)->getResource(), groupCountX, groupCountY, groupCountZ);
     }
 
     void VulkanRHI::cmdDispatchIndirect(RHICommandBuffer* commandBuffer, RHIBuffer* buffer, RHIDeviceSize offset)
     {
-        vkCmdDispatchIndirect(
-            ((VulkanCommandBuffer*)commandBuffer)->getResource(), ((VulkanBuffer*)buffer)->getResource(), offset);
+        vkCmdDispatchIndirect(((VulkanCommandBuffer*)commandBuffer)->getResource(), ((VulkanBuffer*)buffer)->getResource(), offset);
     }
 
     void VulkanRHI::cmdCopyImageToBuffer(RHICommandBuffer*         commandBuffer,
@@ -2760,8 +2525,7 @@ namespace Piccolo
             auto&       vk_buffer_image_copy_element  = vk_buffer_image_copy_list[i];
 
             VkImageSubresourceLayers image_subresource_layers {};
-            image_subresource_layers.aspectMask =
-                (VkImageAspectFlags)rhi_buffer_image_copy_element.imageSubresource.aspectMask;
+            image_subresource_layers.aspectMask     = (VkImageAspectFlags)rhi_buffer_image_copy_element.imageSubresource.aspectMask;
             image_subresource_layers.mipLevel       = rhi_buffer_image_copy_element.imageSubresource.mipLevel;
             image_subresource_layers.baseArrayLayer = rhi_buffer_image_copy_element.imageSubresource.baseArrayLayer;
             image_subresource_layers.layerCount     = rhi_buffer_image_copy_element.imageSubresource.layerCount;
@@ -2824,11 +2588,7 @@ namespace Piccolo
                        &imagecopyRegion);
     }
 
-    void VulkanRHI::cmdCopyBuffer(RHICommandBuffer* commandBuffer,
-                                  RHIBuffer*        srcBuffer,
-                                  RHIBuffer*        dstBuffer,
-                                  uint32_t          regionCount,
-                                  RHIBufferCopy*    pRegions)
+    void VulkanRHI::cmdCopyBuffer(RHICommandBuffer* commandBuffer, RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, uint32_t regionCount, RHIBufferCopy* pRegions)
     {
         VkBufferCopy copyRegion {};
         copyRegion.srcOffset = pRegions->srcOffset;
@@ -2889,9 +2649,8 @@ namespace Piccolo
         pool_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.poolSizeCount = sizeof(pool_sizes) / sizeof(pool_sizes[0]);
         pool_info.pPoolSizes    = pool_sizes;
-        pool_info.maxSets       = 1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 +
-                            1; // +skybox + axis descriptor set
-        pool_info.flags = 0U;
+        pool_info.maxSets       = 1 + 1 + 1 + m_max_material_count + m_max_vertex_blending_mesh_count + 1 + 1; // +skybox + axis descriptor set
+        pool_info.flags         = 0U;
 
         if (vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_vk_descriptor_pool) != VK_SUCCESS)
         {
@@ -2916,17 +2675,10 @@ namespace Piccolo
         for (uint32_t i = 0; i < k_max_frames_in_flight; i++)
         {
             m_image_available_for_texturescopy_semaphores[i] = new VulkanSemaphore();
-            if (vkCreateSemaphore(
-                    m_device, &semaphore_create_info, nullptr, &m_image_available_for_render_semaphores[i]) !=
-                    VK_SUCCESS ||
+            if (vkCreateSemaphore(m_device, &semaphore_create_info, nullptr, &m_image_available_for_render_semaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_device, &semaphore_create_info, nullptr, &m_image_finished_for_presentation_semaphores[i]) != VK_SUCCESS ||
                 vkCreateSemaphore(
-                    m_device, &semaphore_create_info, nullptr, &m_image_finished_for_presentation_semaphores[i]) !=
-                    VK_SUCCESS ||
-                vkCreateSemaphore(
-                    m_device,
-                    &semaphore_create_info,
-                    nullptr,
-                    &(((VulkanSemaphore*)m_image_available_for_texturescopy_semaphores[i])->getResource())) !=
+                    m_device, &semaphore_create_info, nullptr, &(((VulkanSemaphore*)m_image_available_for_texturescopy_semaphores[i])->getResource())) !=
                     VK_SUCCESS ||
                 vkCreateFence(m_device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) != VK_SUCCESS)
             {
@@ -2946,8 +2698,7 @@ namespace Piccolo
                                 m_swapchain_extent.height,
                                 (VkFormat)m_depth_image_format,
                                 VK_IMAGE_TILING_OPTIMAL,
-                                VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                    VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                                VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                 ((VulkanImage*)m_depth_image)->getResource(),
                                 m_depth_image_memory,
@@ -2973,8 +2724,7 @@ namespace Piccolo
                 if (m_linear_sampler == nullptr)
                 {
                     m_linear_sampler = new VulkanSampler();
-                    ((VulkanSampler*)m_linear_sampler)
-                        ->setResource(VulkanUtil::getOrCreateLinearSampler(m_physical_device, m_device));
+                    ((VulkanSampler*)m_linear_sampler)->setResource(VulkanUtil::getOrCreateLinearSampler(m_physical_device, m_device));
                 }
                 return m_linear_sampler;
                 break;
@@ -2983,8 +2733,7 @@ namespace Piccolo
                 if (m_nearest_sampler == nullptr)
                 {
                     m_nearest_sampler = new VulkanSampler();
-                    ((VulkanSampler*)m_nearest_sampler)
-                        ->setResource(VulkanUtil::getOrCreateNearestSampler(m_physical_device, m_device));
+                    ((VulkanSampler*)m_nearest_sampler)->setResource(VulkanUtil::getOrCreateNearestSampler(m_physical_device, m_device));
                 }
                 return m_nearest_sampler;
                 break;
@@ -3021,6 +2770,13 @@ namespace Piccolo
 
             return sampler;
         }
+    }
+
+    RHIShader* VulkanRHI::createShaderModule(const std::filesystem::path& shader_file_path)
+    {
+        RHIShader* shahder = new VulkanShader();
+
+        return shahder;
     }
 
     RHIShader* VulkanRHI::createShaderModule(const std::vector<unsigned char>& shader_code)
@@ -3062,8 +2818,7 @@ namespace Piccolo
         VkBuffer       vk_buffer;
         VkDeviceMemory vk_device_memory;
 
-        VulkanUtil::createBufferAndInitialize(
-            m_device, m_physical_device, usage, properties, &vk_buffer, &vk_device_memory, size, data, datasize);
+        VulkanUtil::createBufferAndInitialize(m_device, m_physical_device, usage, properties, &vk_buffer, &vk_device_memory, size, data, datasize);
 
         buffer        = new VulkanBuffer();
         buffer_memory = new VulkanDeviceMemory();
@@ -3090,8 +2845,7 @@ namespace Piccolo
         buffer_create_info.pQueueFamilyIndices   = (const uint32_t*)pBufferCreateInfo->pQueueFamilyIndices;
 
         pBuffer         = new VulkanBuffer();
-        VkResult result = vmaCreateBuffer(
-            allocator, &buffer_create_info, pAllocationCreateInfo, &vk_buffer, pAllocation, pAllocationInfo);
+        VkResult result = vmaCreateBuffer(allocator, &buffer_create_info, pAllocationCreateInfo, &vk_buffer, pAllocation, pAllocationInfo);
 
         ((VulkanBuffer*)pBuffer)->setResource(vk_buffer);
 
@@ -3124,14 +2878,9 @@ namespace Piccolo
         buffer_create_info.queueFamilyIndexCount = pBufferCreateInfo->queueFamilyIndexCount;
         buffer_create_info.pQueueFamilyIndices   = (const uint32_t*)pBufferCreateInfo->pQueueFamilyIndices;
 
-        pBuffer         = new VulkanBuffer();
-        VkResult result = vmaCreateBufferWithAlignment(allocator,
-                                                       &buffer_create_info,
-                                                       pAllocationCreateInfo,
-                                                       minAlignment,
-                                                       &vk_buffer,
-                                                       pAllocation,
-                                                       pAllocationInfo);
+        pBuffer = new VulkanBuffer();
+        VkResult result =
+            vmaCreateBufferWithAlignment(allocator, &buffer_create_info, pAllocationCreateInfo, minAlignment, &vk_buffer, pAllocation, pAllocationInfo);
 
         ((VulkanBuffer*)pBuffer)->setResource(vk_buffer);
 
@@ -3146,11 +2895,7 @@ namespace Piccolo
         }
     }
 
-    void VulkanRHI::copyBuffer(RHIBuffer*    srcBuffer,
-                               RHIBuffer*    dstBuffer,
-                               RHIDeviceSize srcOffset,
-                               RHIDeviceSize dstOffset,
-                               RHIDeviceSize size)
+    void VulkanRHI::copyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size)
     {
         VkBuffer vk_src_buffer = ((VulkanBuffer*)srcBuffer)->getResource();
         VkBuffer vk_dst_buffer = ((VulkanBuffer*)dstBuffer)->getResource();
@@ -3202,13 +2947,8 @@ namespace Piccolo
         image_view           = new VulkanImageView();
         VkImage     vk_image = ((VulkanImage*)image)->getResource();
         VkImageView vk_image_view;
-        vk_image_view = VulkanUtil::createImageView(m_device,
-                                                    vk_image,
-                                                    (VkFormat)format,
-                                                    image_aspect_flags,
-                                                    (VkImageViewType)view_type,
-                                                    layout_count,
-                                                    miplevels);
+        vk_image_view =
+            VulkanUtil::createImageView(m_device, vk_image, (VkFormat)format, image_aspect_flags, (VkImageViewType)view_type, layout_count, miplevels);
         ((VulkanImageView*)image_view)->setResource(vk_image_view);
     }
 
@@ -3224,15 +2964,8 @@ namespace Piccolo
         VkImage     vk_image;
         VkImageView vk_image_view;
 
-        VulkanUtil::createGlobalImage(this,
-                                      vk_image,
-                                      vk_image_view,
-                                      image_allocation,
-                                      texture_image_width,
-                                      texture_image_height,
-                                      texture_image_pixels,
-                                      texture_image_format,
-                                      miplevels);
+        VulkanUtil::createGlobalImage(
+            this, vk_image, vk_image_view, image_allocation, texture_image_width, texture_image_height, texture_image_pixels, texture_image_format, miplevels);
 
         image      = new VulkanImage();
         image_view = new VulkanImageView();
@@ -3252,15 +2985,8 @@ namespace Piccolo
         VkImage     vk_image;
         VkImageView vk_image_view;
 
-        VulkanUtil::createCubeMap(this,
-                                  vk_image,
-                                  vk_image_view,
-                                  image_allocation,
-                                  texture_image_width,
-                                  texture_image_height,
-                                  texture_image_pixels,
-                                  texture_image_format,
-                                  miplevels);
+        VulkanUtil::createCubeMap(
+            this, vk_image, vk_image_view, image_allocation, texture_image_width, texture_image_height, texture_image_pixels, texture_image_format, miplevels);
 
         image      = new VulkanImage();
         image_view = new VulkanImageView();
@@ -3276,13 +3002,8 @@ namespace Piccolo
         for (size_t i = 0; i < m_swapchain_images.size(); i++)
         {
             VkImageView vk_image_view;
-            vk_image_view             = VulkanUtil::createImageView(m_device,
-                                                        m_swapchain_images[i],
-                                                        (VkFormat)m_swapchain_image_format,
-                                                        VK_IMAGE_ASPECT_COLOR_BIT,
-                                                        VK_IMAGE_VIEW_TYPE_2D,
-                                                        1,
-                                                        1);
+            vk_image_view = VulkanUtil::createImageView(
+                m_device, m_swapchain_images[i], (VkFormat)m_swapchain_image_format, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1);
             m_swapchain_imageviews[i] = new VulkanImageView();
             ((VulkanImageView*)m_swapchain_imageviews[i])->setResource(vk_image_view);
         }
@@ -3305,8 +3026,7 @@ namespace Piccolo
     }
 
     // todo : more descriptorSet
-    bool VulkanRHI::allocateDescriptorSets(const RHIDescriptorSetAllocateInfo* pAllocateInfo,
-                                           RHIDescriptorSet*&                  pDescriptorSets)
+    bool VulkanRHI::allocateDescriptorSets(const RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet*& pDescriptorSets)
     {
         // descriptor_set_layout
         int                                descriptor_set_layout_size = pAllocateInfo->descriptorSetCount;
@@ -3316,8 +3036,7 @@ namespace Piccolo
             const auto& rhi_descriptor_set_layout_element = pAllocateInfo->pSetLayouts[i];
             auto&       vk_descriptor_set_layout_element  = vk_descriptor_set_layout_list[i];
 
-            vk_descriptor_set_layout_element =
-                ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element)->getResource();
+            vk_descriptor_set_layout_element = ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element)->getResource();
 
             VulkanDescriptorSetLayout* test = ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element);
 
@@ -3325,10 +3044,9 @@ namespace Piccolo
         };
 
         VkDescriptorSetAllocateInfo descriptorset_allocate_info {};
-        descriptorset_allocate_info.sType = (VkStructureType)pAllocateInfo->sType;
-        descriptorset_allocate_info.pNext = (const void*)pAllocateInfo->pNext;
-        descriptorset_allocate_info.descriptorPool =
-            ((VulkanDescriptorPool*)(pAllocateInfo->descriptorPool))->getResource();
+        descriptorset_allocate_info.sType              = (VkStructureType)pAllocateInfo->sType;
+        descriptorset_allocate_info.pNext              = (const void*)pAllocateInfo->pNext;
+        descriptorset_allocate_info.descriptorPool     = ((VulkanDescriptorPool*)(pAllocateInfo->descriptorPool))->getResource();
         descriptorset_allocate_info.descriptorSetCount = pAllocateInfo->descriptorSetCount;
         descriptorset_allocate_info.pSetLayouts        = vk_descriptor_set_layout_list.data();
 
@@ -3348,14 +3066,13 @@ namespace Piccolo
         }
     }
 
-    bool VulkanRHI::allocateCommandBuffers(const RHICommandBufferAllocateInfo* pAllocateInfo,
-                                           RHICommandBuffer*&                  pCommandBuffers)
+    bool VulkanRHI::allocateCommandBuffers(const RHICommandBufferAllocateInfo* pAllocateInfo, RHICommandBuffer*& pCommandBuffers)
     {
         VkCommandBufferAllocateInfo command_buffer_allocate_info {};
-        command_buffer_allocate_info.sType       = (VkStructureType)pAllocateInfo->sType;
-        command_buffer_allocate_info.pNext       = (const void*)pAllocateInfo->pNext;
-        command_buffer_allocate_info.commandPool = ((VulkanCommandPool*)(pAllocateInfo->commandPool))->getResource();
-        command_buffer_allocate_info.level       = (VkCommandBufferLevel)pAllocateInfo->level;
+        command_buffer_allocate_info.sType              = (VkStructureType)pAllocateInfo->sType;
+        command_buffer_allocate_info.pNext              = (const void*)pAllocateInfo->pNext;
+        command_buffer_allocate_info.commandPool        = ((VulkanCommandPool*)(pAllocateInfo->commandPool))->getResource();
+        command_buffer_allocate_info.level              = (VkCommandBufferLevel)pAllocateInfo->level;
         command_buffer_allocate_info.commandBufferCount = pAllocateInfo->commandBufferCount;
 
         VkCommandBuffer vk_command_buffer;
@@ -3380,17 +3097,14 @@ namespace Piccolo
         SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(m_physical_device);
 
         // choose the best or fitting format
-        VkSurfaceFormatKHR chosen_surface_format =
-            chooseSwapchainSurfaceFormatFromDetails(swapchain_support_details.formats);
+        VkSurfaceFormatKHR chosen_surface_format = chooseSwapchainSurfaceFormatFromDetails(swapchain_support_details.formats);
         // choose the best or fitting present mode
-        VkPresentModeKHR chosen_presentMode =
-            chooseSwapchainPresentModeFromDetails(swapchain_support_details.presentModes);
+        VkPresentModeKHR chosen_presentMode = chooseSwapchainPresentModeFromDetails(swapchain_support_details.presentModes);
         // choose the best or fitting extent
         VkExtent2D chosen_extent = chooseSwapchainExtentFromDetails(swapchain_support_details.capabilities);
 
         uint32_t image_count = swapchain_support_details.capabilities.minImageCount + 1;
-        if (swapchain_support_details.capabilities.maxImageCount > 0 &&
-            image_count > swapchain_support_details.capabilities.maxImageCount)
+        if (swapchain_support_details.capabilities.maxImageCount > 0 && image_count > swapchain_support_details.capabilities.maxImageCount)
         {
             image_count = swapchain_support_details.capabilities.maxImageCount;
         }
@@ -3406,8 +3120,7 @@ namespace Piccolo
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        uint32_t queueFamilyIndices[] = {m_queue_indices.graphics_family.value(),
-                                         m_queue_indices.present_family.value()};
+        uint32_t queueFamilyIndices[] = {m_queue_indices.graphics_family.value(), m_queue_indices.present_family.value()};
 
         if (m_queue_indices.graphics_family != m_queue_indices.present_family)
         {
@@ -3487,40 +3200,22 @@ namespace Piccolo
         delete (shaderModule);
     }
 
-    void VulkanRHI::destroySemaphore(RHISemaphore* semaphore)
-    {
-        vkDestroySemaphore(m_device, ((VulkanSemaphore*)semaphore)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroySemaphore(RHISemaphore* semaphore) { vkDestroySemaphore(m_device, ((VulkanSemaphore*)semaphore)->getResource(), nullptr); }
 
-    void VulkanRHI::destroySampler(RHISampler* sampler)
-    {
-        vkDestroySampler(m_device, ((VulkanSampler*)sampler)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroySampler(RHISampler* sampler) { vkDestroySampler(m_device, ((VulkanSampler*)sampler)->getResource(), nullptr); }
 
-    void VulkanRHI::destroyInstance(RHIInstance* instance)
-    {
-        vkDestroyInstance(((VulkanInstance*)instance)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroyInstance(RHIInstance* instance) { vkDestroyInstance(((VulkanInstance*)instance)->getResource(), nullptr); }
 
-    void VulkanRHI::destroyImageView(RHIImageView* imageView)
-    {
-        vkDestroyImageView(m_device, ((VulkanImageView*)imageView)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroyImageView(RHIImageView* imageView) { vkDestroyImageView(m_device, ((VulkanImageView*)imageView)->getResource(), nullptr); }
 
-    void VulkanRHI::destroyImage(RHIImage* image)
-    {
-        vkDestroyImage(m_device, ((VulkanImage*)image)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroyImage(RHIImage* image) { vkDestroyImage(m_device, ((VulkanImage*)image)->getResource(), nullptr); }
 
     void VulkanRHI::destroyFramebuffer(RHIFramebuffer* framebuffer)
     {
         vkDestroyFramebuffer(m_device, ((VulkanFramebuffer*)framebuffer)->getResource(), nullptr);
     }
 
-    void VulkanRHI::destroyFence(RHIFence* fence)
-    {
-        vkDestroyFence(m_device, ((VulkanFence*)fence)->getResource(), nullptr);
-    }
+    void VulkanRHI::destroyFence(RHIFence* fence) { vkDestroyFence(m_device, ((VulkanFence*)fence)->getResource(), nullptr); }
 
     void VulkanRHI::destroyDevice() { vkDestroyDevice(m_device, nullptr); }
 
@@ -3535,13 +3230,10 @@ namespace Piccolo
         RHI_DELETE_PTR(buffer);
     }
 
-    void VulkanRHI::freeCommandBuffers(RHICommandPool*   commandPool,
-                                       uint32_t          commandBufferCount,
-                                       RHICommandBuffer* pCommandBuffers)
+    void VulkanRHI::freeCommandBuffers(RHICommandPool* commandPool, uint32_t commandBufferCount, RHICommandBuffer* pCommandBuffers)
     {
         VkCommandBuffer vk_command_buffer = ((VulkanCommandBuffer*)pCommandBuffers)->getResource();
-        vkFreeCommandBuffers(
-            m_device, ((VulkanCommandPool*)commandPool)->getResource(), commandBufferCount, &vk_command_buffer);
+        vkFreeCommandBuffers(m_device, ((VulkanCommandPool*)commandPool)->getResource(), commandBufferCount, &vk_command_buffer);
     }
 
     void VulkanRHI::freeMemory(RHIDeviceMemory*& memory)
@@ -3550,14 +3242,9 @@ namespace Piccolo
         RHI_DELETE_PTR(memory);
     }
 
-    bool VulkanRHI::mapMemory(RHIDeviceMemory*  memory,
-                              RHIDeviceSize     offset,
-                              RHIDeviceSize     size,
-                              RHIMemoryMapFlags flags,
-                              void**            ppData)
+    bool VulkanRHI::mapMemory(RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size, RHIMemoryMapFlags flags, void** ppData)
     {
-        VkResult result = vkMapMemory(
-            m_device, ((VulkanDeviceMemory*)memory)->getResource(), offset, size, (VkMemoryMapFlags)flags, ppData);
+        VkResult result = vkMapMemory(m_device, ((VulkanDeviceMemory*)memory)->getResource(), offset, size, (VkMemoryMapFlags)flags, ppData);
 
         if (result == VK_SUCCESS)
         {
@@ -3570,15 +3257,9 @@ namespace Piccolo
         }
     }
 
-    void VulkanRHI::unmapMemory(RHIDeviceMemory* memory)
-    {
-        vkUnmapMemory(m_device, ((VulkanDeviceMemory*)memory)->getResource());
-    }
+    void VulkanRHI::unmapMemory(RHIDeviceMemory* memory) { vkUnmapMemory(m_device, ((VulkanDeviceMemory*)memory)->getResource()); }
 
-    void VulkanRHI::invalidateMappedMemoryRanges(void*            pNext,
-                                                 RHIDeviceMemory* memory,
-                                                 RHIDeviceSize    offset,
-                                                 RHIDeviceSize    size)
+    void VulkanRHI::invalidateMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size)
     {
         VkMappedMemoryRange mappedRange {};
         mappedRange.sType  = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -3588,8 +3269,7 @@ namespace Piccolo
         vkInvalidateMappedMemoryRanges(m_device, 1, &mappedRange);
     }
 
-    void
-    VulkanRHI::flushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size)
+    void VulkanRHI::flushMappedMemoryRanges(void* pNext, RHIDeviceMemory* memory, RHIDeviceSize offset, RHIDeviceSize size)
     {
         VkMappedMemoryRange mappedRange {};
         mappedRange.sType  = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -3599,10 +3279,7 @@ namespace Piccolo
         vkFlushMappedMemoryRanges(m_device, 1, &mappedRange);
     }
 
-    RHISemaphore*& VulkanRHI::getTextureCopySemaphore(uint32_t index)
-    {
-        return m_image_available_for_texturescopy_semaphores[index];
-    }
+    RHISemaphore*& VulkanRHI::getTextureCopySemaphore(uint32_t index) { return m_image_available_for_texturescopy_semaphores[index]; }
 
     void VulkanRHI::recreateSwapchain()
     {
@@ -3615,8 +3292,7 @@ namespace Piccolo
             glfwWaitEvents();
         }
 
-        VkResult res_wait_for_fences =
-            _vkWaitForFences(m_device, k_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
+        VkResult res_wait_for_fences = _vkWaitForFences(m_device, k_max_frames_in_flight, m_is_frame_in_flight_fences, VK_TRUE, UINT64_MAX);
         if (VK_SUCCESS != res_wait_for_fences)
         {
             LOG_ERROR("_vkWaitForFences failed");
@@ -3643,8 +3319,7 @@ namespace Piccolo
                                                      const VkAllocationCallbacks*              pAllocator,
                                                      VkDebugUtilsMessengerEXT*                 pDebugMessenger)
     {
-        auto func =
-            (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr)
         {
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -3655,20 +3330,16 @@ namespace Piccolo
         }
     }
 
-    void VulkanRHI::destroyDebugUtilsMessengerEXT(VkInstance                   instance,
-                                                  VkDebugUtilsMessengerEXT     debugMessenger,
-                                                  const VkAllocationCallbacks* pAllocator)
+    void VulkanRHI::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
     {
-        auto func =
-            (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr)
         {
             func(instance, debugMessenger, pAllocator);
         }
     }
 
-    Piccolo::QueueFamilyIndices
-    VulkanRHI::findQueueFamilies(VkPhysicalDevice physicalm_device) // for device and surface
+    Piccolo::QueueFamilyIndices VulkanRHI::findQueueFamilies(VkPhysicalDevice physicalm_device) // for device and surface
     {
         QueueFamilyIndices indices;
         uint32_t           queue_family_count = 0;
@@ -3690,9 +3361,7 @@ namespace Piccolo
             }
 
             VkBool32 is_present_support = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(physicalm_device,
-                                                 i,
-                                                 m_surface,
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalm_device, i, m_surface,
                                                  &is_present_support); // if support surface presentation
             if (is_present_support)
             {
@@ -3733,8 +3402,7 @@ namespace Piccolo
         if (is_extensions_supported)
         {
             SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(physicalm_device);
-            is_swapchain_adequate =
-                !swapchain_support_details.formats.empty() && !swapchain_support_details.presentModes.empty();
+            is_swapchain_adequate                             = !swapchain_support_details.formats.empty() && !swapchain_support_details.presentModes.empty();
         }
 
         VkPhysicalDeviceFeatures physicalm_device_features;
@@ -3761,8 +3429,7 @@ namespace Piccolo
         if (format_count != 0)
         {
             details_result.formats.resize(format_count);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(
-                physicalm_device, m_surface, &format_count, details_result.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalm_device, m_surface, &format_count, details_result.formats.data());
         }
 
         // present modes
@@ -3771,8 +3438,7 @@ namespace Piccolo
         if (presentmode_count != 0)
         {
             details_result.presentModes.resize(presentmode_count);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(
-                physicalm_device, m_surface, &presentmode_count, details_result.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalm_device, m_surface, &presentmode_count, details_result.presentModes.data());
         }
 
         return details_result;
@@ -3785,9 +3451,7 @@ namespace Piccolo
                                    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
-    VkFormat VulkanRHI::findSupportedFormat(const std::vector<VkFormat>& candidates,
-                                            VkImageTiling                tiling,
-                                            VkFormatFeatureFlags         features)
+    VkFormat VulkanRHI::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
     {
         for (VkFormat format : candidates)
         {
@@ -3808,15 +3472,13 @@ namespace Piccolo
         return VkFormat();
     }
 
-    VkSurfaceFormatKHR
-    VulkanRHI::chooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& available_surface_formats)
+    VkSurfaceFormatKHR VulkanRHI::chooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& available_surface_formats)
     {
         for (const auto& surface_format : available_surface_formats)
         {
             // TODO: select the VK_FORMAT_B8G8R8A8_SRGB surface format,
             // there is no need to do gamma correction in the fragment shader
-            if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
-                surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 return surface_format;
             }
@@ -3824,8 +3486,7 @@ namespace Piccolo
         return available_surface_formats[0];
     }
 
-    VkPresentModeKHR
-    VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes)
+    VkPresentModeKHR VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes)
     {
         for (VkPresentModeKHR present_mode : available_present_modes)
         {
@@ -3850,10 +3511,8 @@ namespace Piccolo
 
             VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-            actualExtent.width =
-                std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-            actualExtent.height =
-                std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+            actualExtent.width  = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
             return actualExtent;
         }

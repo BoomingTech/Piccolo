@@ -5,12 +5,9 @@
 
 namespace Piccolo
 {
-    void RenderScene::clear()
-    {
-    }
+    void RenderScene::clear() {}
 
-    void RenderScene::updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
-                                           std::shared_ptr<RenderCamera>   camera)
+    void RenderScene::updateVisibleObjects(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
     {
         updateVisibleObjectsDirectionalLight(render_resource, camera);
         updateVisibleObjectsPointLight(render_resource);
@@ -31,15 +28,9 @@ namespace Piccolo
 
     GuidAllocator<MeshSourceDesc>& RenderScene::getMeshAssetIdAllocator() { return m_mesh_asset_id_allocator; }
 
-    GuidAllocator<MaterialSourceDesc>& RenderScene::getMaterialAssetdAllocator()
-    {
-        return m_material_asset_id_allocator;
-    }
+    GuidAllocator<MaterialSourceDesc>& RenderScene::getMaterialAssetdAllocator() { return m_material_asset_id_allocator; }
 
-    void RenderScene::addInstanceIdToMap(uint32_t instance_id, GObjectID go_id)
-    {
-        m_mesh_object_id_map[instance_id] = go_id;
-    }
+    void RenderScene::addInstanceIdToMap(uint32_t instance_id, GObjectID go_id) { m_mesh_object_id_map[instance_id] = go_id; }
 
     GObjectID RenderScene::getGObjectIDByMeshID(uint32_t mesh_id) const
     {
@@ -84,25 +75,20 @@ namespace Piccolo
         m_render_entities.clear();
     }
 
-    void RenderScene::updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource,
-                                                           std::shared_ptr<RenderCamera>   camera)
+    void RenderScene::updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
     {
         Matrix4x4 directional_light_proj_view = CalculateDirectionalLightCamera(*this, *camera);
 
-        render_resource->m_mesh_perframe_storage_buffer_object.directional_light_proj_view =
-            directional_light_proj_view;
-        render_resource->m_mesh_directional_light_shadow_perframe_storage_buffer_object.light_proj_view =
-            directional_light_proj_view;
+        render_resource->m_mesh_perframe_storage_buffer_object.directional_light_proj_view              = directional_light_proj_view;
+        render_resource->m_mesh_directional_light_shadow_perframe_storage_buffer_object.light_proj_view = directional_light_proj_view;
 
         m_directional_light_visible_mesh_nodes.clear();
 
-        ClusterFrustum frustum =
-            CreateClusterFrustumFromMatrix(directional_light_proj_view, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
+        ClusterFrustum frustum = CreateClusterFrustumFromMatrix(directional_light_proj_view, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
 
         for (const RenderEntity& entity : m_render_entities)
         {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
+            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(), entity.m_bounding_box.getMaxCorner()};
 
             if (TiledFrustumIntersectBox(frustum, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
             {
@@ -144,14 +130,12 @@ namespace Piccolo
 
         for (const RenderEntity& entity : m_render_entities)
         {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
+            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(), entity.m_bounding_box.getMaxCorner()};
 
             bool intersect_with_point_lights = true;
             for (size_t i = 0; i < point_light_num; i++)
             {
-                if (!BoxIntersectsWithSphere(BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix),
-                                             point_lights_bounding_spheres[i]))
+                if (!BoxIntersectsWithSphere(BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix), point_lights_bounding_spheres[i]))
                 {
                     intersect_with_point_lights = false;
                     break;
@@ -183,8 +167,7 @@ namespace Piccolo
         }
     }
 
-    void RenderScene::updateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource,
-                                                     std::shared_ptr<RenderCamera>   camera)
+    void RenderScene::updateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera)
     {
         m_main_camera_visible_mesh_nodes.clear();
 
@@ -196,8 +179,7 @@ namespace Piccolo
 
         for (const RenderEntity& entity : m_render_entities)
         {
-            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(),
-                                                 entity.m_bounding_box.getMaxCorner()};
+            BoundingBox mesh_asset_bounding_box {entity.m_bounding_box.getMinCorner(), entity.m_bounding_box.getMaxCorner()};
 
             if (TiledFrustumIntersectBox(f, BoundingBoxTransform(mesh_asset_bounding_box, entity.m_model_matrix)))
             {

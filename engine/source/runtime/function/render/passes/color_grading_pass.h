@@ -7,7 +7,7 @@ namespace Piccolo
     struct ColorGradingPassInitInfo : RenderPassInitInfo
     {
         RHIRenderPass* render_pass;
-        RHIImageView* input_attachment;
+        RHIImageView*  input_attachment;
     };
 
     class ColorGradingPass : public RenderPass

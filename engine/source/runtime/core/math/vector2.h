@@ -73,10 +73,7 @@ namespace Piccolo
         // overloaded operators to help Vector2
         friend Vector2 operator*(float scalar, const Vector2& rhs) { return Vector2(scalar * rhs.x, scalar * rhs.y); }
 
-        friend Vector2 operator/(float fScalar, const Vector2& rhs)
-        {
-            return Vector2(fScalar / rhs.x, fScalar / rhs.y);
-        }
+        friend Vector2 operator/(float fScalar, const Vector2& rhs) { return Vector2(fScalar / rhs.x, fScalar / rhs.y); }
 
         friend Vector2 operator+(const Vector2& lhs, float rhs) { return Vector2(lhs.x + rhs, lhs.y + rhs); }
 
@@ -322,10 +319,7 @@ namespace Piccolo
         /** Calculates a reflection vector to the plane with the given normal .
         @remarks NB assumes 'this' is pointing AWAY FROM the plane, invert if it is not.
         */
-        Vector2 reflect(const Vector2& normal) const
-        {
-            return Vector2(*this - (2 * this->dotProduct(normal) * normal));
-        }
+        Vector2 reflect(const Vector2& normal) const { return Vector2(*this - (2 * this->dotProduct(normal) * normal)); }
 
         /// Check whether this vector contains valid values
         bool isNaN() const { return Math::isNan(x) || Math::isNan(y); }

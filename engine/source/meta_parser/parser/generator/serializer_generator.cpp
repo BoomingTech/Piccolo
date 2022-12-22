@@ -4,8 +4,7 @@
 
 namespace Generator
 {
-    SerializerGenerator::SerializerGenerator(std::string                             source_directory,
-                                             std::function<std::string(std::string)> get_include_function) :
+    SerializerGenerator::SerializerGenerator(std::string source_directory, std::function<std::string(std::string)> get_include_function) :
         GeneratorInterface(source_directory + "/_generated/serializer", source_directory, get_include_function)
     {
         prepareStatus(m_out_path);
@@ -33,8 +32,7 @@ namespace Generator
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
 
-        include_headfiles.push_back(
-            Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, path).string()));
+        include_headfiles.push_back(Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, path).string()));
         for (auto class_temp : schema.classes)
         {
             if (!class_temp->shouldCompileFields())
@@ -52,8 +50,7 @@ namespace Generator
                     auto include_file_base = processFileName(include_file);
                     if (file_path != include_file_base)
                     {
-                        include_headfiles.push_back(Mustache::data(
-                            "headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
+                        include_headfiles.push_back(Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
                     }
                 }
             }
@@ -70,8 +67,7 @@ namespace Generator
                         auto include_file_base = processFileName(include_file);
                         if (file_path != include_file_base)
                         {
-                            include_headfiles.push_back(Mustache::data(
-                                "headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
+                            include_headfiles.push_back(Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
                         }
                     }
                 }
@@ -83,12 +79,10 @@ namespace Generator
 
         muatache_data.set("class_defines", class_defines);
         muatache_data.set("include_headfiles", include_headfiles);
-        std::string render_string =
-            TemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
+        std::string render_string = TemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
         Utils::saveFile(render_string, file_path);
 
-        m_include_headfiles.push_back(
-            Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, file_path).string()));
+        m_include_headfiles.push_back(Mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, file_path).string()));
         return 0;
     }
 

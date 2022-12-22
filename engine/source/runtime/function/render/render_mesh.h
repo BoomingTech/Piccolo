@@ -4,8 +4,8 @@
 #include "runtime/core/math/vector3.h"
 #include "runtime/core/math/vector4.h"
 
-#include <array>
 #include "interface/rhi.h"
+#include <array>
 
 namespace Piccolo
 {
@@ -29,8 +29,8 @@ namespace Piccolo
 
         struct VulkanMeshVertexJointBinding
         {
-            int indices[4];
-            Vector4  weights;
+            int     indices[4];
+            Vector4 weights;
         };
 
         static std::array<RHIVertexInputBindingDescription, 3> getBindingDescriptions()

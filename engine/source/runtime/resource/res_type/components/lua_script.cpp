@@ -11,7 +11,7 @@ namespace Piccolo
     {
         // TODO : use file service
         auto file_dir = g_runtime_global_context.m_config_manager->getAssetFolder();
-        file_dir = file_dir / m_script_url;
+        file_dir      = file_dir / m_script_url;
 
         LOG_DEBUG("open lua script: " + file_dir.generic_string());
 
@@ -28,4 +28,4 @@ namespace Piccolo
 
         LOG_DEBUG("script content:\n" + m_script_content);
     }
-}
+} // namespace Piccolo

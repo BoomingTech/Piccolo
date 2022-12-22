@@ -71,14 +71,12 @@ namespace Piccolo
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
     void PhysicsManager::renderPhysicsWorld(float delta_time)
     {
-        std::shared_ptr<PhysicsScene> physics_scene =
-            g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
+        std::shared_ptr<PhysicsScene> physics_scene = g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
 
         std::shared_ptr<RenderCamera> render_camera = g_runtime_global_context.m_render_system->getRenderCamera();
         const Vector2&                fov           = render_camera->getFOV();
 
-        const EngineContentViewport& engine_viewport =
-            g_runtime_global_context.m_render_system->getEngineContentViewport();
+        const EngineContentViewport& engine_viewport = g_runtime_global_context.m_render_system->getEngineContentViewport();
 
         HWND window_handle = m_renderer->GetWindowHandle();
         RECT rc;
@@ -87,8 +85,7 @@ namespace Piccolo
         const float current_width  = static_cast<float>(rc.right - rc.left);
         const float current_height = static_cast<float>(rc.bottom - rc.top);
 
-        if (!Math::realEqual(engine_viewport.width, current_width, 1e-1) ||
-            !Math::realEqual(engine_viewport.height, current_height, 1e-1))
+        if (!Math::realEqual(engine_viewport.width, current_width, 1e-1) || !Math::realEqual(engine_viewport.height, current_height, 1e-1))
         {
             ::SetWindowPos(window_handle,
                            NULL,

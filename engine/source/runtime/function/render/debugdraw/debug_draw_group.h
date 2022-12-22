@@ -1,9 +1,9 @@
 #pragma once
 
-#include "debug_draw_primitive.h"
 #include "debug_draw_font.h"
-#include <mutex>
+#include "debug_draw_primitive.h"
 #include <list>
+#include <mutex>
 
 namespace Piccolo
 {
@@ -26,22 +26,19 @@ namespace Piccolo
 
     public:
         virtual ~DebugDrawGroup();
-        void initialize();
-        void clear();
-        void clearData();
-        void setName(const std::string& name);
+        void               initialize();
+        void               clear();
+        void               clearData();
+        void               setName(const std::string& name);
         const std::string& getName() const;
-        
-        void addPoint(const Vector3& position, 
-                      const Vector4& color, 
-                      const float    life_time = k_debug_draw_one_frame, 
-                      const bool     no_depth_test = true);
+
+        void addPoint(const Vector3& position, const Vector4& color, const float life_time = k_debug_draw_one_frame, const bool no_depth_test = true);
 
         void addLine(const Vector3& point0,
                      const Vector3& point1,
                      const Vector4& color0,
                      const Vector4& color1,
-                     const float    life_time = k_debug_draw_one_frame,
+                     const float    life_time     = k_debug_draw_one_frame,
                      const bool     no_depth_test = true);
 
         void addTriangle(const Vector3& point0,
@@ -50,9 +47,9 @@ namespace Piccolo
                          const Vector4& color0,
                          const Vector4& color1,
                          const Vector4& color2,
-                         const float    life_time = k_debug_draw_one_frame,
+                         const float    life_time     = k_debug_draw_one_frame,
                          const bool     no_depth_test = true,
-                         const FillMode fillmod = _FillMode_wireframe);
+                         const FillMode fillmod       = _FillMode_wireframe);
 
         void addQuad(const Vector3& point0,
                      const Vector3& point1,
@@ -62,29 +59,25 @@ namespace Piccolo
                      const Vector4& color1,
                      const Vector4& color2,
                      const Vector4& color3,
-                     const float    life_time = k_debug_draw_one_frame,
+                     const float    life_time     = k_debug_draw_one_frame,
                      const bool     no_depth_test = true,
-                     const FillMode fillmode = _FillMode_wireframe);
+                     const FillMode fillmode      = _FillMode_wireframe);
 
         void addBox(const Vector3& center_point,
                     const Vector3& half_extends,
                     const Vector4& rotate,
                     const Vector4& color,
-                    const float    life_time = k_debug_draw_one_frame,
+                    const float    life_time     = k_debug_draw_one_frame,
                     const bool     no_depth_test = true);
 
-        void addSphere(const Vector3& center, 
-                       const float    radius,
-                       const Vector4& color, 
-                       const float    life_time, 
-                       const bool     no_depth_test = true);
+        void addSphere(const Vector3& center, const float radius, const Vector4& color, const float life_time, const bool no_depth_test = true);
 
         void addCylinder(const Vector3& center,
                          const float    radius,
                          const float    height,
                          const Vector4& rotate,
                          const Vector4& color,
-                         const float    life_time = k_debug_draw_one_frame, 
+                         const float    life_time     = k_debug_draw_one_frame,
                          const bool     no_depth_test = true);
 
         void addCapsule(const Vector3& center,
@@ -93,7 +86,7 @@ namespace Piccolo
                         const float    radius,
                         const float    height,
                         const Vector4& color,
-                        const float    life_time = k_debug_draw_one_frame,
+                        const float    life_time     = k_debug_draw_one_frame,
                         const bool     no_depth_test = true);
 
         void addText(const std::string& content,
@@ -114,13 +107,12 @@ namespace Piccolo
         void writePointData(std::vector<DebugDrawVertex>& vertexs, bool no_depth_test);
         void writeLineData(std::vector<DebugDrawVertex>& vertexs, bool no_depth_test);
         void writeTriangleData(std::vector<DebugDrawVertex>& vertexs, bool no_depth_test);
-        void writeUniformDynamicDataToCache(std::vector<std::pair<Matrix4x4, Vector4> >& datas);
+        void writeUniformDynamicDataToCache(std::vector<std::pair<Matrix4x4, Vector4>>& datas);
         void writeTextData(std::vector<DebugDrawVertex>& vertexs, DebugDrawFont* font, Matrix4x4 m_proj_view_matrix);
 
         size_t getSphereCount(bool no_depth_test) const;
         size_t getCylinderCount(bool no_depth_test) const;
         size_t getCapsuleCount(bool no_depth_test) const;
         size_t getTextCharacterCount() const;
-
     };
-}
+} // namespace Piccolo

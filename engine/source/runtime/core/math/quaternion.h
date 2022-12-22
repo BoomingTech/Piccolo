@@ -27,10 +27,7 @@ namespace Piccolo
         /// Construct a quaternion from an angle/axis
         Quaternion(const Radian& angle, const Vector3& axis) { this->fromAngleAxis(angle, axis); }
         /// Construct a quaternion from 3 orthonormal local axes
-        Quaternion(const Vector3& xaxis, const Vector3& yaxis, const Vector3& zaxis)
-        {
-            this->fromAxes(xaxis, yaxis, zaxis);
-        }
+        Quaternion(const Vector3& xaxis, const Vector3& yaxis, const Vector3& zaxis) { this->fromAxes(xaxis, yaxis, zaxis); }
 
         /// Pointer accessor for direct copying
         float* ptr() { return &w; }
@@ -74,15 +71,9 @@ namespace Piccolo
         */
         Vector3 zAxis() const;
 
-        Quaternion operator+(const Quaternion& rhs) const
-        {
-            return Quaternion(w + rhs.w, x + rhs.x, y + rhs.y, z + rhs.z);
-        }
+        Quaternion operator+(const Quaternion& rhs) const { return Quaternion(w + rhs.w, x + rhs.x, y + rhs.y, z + rhs.z); }
 
-        Quaternion operator-(const Quaternion& rhs) const
-        {
-            return Quaternion(w - rhs.w, x - rhs.x, y - rhs.y, z - rhs.z);
-        }
+        Quaternion operator-(const Quaternion& rhs) const { return Quaternion(w - rhs.w, x - rhs.x, y - rhs.y, z - rhs.z); }
 
         Quaternion mul(const Quaternion& rhs) const { return (*this) * rhs; }
         Quaternion operator*(const Quaternion& rhs) const;
@@ -98,22 +89,13 @@ namespace Piccolo
             return Quaternion(w / scalar, x / scalar, y / scalar, z / scalar);
         }
 
-        friend Quaternion operator*(float scalar, const Quaternion& rhs)
-        {
-            return Quaternion(scalar * rhs.w, scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
-        }
+        friend Quaternion operator*(float scalar, const Quaternion& rhs) { return Quaternion(scalar * rhs.w, scalar * rhs.x, scalar * rhs.y, scalar * rhs.z); }
 
         Quaternion operator-() const { return Quaternion(-w, -x, -y, -z); }
 
-        bool operator==(const Quaternion& rhs) const
-        {
-            return (rhs.x == x) && (rhs.y == y) && (rhs.z == z) && (rhs.w == w);
-        }
+        bool operator==(const Quaternion& rhs) const { return (rhs.x == x) && (rhs.y == y) && (rhs.z == z) && (rhs.w == w); }
 
-        bool operator!=(const Quaternion& rhs) const
-        {
-            return (rhs.x != x) || (rhs.y != y) || (rhs.z != z) || (rhs.w != w);
-        }
+        bool operator!=(const Quaternion& rhs) const { return (rhs.x != x) || (rhs.y != y) || (rhs.z != z) || (rhs.w != w); }
 
         /// Check whether this quaternion contains valid values
         bool isNaN() const { return Math::isNan(x) || Math::isNan(y) || Math::isNan(z) || Math::isNan(w); }

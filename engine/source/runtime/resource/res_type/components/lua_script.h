@@ -17,4 +17,4 @@ namespace Piccolo
 
         std::string m_script_content;
     };
-}
+} // namespace Piccolo

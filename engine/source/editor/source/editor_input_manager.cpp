@@ -25,20 +25,14 @@ namespace Piccolo
         g_editor_global_context.m_window_system->registerOnResetFunc(std::bind(&EditorInputManager::onReset, this));
         g_editor_global_context.m_window_system->registerOnCursorPosFunc(
             std::bind(&EditorInputManager::onCursorPos, this, std::placeholders::_1, std::placeholders::_2));
-        g_editor_global_context.m_window_system->registerOnCursorEnterFunc(
-            std::bind(&EditorInputManager::onCursorEnter, this, std::placeholders::_1));
+        g_editor_global_context.m_window_system->registerOnCursorEnterFunc(std::bind(&EditorInputManager::onCursorEnter, this, std::placeholders::_1));
         g_editor_global_context.m_window_system->registerOnScrollFunc(
             std::bind(&EditorInputManager::onScroll, this, std::placeholders::_1, std::placeholders::_2));
         g_editor_global_context.m_window_system->registerOnMouseButtonFunc(
             std::bind(&EditorInputManager::onMouseButtonClicked, this, std::placeholders::_1, std::placeholders::_2));
-        g_editor_global_context.m_window_system->registerOnWindowCloseFunc(
-            std::bind(&EditorInputManager::onWindowClosed, this));
-        g_editor_global_context.m_window_system->registerOnKeyFunc(std::bind(&EditorInputManager::onKey,
-                                                                             this,
-                                                                             std::placeholders::_1,
-                                                                             std::placeholders::_2,
-                                                                             std::placeholders::_3,
-                                                                             std::placeholders::_4));
+        g_editor_global_context.m_window_system->registerOnWindowCloseFunc(std::bind(&EditorInputManager::onWindowClosed, this));
+        g_editor_global_context.m_window_system->registerOnKeyFunc(
+            std::bind(&EditorInputManager::onKey, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     }
 
     void EditorInputManager::updateCursorOnAxis(Vector2 cursor_uv)
@@ -190,28 +184,24 @@ namespace Piccolo
         if (!g_is_editor_mode)
             return;
 
-        float angularVelocity =
-            180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
+        float angularVelocity = 180.0f / Math::max(m_engine_window_size.x, m_engine_window_size.y); // 180 degrees while moving full screen
         if (m_mouse_x >= 0.0f && m_mouse_y >= 0.0f)
         {
             if (g_editor_global_context.m_window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
             {
-                glfwSetInputMode(
-                    g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                g_editor_global_context.m_scene_manager->getEditorCamera()->rotate(
-                    Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
+                glfwSetInputMode(g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                g_editor_global_context.m_scene_manager->getEditorCamera()->rotate(Vector2(ypos - m_mouse_y, xpos - m_mouse_x) * angularVelocity);
             }
             else if (g_editor_global_context.m_window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
             {
-                g_editor_global_context.m_scene_manager->moveEntity(
-                    xpos,
-                    ypos,
-                    m_mouse_x,
-                    m_mouse_y,
-                    m_engine_window_pos,
-                    m_engine_window_size,
-                    m_cursor_on_axis,
-                    g_editor_global_context.m_scene_manager->getSelectedObjectMatrix());
+                g_editor_global_context.m_scene_manager->moveEntity(xpos,
+                                                                    ypos,
+                                                                    m_mouse_x,
+                                                                    m_mouse_y,
+                                                                    m_engine_window_pos,
+                                                                    m_engine_window_size,
+                                                                    m_cursor_on_axis,
+                                                                    g_editor_global_context.m_scene_manager->getSelectedObjectMatrix());
                 glfwSetInputMode(g_editor_global_context.m_window_system->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
             else
@@ -220,8 +210,8 @@ namespace Piccolo
 
                 if (isCursorInRect(m_engine_window_pos, m_engine_window_size))
                 {
-                    Vector2 cursor_uv = Vector2((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                                                (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
+                    Vector2 cursor_uv =
+                        Vector2((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x, (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
                     updateCursorOnAxis(cursor_uv);
                 }
             }
@@ -260,8 +250,7 @@ namespace Piccolo
             }
             else
             {
-                g_editor_global_context.m_scene_manager->getEditorCamera()->zoom(
-                    (float)yoffset * 2.0f); // wheel scrolled up = zoom in by 2 extra degrees
+                g_editor_global_context.m_scene_manager->getEditorCamera()->zoom((float)yoffset * 2.0f); // wheel scrolled up = zoom in by 2 extra degrees
             }
         }
     }
@@ -281,8 +270,7 @@ namespace Piccolo
         {
             if (key == GLFW_MOUSE_BUTTON_LEFT)
             {
-                Vector2 picked_uv((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x,
-                                  (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
+                Vector2 picked_uv((m_mouse_x - m_engine_window_pos.x) / m_engine_window_size.x, (m_mouse_y - m_engine_window_pos.y) / m_engine_window_size.y);
                 size_t  select_mesh_id = g_editor_global_context.m_scene_manager->getGuidOfPickedMesh(picked_uv);
 
                 size_t gobject_id = g_editor_global_context.m_render_system->getGObjectIDByMeshID(select_mesh_id);

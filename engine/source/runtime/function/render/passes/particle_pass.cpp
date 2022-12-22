@@ -46,8 +46,7 @@ namespace Piccolo
 
     void ParticlePass::copyNormalAndDepthImage()
     {
-        uint8_t index =
-            (m_rhi->getCurrentFrameIndex() + m_rhi->getMaxFramesInFlight() - 1) % m_rhi->getMaxFramesInFlight();
+        uint8_t index = (m_rhi->getCurrentFrameIndex() + m_rhi->getMaxFramesInFlight() - 1) % m_rhi->getMaxFramesInFlight();
 
         m_rhi->waitForFencesPFN(1, &(m_rhi->getFenceList()[index]), VK_TRUE, UINT64_MAX);
 
@@ -115,8 +114,7 @@ namespace Piccolo
             imagememorybarrier.oldLayout     = RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             imagememorybarrier.newLayout     = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             imagememorybarrier.srcAccessMask = RHI_ACCESS_TRANSFER_WRITE_BIT;
-            imagememorybarrier.dstAccessMask =
-                RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | RHI_ACCESS_SHADER_READ_BIT;
+            imagememorybarrier.dstAccessMask = RHI_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | RHI_ACCESS_SHADER_READ_BIT;
 
             m_rhi->cmdPipelineBarrier(m_copy_command_buffer,
                                       RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -249,8 +247,7 @@ namespace Piccolo
         submit_info.pCommandBuffers         = &m_copy_command_buffer;
         submit_info.signalSemaphoreCount    = 0;
         submit_info.pSignalSemaphores       = nullptr;
-        bool res_queue_submit =
-            m_rhi->queueSubmit(m_rhi->getGraphicsQueue(), 1, &submit_info, m_rhi->getFenceList()[index]);
+        bool res_queue_submit               = m_rhi->queueSubmit(m_rhi->getGraphicsQueue(), 1, &submit_info, m_rhi->getFenceList()[index]);
         assert(RHI_SUCCESS == res_queue_submit);
 
         m_rhi->queueWaitIdle(m_rhi->getGraphicsQueue());
@@ -288,21 +285,11 @@ namespace Piccolo
                            1,
                            1);
 
-        m_rhi->createImageView(m_dst_depth_image,
-                               m_rhi->getDepthImageInfo().depth_image_format,
-                               RHI_IMAGE_ASPECT_DEPTH_BIT,
-                               RHI_IMAGE_VIEW_TYPE_2D,
-                               1,
-                               1,
-                               m_src_depth_image_view);
+        m_rhi->createImageView(
+            m_dst_depth_image, m_rhi->getDepthImageInfo().depth_image_format, RHI_IMAGE_ASPECT_DEPTH_BIT, RHI_IMAGE_VIEW_TYPE_2D, 1, 1, m_src_depth_image_view);
 
-        m_rhi->createImageView(m_dst_normal_image,
-                               RHI_FORMAT_R8G8B8A8_UNORM,
-                               RHI_IMAGE_ASPECT_COLOR_BIT,
-                               RHI_IMAGE_VIEW_TYPE_2D,
-                               1,
-                               1,
-                               m_src_normal_image_view);
+        m_rhi->createImageView(
+            m_dst_normal_image, RHI_FORMAT_R8G8B8A8_UNORM, RHI_IMAGE_ASPECT_COLOR_BIT, RHI_IMAGE_VIEW_TYPE_2D, 1, 1, m_src_normal_image_view);
 
         updateDescriptorSet();
     }
@@ -314,8 +301,7 @@ namespace Piccolo
             float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
             m_rhi->pushEvent(m_render_command_buffer, "ParticleBillboard", color);
 
-            m_rhi->cmdBindPipelinePFN(
-                m_render_command_buffer, RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[1].pipeline);
+            m_rhi->cmdBindPipelinePFN(m_render_command_buffer, RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[1].pipeline);
             m_rhi->cmdSetViewportPFN(m_render_command_buffer, 0, 1, m_rhi->getSwapchainInfo().viewport);
             m_rhi->cmdSetScissorPFN(m_render_command_buffer, 0, 1, m_rhi->getSwapchainInfo().scissor);
             m_rhi->cmdBindDescriptorSetsPFN(m_render_command_buffer,
@@ -337,8 +323,8 @@ namespace Piccolo
     {
         // billboard texture
         {
-            std::shared_ptr<TextureData> m_particle_billboard_texture_resource = m_render_resource->loadTextureHDR(
-                m_particle_manager->getGlobalParticleRes().m_particle_billboard_texture_path);
+            std::shared_ptr<TextureData> m_particle_billboard_texture_resource =
+                m_render_resource->loadTextureHDR(m_particle_manager->getGlobalParticleRes().m_particle_billboard_texture_path);
             m_rhi->createGlobalImage(m_particle_billboard_texture_image,
                                      m_particle_billboard_texture_image_view,
                                      m_particle_billboard_texture_vma_allocation,
@@ -350,8 +336,8 @@ namespace Piccolo
 
         // piccolo texture
         {
-            std::shared_ptr<TextureData> m_piccolo_logo_texture_resource = m_render_resource->loadTexture(
-                m_particle_manager->getGlobalParticleRes().m_piccolo_logo_texture_path, true);
+            std::shared_ptr<TextureData> m_piccolo_logo_texture_resource =
+                m_render_resource->loadTexture(m_particle_manager->getGlobalParticleRes().m_piccolo_logo_texture_path, true);
             m_rhi->createGlobalImage(m_piccolo_logo_texture_image,
                                      m_piccolo_logo_texture_image_view,
                                      m_piccolo_logo_texture_vma_allocation,
@@ -385,21 +371,11 @@ namespace Piccolo
                            1,
                            1);
 
-        m_rhi->createImageView(m_dst_depth_image,
-                               m_rhi->getDepthImageInfo().depth_image_format,
-                               RHI_IMAGE_ASPECT_DEPTH_BIT,
-                               RHI_IMAGE_VIEW_TYPE_2D,
-                               1,
-                               1,
-                               m_src_depth_image_view);
+        m_rhi->createImageView(
+            m_dst_depth_image, m_rhi->getDepthImageInfo().depth_image_format, RHI_IMAGE_ASPECT_DEPTH_BIT, RHI_IMAGE_VIEW_TYPE_2D, 1, 1, m_src_depth_image_view);
 
-        m_rhi->createImageView(m_dst_normal_image,
-                               RHI_FORMAT_R8G8B8A8_UNORM,
-                               RHI_IMAGE_ASPECT_COLOR_BIT,
-                               RHI_IMAGE_VIEW_TYPE_2D,
-                               1,
-                               1,
-                               m_src_normal_image_view);
+        m_rhi->createImageView(
+            m_dst_normal_image, RHI_FORMAT_R8G8B8A8_UNORM, RHI_IMAGE_ASPECT_COLOR_BIT, RHI_IMAGE_VIEW_TYPE_2D, 1, 1, m_src_normal_image_view);
     }
 
     void ParticlePass::setupParticleDescriptorSet()
@@ -407,14 +383,14 @@ namespace Piccolo
         for (int eid = 0; eid < m_emitter_count; ++eid)
         {
             RHIDescriptorSetAllocateInfo particlebillboard_global_descriptor_set_alloc_info;
-            particlebillboard_global_descriptor_set_alloc_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            particlebillboard_global_descriptor_set_alloc_info.pNext = NULL;
+            particlebillboard_global_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            particlebillboard_global_descriptor_set_alloc_info.pNext              = NULL;
             particlebillboard_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
             particlebillboard_global_descriptor_set_alloc_info.descriptorSetCount = 1;
             particlebillboard_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[2].layout;
 
-            if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&particlebillboard_global_descriptor_set_alloc_info,
-                                                             m_descriptor_infos[eid * 3 + 2].descriptor_set))
+            if (RHI_SUCCESS !=
+                m_rhi->allocateDescriptorSets(&particlebillboard_global_descriptor_set_alloc_info, m_descriptor_infos[eid * 3 + 2].descriptor_set))
             {
                 throw std::runtime_error("allocate particle billboard global descriptor set");
             }
@@ -422,34 +398,32 @@ namespace Piccolo
             RHIDescriptorBufferInfo particlebillboard_perframe_storage_buffer_info = {};
             particlebillboard_perframe_storage_buffer_info.offset                  = 0;
             particlebillboard_perframe_storage_buffer_info.range                   = RHI_WHOLE_SIZE;
-            particlebillboard_perframe_storage_buffer_info.buffer = m_particle_billboard_uniform_buffer;
+            particlebillboard_perframe_storage_buffer_info.buffer                  = m_particle_billboard_uniform_buffer;
 
             RHIDescriptorBufferInfo particlebillboard_perdrawcall_storage_buffer_info = {};
             particlebillboard_perdrawcall_storage_buffer_info.offset                  = 0;
             particlebillboard_perdrawcall_storage_buffer_info.range                   = RHI_WHOLE_SIZE;
-            particlebillboard_perdrawcall_storage_buffer_info.buffer =
-                m_emitter_buffer_batches[eid].m_position_render_buffer;
+            particlebillboard_perdrawcall_storage_buffer_info.buffer                  = m_emitter_buffer_batches[eid].m_position_render_buffer;
 
             RHIWriteDescriptorSet particlebillboard_descriptor_writes_info[3];
 
-            particlebillboard_descriptor_writes_info[0].sType      = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            particlebillboard_descriptor_writes_info[0].pNext      = NULL;
-            particlebillboard_descriptor_writes_info[0].dstSet     = m_descriptor_infos[eid * 3 + 2].descriptor_set;
-            particlebillboard_descriptor_writes_info[0].dstBinding = 0;
+            particlebillboard_descriptor_writes_info[0].sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            particlebillboard_descriptor_writes_info[0].pNext           = NULL;
+            particlebillboard_descriptor_writes_info[0].dstSet          = m_descriptor_infos[eid * 3 + 2].descriptor_set;
+            particlebillboard_descriptor_writes_info[0].dstBinding      = 0;
             particlebillboard_descriptor_writes_info[0].dstArrayElement = 0;
             particlebillboard_descriptor_writes_info[0].descriptorType  = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             particlebillboard_descriptor_writes_info[0].descriptorCount = 1;
-            particlebillboard_descriptor_writes_info[0].pBufferInfo = &particlebillboard_perframe_storage_buffer_info;
+            particlebillboard_descriptor_writes_info[0].pBufferInfo     = &particlebillboard_perframe_storage_buffer_info;
 
-            particlebillboard_descriptor_writes_info[1].sType      = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            particlebillboard_descriptor_writes_info[1].pNext      = NULL;
-            particlebillboard_descriptor_writes_info[1].dstSet     = m_descriptor_infos[eid * 3 + 2].descriptor_set;
-            particlebillboard_descriptor_writes_info[1].dstBinding = 1;
+            particlebillboard_descriptor_writes_info[1].sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            particlebillboard_descriptor_writes_info[1].pNext           = NULL;
+            particlebillboard_descriptor_writes_info[1].dstSet          = m_descriptor_infos[eid * 3 + 2].descriptor_set;
+            particlebillboard_descriptor_writes_info[1].dstBinding      = 1;
             particlebillboard_descriptor_writes_info[1].dstArrayElement = 0;
             particlebillboard_descriptor_writes_info[1].descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             particlebillboard_descriptor_writes_info[1].descriptorCount = 1;
-            particlebillboard_descriptor_writes_info[1].pBufferInfo =
-                &particlebillboard_perdrawcall_storage_buffer_info;
+            particlebillboard_descriptor_writes_info[1].pBufferInfo     = &particlebillboard_perdrawcall_storage_buffer_info;
 
             RHISampler*          sampler;
             RHISamplerCreateInfo samplerCreateInfo {};
@@ -477,10 +451,10 @@ namespace Piccolo
             particle_texture_image_info.imageView              = m_particle_billboard_texture_image_view;
             particle_texture_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            particlebillboard_descriptor_writes_info[2].sType      = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            particlebillboard_descriptor_writes_info[2].pNext      = NULL;
-            particlebillboard_descriptor_writes_info[2].dstSet     = m_descriptor_infos[eid * 3 + 2].descriptor_set;
-            particlebillboard_descriptor_writes_info[2].dstBinding = 2;
+            particlebillboard_descriptor_writes_info[2].sType           = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            particlebillboard_descriptor_writes_info[2].pNext           = NULL;
+            particlebillboard_descriptor_writes_info[2].dstSet          = m_descriptor_infos[eid * 3 + 2].descriptor_set;
+            particlebillboard_descriptor_writes_info[2].dstBinding      = 2;
             particlebillboard_descriptor_writes_info[2].dstArrayElement = 0;
             particlebillboard_descriptor_writes_info[2].descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             particlebillboard_descriptor_writes_info[2].descriptorCount = 1;
@@ -513,11 +487,7 @@ namespace Piccolo
         if constexpr (s_verbose_particle_alive_info)
         {
             LOG_INFO("Emitter {} info:", id);
-            LOG_INFO("Dead {}, Alive {}, After sim {}, Emit {}",
-                     counter.dead_count,
-                     counter.alive_count,
-                     counter.alive_count_after_sim,
-                     counter.emit_count);
+            LOG_INFO("Dead {}, Alive {}, After sim {}, Emit {}", counter.dead_count, counter.alive_count, counter.alive_count_after_sim, counter.emit_count);
         }
 
         {
@@ -581,13 +551,11 @@ namespace Piccolo
 
             m_rhi->mapMemory(m_emitter_buffer_batches[id].m_counter_host_memory, 0, RHI_WHOLE_SIZE, 0, &mapped);
 
-            m_rhi->flushMappedMemoryRanges(
-                nullptr, m_emitter_buffer_batches[id].m_counter_host_memory, 0, RHI_WHOLE_SIZE);
+            m_rhi->flushMappedMemoryRanges(nullptr, m_emitter_buffer_batches[id].m_counter_host_memory, 0, RHI_WHOLE_SIZE);
 
             m_rhi->unmapMemory(m_emitter_buffer_batches[id].m_counter_host_memory);
 
-            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                                                 RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                              m_emitter_buffer_batches[id].m_counter_device_buffer,
                                              m_emitter_buffer_batches[id].m_counter_device_memory,
@@ -616,11 +584,8 @@ namespace Piccolo
             copyRegion.srcOffset     = 0;
             copyRegion.dstOffset     = 0;
             copyRegion.size          = counterBufferSize;
-            m_rhi->cmdCopyBuffer(copyCmd,
-                                 m_emitter_buffer_batches[id].m_counter_host_buffer,
-                                 m_emitter_buffer_batches[id].m_counter_device_buffer,
-                                 1,
-                                 &copyRegion);
+            m_rhi->cmdCopyBuffer(
+                copyCmd, m_emitter_buffer_batches[id].m_counter_host_buffer, m_emitter_buffer_batches[id].m_counter_device_buffer, 1, &copyRegion);
 
             if (RHI_SUCCESS != m_rhi->endCommandBuffer(copyCmd))
             {
@@ -661,19 +626,16 @@ namespace Piccolo
         {
 
             m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                                             RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                 RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                             RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT | RHI_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                              m_emitter_buffer_batches[id].m_particle_component_res_buffer,
                                              m_emitter_buffer_batches[id].m_particle_component_res_memory,
                                              sizeof(ParticleEmitterDesc),
                                              &m_emitter_buffer_batches[id].m_emitter_desc,
                                              sizeof(ParticleEmitterDesc));
 
-            if (RHI_SUCCESS != m_rhi->mapMemory(m_emitter_buffer_batches[id].m_particle_component_res_memory,
-                                                0,
-                                                RHI_WHOLE_SIZE,
-                                                0,
-                                                &m_emitter_buffer_batches[id].m_emitter_desc_mapped))
+            if (RHI_SUCCESS !=
+                m_rhi->mapMemory(
+                    m_emitter_buffer_batches[id].m_particle_component_res_memory, 0, RHI_WHOLE_SIZE, 0, &m_emitter_buffer_batches[id].m_emitter_desc_mapped))
             {
                 throw std::runtime_error("map emitter component res buffer");
             }
@@ -688,20 +650,17 @@ namespace Piccolo
             void* mapped;
             m_rhi->mapMemory(m_emitter_buffer_batches[id].m_position_host_memory, 0, RHI_WHOLE_SIZE, 0, &mapped);
 
-            m_rhi->flushMappedMemoryRanges(
-                nullptr, m_emitter_buffer_batches[id].m_position_host_memory, 0, RHI_WHOLE_SIZE);
+            m_rhi->flushMappedMemoryRanges(nullptr, m_emitter_buffer_batches[id].m_position_host_memory, 0, RHI_WHOLE_SIZE);
 
             m_rhi->unmapMemory(m_emitter_buffer_batches[id].m_position_host_memory);
 
-            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                                                 RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                              m_emitter_buffer_batches[id].m_position_device_buffer,
                                              m_emitter_buffer_batches[id].m_position_device_memory,
                                              staggingBuferSize);
 
-            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                                                 RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
+            m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT | RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                              m_emitter_buffer_batches[id].m_position_render_buffer,
                                              m_emitter_buffer_batches[id].m_position_render_memory,
@@ -729,11 +688,8 @@ namespace Piccolo
             copyRegion.srcOffset     = 0;
             copyRegion.dstOffset     = 0;
             copyRegion.size          = staggingBuferSize;
-            m_rhi->cmdCopyBuffer(copyCmd,
-                                 m_emitter_buffer_batches[id].m_position_host_buffer,
-                                 m_emitter_buffer_batches[id].m_position_device_buffer,
-                                 1,
-                                 &copyRegion);
+            m_rhi->cmdCopyBuffer(
+                copyCmd, m_emitter_buffer_batches[id].m_position_host_buffer, m_emitter_buffer_batches[id].m_position_device_buffer, 1, &copyRegion);
 
             if (RHI_SUCCESS != m_rhi->endCommandBuffer(copyCmd))
             {
@@ -841,9 +797,9 @@ namespace Piccolo
             {
                 RHIDescriptorSetLayoutBinding& storage_indirectargument_layout_binding = particle_layout_bindings[3];
                 storage_indirectargument_layout_binding.binding                        = 3;
-                storage_indirectargument_layout_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                storage_indirectargument_layout_binding.descriptorCount = 1;
-                storage_indirectargument_layout_binding.stageFlags      = RHI_SHADER_STAGE_COMPUTE_BIT;
+                storage_indirectargument_layout_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                storage_indirectargument_layout_binding.descriptorCount                = 1;
+                storage_indirectargument_layout_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
             }
 
             {
@@ -889,29 +845,27 @@ namespace Piccolo
             {
                 RHIDescriptorSetLayoutBinding& storage_render_position_layout_binding = particle_layout_bindings[9];
                 storage_render_position_layout_binding.binding                        = 9;
-                storage_render_position_layout_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                storage_render_position_layout_binding.descriptorCount = 1;
-                storage_render_position_layout_binding.stageFlags      = RHI_SHADER_STAGE_COMPUTE_BIT;
+                storage_render_position_layout_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                storage_render_position_layout_binding.descriptorCount                = 1;
+                storage_render_position_layout_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
             }
 
             {
                 RHIDescriptorSetLayoutBinding& piccolo_texture_layout_binding = particle_layout_bindings[10];
                 piccolo_texture_layout_binding.binding                        = 10;
-                piccolo_texture_layout_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                piccolo_texture_layout_binding.descriptorCount = 1;
-                piccolo_texture_layout_binding.stageFlags      = RHI_SHADER_STAGE_COMPUTE_BIT;
+                piccolo_texture_layout_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                piccolo_texture_layout_binding.descriptorCount                = 1;
+                piccolo_texture_layout_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
             }
 
             RHIDescriptorSetLayoutCreateInfo particle_descriptor_layout_create_info;
-            particle_descriptor_layout_create_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            particle_descriptor_layout_create_info.pNext = NULL;
-            particle_descriptor_layout_create_info.flags = 0;
-            particle_descriptor_layout_create_info.bindingCount =
-                sizeof(particle_layout_bindings) / sizeof(particle_layout_bindings[0]);
-            particle_descriptor_layout_create_info.pBindings = particle_layout_bindings;
+            particle_descriptor_layout_create_info.sType        = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            particle_descriptor_layout_create_info.pNext        = NULL;
+            particle_descriptor_layout_create_info.flags        = 0;
+            particle_descriptor_layout_create_info.bindingCount = sizeof(particle_layout_bindings) / sizeof(particle_layout_bindings[0]);
+            particle_descriptor_layout_create_info.pBindings    = particle_layout_bindings;
 
-            if (RHI_SUCCESS !=
-                m_rhi->createDescriptorSetLayout(&particle_descriptor_layout_create_info, m_descriptor_infos[0].layout))
+            if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&particle_descriptor_layout_create_info, m_descriptor_infos[0].layout))
             {
                 throw std::runtime_error("setup particle compute Descriptor done");
             }
@@ -921,72 +875,61 @@ namespace Piccolo
         {
             RHIDescriptorSetLayoutBinding scene_global_layout_bindings[2] = {};
 
-            RHIDescriptorSetLayoutBinding& gbuffer_normal_global_layout_input_attachment_binding =
-                scene_global_layout_bindings[0];
-            gbuffer_normal_global_layout_input_attachment_binding.binding         = 0;
-            gbuffer_normal_global_layout_input_attachment_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            gbuffer_normal_global_layout_input_attachment_binding.descriptorCount = 1;
-            gbuffer_normal_global_layout_input_attachment_binding.stageFlags      = RHI_SHADER_STAGE_COMPUTE_BIT;
+            RHIDescriptorSetLayoutBinding& gbuffer_normal_global_layout_input_attachment_binding = scene_global_layout_bindings[0];
+            gbuffer_normal_global_layout_input_attachment_binding.binding                        = 0;
+            gbuffer_normal_global_layout_input_attachment_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            gbuffer_normal_global_layout_input_attachment_binding.descriptorCount                = 1;
+            gbuffer_normal_global_layout_input_attachment_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
 
-            RHIDescriptorSetLayoutBinding& gbuffer_depth_global_layout_input_attachment_binding =
-                scene_global_layout_bindings[1];
-            gbuffer_depth_global_layout_input_attachment_binding.binding = 1;
-            gbuffer_depth_global_layout_input_attachment_binding.descriptorType =
-                RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            gbuffer_depth_global_layout_input_attachment_binding.descriptorCount = 1;
-            gbuffer_depth_global_layout_input_attachment_binding.stageFlags      = RHI_SHADER_STAGE_COMPUTE_BIT;
+            RHIDescriptorSetLayoutBinding& gbuffer_depth_global_layout_input_attachment_binding = scene_global_layout_bindings[1];
+            gbuffer_depth_global_layout_input_attachment_binding.binding                        = 1;
+            gbuffer_depth_global_layout_input_attachment_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            gbuffer_depth_global_layout_input_attachment_binding.descriptorCount                = 1;
+            gbuffer_depth_global_layout_input_attachment_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
 
             RHIDescriptorSetLayoutCreateInfo gbuffer_lighting_global_layout_create_info;
-            gbuffer_lighting_global_layout_create_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            gbuffer_lighting_global_layout_create_info.pNext = NULL;
-            gbuffer_lighting_global_layout_create_info.flags = 0;
-            gbuffer_lighting_global_layout_create_info.bindingCount =
-                sizeof(scene_global_layout_bindings) / sizeof(scene_global_layout_bindings[0]);
-            gbuffer_lighting_global_layout_create_info.pBindings = scene_global_layout_bindings;
+            gbuffer_lighting_global_layout_create_info.sType        = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            gbuffer_lighting_global_layout_create_info.pNext        = NULL;
+            gbuffer_lighting_global_layout_create_info.flags        = 0;
+            gbuffer_lighting_global_layout_create_info.bindingCount = sizeof(scene_global_layout_bindings) / sizeof(scene_global_layout_bindings[0]);
+            gbuffer_lighting_global_layout_create_info.pBindings    = scene_global_layout_bindings;
 
-            if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&gbuffer_lighting_global_layout_create_info,
-                                                                m_descriptor_infos[1].layout))
+            if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&gbuffer_lighting_global_layout_create_info, m_descriptor_infos[1].layout))
                 throw std::runtime_error("create scene normal and depth global layout");
         }
 
         {
             RHIDescriptorSetLayoutBinding particlebillboard_global_layout_bindings[3];
 
-            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_perframe_storage_buffer_binding =
-                particlebillboard_global_layout_bindings[0];
-            particlebillboard_global_layout_perframe_storage_buffer_binding.binding = 0;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorType =
-                RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorCount = 1;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.stageFlags = RHI_SHADER_STAGE_VERTEX_BIT;
-            particlebillboard_global_layout_perframe_storage_buffer_binding.pImmutableSamplers = NULL;
+            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_perframe_storage_buffer_binding = particlebillboard_global_layout_bindings[0];
+            particlebillboard_global_layout_perframe_storage_buffer_binding.binding                        = 0;
+            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            particlebillboard_global_layout_perframe_storage_buffer_binding.descriptorCount                = 1;
+            particlebillboard_global_layout_perframe_storage_buffer_binding.stageFlags                     = RHI_SHADER_STAGE_VERTEX_BIT;
+            particlebillboard_global_layout_perframe_storage_buffer_binding.pImmutableSamplers             = NULL;
 
-            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_perdrawcall_storage_buffer_binding =
-                particlebillboard_global_layout_bindings[1];
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.binding = 1;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorType =
-                RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorCount = 1;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.stageFlags = RHI_SHADER_STAGE_VERTEX_BIT;
-            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.pImmutableSamplers = NULL;
+            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_perdrawcall_storage_buffer_binding = particlebillboard_global_layout_bindings[1];
+            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.binding                        = 1;
+            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.descriptorCount                = 1;
+            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.stageFlags                     = RHI_SHADER_STAGE_VERTEX_BIT;
+            particlebillboard_global_layout_perdrawcall_storage_buffer_binding.pImmutableSamplers             = NULL;
 
-            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_texture_binding =
-                particlebillboard_global_layout_bindings[2];
-            particlebillboard_global_layout_texture_binding.binding        = 2;
-            particlebillboard_global_layout_texture_binding.descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            particlebillboard_global_layout_texture_binding.descriptorCount    = 1;
-            particlebillboard_global_layout_texture_binding.stageFlags         = RHI_SHADER_STAGE_FRAGMENT_BIT;
-            particlebillboard_global_layout_texture_binding.pImmutableSamplers = NULL;
+            RHIDescriptorSetLayoutBinding& particlebillboard_global_layout_texture_binding = particlebillboard_global_layout_bindings[2];
+            particlebillboard_global_layout_texture_binding.binding                        = 2;
+            particlebillboard_global_layout_texture_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            particlebillboard_global_layout_texture_binding.descriptorCount                = 1;
+            particlebillboard_global_layout_texture_binding.stageFlags                     = RHI_SHADER_STAGE_FRAGMENT_BIT;
+            particlebillboard_global_layout_texture_binding.pImmutableSamplers             = NULL;
 
             RHIDescriptorSetLayoutCreateInfo particlebillboard_global_layout_create_info;
-            particlebillboard_global_layout_create_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            particlebillboard_global_layout_create_info.pNext = NULL;
-            particlebillboard_global_layout_create_info.flags = 0;
+            particlebillboard_global_layout_create_info.sType        = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            particlebillboard_global_layout_create_info.pNext        = NULL;
+            particlebillboard_global_layout_create_info.flags        = 0;
             particlebillboard_global_layout_create_info.bindingCount = 3;
             particlebillboard_global_layout_create_info.pBindings    = particlebillboard_global_layout_bindings;
 
-            if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&particlebillboard_global_layout_create_info,
-                                                                m_descriptor_infos[2].layout))
+            if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&particlebillboard_global_layout_create_info, m_descriptor_infos[2].layout))
             {
                 throw std::runtime_error("create particle billboard global layout");
             }
@@ -999,13 +942,11 @@ namespace Piccolo
 
         // compute pipeline
         {
-            RHIDescriptorSetLayout*     descriptorset_layouts[2] = {m_descriptor_infos[0].layout,
-                                                                    m_descriptor_infos[1].layout};
+            RHIDescriptorSetLayout*     descriptorset_layouts[2] = {m_descriptor_infos[0].layout, m_descriptor_infos[1].layout};
             RHIPipelineLayoutCreateInfo pipeline_layout_create_info {};
-            pipeline_layout_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_create_info.setLayoutCount =
-                sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
-            pipeline_layout_create_info.pSetLayouts = descriptorset_layouts;
+            pipeline_layout_create_info.sType          = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipeline_layout_create_info.setLayoutCount = sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]);
+            pipeline_layout_create_info.pSetLayouts    = descriptorset_layouts;
 
             if (m_rhi->createPipelineLayout(&pipeline_layout_create_info, m_render_pipelines[0].layout) != RHI_SUCCESS)
                 throw std::runtime_error("create compute pass pipe layout");
@@ -1116,19 +1057,18 @@ namespace Piccolo
             frag_pipeline_shader_stage_create_info.module = frag_shader_module;
             frag_pipeline_shader_stage_create_info.pName  = "main";
 
-            RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                                frag_pipeline_shader_stage_create_info};
+            RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info, frag_pipeline_shader_stage_create_info};
 
             RHIPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
-            vertex_input_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            vertex_input_state_create_info.sType                           = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.vertexBindingDescriptionCount   = 0;
             vertex_input_state_create_info.pVertexBindingDescriptions      = NULL;
             vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
             vertex_input_state_create_info.pVertexAttributeDescriptions    = NULL;
 
             RHIPipelineInputAssemblyStateCreateInfo input_assembly_create_info {};
-            input_assembly_create_info.sType    = RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-            input_assembly_create_info.topology = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+            input_assembly_create_info.sType                  = RHI_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+            input_assembly_create_info.topology               = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
             input_assembly_create_info.primitiveRestartEnable = RHI_FALSE;
 
             RHIPipelineViewportStateCreateInfo viewport_state_create_info {};
@@ -1139,7 +1079,7 @@ namespace Piccolo
             viewport_state_create_info.pScissors     = m_rhi->getSwapchainInfo().scissor;
 
             RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
-            rasterization_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+            rasterization_state_create_info.sType                   = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             rasterization_state_create_info.depthClampEnable        = RHI_FALSE;
             rasterization_state_create_info.rasterizerDiscardEnable = RHI_FALSE;
             rasterization_state_create_info.polygonMode             = RHI_POLYGON_MODE_FILL;
@@ -1152,13 +1092,13 @@ namespace Piccolo
             rasterization_state_create_info.depthBiasSlopeFactor    = 0.0f;
 
             RHIPipelineMultisampleStateCreateInfo multisample_state_create_info {};
-            multisample_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+            multisample_state_create_info.sType                = RHI_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
             multisample_state_create_info.sampleShadingEnable  = RHI_FALSE;
             multisample_state_create_info.rasterizationSamples = RHI_SAMPLE_COUNT_1_BIT;
 
             RHIPipelineColorBlendAttachmentState color_blend_attachments[1] = {};
-            color_blend_attachments[0].colorWriteMask = RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT |
-                                                        RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
+            color_blend_attachments[0].colorWriteMask =
+                RHI_COLOR_COMPONENT_R_BIT | RHI_COLOR_COMPONENT_G_BIT | RHI_COLOR_COMPONENT_B_BIT | RHI_COLOR_COMPONENT_A_BIT;
             color_blend_attachments[0].blendEnable         = RHI_TRUE;
             color_blend_attachments[0].srcColorBlendFactor = RHI_BLEND_FACTOR_ONE;
             color_blend_attachments[0].dstColorBlendFactor = RHI_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -1168,22 +1108,21 @@ namespace Piccolo
             color_blend_attachments[0].alphaBlendOp        = RHI_BLEND_OP_ADD;
 
             RHIPipelineColorBlendStateCreateInfo color_blend_state_create_info = {};
-            color_blend_state_create_info.sType         = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            color_blend_state_create_info.logicOpEnable = RHI_FALSE;
-            color_blend_state_create_info.logicOp       = RHI_LOGIC_OP_COPY;
-            color_blend_state_create_info.attachmentCount =
-                sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
-            color_blend_state_create_info.pAttachments      = &color_blend_attachments[0];
-            color_blend_state_create_info.blendConstants[0] = 0.0f;
-            color_blend_state_create_info.blendConstants[1] = 0.0f;
-            color_blend_state_create_info.blendConstants[2] = 0.0f;
-            color_blend_state_create_info.blendConstants[3] = 0.0f;
+            color_blend_state_create_info.sType                                = RHI_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            color_blend_state_create_info.logicOpEnable                        = RHI_FALSE;
+            color_blend_state_create_info.logicOp                              = RHI_LOGIC_OP_COPY;
+            color_blend_state_create_info.attachmentCount                      = sizeof(color_blend_attachments) / sizeof(color_blend_attachments[0]);
+            color_blend_state_create_info.pAttachments                         = &color_blend_attachments[0];
+            color_blend_state_create_info.blendConstants[0]                    = 0.0f;
+            color_blend_state_create_info.blendConstants[1]                    = 0.0f;
+            color_blend_state_create_info.blendConstants[2]                    = 0.0f;
+            color_blend_state_create_info.blendConstants[3]                    = 0.0f;
 
             RHIPipelineDepthStencilStateCreateInfo depth_stencil_create_info {};
-            depth_stencil_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depth_stencil_create_info.depthTestEnable  = RHI_TRUE;
-            depth_stencil_create_info.depthWriteEnable = RHI_FALSE;
-            depth_stencil_create_info.depthCompareOp   = RHI_COMPARE_OP_LESS;
+            depth_stencil_create_info.sType                 = RHI_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depth_stencil_create_info.depthTestEnable       = RHI_TRUE;
+            depth_stencil_create_info.depthWriteEnable      = RHI_FALSE;
+            depth_stencil_create_info.depthCompareOp        = RHI_COMPARE_OP_LESS;
             depth_stencil_create_info.depthBoundsTestEnable = RHI_FALSE;
             depth_stencil_create_info.stencilTestEnable     = RHI_FALSE;
 
@@ -1211,8 +1150,7 @@ namespace Piccolo
             pipelineInfo.basePipelineHandle  = RHI_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamic_state_create_info;
 
-            if (m_rhi->createGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_render_pipelines[1].pipeline) !=
-                RHI_SUCCESS)
+            if (m_rhi->createGraphicsPipelines(RHI_NULL_HANDLE, 1, &pipelineInfo, m_render_pipelines[1].pipeline) != RHI_SUCCESS)
             {
                 throw std::runtime_error("create particle billboard graphics pipeline");
             }
@@ -1235,15 +1173,13 @@ namespace Piccolo
             particle_descriptor_set_alloc_info.descriptorSetCount = 1;
             particle_descriptor_set_alloc_info.pNext              = NULL;
 
-            if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&particle_descriptor_set_alloc_info,
-                                                             m_descriptor_infos[eid * 3].descriptor_set))
+            if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&particle_descriptor_set_alloc_info, m_descriptor_infos[eid * 3].descriptor_set))
                 throw std::runtime_error("allocate compute descriptor set");
             particle_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[1].layout;
             particle_descriptor_set_alloc_info.descriptorSetCount = 1;
             particle_descriptor_set_alloc_info.pNext              = NULL;
 
-            if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&particle_descriptor_set_alloc_info,
-                                                             m_descriptor_infos[eid * 3 + 1].descriptor_set))
+            if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&particle_descriptor_set_alloc_info, m_descriptor_infos[eid * 3 + 1].descriptor_set))
                 LOG_INFO("allocate normal and depth descriptor set done");
         }
     }
@@ -1254,8 +1190,7 @@ namespace Piccolo
         {
             // compute part
             {
-                std::vector<RHIWriteDescriptorSet> computeWriteDescriptorSets {
-                    {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}};
+                std::vector<RHIWriteDescriptorSet> computeWriteDescriptorSets {{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}};
 
                 RHIDescriptorBufferInfo uniformbufferDescriptor = {m_compute_uniform_buffer, 0, RHI_WHOLE_SIZE};
                 {
@@ -1268,8 +1203,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo positionBufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_position_device_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo positionBufferDescriptor = {m_emitter_buffer_batches[eid].m_position_device_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[1];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1280,8 +1214,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo counterBufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_counter_device_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo counterBufferDescriptor = {m_emitter_buffer_batches[eid].m_counter_device_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[2];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1304,8 +1237,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo aliveListBufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_alive_list_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo aliveListBufferDescriptor = {m_emitter_buffer_batches[eid].m_alive_list_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[4];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1316,8 +1248,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo deadListBufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo deadListBufferDescriptor = {m_emitter_buffer_batches[eid].m_dead_list_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[5];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1328,8 +1259,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo aliveListNextBufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo aliveListNextBufferDescriptor = {m_emitter_buffer_batches[eid].m_alive_list_next_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[6];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1352,8 +1282,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo particleSceneUniformBufferDescriptor = {
-                    m_scene_uniform_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo particleSceneUniformBufferDescriptor = {m_scene_uniform_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[8];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1364,8 +1293,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                RHIDescriptorBufferInfo positionRenderbufferDescriptor = {
-                    m_emitter_buffer_batches[eid].m_position_render_buffer, 0, RHI_WHOLE_SIZE};
+                RHIDescriptorBufferInfo positionRenderbufferDescriptor = {m_emitter_buffer_batches[eid].m_position_render_buffer, 0, RHI_WHOLE_SIZE};
                 {
                     RHIWriteDescriptorSet& descriptorset = computeWriteDescriptorSets[9];
                     descriptorset.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1413,10 +1341,7 @@ namespace Piccolo
                     descriptorset.descriptorCount        = 1;
                 }
 
-                m_rhi->updateDescriptorSets(static_cast<uint32_t>(computeWriteDescriptorSets.size()),
-                                            computeWriteDescriptorSets.data(),
-                                            0,
-                                            NULL);
+                m_rhi->updateDescriptorSets(static_cast<uint32_t>(computeWriteDescriptorSets.size()), computeWriteDescriptorSets.data(), 0, NULL);
             }
             {
                 RHIWriteDescriptorSet descriptor_input_attachment_writes_info[2] = {{}, {}};
@@ -1427,20 +1352,15 @@ namespace Piccolo
                 gbuffer_normal_descriptor_image_info.imageLayout            = RHI_IMAGE_LAYOUT_GENERAL;
                 {
 
-                    RHIWriteDescriptorSet& gbuffer_normal_descriptor_input_attachment_write_info =
-                        descriptor_input_attachment_writes_info[0];
-                    gbuffer_normal_descriptor_input_attachment_write_info.sType =
-                        RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    gbuffer_normal_descriptor_input_attachment_write_info.pNext = NULL;
-                    gbuffer_normal_descriptor_input_attachment_write_info.dstSet =
-                        m_descriptor_infos[eid * 3 + 1].descriptor_set;
-                    gbuffer_normal_descriptor_input_attachment_write_info.dstBinding      = 0;
-                    gbuffer_normal_descriptor_input_attachment_write_info.dstArrayElement = 0;
-                    gbuffer_normal_descriptor_input_attachment_write_info.descriptorType =
-                        RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    gbuffer_normal_descriptor_input_attachment_write_info.descriptorCount = 1;
-                    gbuffer_normal_descriptor_input_attachment_write_info.pImageInfo =
-                        &gbuffer_normal_descriptor_image_info;
+                    RHIWriteDescriptorSet& gbuffer_normal_descriptor_input_attachment_write_info = descriptor_input_attachment_writes_info[0];
+                    gbuffer_normal_descriptor_input_attachment_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    gbuffer_normal_descriptor_input_attachment_write_info.pNext                  = NULL;
+                    gbuffer_normal_descriptor_input_attachment_write_info.dstSet                 = m_descriptor_infos[eid * 3 + 1].descriptor_set;
+                    gbuffer_normal_descriptor_input_attachment_write_info.dstBinding             = 0;
+                    gbuffer_normal_descriptor_input_attachment_write_info.dstArrayElement        = 0;
+                    gbuffer_normal_descriptor_input_attachment_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    gbuffer_normal_descriptor_input_attachment_write_info.descriptorCount        = 1;
+                    gbuffer_normal_descriptor_input_attachment_write_info.pImageInfo             = &gbuffer_normal_descriptor_image_info;
                 }
 
                 RHISampler*          sampler;
@@ -1470,22 +1390,18 @@ namespace Piccolo
                 depth_descriptor_image_info.imageLayout            = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
                 {
-                    RHIWriteDescriptorSet& depth_descriptor_input_attachment_write_info =
-                        descriptor_input_attachment_writes_info[1];
-                    depth_descriptor_input_attachment_write_info.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    depth_descriptor_input_attachment_write_info.pNext = NULL;
-                    depth_descriptor_input_attachment_write_info.dstSet =
-                        m_descriptor_infos[eid * 3 + 1].descriptor_set;
-                    depth_descriptor_input_attachment_write_info.dstBinding      = 1;
-                    depth_descriptor_input_attachment_write_info.dstArrayElement = 0;
-                    depth_descriptor_input_attachment_write_info.descriptorType =
-                        RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    depth_descriptor_input_attachment_write_info.descriptorCount = 1;
-                    depth_descriptor_input_attachment_write_info.pImageInfo      = &depth_descriptor_image_info;
+                    RHIWriteDescriptorSet& depth_descriptor_input_attachment_write_info = descriptor_input_attachment_writes_info[1];
+                    depth_descriptor_input_attachment_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    depth_descriptor_input_attachment_write_info.pNext                  = NULL;
+                    depth_descriptor_input_attachment_write_info.dstSet                 = m_descriptor_infos[eid * 3 + 1].descriptor_set;
+                    depth_descriptor_input_attachment_write_info.dstBinding             = 1;
+                    depth_descriptor_input_attachment_write_info.dstArrayElement        = 0;
+                    depth_descriptor_input_attachment_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    depth_descriptor_input_attachment_write_info.descriptorCount        = 1;
+                    depth_descriptor_input_attachment_write_info.pImageInfo             = &depth_descriptor_image_info;
                 }
 
-                m_rhi->updateDescriptorSets(sizeof(descriptor_input_attachment_writes_info) /
-                                                sizeof(descriptor_input_attachment_writes_info[0]),
+                m_rhi->updateDescriptorSets(sizeof(descriptor_input_attachment_writes_info) / sizeof(descriptor_input_attachment_writes_info[0]),
                                             descriptor_input_attachment_writes_info,
                                             0,
                                             NULL);
@@ -1511,17 +1427,9 @@ namespace Piccolo
             m_rhi->pushEvent(m_compute_command_buffer, "Particle Kickoff", color);
 
             m_rhi->cmdBindPipelinePFN(m_compute_command_buffer, RHI_PIPELINE_BIND_POINT_COMPUTE, m_kickoff_pipeline);
-            RHIDescriptorSet* descriptorsets[2] = {m_descriptor_infos[i * 3].descriptor_set,
-                                                   m_descriptor_infos[i * 3 + 1].descriptor_set};
-            m_rhi->cmdBindDescriptorSetsPFN(m_compute_command_buffer,
-                                            RHI_PIPELINE_BIND_POINT_COMPUTE,
-                                            m_render_pipelines[0].layout,
-                                            0,
-                                            2,
-                                            descriptorsets,
-                                            0,
-                                            0);
-
+            RHIDescriptorSet* descriptorsets[2] = {m_descriptor_infos[i * 3].descriptor_set, m_descriptor_infos[i * 3 + 1].descriptor_set};
+            m_rhi->cmdBindDescriptorSetsPFN(
+                m_compute_command_buffer, RHI_PIPELINE_BIND_POINT_COMPUTE, m_render_pipelines[0].layout, 0, 2, descriptorsets, 0, 0);
 
             m_rhi->cmdDispatch(m_compute_command_buffer, 1, 1, 1);
 
@@ -1569,9 +1477,7 @@ namespace Piccolo
 
             m_rhi->cmdBindPipelinePFN(m_compute_command_buffer, RHI_PIPELINE_BIND_POINT_COMPUTE, m_emit_pipeline);
 
-            m_rhi->cmdDispatchIndirect(m_compute_command_buffer,
-                                       m_emitter_buffer_batches[i].m_indirect_dispatch_argument_buffer,
-                                       s_argument_offset_emit);
+            m_rhi->cmdDispatchIndirect(m_compute_command_buffer, m_emitter_buffer_batches[i].m_indirect_dispatch_argument_buffer, s_argument_offset_emit);
 
             m_rhi->popEvent(m_compute_command_buffer); // end particle emit label
 
@@ -1686,9 +1592,7 @@ namespace Piccolo
             m_rhi->pushEvent(m_compute_command_buffer, "Particle Simulate", color);
 
             m_rhi->cmdBindPipelinePFN(m_compute_command_buffer, RHI_PIPELINE_BIND_POINT_COMPUTE, m_simulate_pipeline);
-            m_rhi->cmdDispatchIndirect(m_compute_command_buffer,
-                                       m_emitter_buffer_batches[i].m_indirect_dispatch_argument_buffer,
-                                       s_argument_offset_simulate);
+            m_rhi->cmdDispatchIndirect(m_compute_command_buffer, m_emitter_buffer_batches[i].m_indirect_dispatch_argument_buffer, s_argument_offset_simulate);
 
             m_rhi->popEvent(m_compute_command_buffer); // end particle simulate label
 
@@ -1729,16 +1633,8 @@ namespace Piccolo
             bufferBarrier.srcQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
             bufferBarrier.dstQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
 
-            m_rhi->cmdPipelineBarrier(m_compute_command_buffer,
-                                      RHI_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                      RHI_PIPELINE_STAGE_TRANSFER_BIT,
-                                      0,
-                                      0,
-                                      nullptr,
-                                      1,
-                                      &bufferBarrier,
-                                      0,
-                                      nullptr);
+            m_rhi->cmdPipelineBarrier(
+                m_compute_command_buffer, RHI_PIPELINE_STAGE_COMPUTE_SHADER_BIT, RHI_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &bufferBarrier, 0, nullptr);
             // Read back to host visible buffer
 
             RHIBufferCopy copyRegion {};
@@ -1760,16 +1656,8 @@ namespace Piccolo
             bufferBarrier.srcQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
             bufferBarrier.dstQueueFamilyIndex = RHI_QUEUE_FAMILY_IGNORED;
 
-            m_rhi->cmdPipelineBarrier(m_compute_command_buffer,
-                                      RHI_PIPELINE_STAGE_TRANSFER_BIT,
-                                      RHI_PIPELINE_STAGE_HOST_BIT,
-                                      0,
-                                      0,
-                                      nullptr,
-                                      1,
-                                      &bufferBarrier,
-                                      0,
-                                      nullptr);
+            m_rhi->cmdPipelineBarrier(
+                m_compute_command_buffer, RHI_PIPELINE_STAGE_TRANSFER_BIT, RHI_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &bufferBarrier, 0, nullptr);
 
             m_rhi->popEvent(m_compute_command_buffer); // end particle counter copy label
 
@@ -1805,8 +1693,7 @@ namespace Piccolo
             void* mapped;
             m_rhi->mapMemory(m_emitter_buffer_batches[i].m_counter_host_memory, 0, RHI_WHOLE_SIZE, 0, &mapped);
 
-            m_rhi->invalidateMappedMemoryRanges(
-                nullptr, m_emitter_buffer_batches[i].m_counter_host_memory, 0, RHI_WHOLE_SIZE);
+            m_rhi->invalidateMappedMemoryRanges(nullptr, m_emitter_buffer_batches[i].m_counter_host_memory, 0, RHI_WHOLE_SIZE);
 
             // Copy to output
             ParticleCounter counterNext {};
@@ -1814,11 +1701,7 @@ namespace Piccolo
             m_rhi->unmapMemory(m_emitter_buffer_batches[i].m_counter_host_memory);
 
             if constexpr (s_verbose_particle_alive_info)
-                LOG_INFO("{} {} {} {}",
-                         counterNext.dead_count,
-                         counterNext.alive_count,
-                         counterNext.alive_count_after_sim,
-                         counterNext.emit_count);
+                LOG_INFO("{} {} {} {}", counterNext.dead_count, counterNext.alive_count, counterNext.alive_count_after_sim, counterNext.emit_count);
             m_emitter_buffer_batches[i].m_num_particle = counterNext.alive_count_after_sim;
         }
         m_emitter_tick_indices.clear();
@@ -1884,8 +1767,7 @@ namespace Piccolo
                                 m_particle_billboard_uniform_buffer,
                                 d_mem);
 
-            if (RHI_SUCCESS !=
-                m_rhi->mapMemory(d_mem, 0, RHI_WHOLE_SIZE, 0, &m_particle_billboard_uniform_buffer_mapped))
+            if (RHI_SUCCESS != m_rhi->mapMemory(d_mem, 0, RHI_WHOLE_SIZE, 0, &m_particle_billboard_uniform_buffer_mapped))
             {
                 throw std::runtime_error("map billboard uniform buffer");
             }
@@ -1900,9 +1782,7 @@ namespace Piccolo
             m_emitter_buffer_batches[index].m_emitter_desc.m_position = transform_desc.m_position;
             m_emitter_buffer_batches[index].m_emitter_desc.m_rotation = transform_desc.m_rotation;
 
-            memcpy(m_emitter_buffer_batches[index].m_emitter_desc_mapped,
-                   &m_emitter_buffer_batches[index].m_emitter_desc,
-                   sizeof(ParticleEmitterDesc));
+            memcpy(m_emitter_buffer_batches[index].m_emitter_desc_mapped, &m_emitter_buffer_batches[index].m_emitter_desc, sizeof(ParticleEmitterDesc));
         }
     }
 
@@ -1933,14 +1813,10 @@ namespace Piccolo
         const RenderResource* vulkan_resource = static_cast<const RenderResource*>(render_resource.get());
         if (vulkan_resource)
         {
-            m_particle_collision_perframe_storage_buffer_object =
-                vulkan_resource->m_particle_collision_perframe_storage_buffer_object;
-            memcpy(m_scene_uniform_buffer_mapped,
-                   &m_particle_collision_perframe_storage_buffer_object,
-                   sizeof(ParticleCollisionPerframeStorageBufferObject));
+            m_particle_collision_perframe_storage_buffer_object = vulkan_resource->m_particle_collision_perframe_storage_buffer_object;
+            memcpy(m_scene_uniform_buffer_mapped, &m_particle_collision_perframe_storage_buffer_object, sizeof(ParticleCollisionPerframeStorageBufferObject));
 
-            m_particlebillboard_perframe_storage_buffer_object =
-                vulkan_resource->m_particlebillboard_perframe_storage_buffer_object;
+            m_particlebillboard_perframe_storage_buffer_object = vulkan_resource->m_particlebillboard_perframe_storage_buffer_object;
             memcpy(m_particle_billboard_uniform_buffer_mapped,
                    &m_particlebillboard_perframe_storage_buffer_object,
                    sizeof(m_particlebillboard_perframe_storage_buffer_object));
@@ -1957,17 +1833,11 @@ namespace Piccolo
         m_src_normal_image = normal_image;
     }
 
-    void ParticlePass::setRenderCommandBufferHandle(RHICommandBuffer* command_buffer)
-    {
-        m_render_command_buffer = command_buffer;
-    }
+    void ParticlePass::setRenderCommandBufferHandle(RHICommandBuffer* command_buffer) { m_render_command_buffer = command_buffer; }
 
     void ParticlePass::setRenderPassHandle(RHIRenderPass* render_pass) { m_render_pass = render_pass; }
 
-    void ParticlePass::setTickIndices(const std::vector<ParticleEmitterID>& tick_indices)
-    {
-        m_emitter_tick_indices = tick_indices;
-    }
+    void ParticlePass::setTickIndices(const std::vector<ParticleEmitterID>& tick_indices) { m_emitter_tick_indices = tick_indices; }
 
     void ParticlePass::setTransformIndices(const std::vector<ParticleEmitterTransformDesc>& transform_indices)
     {

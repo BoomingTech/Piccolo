@@ -83,9 +83,7 @@ namespace Piccolo
     {
     public:
         GameObjectDesc() : m_go_id(0) {}
-        GameObjectDesc(size_t go_id, const std::vector<GameObjectPartDesc>& parts) :
-            m_go_id(go_id), m_object_parts(parts)
-        {}
+        GameObjectDesc(size_t go_id, const std::vector<GameObjectPartDesc>& parts) : m_go_id(go_id), m_object_parts(parts) {}
 
         GObjectID                              getId() const { return m_go_id; }
         const std::vector<GameObjectPartDesc>& getObjectParts() const { return m_object_parts; }

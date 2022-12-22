@@ -7,9 +7,8 @@
 namespace Piccolo
 {
     template<typename NumericType>
-    using uniform_distribution = typename std::conditional<std::is_integral<NumericType>::value,
-                                                           std::uniform_int_distribution<NumericType>,
-                                                           std::uniform_real_distribution<NumericType>>::type;
+    using uniform_distribution = typename std::
+        conditional<std::is_integral<NumericType>::value, std::uniform_int_distribution<NumericType>, std::uniform_real_distribution<NumericType>>::type;
 
     template<typename RandomEngine = std::default_random_engine>
     class RandomNumberGenerator
@@ -52,10 +51,7 @@ namespace Piccolo
 
         bool bernoulliDistribution(float probability) { return distribution<std::bernoulli_distribution>(probability); }
 
-        float normalDistribution(float mean, float stddev)
-        {
-            return distribution<std::normal_distribution<float>>(mean, stddev);
-        }
+        float normalDistribution(float mean, float stddev) { return distribution<std::normal_distribution<float>>(mean, stddev); }
 
         template<typename DistributionFunc, typename Range, typename... Params>
         void generator(Range&& range, Params&&... params)
@@ -67,9 +63,7 @@ namespace Piccolo
         }
     };
 
-    template<typename DistributionFunc,
-             typename RandomEngine = std::default_random_engine,
-             typename SeedType     = std::seed_seq>
+    template<typename DistributionFunc, typename RandomEngine = std::default_random_engine, typename SeedType = std::seed_seq>
     class DistRandomNumberGenerator
     {
         using ResultType = typename DistributionFunc::result_type;
@@ -80,7 +74,7 @@ namespace Piccolo
 
     public:
         template<typename... Params>
-        explicit DistRandomNumberGenerator(SeedType&& seeding, Params&&...  /*params*/) : m_engine(seeding)
+        explicit DistRandomNumberGenerator(SeedType&& seeding, Params&&... /*params*/) : m_engine(seeding)
         {
             // m_dist = CHAOS_NEW_T(DistributionFunc)(std::forward<Params>(params)...);
         }
@@ -97,4 +91,4 @@ namespace Piccolo
     };
 
     using DefaultRNG = RandomNumberGenerator<std::mt19937>;
-} // namespace Chaos
+} // namespace Piccolo

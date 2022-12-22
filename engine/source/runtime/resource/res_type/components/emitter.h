@@ -7,7 +7,7 @@
 namespace Piccolo
 {
     REFLECTION_TYPE(ParticleComponentRes)
-        CLASS(ParticleComponentRes, Fields)
+    CLASS(ParticleComponentRes, Fields)
     {
         REFLECTION_BODY(ParticleComponentRes);
 

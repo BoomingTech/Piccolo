@@ -57,8 +57,8 @@ namespace Piccolo
         for (int i = 0; i < fields_count; ++i)
         {
             auto filed_accesser = fields[i];
-            std::cout << filed_accesser.getFieldTypeName() << " " << filed_accesser.getFieldName() << " "
-                      << (char*)filed_accesser.get(meta.m_instance) << std::endl;
+            std::cout << filed_accesser.getFieldTypeName() << " " << filed_accesser.getFieldName() << " " << (char*)filed_accesser.get(meta.m_instance)
+                      << std::endl;
             if (filed_accesser.isArrayType())
             {
                 Reflection::ArrayAccessor array_accesser;
@@ -69,8 +69,7 @@ namespace Piccolo
                     auto  typeMetaItem   = Reflection::TypeMeta::newMetaFromName(array_accesser.getElementTypeName());
                     for (int index = 0; index < count; ++index)
                     {
-                        std::cout << ":L:" << index << ":R:" << (int*)array_accesser.get(index, field_instance)
-                                  << std::endl;
+                        std::cout << ":L:" << index << ":R:" << (int*)array_accesser.get(index, field_instance) << std::endl;
                         ;
                     }
                 }

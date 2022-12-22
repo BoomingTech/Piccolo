@@ -34,9 +34,9 @@ namespace Piccolo
         void setupDescriptorSet();
 
     private:
-        RHIImage*        _object_id_image = nullptr;
+        RHIImage*        _object_id_image        = nullptr;
         RHIDeviceMemory* _object_id_image_memory = nullptr;
-        RHIImageView*      _object_id_image_view = nullptr;
+        RHIImageView*    _object_id_image_view   = nullptr;
 
         RHIDescriptorSetLayout* _per_mesh_layout = nullptr;
     };

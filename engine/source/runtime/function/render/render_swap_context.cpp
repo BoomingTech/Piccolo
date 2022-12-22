@@ -16,19 +16,13 @@ namespace Piccolo
 
     unsigned int ParticleSubmitRequest::getEmitterCount() const { return m_emitter_descs.size(); }
 
-    const ParticleEmitterDesc& ParticleSubmitRequest::getEmitterDesc(unsigned int index)
-    {
-        return m_emitter_descs[index];
-    }
+    const ParticleEmitterDesc& ParticleSubmitRequest::getEmitterDesc(unsigned int index) { return m_emitter_descs[index]; }
 
     void EmitterTransformRequest::add(ParticleEmitterTransformDesc& desc) { m_transform_descs.push_back(desc); }
 
     unsigned int EmitterTransformRequest::getEmitterCount() const { return m_transform_descs.size(); }
 
-    const ParticleEmitterTransformDesc& EmitterTransformRequest::getNextEmitterTransformDesc(unsigned int index)
-    {
-        return m_transform_descs[index];
-    }
+    const ParticleEmitterTransformDesc& EmitterTransformRequest::getNextEmitterTransformDesc(unsigned int index) { return m_transform_descs[index]; }
 
     RenderSwapData& RenderSwapContext::getLogicSwapData() { return m_swap_data[m_logic_swap_data_index]; }
 
@@ -53,37 +47,19 @@ namespace Piccolo
                  m_swap_data[m_render_swap_data_index].m_emitter_transform_request.has_value());
     }
 
-    void RenderSwapContext::resetLevelRsourceSwapData()
-    {
-        m_swap_data[m_render_swap_data_index].m_level_resource_desc.reset();
-    }
+    void RenderSwapContext::resetLevelRsourceSwapData() { m_swap_data[m_render_swap_data_index].m_level_resource_desc.reset(); }
 
-    void RenderSwapContext::resetGameObjectResourceSwapData()
-    {
-        m_swap_data[m_render_swap_data_index].m_game_object_resource_desc.reset();
-    }
+    void RenderSwapContext::resetGameObjectResourceSwapData() { m_swap_data[m_render_swap_data_index].m_game_object_resource_desc.reset(); }
 
-    void RenderSwapContext::resetGameObjectToDelete()
-    {
-        m_swap_data[m_render_swap_data_index].m_game_object_to_delete.reset();
-    }
+    void RenderSwapContext::resetGameObjectToDelete() { m_swap_data[m_render_swap_data_index].m_game_object_to_delete.reset(); }
 
-    void RenderSwapContext::resetPartilceBatchSwapData()
-    {
-        m_swap_data[m_render_swap_data_index].m_particle_submit_request.reset();
-    }
+    void RenderSwapContext::resetPartilceBatchSwapData() { m_swap_data[m_render_swap_data_index].m_particle_submit_request.reset(); }
 
     void RenderSwapContext::resetCameraSwapData() { m_swap_data[m_render_swap_data_index].m_camera_swap_data.reset(); }
 
-    void RenderSwapContext::resetEmitterTickSwapData()
-    {
-        m_swap_data[m_render_swap_data_index].m_emitter_tick_request.reset();
-    }
+    void RenderSwapContext::resetEmitterTickSwapData() { m_swap_data[m_render_swap_data_index].m_emitter_tick_request.reset(); }
 
-    void RenderSwapContext::resetEmitterTransformSwapData()
-    {
-        m_swap_data[m_render_swap_data_index].m_emitter_transform_request.reset();
-    }
+    void RenderSwapContext::resetEmitterTransformSwapData() { m_swap_data[m_render_swap_data_index].m_emitter_transform_request.reset(); }
 
     void RenderSwapContext::swap()
     {

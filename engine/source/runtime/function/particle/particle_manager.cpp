@@ -43,8 +43,7 @@ namespace Piccolo
         m_global_particle_res = global_particle_res;
     }
 
-    void ParticleManager::createParticleEmitter(const ParticleComponentRes&   particle_res,
-                                                ParticleEmitterTransformDesc& transform_desc)
+    void ParticleManager::createParticleEmitter(const ParticleComponentRes& particle_res, ParticleEmitterTransformDesc& transform_desc)
     {
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         RenderSwapData&    swap_data    = swap_context.getLogicSwapData();

@@ -27,8 +27,7 @@ namespace Piccolo
 
         const GlobalParticleRes& getGlobalParticleRes();
 
-        void createParticleEmitter(const ParticleComponentRes&   particle_res,
-                                   ParticleEmitterTransformDesc& transform_desc);
+        void createParticleEmitter(const ParticleComponentRes& particle_res, ParticleEmitterTransformDesc& transform_desc);
 
     private:
         GlobalParticleRes m_global_particle_res;

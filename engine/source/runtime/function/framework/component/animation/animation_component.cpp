@@ -16,8 +16,7 @@ namespace Piccolo
 
     void AnimationComponent::tick(float delta_time)
     {
-        m_animation_res.blend_state.blend_ratio[0] +=
-            (delta_time / m_animation_res.blend_state.blend_clip_file_length[0]);
+        m_animation_res.blend_state.blend_ratio[0] += (delta_time / m_animation_res.blend_state.blend_clip_file_length[0]);
         m_animation_res.blend_state.blend_ratio[0] -= floor(m_animation_res.blend_state.blend_ratio[0]);
 
         m_skeleton.applyAnimation(AnimationManager::getBlendStateWithClipData(m_animation_res.blend_state));

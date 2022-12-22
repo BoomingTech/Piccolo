@@ -138,8 +138,7 @@ namespace Piccolo
                 if (blend_masks[clip_index]->enabled[bone_index])
                 {
 
-                    blend_state_with_clip_data.blend_weight[clip_index].blend_weight[bone_index] =
-                        blend_state.blend_weight[clip_index] / sum_weight;
+                    blend_state_with_clip_data.blend_weight[clip_index].blend_weight[bone_index] = blend_state.blend_weight[clip_index] / sum_weight;
                 }
                 else
                 {

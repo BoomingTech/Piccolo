@@ -11,7 +11,7 @@ namespace Piccolo
     public:
         // scene setting
         uint32_t m_max_body_count {10240};
-        uint32_t m_body_mutex_count {0} ;
+        uint32_t m_body_mutex_count {0};
         uint32_t m_max_body_pairs {65536};
         uint32_t m_max_contact_constraints {10240};
 

@@ -45,8 +45,7 @@ namespace Piccolo
 
     int find_index_by_name(const SkeletonData& skeleton, const std::string& name)
     {
-        const auto it = std::find_if(
-            skeleton.bones_map.begin(), skeleton.bones_map.end(), [&](const auto& i) { return i.name == name; });
+        const auto it = std::find_if(skeleton.bones_map.begin(), skeleton.bones_map.end(), [&](const auto& i) { return i.name == name; });
         if (it != skeleton.bones_map.end())
             return it->index;
         return std::numeric_limits<int>::max();

@@ -25,11 +25,10 @@ namespace Piccolo
         m_character_object = gobject;
         if (m_character_object)
         {
-            const TransformComponent* transform_component =
-                m_character_object->tryGetComponentConst(TransformComponent);
-            const Transform& transform = transform_component->getTransformConst();
-            m_position                 = transform.m_position;
-            m_rotation                 = transform.m_rotation;
+            const TransformComponent* transform_component = m_character_object->tryGetComponentConst(TransformComponent);
+            const Transform&          transform           = transform_component->getTransformConst();
+            m_position                                    = transform.m_position;
+            m_rotation                                    = transform.m_rotation;
         }
         else
         {
@@ -77,19 +76,20 @@ namespace Piccolo
 
         m_position = new_position;
 
-        //float blend_ratio = std::max(1.f, motor_component->getSpeedRatio());
+        // float blend_ratio = std::max(1.f, motor_component->getSpeedRatio());
 
-        //float frame_length = delta_time * blend_ratio;
-        //m_position =
-        //    (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
-        //m_position =
-        //    (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
+        // float frame_length = delta_time * blend_ratio;
+        // m_position =
+        //     (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
+        // m_position =
+        //     (m_position * (s_camera_blend_time - frame_length) + new_position * frame_length) / s_camera_blend_time;
     }
 
     void Character::toggleFreeCamera()
     {
         CameraComponent* camera_component = m_character_object->tryGetComponent(CameraComponent);
-        if (camera_component == nullptr) return;
+        if (camera_component == nullptr)
+            return;
 
         m_is_free_camera = !m_is_free_camera;
 

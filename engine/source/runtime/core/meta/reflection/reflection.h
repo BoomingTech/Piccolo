@@ -49,16 +49,12 @@ namespace Piccolo
         delete value.operator->(); \
         value.getPtrReference() = nullptr; \
     }
-#define PICCOLO_REFLECTION_DEEP_COPY(type, dst_ptr, src_ptr) \
-    *static_cast<type*>(dst_ptr) = *static_cast<type*>(src_ptr.getPtr());
+#define PICCOLO_REFLECTION_DEEP_COPY(type, dst_ptr, src_ptr) *static_cast<type*>(dst_ptr) = *static_cast<type*>(src_ptr.getPtr());
 
-#define TypeMetaDef(class_name, ptr) \
-    Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), \
-                                            (class_name*)ptr)
+#define TypeMetaDef(class_name, ptr) Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)
 
 #define TypeMetaDefPtr(class_name, ptr) \
-    new Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), \
-                                                (class_name*)ptr)
+    new Piccolo::Reflection::ReflectionInstance(Piccolo::Reflection::TypeMeta::newMetaFromName(#class_name), (class_name*)ptr)
 
     template<typename T, typename U, typename = void>
     struct is_safely_castable : std::false_type
@@ -89,11 +85,10 @@ namespace Piccolo
     typedef std::function<Json(void*)>                                  WriteJsonByName;
     typedef std::function<int(Reflection::ReflectionInstance*&, void*)> GetBaseClassReflectionInstanceListFunc;
 
-    typedef std::tuple<SetFuncion, GetFuncion, GetNameFuncion, GetNameFuncion, GetNameFuncion, GetBoolFunc>
-                                                       FieldFunctionTuple;
-    typedef std::tuple<GetNameFuncion, InvokeFunction> MethodFunctionTuple;
-    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName> ClassFunctionTuple;
-    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion>      ArrayFunctionTuple;
+    typedef std::tuple<SetFuncion, GetFuncion, GetNameFuncion, GetNameFuncion, GetNameFuncion, GetBoolFunc> FieldFunctionTuple;
+    typedef std::tuple<GetNameFuncion, InvokeFunction>                                                      MethodFunctionTuple;
+    typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName>        ClassFunctionTuple;
+    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion>             ArrayFunctionTuple;
 
     namespace Reflection
     {
@@ -321,29 +316,25 @@ namespace Piccolo
 
             bool operator!=(const ReflectionPtr<T>& rhs_ptr) const { return (m_instance != rhs_ptr.m_instance); }
 
-            template<
-                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
+            template<typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             explicit operator T1*()
             {
                 return static_cast<T1*>(m_instance);
             }
 
-            template<
-                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
+            template<typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             operator ReflectionPtr<T1>()
             {
                 return ReflectionPtr<T1>(m_type_name, (T1*)(m_instance));
             }
 
-            template<
-                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
+            template<typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             explicit operator const T1*() const
             {
                 return static_cast<T1*>(m_instance);
             }
 
-            template<
-                typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
+            template<typename T1 /*, typename = typename std::enable_if<std::is_safely_castable<T*, T1*>::value>::type*/>
             operator const ReflectionPtr<T1>() const
             {
                 return ReflectionPtr<T1>(m_type_name, (T1*)(m_instance));

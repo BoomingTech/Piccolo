@@ -54,9 +54,7 @@ namespace Piccolo
             int   current_frame_high = ceil(exact_frame);
             float lerp_ratio         = exact_frame - current_frame_low;
             // for (size_t node_index = 0; node_index < 0; node_index++)
-            for (size_t node_index = 0;
-                 node_index < animation_clip.node_count && node_index < anim_skel_map.convert.size();
-                 node_index++)
+            for (size_t node_index = 0; node_index < animation_clip.node_count && node_index < anim_skel_map.convert.size(); node_index++)
             {
                 AnimationChannel channel    = animation_clip.node_channels[node_index];
                 size_t           bone_index = anim_skel_map.convert[node_index];
@@ -84,15 +82,10 @@ namespace Piccolo
                 {
                     current_frame_high = channel.rotation_keys.size() - 1;
                 }
-                current_frame_low = (current_frame_low < current_frame_high) ? current_frame_low : current_frame_high;
-                Vector3 position  = Vector3::lerp(
-                    channel.position_keys[current_frame_low], channel.position_keys[current_frame_high], lerp_ratio);
-                Vector3 scaling = Vector3::lerp(
-                    channel.scaling_keys[current_frame_low], channel.scaling_keys[current_frame_high], lerp_ratio);
-                Quaternion rotation = Quaternion::nLerp(lerp_ratio,
-                                                        channel.rotation_keys[current_frame_low],
-                                                        channel.rotation_keys[current_frame_high],
-                                                        true);
+                current_frame_low   = (current_frame_low < current_frame_high) ? current_frame_low : current_frame_high;
+                Vector3    position = Vector3::lerp(channel.position_keys[current_frame_low], channel.position_keys[current_frame_high], lerp_ratio);
+                Vector3    scaling  = Vector3::lerp(channel.scaling_keys[current_frame_low], channel.scaling_keys[current_frame_high], lerp_ratio);
+                Quaternion rotation = Quaternion::nLerp(lerp_ratio, channel.rotation_keys[current_frame_low], channel.rotation_keys[current_frame_high], true);
 
                 {
                     bone->rotate(rotation);
@@ -121,11 +114,10 @@ namespace Piccolo
         AnimationResult animation_result;
         for (size_t i = 0; i < m_bone_count; i++)
         {
-            std::shared_ptr<AnimationResultElement> animation_result_element =
-                std::make_shared<AnimationResultElement>();
-            Bone* bone                      = &m_bones[i];
-            animation_result_element->index = bone->getID() + 1;
-            Vector3 temp_translation        = bone->_getDerivedPosition();
+            std::shared_ptr<AnimationResultElement> animation_result_element = std::make_shared<AnimationResultElement>();
+            Bone*                                   bone                     = &m_bones[i];
+            animation_result_element->index                                  = bone->getID() + 1;
+            Vector3 temp_translation                                         = bone->_getDerivedPosition();
 
             // TODO: the unit of the joint matrices is wrong
             Vector3 temp_scale = bone->_getDerivedScale();
@@ -142,9 +134,7 @@ namespace Piccolo
             //	scale,
             //	conjugate( bone->_getDerivedTOrientation())
             //);
-            auto objMat =
-                Transform(bone->_getDerivedPosition(), bone->_getDerivedOrientation(), bone->_getDerivedScale())
-                    .getMatrix();
+            auto objMat = Transform(bone->_getDerivedPosition(), bone->_getDerivedOrientation(), bone->_getDerivedScale()).getMatrix();
 
             auto resMat = objMat * bone->_getInverseTpose();
 
@@ -155,13 +145,7 @@ namespace Piccolo
         return animation_result;
     }
 
-    const Bone* Skeleton::getBones() const
-    {
-        return m_bones;
-    }
+    const Bone* Skeleton::getBones() const { return m_bones; }
 
-    int32_t Skeleton::getBonesCount() const
-    {
-        return m_bone_count;
-    }
+    int32_t Skeleton::getBonesCount() const { return m_bone_count; }
 } // namespace Piccolo
