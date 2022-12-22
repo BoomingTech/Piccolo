@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <vk_mem_alloc.h>
 
-#include <filesystem>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -38,7 +37,7 @@ namespace Piccolo
         virtual RHISampler* getOrCreateDefaultSampler(RHIDefaultSamplerType type)                                                         = 0;
         virtual RHISampler* getOrCreateMipmapSampler(uint32_t width, uint32_t height)                                                     = 0;
 
-        virtual RHIShader* createShaderModule(const std::filesystem::path& shader_file_path) = 0;
+        virtual RHIShader* createShaderModule(const std::string& shader_file) = 0;
         virtual RHIShader* createShaderModule(const std::vector<unsigned char>& shader_code) = 0;
 
         virtual void

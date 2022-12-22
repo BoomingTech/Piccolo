@@ -22,8 +22,11 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options("/MP")
+    # add_compile_options("/FS")
     set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PiccoloEditor)
 endif()
+
+set(glslang_include ${THIRD_PARTY_DIR}/glslang-sdk)
 
 set(vulkan_include ${THIRD_PARTY_DIR}/VulkanSDK/include)
 

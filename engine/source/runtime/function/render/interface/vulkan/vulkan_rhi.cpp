@@ -2772,9 +2772,13 @@ namespace Piccolo
         }
     }
 
-    RHIShader* VulkanRHI::createShaderModule(const std::filesystem::path& shader_file_path)
+    RHIShader* VulkanRHI::createShaderModule(const std::string& shader_file)
     {
         RHIShader* shahder = new VulkanShader();
+
+        VkShaderModule vk_shader = VulkanUtil::createShaderModule(m_device, shader_file);
+
+        ((VulkanShader*)shahder)->setResource(vk_shader);
 
         return shahder;
     }

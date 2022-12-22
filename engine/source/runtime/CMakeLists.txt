@@ -47,6 +47,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC Jolt)
 target_link_libraries(${TARGET_NAME} PUBLIC lua_static sol2)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
+target_link_libraries(${TARGET_NAME} PUBLIC glslang SPIRV glslang-default-resource-limits)
 target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:json11>)
 
 if(ENABLE_PHYSICS_DEBUG_RENDERER)
@@ -57,6 +58,10 @@ endif()
 target_include_directories(
   ${TARGET_NAME}
   PUBLIC $<BUILD_INTERFACE:${vulkan_include}>)
+
+target_include_directories(
+    ${TARGET_NAME}
+    PUBLIC $<BUILD_INTERFACE:${glslang_include}>)
 
 add_dependencies(${TARGET_NAME} ${SHADER_COMPILE_TARGET})
 target_include_directories(

@@ -1,10 +1,29 @@
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
 #include "runtime/core/base/macro.h"
+#include "runtime/function/global/global_context.h"
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
+#include "runtime/resource/asset_manager/asset_manager.h"
+#include "runtime/resource/config_manager/config_manager.h"
+
+#include <SPIRV/GLSL.ext.EXT.h>
+#include <SPIRV/GLSL.ext.KHR.h>
+#include <SPIRV/GLSL.std.450.h>
+#include <SPIRV/GlslangToSpv.h>
+#include <SPIRV/disassemble.h>
+#include <SPIRV/doc.h>
+#include <StandAlone/DirStackFileIncluder.h>
+#include <StandAlone/ResourceLimits.h>
+#include <StandAlone/Worklist.h>
+#include <glslang/Include/ShHandle.h>
+#include <glslang/Public/ShaderLang.h>
+
+#include <glslang/Include/glslang_c_interface.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
 
 namespace Piccolo
@@ -26,6 +45,203 @@ namespace Piccolo
         }
         LOG_ERROR("findMemoryType error");
         return 0;
+    }
+
+    int endsWith(const char* s, const char* part) { return (strstr(s, part) - s) == (strlen(s) - strlen(part)); }
+
+    // glslang_stage_t glslangShaderStageFromFileName(const char* fileName)
+    // {
+    //     if (endsWith(fileName, ".vert"))
+    //         return GLSLANG_STAGE_VERTEX;
+    //     if (endsWith(fileName, ".frag"))
+    //         return GLSLANG_STAGE_FRAGMENT;
+    //     if (endsWith(fileName, ".geom"))
+    //         return GLSLANG_STAGE_GEOMETRY;
+    //     if (endsWith(fileName, ".comp"))
+    //         return GLSLANG_STAGE_COMPUTE;
+    //     if (endsWith(fileName, ".tesc"))
+    //         return GLSLANG_STAGE_TESSCONTROL;
+    //     if (endsWith(fileName, ".tese"))
+    //         return GLSLANG_STAGE_TESSEVALUATION;
+    //     return GLSLANG_STAGE_VERTEX;
+    // }
+
+    EShLanguage shaderLanguageStageFromFileName(const char* fileName)
+    {
+        if (endsWith(fileName, ".vert"))
+            return EShLangVertex;
+        if (endsWith(fileName, ".frag"))
+            return EShLangFragment;
+        if (endsWith(fileName, ".geom"))
+            return EShLangGeometry;
+        if (endsWith(fileName, ".comp"))
+            return EShLangCompute;
+        if (endsWith(fileName, ".tesc"))
+            return EShLangTessControl;
+        if (endsWith(fileName, ".tese"))
+            return EShLangTessEvaluation;
+        return EShLangVertex;
+    }
+
+    const char* GetBinaryName(EShLanguage stage)
+    {
+        const char* name;
+        switch (stage)
+        {
+            case EShLangVertex:
+                name = "vert.spv";
+                break;
+            case EShLangTessControl:
+                name = "tesc.spv";
+                break;
+            case EShLangTessEvaluation:
+                name = "tese.spv";
+                break;
+            case EShLangGeometry:
+                name = "geom.spv";
+                break;
+            case EShLangFragment:
+                name = "frag.spv";
+                break;
+            case EShLangCompute:
+                name = "comp.spv";
+                break;
+            case EShLangRayGen:
+                name = "rgen.spv";
+                break;
+            case EShLangIntersect:
+                name = "rint.spv";
+                break;
+            case EShLangAnyHit:
+                name = "rahit.spv";
+                break;
+            case EShLangClosestHit:
+                name = "rchit.spv";
+                break;
+            case EShLangMiss:
+                name = "rmiss.spv";
+                break;
+            case EShLangCallable:
+                name = "rcall.spv";
+                break;
+            case EShLangMeshNV:
+                name = "mesh.spv";
+                break;
+            case EShLangTaskNV:
+                name = "task.spv";
+                break;
+            default:
+                name = "unknown";
+                break;
+        }
+        return name;
+    }
+
+    VkShaderModule VulkanUtil::createShaderModule(VkDevice device, const std::string& shader_file)
+    {
+        std::filesystem::path asset_path       = g_runtime_global_context.m_config_manager->getRootFolder();
+        std::filesystem::path shader_file_path = asset_path / "shader" / "glsl" / shader_file;
+        std::filesystem::path include_path     = asset_path / "shader" / "include";
+        LOG_DEBUG("open shader: " + shader_file_path.generic_string());
+
+        std::string shader_code = "";
+        g_runtime_global_context.m_asset_manager->readTextFile(shader_file_path, shader_code);
+
+        EShLanguage stage = shaderLanguageStageFromFileName(shader_file.c_str());
+
+        DirStackFileIncluder includer;
+        includer.pushExternalLocalDirectory(include_path.generic_string());
+
+        auto client          = glslang::EShClientVulkan;
+        auto client_version  = glslang::EShTargetVulkan_1_0;
+        auto target_language = glslang::EShTargetSpv;
+        auto target_version  = glslang::EShTargetSpv_1_0;
+        auto messages        = EShMsgDefault;
+
+        glslang::InitializeProcess();
+
+        glslang::TProgram* program = new glslang::TProgram;
+        glslang::TShader*  shader  = new glslang::TShader(stage);
+
+        const char* file_names[]   = {shader_file.c_str()};
+        const char* shader_codes[] = {shader_code.c_str()};
+        shader->setStringsWithLengthsAndNames(shader_codes, NULL, file_names, 1);
+
+        std::string              preamble_str = "";
+        std::vector<std::string> processes    = {};
+
+        shader->setPreamble(preamble_str.c_str());
+        shader->addProcesses(processes);
+
+        shader->setEnvInput(glslang::EShSourceGlsl, stage, client, 100);
+        shader->setEnvClient(client, client_version);
+        shader->setEnvTarget(target_language, target_version);
+
+        auto        resources      = glslang::DefaultTBuiltInResource;
+        const int   defaultVersion = 100;
+        std::string str;
+        if (shader->preprocess(&resources, defaultVersion, ENoProfile, false, false, messages, &str, includer))
+        {
+            LOG_WARN(str);
+        }
+        else
+        {
+            LOG_ERROR(shader->getInfoLog());
+            LOG_ERROR(shader->getInfoDebugLog());
+            throw std::exception("preprocess failed");
+        }
+
+        if (!shader->parse(&resources, defaultVersion, false, messages, includer))
+        {
+            LOG_ERROR(shader->getInfoLog());
+            LOG_ERROR(shader->getInfoDebugLog());
+            throw std::exception("parse failed");
+        }
+
+        program->addShader(shader);
+
+        if (!program->link(messages))
+        {
+            LOG_ERROR(program->getInfoLog());
+            LOG_ERROR(program->getInfoDebugLog());
+            throw std::exception("link failed");
+        }
+
+        if (!program->mapIO())
+        {
+            LOG_ERROR(program->getInfoLog());
+            LOG_ERROR(program->getInfoDebugLog());
+            throw std::exception("link failed");
+        }
+
+        bool SpvToolsDisassembler = false;
+        bool SpvToolsValidate     = false;
+
+        std::vector<unsigned int> spirv;
+        for (int stage = 0; stage < EShLangCount; ++stage)
+        {
+            if (program->getIntermediate((EShLanguage)stage))
+            {
+                spv::SpvBuildLogger logger;
+                glslang::SpvOptions spvOptions;
+                // spvOptions.generateDebugInfo = false;
+                spvOptions.stripDebugInfo   = true;
+                spvOptions.disableOptimizer = true;
+                spvOptions.optimizeSize     = true;
+                spvOptions.disassemble      = SpvToolsDisassembler;
+                spvOptions.validate         = SpvToolsValidate;
+                glslang::GlslangToSpv(*program->getIntermediate((EShLanguage)stage), spirv, &logger, &spvOptions);
+                break;
+            }
+        }
+
+        glslang::FinalizeProcess();
+
+        std::vector<unsigned char> spirv_char;
+        spirv_char.resize(spirv.size() * sizeof(unsigned int));
+        memcpy(spirv_char.data(), spirv.data(), spirv_char.size());
+
+        return createShaderModule(device, spirv_char);
     }
 
     VkShaderModule VulkanUtil::createShaderModule(VkDevice device, const std::vector<unsigned char>& shader_code)

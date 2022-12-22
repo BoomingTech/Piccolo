@@ -29,7 +29,7 @@ namespace Piccolo
         RHISampler* getOrCreateDefaultSampler(RHIDefaultSamplerType type) override;
         RHISampler* getOrCreateMipmapSampler(uint32_t width, uint32_t height) override;
 
-        RHIShader* createShaderModule(const std::filesystem::path& shader_file_path) override;
+        RHIShader* createShaderModule(const std::string& shader_file) override;
         RHIShader* createShaderModule(const std::vector<unsigned char>& shader_code) override;
 
         void createBuffer(RHIDeviceSize          size,

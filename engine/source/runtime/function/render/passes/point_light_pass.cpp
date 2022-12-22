@@ -235,9 +235,13 @@ namespace Piccolo
             throw std::runtime_error("create mesh point light shadow pipeline layout");
         }
 
-        RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_VERT);
-        RHIShader* geom_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_GEOM);
-        RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_FRAG);
+        // RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_VERT);
+        // RHIShader* geom_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_GEOM);
+        // RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_FRAG);
+
+        RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.vert");
+        RHIShader* geom_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.geom");
+        RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.frag");
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

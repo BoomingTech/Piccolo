@@ -8,6 +8,7 @@
 #include <functional>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "_generated/serializer/all_serializer.h"
 
@@ -65,6 +66,9 @@ namespace Piccolo
 
             return true;
         }
+
+        void readTextFile(const std::filesystem::path& file_path, std::string& content);
+        void readBinaryFile(const std::filesystem::path& file_path, std::vector<unsigned char>& content);
 
         std::filesystem::path getFullPath(const std::string& relative_path) const;
     };
