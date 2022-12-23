@@ -1,9 +1,12 @@
 #include "debug_draw_pipeline.h"
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/render/render_system.h"
+
 #include <debugdraw_frag.h>
 #include <debugdraw_vert.h>
+
 #include <fstream>
+
 namespace Piccolo
 {
     void DebugDrawPipeline::initialize()

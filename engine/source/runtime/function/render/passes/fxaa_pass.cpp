@@ -8,8 +8,8 @@
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
 
-#include <fxaa_frag.h>
 #include <fxaa_vert.h>
+#include <fxaa_frag.h>
 
 #include <stdexcept>
 
