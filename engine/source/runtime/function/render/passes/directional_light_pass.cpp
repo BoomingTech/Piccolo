@@ -5,8 +5,10 @@
 #include "runtime/function/render/render_helper.h"
 #include "runtime/function/render/render_mesh.h"
 
+#ifdef NDEBUG
 #include <mesh_directional_light_shadow_frag.h>
 #include <mesh_directional_light_shadow_vert.h>
+#endif
 
 #include <stdexcept>
 
@@ -222,8 +224,13 @@ namespace Piccolo
             throw std::runtime_error("create mesh directional light shadow pipeline layout");
         }
 
+#ifdef NDEBUG
         RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_VERT);
         RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_FRAG);
+#else
+        RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh_directional_light_shadow.vert");
+        RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh_directional_light_shadow.frag");
+#endif
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

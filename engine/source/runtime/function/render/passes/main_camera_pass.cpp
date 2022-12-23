@@ -9,6 +9,7 @@
 #include <map>
 #include <stdexcept>
 
+#ifdef NDEBUG
 #include <axis_frag.h>
 #include <axis_vert.h>
 #include <deferred_lighting_frag.h>
@@ -18,6 +19,7 @@
 #include <mesh_vert.h>
 #include <skybox_frag.h>
 #include <skybox_vert.h>
+#endif
 
 namespace Piccolo
 {
@@ -736,8 +738,13 @@ namespace Piccolo
                 throw std::runtime_error("create mesh gbuffer pipeline layout");
             }
 
+#ifdef NDEBUG
             RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_VERT);
             RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_GBUFFER_FRAG);
+#else
+            RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh.vert");
+            RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh_gbuffer.frag");
+#endif
 
             RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
             vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -887,8 +894,13 @@ namespace Piccolo
                 throw std::runtime_error("create deferred lighting pipeline layout");
             }
 
+#ifdef NDEBUG
             RHIShader* vert_shader_module = m_rhi->createShaderModule(DEFERRED_LIGHTING_VERT);
             RHIShader* frag_shader_module = m_rhi->createShaderModule(DEFERRED_LIGHTING_FRAG);
+#else
+            RHIShader* vert_shader_module = m_rhi->createShaderModule("deferred_lighting.vert");
+            RHIShader* frag_shader_module = m_rhi->createShaderModule("deferred_lighting.frag");
+#endif
 
             RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
             vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1021,8 +1033,13 @@ namespace Piccolo
                 throw std::runtime_error("create mesh lighting pipeline layout");
             }
 
+#ifdef NDEBUG
             RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_VERT);
             RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_FRAG);
+#else
+            RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh.vert");
+            RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh.frag");
+#endif
 
             RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
             vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1153,8 +1170,13 @@ namespace Piccolo
                 throw std::runtime_error("create skybox pipeline layout");
             }
 
+#ifdef NDEBUG
             RHIShader* vert_shader_module = m_rhi->createShaderModule(SKYBOX_VERT);
             RHIShader* frag_shader_module = m_rhi->createShaderModule(SKYBOX_FRAG);
+#else
+            RHIShader* vert_shader_module = m_rhi->createShaderModule("skybox.vert");
+            RHIShader* frag_shader_module = m_rhi->createShaderModule("skybox.frag");
+#endif
 
             RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
             vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1285,8 +1307,13 @@ namespace Piccolo
                 throw std::runtime_error("create axis pipeline layout");
             }
 
+#ifdef NDEBUG
             RHIShader* vert_shader_module = m_rhi->createShaderModule(AXIS_VERT);
             RHIShader* frag_shader_module = m_rhi->createShaderModule(AXIS_FRAG);
+#else
+            RHIShader* vert_shader_module = m_rhi->createShaderModule("axis.vert");
+            RHIShader* frag_shader_module = m_rhi->createShaderModule("axis.frag");
+#endif
 
             RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
             vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

@@ -5,9 +5,11 @@
 #include "runtime/function/render/render_helper.h"
 #include "runtime/function/render/render_mesh.h"
 
+#ifdef NDEBUG
 #include <mesh_point_light_shadow_frag.h>
 #include <mesh_point_light_shadow_geom.h>
 #include <mesh_point_light_shadow_vert.h>
+#endif
 
 #include <map>
 #include <stdexcept>
@@ -235,13 +237,15 @@ namespace Piccolo
             throw std::runtime_error("create mesh point light shadow pipeline layout");
         }
 
-        // RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_VERT);
-        // RHIShader* geom_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_GEOM);
-        // RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_FRAG);
-
+#ifdef NDEBUG
+        RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_VERT);
+        RHIShader* geom_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_GEOM);
+        RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_POINT_LIGHT_SHADOW_FRAG);
+#else
         RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.vert");
         RHIShader* geom_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.geom");
         RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh_point_light_shadow.frag");
+#endif
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

@@ -180,22 +180,18 @@ namespace Piccolo
         auto        resources      = glslang::DefaultTBuiltInResource;
         const int   defaultVersion = 100;
         std::string str;
-        if (shader->preprocess(&resources, defaultVersion, ENoProfile, false, false, messages, &str, includer))
-        {
-            LOG_WARN(str);
-        }
-        else
+        if (!shader->preprocess(&resources, defaultVersion, ENoProfile, false, false, messages, &str, includer))
         {
             LOG_ERROR(shader->getInfoLog());
             LOG_ERROR(shader->getInfoDebugLog());
-            throw std::exception("preprocess failed");
+            throw std::exception(shader->getInfoLog());
         }
 
         if (!shader->parse(&resources, defaultVersion, false, messages, includer))
         {
             LOG_ERROR(shader->getInfoLog());
             LOG_ERROR(shader->getInfoDebugLog());
-            throw std::exception("parse failed");
+            throw std::exception(shader->getInfoLog());
         }
 
         program->addShader(shader);
@@ -204,35 +200,31 @@ namespace Piccolo
         {
             LOG_ERROR(program->getInfoLog());
             LOG_ERROR(program->getInfoDebugLog());
-            throw std::exception("link failed");
+            throw std::exception(program->getInfoLog());
         }
 
         if (!program->mapIO())
         {
             LOG_ERROR(program->getInfoLog());
             LOG_ERROR(program->getInfoDebugLog());
-            throw std::exception("link failed");
+            throw std::exception(program->getInfoLog());
         }
 
         bool SpvToolsDisassembler = false;
         bool SpvToolsValidate     = false;
 
         std::vector<unsigned int> spirv;
-        for (int stage = 0; stage < EShLangCount; ++stage)
+        if (program->getIntermediate(stage))
         {
-            if (program->getIntermediate((EShLanguage)stage))
-            {
-                spv::SpvBuildLogger logger;
-                glslang::SpvOptions spvOptions;
-                // spvOptions.generateDebugInfo = false;
-                spvOptions.stripDebugInfo   = true;
-                spvOptions.disableOptimizer = true;
-                spvOptions.optimizeSize     = true;
-                spvOptions.disassemble      = SpvToolsDisassembler;
-                spvOptions.validate         = SpvToolsValidate;
-                glslang::GlslangToSpv(*program->getIntermediate((EShLanguage)stage), spirv, &logger, &spvOptions);
-                break;
-            }
+            spv::SpvBuildLogger logger;
+            glslang::SpvOptions spvOptions;
+            // spvOptions.generateDebugInfo = false;
+            spvOptions.stripDebugInfo   = true;
+            spvOptions.disableOptimizer = true;
+            spvOptions.optimizeSize     = true;
+            spvOptions.disassemble      = SpvToolsDisassembler;
+            spvOptions.validate         = SpvToolsValidate;
+            glslang::GlslangToSpv(*program->getIntermediate((EShLanguage)stage), spirv, &logger, &spvOptions);
         }
 
         glslang::FinalizeProcess();
