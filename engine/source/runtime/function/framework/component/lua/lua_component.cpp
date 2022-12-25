@@ -4,6 +4,7 @@
 #include "runtime/function/global/global_context.h"
 #include "runtime/resource/config_manager/config_manager.h"
 
+#include <stdexcept>
 #include <exception>
 #include <fstream>
 
@@ -61,7 +62,7 @@ namespace Piccolo
         else
         {
             LOG_ERROR("cannot find target field");
-            throw new std::exception("LuaComponent::set cannot find target field");
+            throw new std::runtime_error("LuaComponent::set cannot find target field");
         }
     }
 
@@ -78,7 +79,7 @@ namespace Piccolo
         else
         {
             LOG_ERROR("cannot find target field");
-            throw new std::exception("LuaComponent::get cannot find target field");
+            throw new std::runtime_error("LuaComponent::get cannot find target field");
         }
     }
 
