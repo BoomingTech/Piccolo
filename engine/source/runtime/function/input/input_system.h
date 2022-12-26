@@ -6,16 +6,16 @@ namespace Piccolo
 {
     enum class GameCommand : unsigned int
     {
-        forward  = 1 << 0,                 // W
-        backward = 1 << 1,                 // S
-        left     = 1 << 2,                 // A
-        right    = 1 << 3,                 // D
-        jump     = 1 << 4,                 // SPACE
-        squat    = 1 << 5,                 // not implemented yet
-        sprint   = 1 << 6,                 // LEFT SHIFT
-        fire     = 1 << 7,                 // not implemented yet
-        free_carema = 1 << 8,              // F
-        invalid  = (unsigned int)(1 << 31) // lost focus
+        forward     = 1 << 0,                 // W
+        backward    = 1 << 1,                 // S
+        left        = 1 << 2,                 // A
+        right       = 1 << 3,                 // D
+        jump        = 1 << 4,                 // SPACE
+        squat       = 1 << 5,                 // not implemented yet
+        sprint      = 1 << 6,                 // LEFT SHIFT
+        fire        = 1 << 7,                 // not implemented yet
+        free_carema = 1 << 8,                 // F
+        invalid     = (unsigned int)(1 << 31) // lost focus
     };
 
     extern unsigned int k_complement_control_command;

@@ -31,7 +31,7 @@ namespace Piccolo
         init_info.Queue                     = ((VulkanQueue*)m_rhi->getGraphicsQueue())->getResource();
         init_info.DescriptorPool            = std::static_pointer_cast<VulkanRHI>(m_rhi)->m_vk_descriptor_pool;
         init_info.Subpass                   = _main_camera_subpass_ui;
-        
+
         // may be different from the real swapchain image count
         // see ImGui_ImplVulkanH_GetMinImageCountFromPresentMode
         init_info.MinImageCount = 3;
@@ -44,10 +44,10 @@ namespace Piccolo
     void UIPass::uploadFonts()
     {
         RHICommandBufferAllocateInfo allocInfo = {};
-        allocInfo.sType                       = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level                       = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool                 = m_rhi->getCommandPoor();
-        allocInfo.commandBufferCount          = 1;
+        allocInfo.sType                        = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level                        = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool                  = m_rhi->getCommandPoor();
+        allocInfo.commandBufferCount           = 1;
 
         RHICommandBuffer* commandBuffer = new VulkanCommandBuffer();
         if (RHI_SUCCESS != m_rhi->allocateCommandBuffers(&allocInfo, commandBuffer))
@@ -56,8 +56,8 @@ namespace Piccolo
         }
 
         RHICommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType                    = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags                    = RHI_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        beginInfo.sType                     = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags                     = RHI_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
         if (RHI_SUCCESS != m_rhi->beginCommandBuffer(commandBuffer, &beginInfo))
         {
@@ -94,7 +94,7 @@ namespace Piccolo
 
             m_window_ui->preRender();
 
-            float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
             m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "ImGUI", color);
 
             ImGui::Render();

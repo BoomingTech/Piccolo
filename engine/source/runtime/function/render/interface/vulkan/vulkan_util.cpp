@@ -1,11 +1,31 @@
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
-#include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 #include "runtime/core/base/macro.h"
+#include "runtime/function/global/global_context.h"
+#include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
+#include "runtime/resource/asset_manager/asset_manager.h"
+#include "runtime/resource/config_manager/config_manager.h"
+
+#include <SPIRV/GLSL.ext.EXT.h>
+#include <SPIRV/GLSL.ext.KHR.h>
+#include <SPIRV/GLSL.std.450.h>
+#include <SPIRV/GlslangToSpv.h>
+#include <SPIRV/disassemble.h>
+#include <SPIRV/doc.h>
+#include <StandAlone/DirStackFileIncluder.h>
+#include <StandAlone/ResourceLimits.h>
+#include <StandAlone/Worklist.h>
+#include <glslang/Include/ShHandle.h>
+#include <glslang/Public/ShaderLang.h>
+
+#include <glslang/Include/glslang_c_interface.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
+#include <exception>
 
 namespace Piccolo
 {
@@ -13,22 +33,208 @@ namespace Piccolo
     VkSampler                               VulkanUtil::m_nearest_sampler = VK_NULL_HANDLE;
     VkSampler                               VulkanUtil::m_linear_sampler  = VK_NULL_HANDLE;
 
-    uint32_t VulkanUtil::findMemoryType(VkPhysicalDevice      physical_device,
-                                        uint32_t              type_filter,
-                                        VkMemoryPropertyFlags properties_flag)
+    uint32_t VulkanUtil::findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties_flag)
     {
         VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
         vkGetPhysicalDeviceMemoryProperties(physical_device, &physical_device_memory_properties);
         for (uint32_t i = 0; i < physical_device_memory_properties.memoryTypeCount; i++)
         {
-            if (type_filter & (1 << i) &&
-                (physical_device_memory_properties.memoryTypes[i].propertyFlags & properties_flag) == properties_flag)
+            if (type_filter & (1 << i) && (physical_device_memory_properties.memoryTypes[i].propertyFlags & properties_flag) == properties_flag)
             {
                 return i;
             }
         }
         LOG_ERROR("findMemoryType error");
         return 0;
+    }
+
+    int endsWith(const char* s, const char* part) { return (strstr(s, part) - s) == (strlen(s) - strlen(part)); }
+
+    // glslang_stage_t glslangShaderStageFromFileName(const char* fileName)
+    // {
+    //     if (endsWith(fileName, ".vert"))
+    //         return GLSLANG_STAGE_VERTEX;
+    //     if (endsWith(fileName, ".frag"))
+    //         return GLSLANG_STAGE_FRAGMENT;
+    //     if (endsWith(fileName, ".geom"))
+    //         return GLSLANG_STAGE_GEOMETRY;
+    //     if (endsWith(fileName, ".comp"))
+    //         return GLSLANG_STAGE_COMPUTE;
+    //     if (endsWith(fileName, ".tesc"))
+    //         return GLSLANG_STAGE_TESSCONTROL;
+    //     if (endsWith(fileName, ".tese"))
+    //         return GLSLANG_STAGE_TESSEVALUATION;
+    //     return GLSLANG_STAGE_VERTEX;
+    // }
+
+    EShLanguage shaderLanguageStageFromFileName(const char* fileName)
+    {
+        if (endsWith(fileName, ".vert"))
+            return EShLangVertex;
+        if (endsWith(fileName, ".frag"))
+            return EShLangFragment;
+        if (endsWith(fileName, ".geom"))
+            return EShLangGeometry;
+        if (endsWith(fileName, ".comp"))
+            return EShLangCompute;
+        if (endsWith(fileName, ".tesc"))
+            return EShLangTessControl;
+        if (endsWith(fileName, ".tese"))
+            return EShLangTessEvaluation;
+        return EShLangVertex;
+    }
+
+    const char* GetBinaryName(EShLanguage stage)
+    {
+        const char* name;
+        switch (stage)
+        {
+            case EShLangVertex:
+                name = "vert.spv";
+                break;
+            case EShLangTessControl:
+                name = "tesc.spv";
+                break;
+            case EShLangTessEvaluation:
+                name = "tese.spv";
+                break;
+            case EShLangGeometry:
+                name = "geom.spv";
+                break;
+            case EShLangFragment:
+                name = "frag.spv";
+                break;
+            case EShLangCompute:
+                name = "comp.spv";
+                break;
+            case EShLangRayGen:
+                name = "rgen.spv";
+                break;
+            case EShLangIntersect:
+                name = "rint.spv";
+                break;
+            case EShLangAnyHit:
+                name = "rahit.spv";
+                break;
+            case EShLangClosestHit:
+                name = "rchit.spv";
+                break;
+            case EShLangMiss:
+                name = "rmiss.spv";
+                break;
+            case EShLangCallable:
+                name = "rcall.spv";
+                break;
+            case EShLangMeshNV:
+                name = "mesh.spv";
+                break;
+            case EShLangTaskNV:
+                name = "task.spv";
+                break;
+            default:
+                name = "unknown";
+                break;
+        }
+        return name;
+    }
+
+    VkShaderModule VulkanUtil::createShaderModule(VkDevice device, const std::string& shader_file)
+    {
+        std::filesystem::path asset_path       = g_runtime_global_context.m_config_manager->getRootFolder();
+        std::filesystem::path shader_file_path = asset_path / "shader" / "glsl" / shader_file;
+        std::filesystem::path include_path     = asset_path / "shader" / "include";
+        LOG_DEBUG("open shader: " + shader_file_path.generic_string());
+
+        std::string shader_code = "";
+        g_runtime_global_context.m_asset_manager->readTextFile(shader_file_path, shader_code);
+
+        EShLanguage stage = shaderLanguageStageFromFileName(shader_file.c_str());
+
+        DirStackFileIncluder includer;
+        includer.pushExternalLocalDirectory(include_path.generic_string());
+
+        auto client          = glslang::EShClientVulkan;
+        auto client_version  = glslang::EShTargetVulkan_1_0;
+        auto target_language = glslang::EShTargetSpv;
+        auto target_version  = glslang::EShTargetSpv_1_0;
+        auto messages        = EShMsgDefault;
+
+        glslang::InitializeProcess();
+
+        glslang::TProgram* program = new glslang::TProgram;
+        glslang::TShader*  shader  = new glslang::TShader(stage);
+
+        const char* file_names[]   = {shader_file.c_str()};
+        const char* shader_codes[] = {shader_code.c_str()};
+        shader->setStringsWithLengthsAndNames(shader_codes, NULL, file_names, 1);
+
+        std::string              preamble_str = "";
+        std::vector<std::string> processes    = {};
+
+        shader->setPreamble(preamble_str.c_str());
+        shader->addProcesses(processes);
+
+        shader->setEnvInput(glslang::EShSourceGlsl, stage, client, 100);
+        shader->setEnvClient(client, client_version);
+        shader->setEnvTarget(target_language, target_version);
+
+        auto        resources      = glslang::DefaultTBuiltInResource;
+        const int   defaultVersion = 100;
+        std::string str;
+        if (!shader->preprocess(&resources, defaultVersion, ENoProfile, false, false, messages, &str, includer))
+        {
+            LOG_ERROR(shader->getInfoLog());
+            LOG_ERROR(shader->getInfoDebugLog());
+            throw std::runtime_error(shader->getInfoLog());
+        }
+
+        if (!shader->parse(&resources, defaultVersion, false, messages, includer))
+        {
+            LOG_ERROR(shader->getInfoLog());
+            LOG_ERROR(shader->getInfoDebugLog());
+            throw std::runtime_error(shader->getInfoLog());
+        }
+
+        program->addShader(shader);
+
+        if (!program->link(messages))
+        {
+            LOG_ERROR(program->getInfoLog());
+            LOG_ERROR(program->getInfoDebugLog());
+            throw std::runtime_error(program->getInfoLog());
+        }
+
+        if (!program->mapIO())
+        {
+            LOG_ERROR(program->getInfoLog());
+            LOG_ERROR(program->getInfoDebugLog());
+            throw std::runtime_error(program->getInfoLog());
+        }
+
+        bool SpvToolsDisassembler = false;
+        bool SpvToolsValidate     = false;
+
+        std::vector<unsigned int> spirv;
+        if (program->getIntermediate(stage))
+        {
+            spv::SpvBuildLogger logger;
+            glslang::SpvOptions spvOptions;
+            // spvOptions.generateDebugInfo = false;
+            spvOptions.stripDebugInfo   = true;
+            spvOptions.disableOptimizer = true;
+            spvOptions.optimizeSize     = true;
+            spvOptions.disassemble      = SpvToolsDisassembler;
+            spvOptions.validate         = SpvToolsValidate;
+            glslang::GlslangToSpv(*program->getIntermediate((EShLanguage)stage), spirv, &logger, &spvOptions);
+        }
+
+        glslang::FinalizeProcess();
+
+        std::vector<unsigned char> spirv_char;
+        spirv_char.resize(spirv.size() * sizeof(unsigned int));
+        memcpy(spirv_char.data(), spirv.data(), spirv_char.size());
+
+        return createShaderModule(device, spirv_char);
     }
 
     VkShaderModule VulkanUtil::createShaderModule(VkDevice device, const std::vector<unsigned char>& shader_code)
@@ -47,14 +253,14 @@ namespace Piccolo
     }
 
     void VulkanUtil::createBufferAndInitialize(VkDevice              device,
-                                       VkPhysicalDevice      physicalDevice,
-                                       VkBufferUsageFlags    usageFlags,
-                                       VkMemoryPropertyFlags memoryPropertyFlags,
-                                       VkBuffer*             buffer,
-                                       VkDeviceMemory*       memory,
-                                       VkDeviceSize          size,
-                                       void*                 data,
-                                       int                   datasize)
+                                               VkPhysicalDevice      physicalDevice,
+                                               VkBufferUsageFlags    usageFlags,
+                                               VkMemoryPropertyFlags memoryPropertyFlags,
+                                               VkBuffer*             buffer,
+                                               VkDeviceMemory*       memory,
+                                               VkDeviceSize          size,
+                                               void*                 data,
+                                               int                   datasize)
     {
         // Create the buffer handle
         VkBufferCreateInfo bufferCreateInfo {};
@@ -146,10 +352,9 @@ namespace Piccolo
         vkGetBufferMemoryRequirements(device, buffer, &buffer_memory_requirements);
 
         VkMemoryAllocateInfo buffer_memory_allocate_info {};
-        buffer_memory_allocate_info.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        buffer_memory_allocate_info.allocationSize = buffer_memory_requirements.size;
-        buffer_memory_allocate_info.memoryTypeIndex =
-            VulkanUtil::findMemoryType(physical_device, buffer_memory_requirements.memoryTypeBits, properties);
+        buffer_memory_allocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        buffer_memory_allocate_info.allocationSize  = buffer_memory_requirements.size;
+        buffer_memory_allocate_info.memoryTypeIndex = VulkanUtil::findMemoryType(physical_device, buffer_memory_requirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device, &buffer_memory_allocate_info, nullptr, &buffer_memory) != VK_SUCCESS)
         {
@@ -161,12 +366,7 @@ namespace Piccolo
         vkBindBufferMemory(device, buffer, buffer_memory, 0); // offset = 0
     }
 
-    void VulkanUtil::copyBuffer(RHI*         rhi,
-                                VkBuffer     srcBuffer,
-                                VkBuffer     dstBuffer,
-                                VkDeviceSize srcOffset,
-                                VkDeviceSize dstOffset,
-                                VkDeviceSize size)
+    void VulkanUtil::copyBuffer(RHI* rhi, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size)
     {
         if (rhi == nullptr)
         {
@@ -175,7 +375,7 @@ namespace Piccolo
         }
 
         RHICommandBuffer* rhi_command_buffer = static_cast<VulkanRHI*>(rhi)->beginSingleTimeCommands();
-        VkCommandBuffer command_buffer = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
+        VkCommandBuffer   command_buffer     = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
 
         VkBufferCopy copyRegion = {srcOffset, dstOffset, size};
         vkCmdCopyBuffer(command_buffer, srcBuffer, dstBuffer, 1, &copyRegion);
@@ -223,10 +423,9 @@ namespace Piccolo
         vkGetImageMemoryRequirements(device, image, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo {};
-        allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex =
-            findMemoryType(physical_device, memRequirements.memoryTypeBits, memory_property_flags);
+        allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize  = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(physical_device, memRequirements.memoryTypeBits, memory_property_flags);
 
         if (vkAllocateMemory(device, &allocInfo, nullptr, &memory) != VK_SUCCESS)
         {
@@ -266,15 +465,15 @@ namespace Piccolo
         return image_view;
     }
 
-    void VulkanUtil::createGlobalImage(RHI*               rhi,
-                                       VkImage&           image,
-                                       VkImageView&       image_view,
-                                       VmaAllocation&     image_allocation,
-                                       uint32_t           texture_image_width,
-                                       uint32_t           texture_image_height,
-                                       void*              texture_image_pixels,
-                                       RHIFormat texture_image_format,
-                                       uint32_t           miplevels)
+    void VulkanUtil::createGlobalImage(RHI*           rhi,
+                                       VkImage&       image,
+                                       VkImageView&   image_view,
+                                       VmaAllocation& image_allocation,
+                                       uint32_t       texture_image_width,
+                                       uint32_t       texture_image_height,
+                                       void*          texture_image_pixels,
+                                       RHIFormat      texture_image_format,
+                                       uint32_t       miplevels)
     {
         if (!texture_image_pixels)
         {
@@ -302,7 +501,7 @@ namespace Piccolo
                 vulkan_image_format = VK_FORMAT_R8G8B8A8_SRGB;
                 break;
             case RHIFormat::RHI_FORMAT_R32_SFLOAT:
-                texture_byte_size = texture_image_width * texture_image_height * 4;
+                texture_byte_size   = texture_image_width * texture_image_height * 4;
                 vulkan_image_format = VK_FORMAT_R32_SFLOAT;
                 break;
             case RHIFormat::RHI_FORMAT_R32G32_SFLOAT:
@@ -334,14 +533,12 @@ namespace Piccolo
                                  inefficient_staging_buffer_memory);
 
         void* data;
-        vkMapMemory(
-            static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
+        vkMapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, texture_byte_size, 0, &data);
         memcpy(data, texture_image_pixels, static_cast<size_t>(texture_byte_size));
         vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
 
         // generate mipmapped image
-        uint32_t mip_levels =
-            (miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
+        uint32_t mip_levels = (miplevels != 0) ? miplevels : floor(log2(std::max(texture_image_width, texture_image_height))) + 1;
 
         // use the vmaAllocator to allocate asset texture image
         VkImageCreateInfo image_create_info {};
@@ -356,39 +553,21 @@ namespace Piccolo
         image_create_info.format        = vulkan_image_format;
         image_create_info.tiling        = VK_IMAGE_TILING_OPTIMAL;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_create_info.usage =
-            VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-        image_create_info.samples     = VK_SAMPLE_COUNT_1_BIT;
-        image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info.usage         = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        image_create_info.samples       = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
-                       &image_create_info,
-                       &allocInfo,
-                       &image,
-                       &image_allocation,
-                       NULL);
+        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator, &image_create_info, &allocInfo, &image, &image_allocation, NULL);
 
         // layout transitions -- image layout is set from none to destination
-        transitionImageLayout(rhi,
-                              image,
-                              VK_IMAGE_LAYOUT_UNDEFINED,
-                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                              1,
-                              1,
-                              VK_IMAGE_ASPECT_COLOR_BIT);
+        transitionImageLayout(rhi, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1, VK_IMAGE_ASPECT_COLOR_BIT);
         // copy from staging buffer as destination
         copyBufferToImage(rhi, inefficient_staging_buffer, image, texture_image_width, texture_image_height, 1);
         // layout transitions -- image layout is set from destination to shader_read
-        transitionImageLayout(rhi,
-                              image,
-                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                              VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                              1,
-                              1,
-                              VK_IMAGE_ASPECT_COLOR_BIT);
+        transitionImageLayout(rhi, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, 1, VK_IMAGE_ASPECT_COLOR_BIT);
 
         vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
         vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
@@ -396,13 +575,8 @@ namespace Piccolo
         // generate mipmapped image
         genMipmappedImage(rhi, image, texture_image_width, texture_image_height, mip_levels);
 
-        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->m_device,
-                                     image,
-                                     vulkan_image_format,
-                                     VK_IMAGE_ASPECT_COLOR_BIT,
-                                     VK_IMAGE_VIEW_TYPE_2D,
-                                     1,
-                                     mip_levels);
+        image_view = createImageView(
+            static_cast<VulkanRHI*>(rhi)->m_device, image, vulkan_image_format, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, mip_levels);
     }
 
     void VulkanUtil::createCubeMap(RHI*                 rhi,
@@ -412,7 +586,7 @@ namespace Piccolo
                                    uint32_t             texture_image_width,
                                    uint32_t             texture_image_height,
                                    std::array<void*, 6> texture_image_pixels,
-                                   RHIFormat   texture_image_format,
+                                   RHIFormat            texture_image_format,
                                    uint32_t             miplevels)
     {
         VkDeviceSize texture_layer_byte_size;
@@ -471,20 +645,14 @@ namespace Piccolo
         image_create_info.format        = vulkan_image_format;
         image_create_info.tiling        = VK_IMAGE_TILING_OPTIMAL;
         image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_create_info.usage =
-            VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-        image_create_info.samples     = VK_SAMPLE_COUNT_1_BIT;
-        image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info.usage         = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        image_create_info.samples       = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocInfo = {};
         allocInfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator,
-                       &image_create_info,
-                       &allocInfo,
-                       &image,
-                       &image_allocation,
-                       NULL);
+        vmaCreateImage(static_cast<VulkanRHI*>(rhi)->m_assets_allocator, &image_create_info, &allocInfo, &image, &image_allocation, NULL);
 
         VkBuffer       inefficient_staging_buffer;
         VkDeviceMemory inefficient_staging_buffer_memory;
@@ -497,45 +665,25 @@ namespace Piccolo
                      inefficient_staging_buffer_memory);
 
         void* data = NULL;
-        vkMapMemory(
-            static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, cube_byte_size, 0, &data);
+        vkMapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, 0, cube_byte_size, 0, &data);
         for (int i = 0; i < 6; i++)
         {
-            memcpy((void*)(static_cast<char*>(data) + texture_layer_byte_size * i),
-                   texture_image_pixels[i],
-                   static_cast<size_t>(texture_layer_byte_size));
+            memcpy((void*)(static_cast<char*>(data) + texture_layer_byte_size * i), texture_image_pixels[i], static_cast<size_t>(texture_layer_byte_size));
         }
         vkUnmapMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory);
 
         // layout transitions -- image layout is set from none to destination
-        transitionImageLayout(rhi,
-                              image,
-                              VK_IMAGE_LAYOUT_UNDEFINED,
-                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                              6,
-                              miplevels,
-                              VK_IMAGE_ASPECT_COLOR_BIT);
+        transitionImageLayout(rhi, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6, miplevels, VK_IMAGE_ASPECT_COLOR_BIT);
         // copy from staging buffer as destination
-        copyBufferToImage(rhi,
-                          inefficient_staging_buffer,
-                          image,
-                          static_cast<uint32_t>(texture_image_width),
-                          static_cast<uint32_t>(texture_image_height),
-                          6);
+        copyBufferToImage(rhi, inefficient_staging_buffer, image, static_cast<uint32_t>(texture_image_width), static_cast<uint32_t>(texture_image_height), 6);
 
         vkDestroyBuffer(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer, nullptr);
         vkFreeMemory(static_cast<VulkanRHI*>(rhi)->m_device, inefficient_staging_buffer_memory, nullptr);
 
-        generateTextureMipMaps(
-            rhi, image, vulkan_image_format, texture_image_width, texture_image_height, 6, miplevels);
+        generateTextureMipMaps(rhi, image, vulkan_image_format, texture_image_width, texture_image_height, 6, miplevels);
 
-        image_view = createImageView(static_cast<VulkanRHI*>(rhi)->m_device,
-                                     image,
-                                     vulkan_image_format,
-                                     VK_IMAGE_ASPECT_COLOR_BIT,
-                                     VK_IMAGE_VIEW_TYPE_CUBE,
-                                     6,
-                                     miplevels);
+        image_view = createImageView(
+            static_cast<VulkanRHI*>(rhi)->m_device, image, vulkan_image_format, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_CUBE, 6, miplevels);
     }
 
     void VulkanUtil::generateTextureMipMaps(RHI*     rhi,
@@ -547,8 +695,7 @@ namespace Piccolo
                                             uint32_t miplevels)
     {
         VkFormatProperties format_properties;
-        vkGetPhysicalDeviceFormatProperties(
-            static_cast<VulkanRHI*>(rhi)->m_physical_device, image_format, &format_properties);
+        vkGetPhysicalDeviceFormatProperties(static_cast<VulkanRHI*>(rhi)->m_physical_device, image_format, &format_properties);
         if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
         {
             LOG_ERROR("generateTextureMipMaps() : linear bliting not supported!");
@@ -556,7 +703,7 @@ namespace Piccolo
         }
 
         RHICommandBuffer* rhi_command_buffer = static_cast<VulkanRHI*>(rhi)->beginSingleTimeCommands();
-        VkCommandBuffer command_buffer = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
+        VkCommandBuffer   command_buffer     = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
 
         VkImageMemoryBarrier barrier {};
         barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -580,16 +727,7 @@ namespace Piccolo
             barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask                 = VK_ACCESS_TRANSFER_READ_BIT;
 
-            vkCmdPipelineBarrier(command_buffer,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 0,
-                                 0,
-                                 nullptr,
-                                 0,
-                                 nullptr,
-                                 1,
-                                 &barrier);
+            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
             VkImageBlit blit {};
             blit.srcOffsets[0]                 = {0, 0, 0};
@@ -599,21 +737,15 @@ namespace Piccolo
             blit.srcSubresource.baseArrayLayer = 0;
             blit.srcSubresource.layerCount     = layers; // miplevel i-1 to i for all layers
 
-            blit.dstOffsets[0]             = {0, 0, 0};
-            blit.dstOffsets[1]             = {mipwidth > 1 ? mipwidth / 2 : 1, mipheight > 1 ? mipheight / 2 : 1, 1};
-            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            blit.dstSubresource.mipLevel   = i;
+            blit.dstOffsets[0]                 = {0, 0, 0};
+            blit.dstOffsets[1]                 = {mipwidth > 1 ? mipwidth / 2 : 1, mipheight > 1 ? mipheight / 2 : 1, 1};
+            blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel       = i;
             blit.dstSubresource.baseArrayLayer = 0;
             blit.dstSubresource.layerCount     = layers;
 
-            vkCmdBlitImage(command_buffer,
-                           image,
-                           VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                           image,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                           1,
-                           &blit,
-                           VK_FILTER_LINEAR);
+            vkCmdBlitImage(
+                command_buffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
             barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -642,16 +774,7 @@ namespace Piccolo
         barrier.newLayout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask                 = VK_ACCESS_SHADER_READ_BIT;
-        vkCmdPipelineBarrier(command_buffer,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                             0,
-                             0,
-                             nullptr,
-                             0,
-                             nullptr,
-                             1,
-                             &barrier);
+        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(rhi_command_buffer);
     }
@@ -671,7 +794,7 @@ namespace Piccolo
         }
 
         RHICommandBuffer* rhi_command_buffer = static_cast<VulkanRHI*>(rhi)->beginSingleTimeCommands();
-        VkCommandBuffer command_buffer = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
+        VkCommandBuffer   command_buffer     = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
 
         VkImageMemoryBarrier barrier {};
         barrier.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -697,8 +820,7 @@ namespace Piccolo
             sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         }
-        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                 new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -707,8 +829,7 @@ namespace Piccolo
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         }
         // for getGuidAndDepthOfMouseClickOnRenderSceneForUI() get depthimage
-        else if (old_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL &&
-                 new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        else if (old_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -716,8 +837,7 @@ namespace Piccolo
             sourceStage      = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         }
-        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
-                 new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -726,8 +846,7 @@ namespace Piccolo
             destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         }
         // for generating mipmapped image
-        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                 new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
         {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -746,12 +865,7 @@ namespace Piccolo
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(rhi_command_buffer);
     }
 
-    void VulkanUtil::copyBufferToImage(RHI*     rhi,
-                                       VkBuffer buffer,
-                                       VkImage  image,
-                                       uint32_t width,
-                                       uint32_t height,
-                                       uint32_t layer_count)
+    void VulkanUtil::copyBufferToImage(RHI* rhi, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layer_count)
     {
         if (rhi == nullptr)
         {
@@ -760,7 +874,7 @@ namespace Piccolo
         }
 
         RHICommandBuffer* rhi_command_buffer = static_cast<VulkanRHI*>(rhi)->beginSingleTimeCommands();
-        VkCommandBuffer command_buffer = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
+        VkCommandBuffer   command_buffer     = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
 
         VkBufferImageCopy region {};
         region.bufferOffset                    = 0;
@@ -787,7 +901,7 @@ namespace Piccolo
         }
 
         RHICommandBuffer* rhi_command_buffer = static_cast<VulkanRHI*>(rhi)->beginSingleTimeCommands();
-        VkCommandBuffer command_buffer = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
+        VkCommandBuffer   command_buffer     = ((VulkanCommandBuffer*)rhi_command_buffer)->getResource();
 
         for (uint32_t i = 1; i < mip_levels; i++)
         {
@@ -823,41 +937,17 @@ namespace Piccolo
             barrier.image               = image;
             barrier.subresourceRange    = mipSubRange;
 
-            vkCmdPipelineBarrier(command_buffer,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 0,
-                                 0,
-                                 nullptr,
-                                 0,
-                                 nullptr,
-                                 1,
-                                 &barrier);
+            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-            vkCmdBlitImage(command_buffer,
-                           image,
-                           VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                           image,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                           1,
-                           &imageBlit,
-                           VK_FILTER_LINEAR);
+            vkCmdBlitImage(
+                command_buffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
 
             barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.newLayout     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-            vkCmdPipelineBarrier(command_buffer,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 0,
-                                 0,
-                                 nullptr,
-                                 0,
-                                 nullptr,
-                                 1,
-                                 &barrier);
+            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         }
 
         VkImageSubresourceRange mipSubRange {};
@@ -877,24 +967,12 @@ namespace Piccolo
         barrier.image               = image;
         barrier.subresourceRange    = mipSubRange;
 
-        vkCmdPipelineBarrier(command_buffer,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                             0,
-                             0,
-                             nullptr,
-                             0,
-                             nullptr,
-                             1,
-                             &barrier);
+        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         static_cast<VulkanRHI*>(rhi)->endSingleTimeCommands(rhi_command_buffer);
     }
 
-    VkSampler VulkanUtil::getOrCreateMipmapSampler(VkPhysicalDevice physical_device,
-                                                   VkDevice         device,
-                                                   uint32_t         width,
-                                                   uint32_t         height)
+    VkSampler VulkanUtil::getOrCreateMipmapSampler(VkPhysicalDevice physical_device, VkDevice device, uint32_t width, uint32_t height)
     {
         if (width <= 0 || height <= 0)
         {

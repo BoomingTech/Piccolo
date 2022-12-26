@@ -87,9 +87,8 @@ namespace Piccolo
         out_Q[2][2] *= inv_length;
 
         // guarantee that orthogonal matrix has determinant 1 (no reflections)
-        float det = out_Q[0][0] * out_Q[1][1] * out_Q[2][2] + out_Q[0][1] * out_Q[1][2] * out_Q[2][0] +
-                    out_Q[0][2] * out_Q[1][0] * out_Q[2][1] - out_Q[0][2] * out_Q[1][1] * out_Q[2][0] -
-                    out_Q[0][1] * out_Q[1][0] * out_Q[2][2] - out_Q[0][0] * out_Q[1][2] * out_Q[2][1];
+        float det = out_Q[0][0] * out_Q[1][1] * out_Q[2][2] + out_Q[0][1] * out_Q[1][2] * out_Q[2][0] + out_Q[0][2] * out_Q[1][0] * out_Q[2][1] -
+                    out_Q[0][2] * out_Q[1][1] * out_Q[2][0] - out_Q[0][1] * out_Q[1][0] * out_Q[2][2] - out_Q[0][0] * out_Q[1][2] * out_Q[2][1];
 
         if (det < 0.0)
         {

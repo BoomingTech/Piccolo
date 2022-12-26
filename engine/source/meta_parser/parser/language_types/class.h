@@ -39,7 +39,7 @@ public:
 
     std::string m_qualified_name;
 
-    SharedPtrVector<Field> m_fields;
+    SharedPtrVector<Field>  m_fields;
     SharedPtrVector<Method> m_methods;
 
     std::string m_display_name;

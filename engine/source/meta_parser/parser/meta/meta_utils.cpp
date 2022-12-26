@@ -36,10 +36,7 @@ namespace Utils
         return name;
     }
 
-    std::string getQualifiedName(const Cursor& cursor, const Namespace& current_namespace)
-    {
-        return getQualifiedName(cursor.getSpelling(), current_namespace);
-    }
+    std::string getQualifiedName(const Cursor& cursor, const Namespace& current_namespace) { return getQualifiedName(cursor.getSpelling(), current_namespace); }
 
     std::string formatQualifiedName(std::string& source_string)
     {
@@ -325,7 +322,7 @@ namespace Utils
     std::string convertNameToUpperCamelCase(const std::string& name, std::string pat)
     {
         std::string ret_string;
-        auto&& name_spilts = split(name, pat);
+        auto&&      name_spilts = split(name, pat);
         for (auto& split_string : name_spilts)
         {
             split_string[0] = toupper(split_string[0]);

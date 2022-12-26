@@ -11,7 +11,7 @@ add_executable(${TARGET_NAME} ${EDITOR_HEADERS} ${EDITOR_SOURCES} ${EDITOR_RESOU
 add_compile_definitions("PICCOLO_ROOT_DIR=${BINARY_ROOT_DIR}")
 
 target_include_directories(
-  ${TARGET_NAME} 
+  ${TARGET_NAME}
   PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/stb>
 )
 
@@ -32,17 +32,15 @@ set(POST_BUILD_COMMANDS
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${ENGINE_ROOT_DIR}/${ENGINE_ASSET_DIR}" "${BINARY_ROOT_DIR}/${ENGINE_ASSET_DIR}"
 )
 
-
-
 if(ENABLE_PHYSICS_DEBUG_RENDERER)
   set(POST_BUILD_COMMANDS ${POST_BUILD_COMMANDS}
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${BINARY_ROOT_DIR}/${JOLT_ASSET_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${ENGINE_ROOT_DIR}/${JOLT_ASSET_DIR}" "${BINARY_ROOT_DIR}/${JOLT_ASSET_DIR}"
-)
+  )
 endif()
 
 add_custom_command(TARGET ${TARGET_NAME} ${POST_BUILD_COMMANDS})
 
-#precompile
-#set global vari used by precompile
+# precompile
+# set global vari used by precompile
 set(PICCOLO_EDITOR_HEADS “${EDITOR_HEADERS}” PARENT_SCOPE)

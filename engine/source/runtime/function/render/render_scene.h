@@ -40,8 +40,7 @@ namespace Piccolo
         void clear();
 
         // update visible objects in each frame
-        void updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
-                                  std::shared_ptr<RenderCamera>   camera);
+        void updateVisibleObjects(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);
 
         // set visible nodes ptr in render pass
         void setVisibleNodesReference();
@@ -63,11 +62,9 @@ namespace Piccolo
 
         std::unordered_map<uint32_t, GObjectID> m_mesh_object_id_map;
 
-        void updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource,
-                                                  std::shared_ptr<RenderCamera>   camera);
+        void updateVisibleObjectsDirectionalLight(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);
         void updateVisibleObjectsPointLight(std::shared_ptr<RenderResource> render_resource);
-        void updateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource,
-                                            std::shared_ptr<RenderCamera>   camera);
+        void updateVisibleObjectsMainCamera(std::shared_ptr<RenderResource> render_resource, std::shared_ptr<RenderCamera> camera);
         void updateVisibleObjectsAxis(std::shared_ptr<RenderResource> render_resource);
         void updateVisibleObjectsParticle(std::shared_ptr<RenderResource> render_resource);
     };

@@ -1,33 +1,33 @@
 #pragma once
 
-#include "runtime/function/render/interface/rhi.h"
 #include "debug_draw_primitive.h"
+#include "runtime/function/render/interface/rhi.h"
 
 namespace Piccolo
 {
 
     struct DebugDrawFrameBufferAttachment
     {
-        RHIImage* image = nullptr;
-        RHIDeviceMemory* mem = nullptr;
-        RHIImageView* view = nullptr;
-        RHIFormat       format;
+        RHIImage*        image = nullptr;
+        RHIDeviceMemory* mem   = nullptr;
+        RHIImageView*    view  = nullptr;
+        RHIFormat        format;
     };
 
     struct DebugDrawFramebuffer
     {
-        int           width;
-        int           height;
+        int            width;
+        int            height;
         RHIRenderPass* render_pass = nullptr;
 
-        std::vector<RHIFramebuffer*> framebuffers;
+        std::vector<RHIFramebuffer*>                framebuffers;
         std::vector<DebugDrawFrameBufferAttachment> attachments;
     };
 
     struct DebugDrawPipelineBase
     {
-        RHIPipelineLayout* layout = nullptr;
-        RHIPipeline* pipeline = nullptr;
+        RHIPipelineLayout* layout   = nullptr;
+        RHIPipeline*       pipeline = nullptr;
     };
 
     enum DebugDrawPipelineType : uint8_t
@@ -45,11 +45,11 @@ namespace Piccolo
     {
     public:
         DebugDrawPipelineType m_pipeline_type;
-        DebugDrawPipeline(DebugDrawPipelineType pipelineType) {m_pipeline_type = pipelineType; }
-        void initialize();
-        void destory();
-        const DebugDrawPipelineBase &getPipeline() const;
-        const DebugDrawFramebuffer &getFramebuffer() const;
+        DebugDrawPipeline(DebugDrawPipelineType pipelineType) { m_pipeline_type = pipelineType; }
+        void                         initialize();
+        void                         destory();
+        const DebugDrawPipelineBase& getPipeline() const;
+        const DebugDrawFramebuffer&  getFramebuffer() const;
 
         void recreateAfterSwapchain();
 
@@ -60,10 +60,9 @@ namespace Piccolo
         void setupDescriptorLayout();
         void setupPipelines();
 
-        RHIDescriptorSetLayout* m_descriptor_layout;
+        RHIDescriptorSetLayout*            m_descriptor_layout;
         std::vector<DebugDrawPipelineBase> m_render_pipelines;
-        DebugDrawFramebuffer m_framebuffer;
-        std::shared_ptr<RHI> m_rhi;
-
+        DebugDrawFramebuffer               m_framebuffer;
+        std::shared_ptr<RHI>               m_rhi;
     };
-}
+} // namespace Piccolo

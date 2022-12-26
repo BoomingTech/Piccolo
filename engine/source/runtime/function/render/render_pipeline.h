@@ -9,11 +9,9 @@ namespace Piccolo
     public:
         virtual void initialize(RenderPipelineInitInfo init_info) override final;
 
-        virtual void forwardRender(std::shared_ptr<RHI>                rhi,
-                                   std::shared_ptr<RenderResourceBase> render_resource) override final;
+        virtual void forwardRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource) override final;
 
-        virtual void deferredRender(std::shared_ptr<RHI>                rhi,
-                                    std::shared_ptr<RenderResourceBase> render_resource) override final;
+        virtual void deferredRender(std::shared_ptr<RHI> rhi, std::shared_ptr<RenderResourceBase> render_resource) override final;
 
         void passUpdateAfterRecreateSwapchain();
 

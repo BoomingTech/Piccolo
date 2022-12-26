@@ -70,10 +70,7 @@ namespace Piccolo
         Vector3 operator-() const { return Vector3(-x, -y, -z); }
 
         // overloaded operators to help Vector3
-        friend Vector3 operator*(float scalar, const Vector3& rhs)
-        {
-            return Vector3(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
-        }
+        friend Vector3 operator*(float scalar, const Vector3& rhs) { return Vector3(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z); }
 
         friend Vector3 operator/(float scalar, const Vector3& rhs)
         {
@@ -81,25 +78,13 @@ namespace Piccolo
             return Vector3(scalar / rhs.x, scalar / rhs.y, scalar / rhs.z);
         }
 
-        friend Vector3 operator+(const Vector3& lhs, float rhs)
-        {
-            return Vector3(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs);
-        }
+        friend Vector3 operator+(const Vector3& lhs, float rhs) { return Vector3(lhs.x + rhs, lhs.y + rhs, lhs.z + rhs); }
 
-        friend Vector3 operator+(float lhs, const Vector3& rhs)
-        {
-            return Vector3(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z);
-        }
+        friend Vector3 operator+(float lhs, const Vector3& rhs) { return Vector3(lhs + rhs.x, lhs + rhs.y, lhs + rhs.z); }
 
-        friend Vector3 operator-(const Vector3& lhs, float rhs)
-        {
-            return Vector3(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs);
-        }
+        friend Vector3 operator-(const Vector3& lhs, float rhs) { return Vector3(lhs.x - rhs, lhs.y - rhs, lhs.z - rhs); }
 
-        friend Vector3 operator-(float lhs, const Vector3& rhs)
-        {
-            return Vector3(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z);
-        }
+        friend Vector3 operator-(float lhs, const Vector3& rhs) { return Vector3(lhs - rhs.x, lhs - rhs.y, lhs - rhs.z); }
 
         // arithmetic updates
         Vector3& operator+=(const Vector3& rhs)
@@ -281,10 +266,7 @@ namespace Piccolo
         (assuming you're using a CRT monitor, of course).
         */
 
-        Vector3 crossProduct(const Vector3& rhs) const
-        {
-            return Vector3(y * rhs.z - z * rhs.y, z * rhs.x - x * rhs.z, x * rhs.y - y * rhs.x);
-        }
+        Vector3 crossProduct(const Vector3& rhs) const { return Vector3(y * rhs.z - z * rhs.y, z * rhs.x - x * rhs.z, x * rhs.y - y * rhs.x); }
 
         /** Sets this vector's components to the minimum of its own and the
         ones of the passed in vector.
@@ -418,10 +400,7 @@ namespace Piccolo
         /** Calculates a reflection vector to the plane with the given normal .
         @remarks NB assumes 'this' is pointing AWAY FROM the plane, invert if it is not.
         */
-        Vector3 reflect(const Vector3& normal) const
-        {
-            return Vector3(*this - (2 * this->dotProduct(normal) * normal));
-        }
+        Vector3 reflect(const Vector3& normal) const { return Vector3(*this - (2 * this->dotProduct(normal) * normal)); }
 
         /** Calculates projection to a plane with the given normal
         @param normal The normal of given plane
@@ -434,8 +413,7 @@ namespace Piccolo
 
         static Vector3 clamp(const Vector3& v, const Vector3& min, const Vector3& max)
         {
-            return Vector3(
-                Math::clamp(v.x, min.x, max.x), Math::clamp(v.y, min.y, max.y), Math::clamp(v.z, min.z, max.z));
+            return Vector3(Math::clamp(v.x, min.x, max.x), Math::clamp(v.y, min.y, max.y), Math::clamp(v.z, min.z, max.z));
         }
 
         static float getMaxElement(const Vector3& v) { return Math::getMaxElement(v.x, v.y, v.z); }

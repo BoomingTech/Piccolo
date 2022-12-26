@@ -28,8 +28,7 @@ namespace Piccolo
         std::shared_ptr<TextureData> texture = std::make_shared<TextureData>();
 
         int iw, ih, n;
-        texture->m_pixels =
-            stbi_loadf(asset_manager->getFullPath(file).generic_string().c_str(), &iw, &ih, &n, desired_channels);
+        texture->m_pixels = stbi_loadf(asset_manager->getFullPath(file).generic_string().c_str(), &iw, &ih, &n, desired_channels);
 
         if (!texture->m_pixels)
             return nullptr;
@@ -72,8 +71,7 @@ namespace Piccolo
 
         texture->m_width        = iw;
         texture->m_height       = ih;
-        texture->m_format       = (is_srgb) ? RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB :
-                                              RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
+        texture->m_format       = (is_srgb) ? RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB : RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
         texture->m_depth        = 1;
         texture->m_array_layers = 1;
         texture->m_mip_levels   = 1;
@@ -101,8 +99,7 @@ namespace Piccolo
             // vertex buffer
             size_t vertex_size                     = bind_data->vertex_buffer.size() * sizeof(MeshVertexDataDefinition);
             ret.m_static_mesh_data.m_vertex_buffer = std::make_shared<BufferData>(vertex_size);
-            MeshVertexDataDefinition* vertex =
-                (MeshVertexDataDefinition*)ret.m_static_mesh_data.m_vertex_buffer->m_data;
+            MeshVertexDataDefinition* vertex       = (MeshVertexDataDefinition*)ret.m_static_mesh_data.m_vertex_buffer->m_data;
             for (size_t i = 0; i < bind_data->vertex_buffer.size(); i++)
             {
                 vertex[i].x  = bind_data->vertex_buffer[i].px;
@@ -130,10 +127,9 @@ namespace Piccolo
             }
 
             // skeleton binding buffer
-            size_t data_size              = bind_data->bind.size() * sizeof(MeshVertexBindingDataDefinition);
-            ret.m_skeleton_binding_buffer = std::make_shared<BufferData>(data_size);
-            MeshVertexBindingDataDefinition* binding_data =
-                reinterpret_cast<MeshVertexBindingDataDefinition*>(ret.m_skeleton_binding_buffer->m_data);
+            size_t data_size                              = bind_data->bind.size() * sizeof(MeshVertexBindingDataDefinition);
+            ret.m_skeleton_binding_buffer                 = std::make_shared<BufferData>(data_size);
+            MeshVertexBindingDataDefinition* binding_data = reinterpret_cast<MeshVertexBindingDataDefinition*>(ret.m_skeleton_binding_buffer->m_data);
             for (size_t i = 0; i < bind_data->bind.size(); i++)
             {
                 binding_data[i].m_index0  = bind_data->bind[i].index0;

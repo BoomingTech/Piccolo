@@ -4,8 +4,7 @@
 
 namespace Piccolo
 {
-    RigidBodyShape::RigidBodyShape(const RigidBodyShape& res) :
-        m_local_transform(res.m_local_transform)
+    RigidBodyShape::RigidBodyShape(const RigidBodyShape& res) : m_local_transform(res.m_local_transform)
     {
         if (res.m_geometry.getTypeName() == "Box")
         {
@@ -19,8 +18,5 @@ namespace Piccolo
         }
     }
 
-    RigidBodyShape::~RigidBodyShape()
-    {
-        PICCOLO_REFLECTION_DELETE(m_geometry);
-    }
+    RigidBodyShape::~RigidBodyShape() { PICCOLO_REFLECTION_DELETE(m_geometry); }
 } // namespace Piccolo

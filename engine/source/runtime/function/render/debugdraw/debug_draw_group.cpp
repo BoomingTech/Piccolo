@@ -1,14 +1,12 @@
 #include "debug_draw_group.h"
-#include <vector>
 #include "runtime/function/global/global_context.h"
 #include "runtime/function/render/render_system.h"
+#include <vector>
 
 namespace Piccolo
 {
     DebugDrawGroup::~DebugDrawGroup() { clear(); }
-    void DebugDrawGroup::initialize()
-    {
-    }
+    void DebugDrawGroup::initialize() {}
 
     void DebugDrawGroup::clear()
     {
@@ -31,37 +29,37 @@ namespace Piccolo
 
     void DebugDrawGroup::setName(const std::string& name) { m_name = name; }
 
-    const std::string& DebugDrawGroup::getName() const{return m_name;}
+    const std::string& DebugDrawGroup::getName() const { return m_name; }
 
     void DebugDrawGroup::addPoint(const Vector3& position, const Vector4& color, const float life_time, const bool no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawPoint point;
+        DebugDrawPoint              point;
         point.m_vertex.color = color;
         point.setTime(life_time);
-        point.m_fill_mode = _FillMode_wireframe;
-        point.m_vertex.pos = position;
+        point.m_fill_mode     = _FillMode_wireframe;
+        point.m_vertex.pos    = position;
         point.m_no_depth_test = no_depth_test;
         m_points.push_back(point);
     }
 
-    void DebugDrawGroup::addLine(const Vector3& point0, 
+    void DebugDrawGroup::addLine(const Vector3& point0,
                                  const Vector3& point1,
-                                 const Vector4& color0, 
-                                 const Vector4& color1, 
+                                 const Vector4& color0,
+                                 const Vector4& color1,
                                  const float    life_time,
                                  const bool     no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawLine line;
+        DebugDrawLine               line;
         line.setTime(life_time);
-        line.m_fill_mode = _FillMode_wireframe;
+        line.m_fill_mode     = _FillMode_wireframe;
         line.m_no_depth_test = no_depth_test;
 
-        line.m_vertex[0].pos     = point0;
+        line.m_vertex[0].pos   = point0;
         line.m_vertex[0].color = color0;
 
-        line.m_vertex[1].pos     = point1;
+        line.m_vertex[1].pos   = point1;
         line.m_vertex[1].color = color1;
 
         m_lines.push_back(line);
@@ -78,9 +76,9 @@ namespace Piccolo
                                      const FillMode fillmod)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawTriangle triangle;
+        DebugDrawTriangle           triangle;
         triangle.setTime(life_time);
-        triangle.m_fill_mode = fillmod;
+        triangle.m_fill_mode     = fillmod;
         triangle.m_no_depth_test = no_depth_test;
 
         triangle.m_vertex[0].pos   = point0;
@@ -91,10 +89,8 @@ namespace Piccolo
 
         triangle.m_vertex[2].pos   = point2;
         triangle.m_vertex[2].color = color2;
-        
-        m_triangles.push_back(triangle);
-        
 
+        m_triangles.push_back(triangle);
     }
 
     void DebugDrawGroup::addQuad(const Vector3& point0,
@@ -119,10 +115,10 @@ namespace Piccolo
 
             quad.m_vertex[1].pos   = point1;
             quad.m_vertex[1].color = color1;
-            
+
             quad.m_vertex[2].pos   = point2;
             quad.m_vertex[2].color = color2;
-            
+
             quad.m_vertex[3].pos   = point3;
             quad.m_vertex[3].color = color3;
 
@@ -135,22 +131,22 @@ namespace Piccolo
         {
             DebugDrawTriangle triangle;
             triangle.setTime(life_time);
-            triangle.m_fill_mode         = _FillMode_solid;
-            triangle.m_no_depth_test   = no_depth_test;
+            triangle.m_fill_mode     = _FillMode_solid;
+            triangle.m_no_depth_test = no_depth_test;
 
-            triangle.m_vertex[0].pos     = point0;
-            triangle.m_vertex[0].color   = color0;
-            triangle.m_vertex[1].pos     = point1;
-            triangle.m_vertex[1].color   = color1;
-            triangle.m_vertex[2].pos     = point2;
-            triangle.m_vertex[2].color   = color2;
+            triangle.m_vertex[0].pos   = point0;
+            triangle.m_vertex[0].color = color0;
+            triangle.m_vertex[1].pos   = point1;
+            triangle.m_vertex[1].color = color1;
+            triangle.m_vertex[2].pos   = point2;
+            triangle.m_vertex[2].color = color2;
             m_triangles.push_back(triangle);
 
-            triangle.m_vertex[0].pos     = point0;
+            triangle.m_vertex[0].pos   = point0;
             triangle.m_vertex[0].color = color0;
-            triangle.m_vertex[1].pos     = point2;
+            triangle.m_vertex[1].pos   = point2;
             triangle.m_vertex[1].color = color2;
-            triangle.m_vertex[2].pos     = point3;
+            triangle.m_vertex[2].pos   = point3;
             triangle.m_vertex[2].color = color3;
             m_triangles.push_back(triangle);
         }
@@ -164,49 +160,45 @@ namespace Piccolo
                                 const bool     no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawBox box;
-        box.m_center_point = center_point;
-        box.m_half_extents = half_extends;
-        box.m_rotate = rotate;
-        box.m_color = color;
+        DebugDrawBox                box;
+        box.m_center_point  = center_point;
+        box.m_half_extents  = half_extends;
+        box.m_rotate        = rotate;
+        box.m_color         = color;
         box.m_no_depth_test = no_depth_test;
         box.setTime(life_time);
 
         m_boxes.push_back(box);
     }
 
-    void DebugDrawGroup::addSphere(const Vector3& center,
-                                   const float    radius,
-                                   const Vector4& color,
-                                   const float    life_time,
-                                   const bool     no_depth_test)
+    void DebugDrawGroup::addSphere(const Vector3& center, const float radius, const Vector4& color, const float life_time, const bool no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawSphere sphere;
-        sphere.m_center = center;
-        sphere.m_radius = radius;
-        sphere.m_color = color;
+        DebugDrawSphere             sphere;
+        sphere.m_center        = center;
+        sphere.m_radius        = radius;
+        sphere.m_color         = color;
         sphere.m_no_depth_test = no_depth_test;
         sphere.setTime(life_time);
 
         m_spheres.push_back(sphere);
     }
 
-    void DebugDrawGroup::addCylinder(const Vector3& center, 
-                                     const float    radius, 
-                                     const float    height, 
+    void DebugDrawGroup::addCylinder(const Vector3& center,
+                                     const float    radius,
+                                     const float    height,
                                      const Vector4& rotate,
-                                     const Vector4& color, 
-                                     const float    life_time, 
+                                     const Vector4& color,
+                                     const float    life_time,
                                      const bool     no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawCylinder cylinder;
-        cylinder.m_radius = radius;
-        cylinder.m_center = center;
-        cylinder.m_height = height;
-        cylinder.m_rotate = rotate;
-        cylinder.m_color = color;
+        DebugDrawCylinder           cylinder;
+        cylinder.m_radius        = radius;
+        cylinder.m_center        = center;
+        cylinder.m_height        = height;
+        cylinder.m_rotate        = rotate;
+        cylinder.m_color         = color;
         cylinder.m_no_depth_test = no_depth_test;
         cylinder.setTime(life_time);
 
@@ -215,21 +207,21 @@ namespace Piccolo
 
     void DebugDrawGroup::addCapsule(const Vector3& center,
                                     const Vector4& rotation,
-                                    const Vector3& scale, 
-                                    const float    radius, 
-                                    const float    height, 
-                                    const Vector4& color, 
+                                    const Vector3& scale,
+                                    const float    radius,
+                                    const float    height,
+                                    const Vector4& color,
                                     const float    life_time,
                                     const bool     no_depth_test)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawCapsule capsule;
-        capsule.m_center = center;
-        capsule.m_rotation = rotation;
-        capsule.m_scale = scale;
-        capsule.m_radius = radius;
-        capsule.m_height = height;
-        capsule.m_color = color;
+        DebugDrawCapsule            capsule;
+        capsule.m_center        = center;
+        capsule.m_rotation      = rotation;
+        capsule.m_scale         = scale;
+        capsule.m_radius        = radius;
+        capsule.m_height        = height;
+        capsule.m_color         = color;
         capsule.m_no_depth_test = no_depth_test;
         capsule.setTime(life_time);
 
@@ -244,11 +236,11 @@ namespace Piccolo
                                  const float        life_time)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        DebugDrawText text;
-        text.m_content = content;
-        text.m_color = color;
-        text.m_coordinate = coordinate;
-        text.m_size = size;
+        DebugDrawText               text;
+        text.m_content        = content;
+        text.m_color          = color;
+        text.m_coordinate     = coordinate;
+        text.m_size           = size;
         text.m_is_screen_text = is_screen_text;
         text.setTime(life_time);
         m_texts.push_back(text);
@@ -258,82 +250,100 @@ namespace Piccolo
     {
         for (std::list<DebugDrawPoint>::iterator point = m_points.begin(); point != m_points.end();)
         {
-            if (point->isTimeOut(delta_time)) {
+            if (point->isTimeOut(delta_time))
+            {
                 point = m_points.erase(point);
             }
-            else {
+            else
+            {
                 point++;
             }
         }
         for (std::list<DebugDrawLine>::iterator line = m_lines.begin(); line != m_lines.end();)
         {
-            if (line->isTimeOut(delta_time)) {
+            if (line->isTimeOut(delta_time))
+            {
                 line = m_lines.erase(line);
             }
-            else {
+            else
+            {
                 line++;
             }
         }
         for (std::list<DebugDrawTriangle>::iterator triangle = m_triangles.begin(); triangle != m_triangles.end();)
         {
-            if (triangle->isTimeOut(delta_time)) {
+            if (triangle->isTimeOut(delta_time))
+            {
                 triangle = m_triangles.erase(triangle);
             }
-            else {
+            else
+            {
                 triangle++;
             }
         }
         for (std::list<DebugDrawQuad>::iterator quad = m_quads.begin(); quad != m_quads.end();)
         {
-            if (quad->isTimeOut(delta_time)) {
+            if (quad->isTimeOut(delta_time))
+            {
                 quad = m_quads.erase(quad);
             }
-            else {
+            else
+            {
                 quad++;
             }
         }
         for (std::list<DebugDrawBox>::iterator box = m_boxes.begin(); box != m_boxes.end();)
         {
-            if (box->isTimeOut(delta_time)) {
+            if (box->isTimeOut(delta_time))
+            {
                 box = m_boxes.erase(box);
             }
-            else {
+            else
+            {
                 box++;
             }
         }
         for (std::list<DebugDrawCylinder>::iterator cylinder = m_cylinders.begin(); cylinder != m_cylinders.end();)
         {
-            if (cylinder->isTimeOut(delta_time)) {
+            if (cylinder->isTimeOut(delta_time))
+            {
                 cylinder = m_cylinders.erase(cylinder);
             }
-            else {
+            else
+            {
                 cylinder++;
             }
         }
         for (std::list<DebugDrawSphere>::iterator sphere = m_spheres.begin(); sphere != m_spheres.end();)
         {
-            if (sphere->isTimeOut(delta_time)) {
+            if (sphere->isTimeOut(delta_time))
+            {
                 sphere = m_spheres.erase(sphere);
             }
-            else {
+            else
+            {
                 sphere++;
             }
         }
         for (std::list<DebugDrawCapsule>::iterator capsule = m_capsules.begin(); capsule != m_capsules.end();)
         {
-            if (capsule->isTimeOut(delta_time)) {
+            if (capsule->isTimeOut(delta_time))
+            {
                 capsule = m_capsules.erase(capsule);
             }
-            else {
+            else
+            {
                 capsule++;
             }
         }
         for (std::list<DebugDrawText>::iterator text = m_texts.begin(); text != m_texts.end();)
         {
-            if (text->isTimeOut(delta_time)) {
+            if (text->isTimeOut(delta_time))
+            {
                 text = m_texts.erase(text);
             }
-            else {
+            else
+            {
                 text++;
             }
         }
@@ -359,7 +369,8 @@ namespace Piccolo
         size_t count = 0;
         for (const DebugDrawPoint point : m_points)
         {
-            if (point.m_no_depth_test == no_depth_test)count++;
+            if (point.m_no_depth_test == no_depth_test)
+                count++;
         }
         return count;
     }
@@ -369,7 +380,8 @@ namespace Piccolo
         size_t line_count = 0;
         for (const DebugDrawLine line : m_lines)
         {
-            if (line.m_no_depth_test == no_depth_test)line_count++;
+            if (line.m_no_depth_test == no_depth_test)
+                line_count++;
         }
         for (const DebugDrawTriangle triangle : m_triangles)
         {
@@ -387,7 +399,8 @@ namespace Piccolo
         }
         for (const DebugDrawBox box : m_boxes)
         {
-            if (box.m_no_depth_test == no_depth_test)line_count += 12;
+            if (box.m_no_depth_test == no_depth_test)
+                line_count += 12;
         }
         return line_count;
     }
@@ -405,10 +418,7 @@ namespace Piccolo
         return triangle_count;
     }
 
-    size_t DebugDrawGroup::getUniformDynamicDataCount() const
-    {
-        return m_spheres.size() + m_cylinders.size() + m_capsules.size();
-    }
+    size_t DebugDrawGroup::getUniformDynamicDataCount() const { return m_spheres.size() + m_cylinders.size() + m_capsules.size(); }
 
     void DebugDrawGroup::writePointData(std::vector<DebugDrawVertex>& vertexs, bool no_depth_test)
     {
@@ -418,11 +428,12 @@ namespace Piccolo
         size_t current_index = 0;
         for (DebugDrawPoint point : m_points)
         {
-            if (point.m_no_depth_test == no_depth_test)vertexs[current_index++] = point.m_vertex;
+            if (point.m_no_depth_test == no_depth_test)
+                vertexs[current_index++] = point.m_vertex;
         }
     }
 
-    void DebugDrawGroup::writeLineData(std::vector<DebugDrawVertex> &vertexs, bool no_depth_test)
+    void DebugDrawGroup::writeLineData(std::vector<DebugDrawVertex>& vertexs, bool no_depth_test)
     {
         size_t vertexs_count = getLineCount(no_depth_test) * 2;
         vertexs.resize(vertexs_count);
@@ -440,7 +451,7 @@ namespace Piccolo
         {
             if (triangle.m_fill_mode == FillMode::_FillMode_wireframe && triangle.m_no_depth_test == no_depth_test)
             {
-                std::vector<size_t> indies = { 0,1, 1,2, 2,0 };
+                std::vector<size_t> indies = {0, 1, 1, 2, 2, 0};
                 for (size_t i : indies)
                 {
                     vertexs[current_index++] = triangle.m_vertex[i];
@@ -451,7 +462,7 @@ namespace Piccolo
         {
             if (quad.m_fill_mode == FillMode::_FillMode_wireframe && quad.m_no_depth_test == no_depth_test)
             {
-                std::vector<size_t> indies = { 0,1, 1,2, 2,3, 3,0 };
+                std::vector<size_t> indies = {0, 1, 1, 2, 2, 3, 3, 0};
                 for (size_t i : indies)
                 {
                     vertexs[current_index++] = quad.m_vertex[i];
@@ -463,20 +474,20 @@ namespace Piccolo
             if (box.m_no_depth_test == no_depth_test)
             {
                 std::vector<DebugDrawVertex> verts_4d(8);
-                float f[2] = { -1.0f,1.0f };
+                float                        f[2] = {-1.0f, 1.0f};
                 for (size_t i = 0; i < 8; i++)
                 {
                     Vector3 v(f[i & 1] * box.m_half_extents.x, f[(i >> 1) & 1] * box.m_half_extents.y, f[(i >> 2) & 1] * box.m_half_extents.z);
                     Vector3 uv, uuv;
                     Vector3 qvec(box.m_rotate.x, box.m_rotate.y, box.m_rotate.z);
-                    uv = qvec.crossProduct(v);
+                    uv  = qvec.crossProduct(v);
                     uuv = qvec.crossProduct(uv);
                     uv *= (2.0f * box.m_rotate.w);
                     uuv *= 2.0f;
-                    verts_4d[i].pos = v + uv + uuv + box.m_center_point;
+                    verts_4d[i].pos   = v + uv + uuv + box.m_center_point;
                     verts_4d[i].color = box.m_color;
                 }
-                std::vector<size_t> indies = { 0,1, 1,3, 3,2, 2,0, 4,5, 5,7, 7,6, 6,4, 0,4, 1,5, 3,7, 2,6 };
+                std::vector<size_t> indies = {0, 1, 1, 3, 3, 2, 2, 0, 4, 5, 5, 7, 7, 6, 6, 4, 0, 4, 1, 5, 3, 7, 2, 6};
                 for (size_t i : indies)
                 {
                     vertexs[current_index++] = verts_4d[i];
@@ -505,22 +516,22 @@ namespace Piccolo
     void DebugDrawGroup::writeTextData(std::vector<DebugDrawVertex>& vertexs, DebugDrawFont* font, Matrix4x4 m_proj_view_matrix)
     {
         RHISwapChainDesc swapChainDesc = g_runtime_global_context.m_render_system->getRHI()->getSwapchainInfo();
-        uint32_t screenWidth = swapChainDesc.viewport->width;
-        uint32_t screenHeight = swapChainDesc.viewport->height;
+        uint32_t         screenWidth   = swapChainDesc.viewport->width;
+        uint32_t         screenHeight  = swapChainDesc.viewport->height;
 
         size_t vertexs_count = getTextCharacterCount() * 6;
         vertexs.resize(vertexs_count);
 
         size_t current_index = 0;
-        for(DebugDrawText text : m_texts)
+        for (DebugDrawText text : m_texts)
         {
-            float absoluteW = text.m_size, absoluteH = text.m_size * 2;
-            float w = absoluteW / (1.0f * screenWidth / 2.0f), h = absoluteH / (1.0f * screenHeight / 2.0f);
+            float   absoluteW = text.m_size, absoluteH = text.m_size * 2;
+            float   w = absoluteW / (1.0f * screenWidth / 2.0f), h = absoluteH / (1.0f * screenHeight / 2.0f);
             Vector3 coordinate = text.m_coordinate;
             if (!text.m_is_screen_text)
             {
                 Vector4 tempCoord(coordinate.x, coordinate.y, coordinate.z, 1.0f);
-                tempCoord = m_proj_view_matrix * tempCoord;
+                tempCoord  = m_proj_view_matrix * tempCoord;
                 coordinate = Vector3(tempCoord.x / tempCoord.w, tempCoord.y / tempCoord.w, 0.0f);
             }
             float x = coordinate.x, y = coordinate.y;
@@ -538,31 +549,33 @@ namespace Piccolo
                     font->getCharacterTextureRect(character, x1, y1, x2, y2);
 
                     float cx1, cx2, cy1, cy2;
-                    cx1 = 0 + x; cx2 = w + x;
-                    cy1 = 0 + y; cy2 = h + y;
+                    cx1 = 0 + x;
+                    cx2 = w + x;
+                    cy1 = 0 + y;
+                    cy2 = h + y;
 
-                    vertexs[current_index].pos = Vector3(cx1, cy1, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx1, cy1, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x1, y1);
 
-                    vertexs[current_index].pos = Vector3(cx1, cy2, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx1, cy2, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x1, y2);
 
-                    vertexs[current_index].pos = Vector3(cx2, cy2, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx2, cy2, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x2, y2);
 
-                    vertexs[current_index].pos = Vector3(cx1, cy1, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx1, cy1, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x1, y1);
 
-                    vertexs[current_index].pos = Vector3(cx2, cy2, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx2, cy2, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x2, y2);
 
-                    vertexs[current_index].pos = Vector3(cx2, cy1, 0.0f);
-                    vertexs[current_index].color = text.m_color;
+                    vertexs[current_index].pos        = Vector3(cx2, cy1, 0.0f);
+                    vertexs[current_index].color      = text.m_color;
                     vertexs[current_index++].texcoord = Vector2(x2, y1);
 
                     x += w;
@@ -571,13 +584,13 @@ namespace Piccolo
         }
     }
 
-    void DebugDrawGroup::writeUniformDynamicDataToCache(std::vector<std::pair<Matrix4x4, Vector4> >& datas)
+    void DebugDrawGroup::writeUniformDynamicDataToCache(std::vector<std::pair<Matrix4x4, Vector4>>& datas)
     {
         // cache uniformDynamic data ,first has_depth_test ,second no_depth_test
         size_t data_count = getUniformDynamicDataCount() * 3;
         datas.resize(data_count);
 
-        bool no_depth_tests[] = { false,true };
+        bool no_depth_tests[] = {false, true};
         for (int32_t i = 0; i < 2; i++)
         {
             bool no_depth_test = no_depth_tests[i];
@@ -591,9 +604,9 @@ namespace Piccolo
 
                     Matrix4x4 tmp = Matrix4x4::IDENTITY;
                     tmp.makeTrans(sphere.m_center);
-                    model = model * tmp;
-                    tmp = Matrix4x4::buildScaleMatrix(sphere.m_radius, sphere.m_radius, sphere.m_radius);
-                    model = model * tmp;
+                    model                  = model * tmp;
+                    tmp                    = Matrix4x4::buildScaleMatrix(sphere.m_radius, sphere.m_radius, sphere.m_radius);
+                    model                  = model * tmp;
                     datas[current_index++] = std::make_pair(model, sphere.m_color);
                 }
             }
@@ -603,23 +616,29 @@ namespace Piccolo
                 {
                     Matrix4x4 model = Matrix4x4::IDENTITY;
 
-                    //rolate
-                    float w = cylinder.m_rotate.x;
-                    float x = cylinder.m_rotate.y;
-                    float y = cylinder.m_rotate.z;
-                    float z = cylinder.m_rotate.w;
+                    // rolate
+                    float     w   = cylinder.m_rotate.x;
+                    float     x   = cylinder.m_rotate.y;
+                    float     y   = cylinder.m_rotate.z;
+                    float     z   = cylinder.m_rotate.w;
                     Matrix4x4 tmp = Matrix4x4::IDENTITY;
                     tmp.makeTrans(cylinder.m_center);
                     model = model * tmp;
-                    
-                    tmp = Matrix4x4::buildScaleMatrix(cylinder.m_radius, cylinder.m_radius, cylinder.m_height / 2.0f);
+
+                    tmp   = Matrix4x4::buildScaleMatrix(cylinder.m_radius, cylinder.m_radius, cylinder.m_height / 2.0f);
                     model = model * tmp;
-            
+
                     Matrix4x4 ro = Matrix4x4::IDENTITY;
-                    ro[0][0] = 1.0f - 2.0f * y * y - 2.0f * z * z; ro[0][1] = 2.0f * x * y + 2.0f * w * z;        ro[0][2] = 2.0f * x * z - 2.0f * w * y;
-                    ro[1][0] = 2.0f * x * y - 2.0f * w * z;        ro[1][1] = 1.0f - 2.0f * x * x - 2.0f * z * z; ro[1][2] = 2.0f * y * z + 2.0f * w * x;
-                    ro[2][0] = 2.0f * x * z + 2.0f * w * y;        ro[2][1] = 2.0f * y * z - 2.0f * w * x;        ro[2][2] = 1.0f - 2.0f * x * x - 2.0f * y * y;
-                    model = model * ro;
+                    ro[0][0]     = 1.0f - 2.0f * y * y - 2.0f * z * z;
+                    ro[0][1]     = 2.0f * x * y + 2.0f * w * z;
+                    ro[0][2]     = 2.0f * x * z - 2.0f * w * y;
+                    ro[1][0]     = 2.0f * x * y - 2.0f * w * z;
+                    ro[1][1]     = 1.0f - 2.0f * x * x - 2.0f * z * z;
+                    ro[1][2]     = 2.0f * y * z + 2.0f * w * x;
+                    ro[2][0]     = 2.0f * x * z + 2.0f * w * y;
+                    ro[2][1]     = 2.0f * y * z - 2.0f * w * x;
+                    ro[2][2]     = 1.0f - 2.0f * x * x - 2.0f * y * y;
+                    model        = model * ro;
 
                     datas[current_index++] = std::make_pair(model, cylinder.m_color);
                 }
@@ -638,34 +657,40 @@ namespace Piccolo
                     model2 = model2 * tmp;
                     model3 = model3 * tmp;
 
-                    tmp = Matrix4x4::buildScaleMatrix(capsule.m_scale.x, capsule.m_scale.y, capsule.m_scale.z);
+                    tmp    = Matrix4x4::buildScaleMatrix(capsule.m_scale.x, capsule.m_scale.y, capsule.m_scale.z);
                     model1 = model1 * tmp;
                     model2 = model2 * tmp;
                     model3 = model3 * tmp;
 
-                    //rolate
-                    float w = capsule.m_rotation.x;
-                    float x = capsule.m_rotation.y;
-                    float y = capsule.m_rotation.z;
-                    float z = capsule.m_rotation.w;
+                    // rolate
+                    float     w  = capsule.m_rotation.x;
+                    float     x  = capsule.m_rotation.y;
+                    float     y  = capsule.m_rotation.z;
+                    float     z  = capsule.m_rotation.w;
                     Matrix4x4 ro = Matrix4x4::IDENTITY;
-                    ro[0][0] = 1.0f - 2.0f * y * y - 2.0f * z * z; ro[0][1] = 2.0f * x * y + 2.0f * w * z;        ro[0][2] = 2.0f * x * z - 2.0f * w * y;
-                    ro[1][0] = 2.0f * x * y - 2.0f * w * z;        ro[1][1] = 1.0f - 2.0f * x * x - 2.0f * z * z; ro[1][2] = 2.0f * y * z + 2.0f * w * x;
-                    ro[2][0] = 2.0f * x * z + 2.0f * w * y;        ro[2][1] = 2.0f * y * z - 2.0f * w * x;        ro[2][2] = 1.0f - 2.0f * x * x - 2.0f * y * y;
-                    model1 = model1 * ro;
-                    model2 = model2 * ro;
-                    model3 = model3 * ro;
+                    ro[0][0]     = 1.0f - 2.0f * y * y - 2.0f * z * z;
+                    ro[0][1]     = 2.0f * x * y + 2.0f * w * z;
+                    ro[0][2]     = 2.0f * x * z - 2.0f * w * y;
+                    ro[1][0]     = 2.0f * x * y - 2.0f * w * z;
+                    ro[1][1]     = 1.0f - 2.0f * x * x - 2.0f * z * z;
+                    ro[1][2]     = 2.0f * y * z + 2.0f * w * x;
+                    ro[2][0]     = 2.0f * x * z + 2.0f * w * y;
+                    ro[2][1]     = 2.0f * y * z - 2.0f * w * x;
+                    ro[2][2]     = 1.0f - 2.0f * x * x - 2.0f * y * y;
+                    model1       = model1 * ro;
+                    model2       = model2 * ro;
+                    model3       = model3 * ro;
 
                     tmp.makeTrans(Vector3(0.0f, 0.0f, capsule.m_height / 2.0f - capsule.m_radius));
                     model1 = model1 * tmp;
 
-                    tmp = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, capsule.m_height / (capsule.m_radius * 2.0f));
+                    tmp    = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, capsule.m_height / (capsule.m_radius * 2.0f));
                     model2 = model2 * tmp;
 
                     tmp.makeTrans(Vector3(0.0f, 0.0f, -(capsule.m_height / 2.0f - capsule.m_radius)));
                     model3 = model3 * tmp;
 
-                    tmp = Matrix4x4::buildScaleMatrix(capsule.m_radius, capsule.m_radius, capsule.m_radius);
+                    tmp    = Matrix4x4::buildScaleMatrix(capsule.m_radius, capsule.m_radius, capsule.m_radius);
                     model1 = model1 * tmp;
                     model2 = model2 * tmp;
                     model3 = model3 * tmp;
@@ -683,16 +708,18 @@ namespace Piccolo
         size_t count = 0;
         for (const DebugDrawSphere sphere : m_spheres)
         {
-            if (sphere.m_no_depth_test == no_depth_test)count++;
+            if (sphere.m_no_depth_test == no_depth_test)
+                count++;
         }
-        return count; 
+        return count;
     }
     size_t DebugDrawGroup::getCylinderCount(bool no_depth_test) const
     {
         size_t count = 0;
         for (const DebugDrawCylinder cylinder : m_cylinders)
         {
-            if (cylinder.m_no_depth_test == no_depth_test)count++;
+            if (cylinder.m_no_depth_test == no_depth_test)
+                count++;
         }
         return count;
     }
@@ -701,7 +728,8 @@ namespace Piccolo
         size_t count = 0;
         for (const DebugDrawCapsule capsule : m_capsules)
         {
-            if (capsule.m_no_depth_test == no_depth_test)count++;
+            if (capsule.m_no_depth_test == no_depth_test)
+                count++;
         }
         return count;
     }
@@ -712,9 +740,10 @@ namespace Piccolo
         {
             for (unsigned char character : text.m_content)
             {
-                if (character != '\n')count++;
+                if (character != '\n')
+                    count++;
             }
         }
         return count;
     }
-}
+} // namespace Piccolo

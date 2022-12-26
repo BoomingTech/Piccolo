@@ -15,28 +15,28 @@ namespace Piccolo
     class ParticleEmitterBufferBatch
     {
     public:
-        RHIBuffer* m_particle_storage_buffer = nullptr;
-        RHIBuffer* m_position_render_buffer = nullptr;
-        RHIBuffer* m_position_device_buffer = nullptr;
-        RHIBuffer* m_position_host_buffer = nullptr;
-        RHIBuffer* m_counter_device_buffer = nullptr;
-        RHIBuffer* m_counter_host_buffer = nullptr;
+        RHIBuffer* m_particle_storage_buffer           = nullptr;
+        RHIBuffer* m_position_render_buffer            = nullptr;
+        RHIBuffer* m_position_device_buffer            = nullptr;
+        RHIBuffer* m_position_host_buffer              = nullptr;
+        RHIBuffer* m_counter_device_buffer             = nullptr;
+        RHIBuffer* m_counter_host_buffer               = nullptr;
         RHIBuffer* m_indirect_dispatch_argument_buffer = nullptr;
-        RHIBuffer* m_alive_list_buffer = nullptr;
-        RHIBuffer* m_alive_list_next_buffer = nullptr;
-        RHIBuffer* m_dead_list_buffer = nullptr;
-        RHIBuffer* m_particle_component_res_buffer = nullptr;
+        RHIBuffer* m_alive_list_buffer                 = nullptr;
+        RHIBuffer* m_alive_list_next_buffer            = nullptr;
+        RHIBuffer* m_dead_list_buffer                  = nullptr;
+        RHIBuffer* m_particle_component_res_buffer     = nullptr;
 
-        RHIDeviceMemory* m_counter_host_memory = nullptr;
-        RHIDeviceMemory* m_position_host_memory = nullptr;
-        RHIDeviceMemory* m_position_device_memory = nullptr;
-        RHIDeviceMemory* m_counter_device_memory = nullptr;
+        RHIDeviceMemory* m_counter_host_memory               = nullptr;
+        RHIDeviceMemory* m_position_host_memory              = nullptr;
+        RHIDeviceMemory* m_position_device_memory            = nullptr;
+        RHIDeviceMemory* m_counter_device_memory             = nullptr;
         RHIDeviceMemory* m_indirect_dispatch_argument_memory = nullptr;
-        RHIDeviceMemory* m_alive_list_memory = nullptr;
-        RHIDeviceMemory* m_alive_list_next_memory = nullptr;
-        RHIDeviceMemory* m_dead_list_memory = nullptr;
-        RHIDeviceMemory* m_particle_component_res_memory = nullptr;
-        RHIDeviceMemory* m_position_render_memory = nullptr;
+        RHIDeviceMemory* m_alive_list_memory                 = nullptr;
+        RHIDeviceMemory* m_alive_list_next_memory            = nullptr;
+        RHIDeviceMemory* m_dead_list_memory                  = nullptr;
+        RHIDeviceMemory* m_particle_component_res_memory     = nullptr;
+        RHIDeviceMemory* m_position_render_memory            = nullptr;
 
         void* m_emitter_desc_mapped {nullptr};
 
@@ -98,40 +98,40 @@ namespace Piccolo
 
         void setupParticleDescriptorSet();
 
-        RHIPipeline* m_kickoff_pipeline = nullptr;
-        RHIPipeline* m_emit_pipeline = nullptr;
+        RHIPipeline* m_kickoff_pipeline  = nullptr;
+        RHIPipeline* m_emit_pipeline     = nullptr;
         RHIPipeline* m_simulate_pipeline = nullptr;
 
         RHICommandBuffer* m_compute_command_buffer = nullptr;
-        RHICommandBuffer* m_render_command_buffer = nullptr;
-        RHICommandBuffer* m_copy_command_buffer = nullptr;
+        RHICommandBuffer* m_render_command_buffer  = nullptr;
+        RHICommandBuffer* m_copy_command_buffer    = nullptr;
 
-        RHIBuffer* m_scene_uniform_buffer = nullptr;
-        RHIBuffer* m_compute_uniform_buffer = nullptr;
+        RHIBuffer* m_scene_uniform_buffer              = nullptr;
+        RHIBuffer* m_compute_uniform_buffer            = nullptr;
         RHIBuffer* m_particle_billboard_uniform_buffer = nullptr;
 
         RHIViewport m_viewport_params;
 
         RHIFence* m_fence = nullptr;
 
-        RHIImage*        m_src_depth_image = nullptr;
-        RHIImage*        m_dst_normal_image = nullptr;
-        RHIImage*        m_src_normal_image = nullptr;
-        RHIImage*        m_dst_depth_image = nullptr;
-        RHIImageView*    m_src_depth_image_view = nullptr;
-        RHIImageView*    m_src_normal_image_view = nullptr;
+        RHIImage*        m_src_depth_image         = nullptr;
+        RHIImage*        m_dst_normal_image        = nullptr;
+        RHIImage*        m_src_normal_image        = nullptr;
+        RHIImage*        m_dst_depth_image         = nullptr;
+        RHIImageView*    m_src_depth_image_view    = nullptr;
+        RHIImageView*    m_src_normal_image_view   = nullptr;
         RHIDeviceMemory* m_dst_normal_image_memory = nullptr;
-        RHIDeviceMemory* m_dst_depth_image_memory = nullptr;
+        RHIDeviceMemory* m_dst_depth_image_memory  = nullptr;
 
         /*
          * particle rendering
          */
-        RHIImage*       m_particle_billboard_texture_image = nullptr;
-        RHIImageView*   m_particle_billboard_texture_image_view = nullptr;
+        RHIImage*     m_particle_billboard_texture_image      = nullptr;
+        RHIImageView* m_particle_billboard_texture_image_view = nullptr;
         VmaAllocation m_particle_billboard_texture_vma_allocation;
 
-        RHIImage*       m_piccolo_logo_texture_image = nullptr;
-        RHIImageView*   m_piccolo_logo_texture_image_view = nullptr;
+        RHIImage*     m_piccolo_logo_texture_image      = nullptr;
+        RHIImageView* m_piccolo_logo_texture_image_view = nullptr;
         VmaAllocation m_piccolo_logo_texture_vma_allocation;
 
         RHIRenderPass* m_render_pass = nullptr;

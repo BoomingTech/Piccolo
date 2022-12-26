@@ -13,17 +13,9 @@ namespace Piccolo
     void ParticleManager::initialize()
     {
         std::shared_ptr<ConfigManager> config_manager = g_runtime_global_context.m_config_manager;
-        if (config_manager == nullptr)
-        {
-            LOG_ERROR("config_manager is nullptr");
-            return;
-        }
+        ASSERT(config_manager);
         std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
-        if (asset_manager == nullptr)
-        {
-            LOG_ERROR("asset_manager is nullptr");
-            return;
-        }
+        ASSERT(asset_manager);
 
         GlobalParticleRes  global_particle_res;
         const std::string& global_particle_res_url = config_manager->getGlobalParticleResUrl();
@@ -51,8 +43,7 @@ namespace Piccolo
         m_global_particle_res = global_particle_res;
     }
 
-    void ParticleManager::createParticleEmitter(const ParticleComponentRes&   particle_res,
-                                                ParticleEmitterTransformDesc& transform_desc)
+    void ParticleManager::createParticleEmitter(const ParticleComponentRes& particle_res, ParticleEmitterTransformDesc& transform_desc)
     {
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         RenderSwapData&    swap_data    = swap_context.getLogicSwapData();

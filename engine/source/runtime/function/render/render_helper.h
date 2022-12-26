@@ -28,12 +28,8 @@ namespace Piccolo
 
     struct BoundingBox
     {
-        Vector3 min_bound {std::numeric_limits<float>::max(),
-                           std::numeric_limits<float>::max(),
-                           std::numeric_limits<float>::max()};
-        Vector3 max_bound {std::numeric_limits<float>::min(),
-                           std::numeric_limits<float>::min(),
-                           std::numeric_limits<float>::min()};
+        Vector3 min_bound {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        Vector3 max_bound {std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()};
 
         BoundingBox() {}
 
@@ -58,8 +54,8 @@ namespace Piccolo
 
     struct BoundingSphere
     {
-        Vector3   m_center;
-        float     m_radius;
+        Vector3 m_center;
+        float   m_radius;
     };
 
     struct FrustumPoints
@@ -67,13 +63,7 @@ namespace Piccolo
         Vector3 m_frustum_points;
     };
 
-    ClusterFrustum CreateClusterFrustumFromMatrix(Matrix4x4 mat,
-                                                  float     x_left,
-                                                  float     x_right,
-                                                  float     y_top,
-                                                  float     y_bottom,
-                                                  float     z_near,
-                                                  float     z_far);
+    ClusterFrustum CreateClusterFrustumFromMatrix(Matrix4x4 mat, float x_left, float x_right, float y_top, float y_bottom, float z_near, float z_far);
 
     bool TiledFrustumIntersectBox(ClusterFrustum const& f, BoundingBox const& b);
 

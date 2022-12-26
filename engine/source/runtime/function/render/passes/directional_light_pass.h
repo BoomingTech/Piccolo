@@ -26,8 +26,7 @@ namespace Piccolo
         void drawModel();
 
     private:
-        RHIDescriptorSetLayout* m_per_mesh_layout;
-        MeshDirectionalLightShadowPerframeStorageBufferObject
-            m_mesh_directional_light_shadow_perframe_storage_buffer_object;
+        RHIDescriptorSetLayout*                               m_per_mesh_layout;
+        MeshDirectionalLightShadowPerframeStorageBufferObject m_mesh_directional_light_shadow_perframe_storage_buffer_object;
     };
 } // namespace Piccolo

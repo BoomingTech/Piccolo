@@ -255,19 +255,15 @@ namespace Piccolo
             return std::min({A, B, C});
         }
 
-        static Matrix4x4
-        makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix = nullptr);
+        static Matrix4x4 makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix = nullptr);
 
-        static Matrix4x4
-        makeLookAtMatrix(const Vector3& eye_position, const Vector3& target_position, const Vector3& up_dir);
+        static Matrix4x4 makeLookAtMatrix(const Vector3& eye_position, const Vector3& target_position, const Vector3& up_dir);
 
         static Matrix4x4 makePerspectiveMatrix(Radian fovy, float aspect, float znear, float zfar);
 
-        static Matrix4x4
-        makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
-        
-        static Matrix4x4
-        makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar);
+        static Matrix4x4 makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
+
+        static Matrix4x4 makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar);
     };
 
     // these functions could not be defined within the class definition of class

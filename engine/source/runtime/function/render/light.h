@@ -24,7 +24,7 @@ namespace Piccolo
             const float ATTENTUATION_CUTOFF = 0.05f;
             Vector3     intensity           = m_flux / (4.0f * Math_PI);
             float       maxIntensity        = Vector3::getMaxElement(intensity);
-            float       attenuation = Math::max(INTENSITY_CUTOFF, ATTENTUATION_CUTOFF * maxIntensity) / maxIntensity;
+            float       attenuation         = Math::max(INTENSITY_CUTOFF, ATTENTUATION_CUTOFF * maxIntensity) / maxIntensity;
             return 1.0f / sqrtf(attenuation);
         }
     };

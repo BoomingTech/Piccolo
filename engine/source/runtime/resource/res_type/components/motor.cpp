@@ -4,5 +4,5 @@
 
 namespace Piccolo
 {
-    MotorComponentRes::~MotorComponentRes() {  }
+    MotorComponentRes::~MotorComponentRes() {}
 } // namespace Piccolo

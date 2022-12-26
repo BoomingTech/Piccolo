@@ -1,6 +1,7 @@
 #pragma once
-#include "sol/sol.hpp"
 #include "runtime/function/framework/component/component.h"
+#include "runtime/resource/res_type/components/lua_script.h"
+#include "sol/sol.hpp"
 
 namespace Piccolo
 {
@@ -23,9 +24,11 @@ namespace Piccolo
         static T get(std::weak_ptr<GObject> game_object, const char* name);
 
         static void invoke(std::weak_ptr<GObject> game_object, const char* name);
+
     protected:
         sol::state m_lua_state;
+
         META(Enable)
-        std::string m_lua_script;
+        LuaScriptRes m_lua_script_res;
     };
 } // namespace Piccolo

@@ -1,15 +1,13 @@
 #include "runtime/function/render/passes/pick_pass.h"
 
-#include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
+#include "runtime/function/render/render_mesh.h"
 
 #include "runtime/function/render/render_helper.h"
 
-#include <mesh_inefficient_pick_frag.h>
 #include <mesh_inefficient_pick_vert.h>
-
-
+#include <mesh_inefficient_pick_frag.h>
 
 #include <map>
 #include <stdexcept>
@@ -121,7 +119,7 @@ namespace Piccolo
     }
     void PickPass::setupFramebuffer()
     {
-        RHIImageView* attachments[2] = {m_framebuffer.attachments[0].view, m_rhi->getDepthImageInfo().depth_image_view };
+        RHIImageView* attachments[2] = {m_framebuffer.attachments[0].view, m_rhi->getDepthImageInfo().depth_image_view};
 
         RHIFramebufferCreateInfo framebuffer_create_info {};
         framebuffer_create_info.sType           = RHI_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -143,43 +141,34 @@ namespace Piccolo
 
         RHIDescriptorSetLayoutBinding mesh_inefficient_pick_global_layout_bindings[3];
 
-        RHIDescriptorSetLayoutBinding& mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding =
-            mesh_inefficient_pick_global_layout_bindings[0];
-        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.binding = 0;
-        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.descriptorCount = 1;
-        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.pImmutableSamplers = NULL;
+        RHIDescriptorSetLayoutBinding& mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding = mesh_inefficient_pick_global_layout_bindings[0];
+        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.binding                        = 0;
+        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.descriptorCount                = 1;
+        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.stageFlags                     = VK_SHADER_STAGE_VERTEX_BIT;
+        mesh_inefficient_pick_global_layout_perframe_storage_buffer_binding.pImmutableSamplers             = NULL;
 
-        RHIDescriptorSetLayoutBinding& mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding =
-            mesh_inefficient_pick_global_layout_bindings[1];
-        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.binding = 1;
-        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.descriptorCount = 1;
-        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.pImmutableSamplers = NULL;
+        RHIDescriptorSetLayoutBinding& mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding = mesh_inefficient_pick_global_layout_bindings[1];
+        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.binding                        = 1;
+        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.descriptorCount                = 1;
+        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.stageFlags                     = VK_SHADER_STAGE_VERTEX_BIT;
+        mesh_inefficient_pick_global_layout_perdrawcall_storage_buffer_binding.pImmutableSamplers             = NULL;
 
-        RHIDescriptorSetLayoutBinding&
-            mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding =
-                mesh_inefficient_pick_global_layout_bindings[2];
-        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.binding = 2;
-        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.descriptorCount = 1;
-        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.stageFlags =
-            RHI_SHADER_STAGE_VERTEX_BIT;
-        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.pImmutableSamplers =
-            NULL;
+        RHIDescriptorSetLayoutBinding& mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding =
+            mesh_inefficient_pick_global_layout_bindings[2];
+        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.binding            = 2;
+        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.descriptorType     = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.descriptorCount    = 1;
+        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.stageFlags         = RHI_SHADER_STAGE_VERTEX_BIT;
+        mesh_inefficient_pick_global_layout_perdrawcall_vertex_blending_storage_buffer_binding.pImmutableSamplers = NULL;
 
         RHIDescriptorSetLayoutCreateInfo mesh_inefficient_pick_global_layout_create_info;
         mesh_inefficient_pick_global_layout_create_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         mesh_inefficient_pick_global_layout_create_info.pNext = NULL;
         mesh_inefficient_pick_global_layout_create_info.flags = 0;
         mesh_inefficient_pick_global_layout_create_info.bindingCount =
-            (sizeof(mesh_inefficient_pick_global_layout_bindings) /
-             sizeof(mesh_inefficient_pick_global_layout_bindings[0]));
+            (sizeof(mesh_inefficient_pick_global_layout_bindings) / sizeof(mesh_inefficient_pick_global_layout_bindings[0]));
         mesh_inefficient_pick_global_layout_create_info.pBindings = mesh_inefficient_pick_global_layout_bindings;
 
         if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&mesh_inefficient_pick_global_layout_create_info, m_descriptor_infos[0].layout))
@@ -204,10 +193,8 @@ namespace Piccolo
             throw std::runtime_error("create mesh inefficient pick pipeline layout");
         }
 
-        RHIShader* vert_shader_module =
-            m_rhi->createShaderModule(MESH_INEFFICIENT_PICK_VERT);
-        RHIShader* frag_shader_module =
-            m_rhi->createShaderModule(MESH_INEFFICIENT_PICK_FRAG);
+        RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_INEFFICIENT_PICK_VERT);
+        RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_INEFFICIENT_PICK_FRAG);
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -221,13 +208,12 @@ namespace Piccolo
         frag_pipeline_shader_stage_create_info.module = frag_shader_module;
         frag_pipeline_shader_stage_create_info.pName  = "main";
 
-        RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info, frag_pipeline_shader_stage_create_info};
 
-        auto vertex_binding_descriptions = MeshVertex::getBindingDescriptions();
-        auto vertex_attribute_descriptions = MeshVertex::getAttributeDescriptions();
+        auto                                  vertex_binding_descriptions   = MeshVertex::getBindingDescriptions();
+        auto                                  vertex_attribute_descriptions = MeshVertex::getAttributeDescriptions();
         RHIPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
-        vertex_input_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertex_input_state_create_info.sType                           = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
         vertex_input_state_create_info.pVertexBindingDescriptions      = &vertex_binding_descriptions[0];
         vertex_input_state_create_info.vertexAttributeDescriptionCount = 1;
@@ -246,8 +232,8 @@ namespace Piccolo
         viewport_state_create_info.pScissors     = m_rhi->getSwapchainInfo().scissor;
 
         RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
-        rasterization_state_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterization_state_create_info.depthClampEnable = RHI_FALSE;
+        rasterization_state_create_info.sType                   = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterization_state_create_info.depthClampEnable        = RHI_FALSE;
         rasterization_state_create_info.rasterizerDiscardEnable = RHI_FALSE;
         rasterization_state_create_info.polygonMode             = RHI_POLYGON_MODE_FILL;
         rasterization_state_create_info.lineWidth               = 1.0f;
@@ -292,7 +278,7 @@ namespace Piccolo
         depth_stencil_create_info.depthBoundsTestEnable = RHI_FALSE;
         depth_stencil_create_info.stencilTestEnable     = RHI_FALSE;
 
-        RHIDynamicState                   dynamic_states[] = { RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR};
+        RHIDynamicState                   dynamic_states[] = {RHI_DYNAMIC_STATE_VIEWPORT, RHI_DYNAMIC_STATE_SCISSOR};
         RHIPipelineDynamicStateCreateInfo dynamic_state_create_info {};
         dynamic_state_create_info.sType             = RHI_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamic_state_create_info.dynamicStateCount = 2;
@@ -326,8 +312,8 @@ namespace Piccolo
     void PickPass::setupDescriptorSet()
     {
         RHIDescriptorSetAllocateInfo mesh_inefficient_pick_global_descriptor_set_alloc_info;
-        mesh_inefficient_pick_global_descriptor_set_alloc_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        mesh_inefficient_pick_global_descriptor_set_alloc_info.pNext = NULL;
+        mesh_inefficient_pick_global_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        mesh_inefficient_pick_global_descriptor_set_alloc_info.pNext              = NULL;
         mesh_inefficient_pick_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
         mesh_inefficient_pick_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_inefficient_pick_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
@@ -342,26 +328,19 @@ namespace Piccolo
         // the buffer
         mesh_inefficient_pick_perframe_storage_buffer_info.offset = 0;
         // the range means the size actually used by the shader per draw call
-        mesh_inefficient_pick_perframe_storage_buffer_info.range =
-            sizeof(MeshInefficientPickPerframeStorageBufferObject);
-        mesh_inefficient_pick_perframe_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        mesh_inefficient_pick_perframe_storage_buffer_info.range  = sizeof(MeshInefficientPickPerframeStorageBufferObject);
+        mesh_inefficient_pick_perframe_storage_buffer_info.buffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
 
         RHIDescriptorBufferInfo mesh_inefficient_pick_perdrawcall_storage_buffer_info = {};
-        mesh_inefficient_pick_perdrawcall_storage_buffer_info.offset                 = 0;
-        mesh_inefficient_pick_perdrawcall_storage_buffer_info.range =
-            sizeof(MeshInefficientPickPerdrawcallStorageBufferObject);
-        mesh_inefficient_pick_perdrawcall_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_inefficient_pick_perdrawcall_storage_buffer_info.range <
-               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_inefficient_pick_perdrawcall_storage_buffer_info.offset                  = 0;
+        mesh_inefficient_pick_perdrawcall_storage_buffer_info.range                   = sizeof(MeshInefficientPickPerdrawcallStorageBufferObject);
+        mesh_inefficient_pick_perdrawcall_storage_buffer_info.buffer                  = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        assert(mesh_inefficient_pick_perdrawcall_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
         RHIDescriptorBufferInfo mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info = {};
-        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.offset                 = 0;
-        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.range =
-            sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
-        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.offset                  = 0;
+        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.range  = sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
+        mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.buffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
         assert(mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info.range <
                m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
@@ -392,13 +371,9 @@ namespace Piccolo
         mesh_descriptor_writes_info[2].dstArrayElement = 0;
         mesh_descriptor_writes_info[2].descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         mesh_descriptor_writes_info[2].descriptorCount = 1;
-        mesh_descriptor_writes_info[2].pBufferInfo =
-            &mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info;
+        mesh_descriptor_writes_info[2].pBufferInfo     = &mesh_inefficient_pick_perdrawcall_vertex_blending_storage_buffer_info;
 
-        m_rhi->updateDescriptorSets(sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]),
-                                    mesh_descriptor_writes_info,
-                                    0,
-                                    NULL);
+        m_rhi->updateDescriptorSets(sizeof(mesh_descriptor_writes_info) / sizeof(mesh_descriptor_writes_info[0]), mesh_descriptor_writes_info, 0, NULL);
     }
     void PickPass::recreateFramebuffer()
     {
@@ -415,10 +390,8 @@ namespace Piccolo
     }
     uint32_t PickPass::pick(const Vector2& picked_uv)
     {
-        uint32_t pixel_x =
-            static_cast<uint32_t>(picked_uv.x * m_rhi->getSwapchainInfo().viewport->width + m_rhi->getSwapchainInfo().viewport->x);
-        uint32_t pixel_y =
-            static_cast<uint32_t>(picked_uv.y * m_rhi->getSwapchainInfo().viewport->height + m_rhi->getSwapchainInfo().viewport->y);
+        uint32_t pixel_x            = static_cast<uint32_t>(picked_uv.x * m_rhi->getSwapchainInfo().viewport->width + m_rhi->getSwapchainInfo().viewport->x);
+        uint32_t pixel_y            = static_cast<uint32_t>(picked_uv.y * m_rhi->getSwapchainInfo().viewport->height + m_rhi->getSwapchainInfo().viewport->y);
         uint32_t picked_pixel_index = m_rhi->getSwapchainInfo().extent.width * pixel_y + pixel_x;
         if (pixel_x >= m_rhi->getSwapchainInfo().extent.width || pixel_y >= m_rhi->getSwapchainInfo().extent.height)
             return 0;
@@ -466,8 +439,7 @@ namespace Piccolo
         command_buffer_begin_info.flags            = 0;
         command_buffer_begin_info.pInheritanceInfo = nullptr;
 
-        bool res_begin_command_buffer = m_rhi->beginCommandBufferPFN(
-            m_rhi->getCurrentCommandBuffer(), &command_buffer_begin_info);
+        bool res_begin_command_buffer = m_rhi->beginCommandBufferPFN(m_rhi->getCurrentCommandBuffer(), &command_buffer_begin_info);
         assert(RHI_SUCCESS == res_begin_command_buffer);
 
         {
@@ -481,7 +453,7 @@ namespace Piccolo
             transfer_to_render_barrier.srcQueueFamilyIndex = m_rhi->getQueueFamilyIndices().graphics_family.value();
             transfer_to_render_barrier.dstQueueFamilyIndex = m_rhi->getQueueFamilyIndices().graphics_family.value();
             transfer_to_render_barrier.image               = m_framebuffer.attachments[0].image;
-            transfer_to_render_barrier.subresourceRange = { RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+            transfer_to_render_barrier.subresourceRange    = {RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
             m_rhi->cmdPipelineBarrier(m_rhi->getCurrentCommandBuffer(),
                                       RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                       RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -504,43 +476,33 @@ namespace Piccolo
         renderpass_begin_info.renderArea.offset = {0, 0};
         renderpass_begin_info.renderArea.extent = m_rhi->getSwapchainInfo().extent;
 
-        RHIClearColorValue color_value         = {0, 0, 0, 0};
-        RHIClearValue      clearValues[2]      = {color_value, {1.0f, 0}};
-        renderpass_begin_info.clearValueCount  = 2;
-        renderpass_begin_info.pClearValues     = clearValues;
+        RHIClearColorValue color_value        = {0, 0, 0, 0};
+        RHIClearValue      clearValues[2]     = {color_value, {1.0f, 0}};
+        renderpass_begin_info.clearValueCount = 2;
+        renderpass_begin_info.pClearValues    = clearValues;
 
-        m_rhi->cmdBeginRenderPassPFN(m_rhi->getCurrentCommandBuffer(),
-            &renderpass_begin_info,
-            RHI_SUBPASS_CONTENTS_INLINE); // no second buffer
+        m_rhi->cmdBeginRenderPassPFN(m_rhi->getCurrentCommandBuffer(), &renderpass_begin_info,
+                                     RHI_SUBPASS_CONTENTS_INLINE); // no second buffer
 
-        float color[4] = { 1.0f,1.0f,1.0f,1.0f };
+        float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
         m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Mesh Inefficient Pick", color);
 
-        m_rhi->cmdBindPipelinePFN(m_rhi->getCurrentCommandBuffer(),
-                                  RHI_PIPELINE_BIND_POINT_GRAPHICS,
-                                  m_render_pipelines[0].pipeline);
+        m_rhi->cmdBindPipelinePFN(m_rhi->getCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
         m_rhi->cmdSetViewportPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, m_rhi->getSwapchainInfo().viewport);
         m_rhi->cmdSetScissorPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, m_rhi->getSwapchainInfo().scissor);
 
         // perframe storage buffer
-        uint32_t perframe_dynamic_offset =
-            roundUp(m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
-                    m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-        m_global_render_resource->_storage_buffer
-            ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+        uint32_t perframe_dynamic_offset = roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                                                   m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
             perframe_dynamic_offset + sizeof(MeshInefficientPickPerframeStorageBufferObject);
-        assert(m_global_render_resource->_storage_buffer
-                   ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-               (m_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                m_global_render_resource->_storage_buffer
-                    ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+        assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+               (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
         (*reinterpret_cast<MeshInefficientPickPerframeStorageBufferObject*>(
-            reinterpret_cast<uintptr_t>(
-                m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-            perframe_dynamic_offset)) = _mesh_inefficient_pick_perframe_storage_buffer_object;
+            reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) + perframe_dynamic_offset)) =
+            _mesh_inefficient_pick_perframe_storage_buffer_object;
 
         for (auto& pair1 : main_camera_mesh_drawcall_batch)
         {
@@ -567,58 +529,40 @@ namespace Piccolo
                                                     0,
                                                     NULL);
 
-                    RHIBuffer* vertex_buffers[] = { mesh.mesh_vertex_position_buffer };
-                    RHIDeviceSize offsets[] = { 0 };
-                    m_rhi->cmdBindVertexBuffersPFN(m_rhi->getCurrentCommandBuffer(),
-                                                   0,
-                                                   1,
-                                                   vertex_buffers,
-                                                   offsets);
-                    m_rhi->cmdBindIndexBufferPFN(m_rhi->getCurrentCommandBuffer(),
-                                                 mesh.mesh_index_buffer,
-                                                 0,
-                                                 RHI_INDEX_TYPE_UINT16);
+                    RHIBuffer*    vertex_buffers[] = {mesh.mesh_vertex_position_buffer};
+                    RHIDeviceSize offsets[]        = {0};
+                    m_rhi->cmdBindVertexBuffersPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, vertex_buffers, offsets);
+                    m_rhi->cmdBindIndexBufferPFN(m_rhi->getCurrentCommandBuffer(), mesh.mesh_index_buffer, 0, RHI_INDEX_TYPE_UINT16);
 
-                    uint32_t drawcall_max_instance_count =
-                        (sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices) /
-                         sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices[0]));
-                    uint32_t drawcall_count =
-                        roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
+                    uint32_t drawcall_max_instance_count = (sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices) /
+                                                            sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices[0]));
+                    uint32_t drawcall_count              = roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
                     for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
                     {
                         uint32_t current_instance_count =
-                            ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                             drawcall_max_instance_count) ?
+                            ((total_instance_count - drawcall_max_instance_count * drawcall_index) < drawcall_max_instance_count) ?
                                 (total_instance_count - drawcall_max_instance_count * drawcall_index) :
                                 drawcall_max_instance_count;
 
                         // perdrawcall storage buffer
                         uint32_t perdrawcall_dynamic_offset =
-                            roundUp(m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                            roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
                                     m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                        m_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+                        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
                             perdrawcall_dynamic_offset + sizeof(MeshInefficientPickPerdrawcallStorageBufferObject);
-                        assert(m_global_render_resource->_storage_buffer
-                                   ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-                               (m_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                                m_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+                        assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+                               (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                                m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
                         MeshInefficientPickPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
                             (*reinterpret_cast<MeshInefficientPickPerdrawcallStorageBufferObject*>(
-                                reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
-                                                                ._global_upload_ringbuffer_memory_pointer) +
+                                reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
                                 perdrawcall_dynamic_offset));
                         for (uint32_t i = 0; i < current_instance_count; ++i)
                         {
-                            perdrawcall_storage_buffer_object.model_matrices[i] =
-                                *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
-                            perdrawcall_storage_buffer_object.node_ids[i] =
-                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].node_id;
+                            perdrawcall_storage_buffer_object.model_matrices[i] = *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
+                            perdrawcall_storage_buffer_object.node_ids[i]       = mesh_nodes[drawcall_max_instance_count * drawcall_index + i].node_id;
                         }
 
                         // per drawcall vertex blending storage buffer
@@ -626,35 +570,23 @@ namespace Piccolo
                         if (mesh.enable_vertex_blending)
                         {
                             per_drawcall_vertex_blending_dynamic_offset =
-                                roundUp(m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                                roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
                                         m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            m_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
-                                per_drawcall_vertex_blending_dynamic_offset +
-                                sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
-                            assert(m_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-                                   (m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                                    m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+                            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+                                per_drawcall_vertex_blending_dynamic_offset + sizeof(MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject);
+                            assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+                                   (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                                    m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
-                            MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject&
-                                per_drawcall_vertex_blending_storage_buffer_object =
-                                    (*reinterpret_cast<
-                                        MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
-                                                                        ._global_upload_ringbuffer_memory_pointer) +
-                                        per_drawcall_vertex_blending_dynamic_offset));
+                            MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject& per_drawcall_vertex_blending_storage_buffer_object =
+                                (*reinterpret_cast<MeshInefficientPickPerdrawcallVertexBlendingStorageBufferObject*>(
+                                    reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                    per_drawcall_vertex_blending_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
-                                for (uint32_t j = 0;
-                                     j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
-                                     ++j)
+                                for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
                                 {
-                                    per_drawcall_vertex_blending_storage_buffer_object
-                                        .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                    per_drawcall_vertex_blending_storage_buffer_object.joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
                                         mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
                                 }
                             }
@@ -665,9 +597,7 @@ namespace Piccolo
                         }
 
                         // bind perdrawcall
-                        uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
-                                                       perdrawcall_dynamic_offset,
-                                                       per_drawcall_vertex_blending_dynamic_offset};
+                        uint32_t dynamic_offsets[3] = {perframe_dynamic_offset, perdrawcall_dynamic_offset, per_drawcall_vertex_blending_dynamic_offset};
                         m_rhi->cmdBindDescriptorSetsPFN(m_rhi->getCurrentCommandBuffer(),
                                                         RHI_PIPELINE_BIND_POINT_GRAPHICS,
                                                         m_render_pipelines[0].layout,
@@ -677,12 +607,7 @@ namespace Piccolo
                                                         sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0]),
                                                         dynamic_offsets);
 
-                        m_rhi->cmdDrawIndexedPFN(m_rhi->getCurrentCommandBuffer(),
-                                                 mesh.mesh_index_count,
-                                                 current_instance_count,
-                                                 0,
-                                                 0,
-                                                 0);
+                        m_rhi->cmdDrawIndexedPFN(m_rhi->getCurrentCommandBuffer(), mesh.mesh_index_count, current_instance_count, 0, 0, 0);
                     }
                 }
             }
@@ -700,30 +625,24 @@ namespace Piccolo
         bool res_reset_fences = m_rhi->resetFencesPFN(1, &m_rhi->getFenceList()[m_rhi->getCurrentFrameIndex()]);
         assert(RHI_SUCCESS == res_reset_fences);
 
-        RHISubmitInfo submit_info = {};
-        submit_info.sType = RHI_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.waitSemaphoreCount = 0;
-        submit_info.pWaitSemaphores = NULL;
-        submit_info.pWaitDstStageMask = 0;
-        submit_info.commandBufferCount = 1;
-        RHICommandBuffer* commandBuffer = m_rhi->getCurrentCommandBuffer();
-        submit_info.pCommandBuffers = &commandBuffer;
+        RHISubmitInfo submit_info        = {};
+        submit_info.sType                = RHI_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.waitSemaphoreCount   = 0;
+        submit_info.pWaitSemaphores      = NULL;
+        submit_info.pWaitDstStageMask    = 0;
+        submit_info.commandBufferCount   = 1;
+        RHICommandBuffer* commandBuffer  = m_rhi->getCurrentCommandBuffer();
+        submit_info.pCommandBuffers      = &commandBuffer;
         submit_info.signalSemaphoreCount = 0;
-        submit_info.pSignalSemaphores = NULL;
+        submit_info.pSignalSemaphores    = NULL;
 
-        bool res_queue_submit =m_rhi->queueSubmit(m_rhi->getGraphicsQueue(),
-                                                  1,
-                                                  &submit_info,
-                                                  m_rhi->getFenceList()[m_rhi->getCurrentFrameIndex()]);
+        bool res_queue_submit = m_rhi->queueSubmit(m_rhi->getGraphicsQueue(), 1, &submit_info, m_rhi->getFenceList()[m_rhi->getCurrentFrameIndex()]);
         assert(RHI_SUCCESS == res_queue_submit);
 
         m_rhi->setCurrentFrameIndex((m_rhi->getCurrentFrameIndex() + 1) % m_rhi->getMaxFramesInFlight());
 
         // implicit host read barrier
-        bool res_wait_for_fences = m_rhi->waitForFencesPFN(m_rhi->getMaxFramesInFlight(),
-                                                           m_rhi->getFenceList(),
-                                                           RHI_TRUE,
-                                                           UINT64_MAX);
+        bool res_wait_for_fences = m_rhi->waitForFencesPFN(m_rhi->getMaxFramesInFlight(), m_rhi->getFenceList(), RHI_TRUE, UINT64_MAX);
         assert(RHI_SUCCESS == res_wait_for_fences);
 
         auto command_buffer = m_rhi->beginSingleTimeCommands();
@@ -737,10 +656,10 @@ namespace Piccolo
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount     = 1;
         region.imageOffset                     = {0, 0, 0};
-        region.imageExtent = { m_rhi->getSwapchainInfo().extent.width, m_rhi->getSwapchainInfo().extent.height, 1 };
+        region.imageExtent                     = {m_rhi->getSwapchainInfo().extent.width, m_rhi->getSwapchainInfo().extent.height, 1};
 
-        uint32_t   buffer_size = m_rhi->getSwapchainInfo().extent.width * m_rhi->getSwapchainInfo().extent.height * 4;
-        RHIBuffer* inefficient_staging_buffer;
+        uint32_t         buffer_size = m_rhi->getSwapchainInfo().extent.width * m_rhi->getSwapchainInfo().extent.height * 4;
+        RHIBuffer*       inefficient_staging_buffer;
         RHIDeviceMemory* inefficient_staging_buffer_memory;
         m_rhi->createBuffer(buffer_size,
                             RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -758,24 +677,12 @@ namespace Piccolo
         copy_to_buffer_barrier.srcQueueFamilyIndex = m_rhi->getQueueFamilyIndices().graphics_family.value();
         copy_to_buffer_barrier.dstQueueFamilyIndex = m_rhi->getQueueFamilyIndices().graphics_family.value();
         copy_to_buffer_barrier.image               = m_framebuffer.attachments[0].image;
-        copy_to_buffer_barrier.subresourceRange    = { RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-        m_rhi->cmdPipelineBarrier(command_buffer,
-                                  RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                  RHI_PIPELINE_STAGE_TRANSFER_BIT,
-                                  0,
-                                  0,
-                                  nullptr,
-                                  0,
-                                  nullptr,
-                                  1,
-                                  &copy_to_buffer_barrier);
+        copy_to_buffer_barrier.subresourceRange    = {RHI_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        m_rhi->cmdPipelineBarrier(
+            command_buffer, RHI_PIPELINE_STAGE_ALL_COMMANDS_BIT, RHI_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &copy_to_buffer_barrier);
 
-        m_rhi->cmdCopyImageToBuffer(command_buffer,
-                                    m_framebuffer.attachments[0].image,
-                                    RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                    inefficient_staging_buffer,
-                                    1,
-                                    &region);
+        m_rhi->cmdCopyImageToBuffer(
+            command_buffer, m_framebuffer.attachments[0].image, RHI_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, inefficient_staging_buffer, 1, &region);
 
         m_rhi->endSingleTimeCommands(command_buffer);
 

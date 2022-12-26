@@ -68,6 +68,13 @@ if(NOT TARGET sol2)
     add_subdirectory(sol2-3.3.0)
 endif()
 
+if(NOT TARGET glslang)
+    option(SKIP_GLSLANG_INSTALL "" ON)
+    option(ENABLE_HLSL "" ON)
+    option(ENABLE_OPT "" ON)
+    add_subdirectory(glslang-sdk)
+    set_target_properties(glslang PROPERTIES FOLDER ${third_party_folder}/glslang-sdk)
+endif()
 
 if(NOT TARGET lua)
     include(lua.cmake)

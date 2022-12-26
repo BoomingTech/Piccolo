@@ -1,12 +1,14 @@
 #include "runtime/function/render/passes/directional_light_pass.h"
 
-#include "runtime/function/render/render_helper.h"
-#include "runtime/function/render/render_mesh.h"
 #include "runtime/function/render/interface/vulkan/vulkan_rhi.h"
 #include "runtime/function/render/interface/vulkan/vulkan_util.h"
+#include "runtime/function/render/render_helper.h"
+#include "runtime/function/render/render_mesh.h"
 
+#ifdef NDEBUG
 #include <mesh_directional_light_shadow_frag.h>
 #include <mesh_directional_light_shadow_vert.h>
+#endif
 
 #include <stdexcept>
 
@@ -31,8 +33,7 @@ namespace Piccolo
         const RenderResource* vulkan_resource = static_cast<const RenderResource*>(render_resource.get());
         if (vulkan_resource)
         {
-            m_mesh_directional_light_shadow_perframe_storage_buffer_object =
-                vulkan_resource->m_mesh_directional_light_shadow_perframe_storage_buffer_object;
+            m_mesh_directional_light_shadow_perframe_storage_buffer_object = vulkan_resource->m_mesh_directional_light_shadow_perframe_storage_buffer_object;
         }
     }
     void DirectionalLightShadowPass::draw() { drawModel(); }
@@ -75,52 +76,49 @@ namespace Piccolo
                            0,
                            1,
                            1);
-         m_rhi->createImageView(m_framebuffer.attachments[1].image,
-                                m_framebuffer.attachments[1].format,
-                                RHI_IMAGE_ASPECT_DEPTH_BIT,
-                                RHI_IMAGE_VIEW_TYPE_2D,
-                                1,
-                                1,
-                                m_framebuffer.attachments[1].view);
+        m_rhi->createImageView(m_framebuffer.attachments[1].image,
+                               m_framebuffer.attachments[1].format,
+                               RHI_IMAGE_ASPECT_DEPTH_BIT,
+                               RHI_IMAGE_VIEW_TYPE_2D,
+                               1,
+                               1,
+                               m_framebuffer.attachments[1].view);
     }
     void DirectionalLightShadowPass::setupRenderPass()
     {
         RHIAttachmentDescription attachments[2] = {};
 
         RHIAttachmentDescription& directional_light_shadow_color_attachment_description = attachments[0];
-        directional_light_shadow_color_attachment_description.format         = m_framebuffer.attachments[0].format;
-        directional_light_shadow_color_attachment_description.samples        = RHI_SAMPLE_COUNT_1_BIT;
-        directional_light_shadow_color_attachment_description.loadOp         = RHI_ATTACHMENT_LOAD_OP_CLEAR;
-        directional_light_shadow_color_attachment_description.storeOp        = RHI_ATTACHMENT_STORE_OP_STORE;
-        directional_light_shadow_color_attachment_description.stencilLoadOp  = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
-        directional_light_shadow_color_attachment_description.stencilStoreOp = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
-        directional_light_shadow_color_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
-        directional_light_shadow_color_attachment_description.finalLayout    = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        directional_light_shadow_color_attachment_description.format                    = m_framebuffer.attachments[0].format;
+        directional_light_shadow_color_attachment_description.samples                   = RHI_SAMPLE_COUNT_1_BIT;
+        directional_light_shadow_color_attachment_description.loadOp                    = RHI_ATTACHMENT_LOAD_OP_CLEAR;
+        directional_light_shadow_color_attachment_description.storeOp                   = RHI_ATTACHMENT_STORE_OP_STORE;
+        directional_light_shadow_color_attachment_description.stencilLoadOp             = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
+        directional_light_shadow_color_attachment_description.stencilStoreOp            = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        directional_light_shadow_color_attachment_description.initialLayout             = RHI_IMAGE_LAYOUT_UNDEFINED;
+        directional_light_shadow_color_attachment_description.finalLayout               = RHI_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         RHIAttachmentDescription& directional_light_shadow_depth_attachment_description = attachments[1];
-        directional_light_shadow_depth_attachment_description.format         = m_framebuffer.attachments[1].format;
-        directional_light_shadow_depth_attachment_description.samples        = RHI_SAMPLE_COUNT_1_BIT;
-        directional_light_shadow_depth_attachment_description.loadOp         = RHI_ATTACHMENT_LOAD_OP_CLEAR;
-        directional_light_shadow_depth_attachment_description.storeOp        = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
-        directional_light_shadow_depth_attachment_description.stencilLoadOp  = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
-        directional_light_shadow_depth_attachment_description.stencilStoreOp = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
-        directional_light_shadow_depth_attachment_description.initialLayout  = RHI_IMAGE_LAYOUT_UNDEFINED;
-        directional_light_shadow_depth_attachment_description.finalLayout =
-            RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        directional_light_shadow_depth_attachment_description.format                    = m_framebuffer.attachments[1].format;
+        directional_light_shadow_depth_attachment_description.samples                   = RHI_SAMPLE_COUNT_1_BIT;
+        directional_light_shadow_depth_attachment_description.loadOp                    = RHI_ATTACHMENT_LOAD_OP_CLEAR;
+        directional_light_shadow_depth_attachment_description.storeOp                   = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        directional_light_shadow_depth_attachment_description.stencilLoadOp             = RHI_ATTACHMENT_LOAD_OP_DONT_CARE;
+        directional_light_shadow_depth_attachment_description.stencilStoreOp            = RHI_ATTACHMENT_STORE_OP_DONT_CARE;
+        directional_light_shadow_depth_attachment_description.initialLayout             = RHI_IMAGE_LAYOUT_UNDEFINED;
+        directional_light_shadow_depth_attachment_description.finalLayout               = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         RHISubpassDescription subpasses[1] = {};
 
         RHIAttachmentReference shadow_pass_color_attachment_reference {};
-        shadow_pass_color_attachment_reference.attachment =
-            &directional_light_shadow_color_attachment_description - attachments;
-        shadow_pass_color_attachment_reference.layout = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        shadow_pass_color_attachment_reference.attachment = &directional_light_shadow_color_attachment_description - attachments;
+        shadow_pass_color_attachment_reference.layout     = RHI_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         RHIAttachmentReference shadow_pass_depth_attachment_reference {};
-        shadow_pass_depth_attachment_reference.attachment =
-            &directional_light_shadow_depth_attachment_description - attachments;
-        shadow_pass_depth_attachment_reference.layout = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        shadow_pass_depth_attachment_reference.attachment = &directional_light_shadow_depth_attachment_description - attachments;
+        shadow_pass_depth_attachment_reference.layout     = RHI_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        RHISubpassDescription& shadow_pass   = subpasses[0];
+        RHISubpassDescription& shadow_pass  = subpasses[0];
         shadow_pass.pipelineBindPoint       = RHI_PIPELINE_BIND_POINT_GRAPHICS;
         shadow_pass.colorAttachmentCount    = 1;
         shadow_pass.pColorAttachments       = &shadow_pass_color_attachment_reference;
@@ -129,13 +127,13 @@ namespace Piccolo
         RHISubpassDependency dependencies[1] = {};
 
         RHISubpassDependency& lighting_pass_dependency = dependencies[0];
-        lighting_pass_dependency.srcSubpass           = 0;
-        lighting_pass_dependency.dstSubpass           = RHI_SUBPASS_EXTERNAL;
-        lighting_pass_dependency.srcStageMask         = RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        lighting_pass_dependency.dstStageMask         = RHI_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-        lighting_pass_dependency.srcAccessMask        = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // STORE_OP_STORE
-        lighting_pass_dependency.dstAccessMask        = 0;
-        lighting_pass_dependency.dependencyFlags      = 0; // NOT BY REGION
+        lighting_pass_dependency.srcSubpass            = 0;
+        lighting_pass_dependency.dstSubpass            = RHI_SUBPASS_EXTERNAL;
+        lighting_pass_dependency.srcStageMask          = RHI_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        lighting_pass_dependency.dstStageMask          = RHI_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        lighting_pass_dependency.srcAccessMask         = RHI_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // STORE_OP_STORE
+        lighting_pass_dependency.dstAccessMask         = 0;
+        lighting_pass_dependency.dependencyFlags       = 0; // NOT BY REGION
 
         RHIRenderPassCreateInfo renderpass_create_info {};
         renderpass_create_info.sType           = RHI_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -178,42 +176,33 @@ namespace Piccolo
 
         RHIDescriptorSetLayoutBinding& mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding =
             mesh_directional_light_shadow_global_layout_bindings[0];
-        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.binding = 0;
-        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.binding         = 0;
+        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.descriptorCount = 1;
-        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.stageFlags =
-            RHI_SHADER_STAGE_VERTEX_BIT;
+        mesh_directional_light_shadow_global_layout_perframe_storage_buffer_binding.stageFlags      = RHI_SHADER_STAGE_VERTEX_BIT;
 
         RHIDescriptorSetLayoutBinding& mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding =
             mesh_directional_light_shadow_global_layout_bindings[1];
-        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.binding = 1;
-        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.binding         = 1;
+        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.descriptorCount = 1;
-        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.stageFlags =
-            RHI_SHADER_STAGE_VERTEX_BIT;
+        mesh_directional_light_shadow_global_layout_perdrawcall_storage_buffer_binding.stageFlags      = RHI_SHADER_STAGE_VERTEX_BIT;
 
-        RHIDescriptorSetLayoutBinding&
-            mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding =
-                mesh_directional_light_shadow_global_layout_bindings[2];
+        RHIDescriptorSetLayoutBinding& mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding =
+            mesh_directional_light_shadow_global_layout_bindings[2];
         mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding.binding = 2;
         mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding.descriptorType =
             RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding
-            .descriptorCount = 1;
-        mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding.stageFlags =
-            RHI_SHADER_STAGE_VERTEX_BIT;
+        mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding.descriptorCount = 1;
+        mesh_directional_light_shadow_global_layout_per_drawcall_vertex_blending_storage_buffer_binding.stageFlags      = RHI_SHADER_STAGE_VERTEX_BIT;
 
         RHIDescriptorSetLayoutCreateInfo mesh_point_light_shadow_global_layout_create_info;
         mesh_point_light_shadow_global_layout_create_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         mesh_point_light_shadow_global_layout_create_info.pNext = NULL;
         mesh_point_light_shadow_global_layout_create_info.flags = 0;
         mesh_point_light_shadow_global_layout_create_info.bindingCount =
-            (sizeof(mesh_directional_light_shadow_global_layout_bindings) /
-             sizeof(mesh_directional_light_shadow_global_layout_bindings[0]));
-        mesh_point_light_shadow_global_layout_create_info.pBindings =
-            mesh_directional_light_shadow_global_layout_bindings;
+            (sizeof(mesh_directional_light_shadow_global_layout_bindings) / sizeof(mesh_directional_light_shadow_global_layout_bindings[0]));
+        mesh_point_light_shadow_global_layout_create_info.pBindings = mesh_directional_light_shadow_global_layout_bindings;
 
         if (RHI_SUCCESS != m_rhi->createDescriptorSetLayout(&mesh_point_light_shadow_global_layout_create_info, m_descriptor_infos[0].layout))
         {
@@ -224,7 +213,7 @@ namespace Piccolo
     {
         m_render_pipelines.resize(1);
 
-        RHIDescriptorSetLayout*      descriptorset_layouts[] = {m_descriptor_infos[0].layout, m_per_mesh_layout};
+        RHIDescriptorSetLayout*     descriptorset_layouts[] = {m_descriptor_infos[0].layout, m_per_mesh_layout};
         RHIPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = RHI_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.setLayoutCount = (sizeof(descriptorset_layouts) / sizeof(descriptorset_layouts[0]));
@@ -235,10 +224,13 @@ namespace Piccolo
             throw std::runtime_error("create mesh directional light shadow pipeline layout");
         }
 
-        RHIShader* vert_shader_module =
-            m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_VERT);
-        RHIShader* frag_shader_module =
-            m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_FRAG);
+#ifdef NDEBUG
+        RHIShader* vert_shader_module = m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_VERT);
+        RHIShader* frag_shader_module = m_rhi->createShaderModule(MESH_DIRECTIONAL_LIGHT_SHADOW_FRAG);
+#else
+        RHIShader* vert_shader_module = m_rhi->createShaderModule("mesh_directional_light_shadow.vert");
+        RHIShader* frag_shader_module = m_rhi->createShaderModule("mesh_directional_light_shadow.frag");
+#endif
 
         RHIPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info {};
         vert_pipeline_shader_stage_create_info.sType  = RHI_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -252,13 +244,12 @@ namespace Piccolo
         frag_pipeline_shader_stage_create_info.module = frag_shader_module;
         frag_pipeline_shader_stage_create_info.pName  = "main";
 
-        RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info,
-                                                           frag_pipeline_shader_stage_create_info};
+        RHIPipelineShaderStageCreateInfo shader_stages[] = {vert_pipeline_shader_stage_create_info, frag_pipeline_shader_stage_create_info};
 
-        auto                                 vertex_binding_descriptions   = MeshVertex::getBindingDescriptions();
-        auto                                 vertex_attribute_descriptions = MeshVertex::getAttributeDescriptions();
+        auto                                  vertex_binding_descriptions   = MeshVertex::getBindingDescriptions();
+        auto                                  vertex_attribute_descriptions = MeshVertex::getAttributeDescriptions();
         RHIPipelineVertexInputStateCreateInfo vertex_input_state_create_info {};
-        vertex_input_state_create_info.sType = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertex_input_state_create_info.sType                           = RHI_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
         vertex_input_state_create_info.pVertexBindingDescriptions      = &vertex_binding_descriptions[0];
         vertex_input_state_create_info.vertexAttributeDescriptionCount = 1;
@@ -269,10 +260,8 @@ namespace Piccolo
         input_assembly_create_info.topology               = RHI_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         input_assembly_create_info.primitiveRestartEnable = RHI_FALSE;
 
-        RHIViewport viewport = {
-            0, 0, s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension, 0.0, 1.0};
-        RHIRect2D scissor = {{0, 0},
-                            {s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension}};
+        RHIViewport viewport = {0, 0, s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension, 0.0, 1.0};
+        RHIRect2D   scissor  = {{0, 0}, {s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension}};
 
         RHIPipelineViewportStateCreateInfo viewport_state_create_info {};
         viewport_state_create_info.sType         = RHI_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -282,8 +271,8 @@ namespace Piccolo
         viewport_state_create_info.pScissors     = &scissor;
 
         RHIPipelineRasterizationStateCreateInfo rasterization_state_create_info {};
-        rasterization_state_create_info.sType            = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterization_state_create_info.depthClampEnable = RHI_FALSE;
+        rasterization_state_create_info.sType                   = RHI_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterization_state_create_info.depthClampEnable        = RHI_FALSE;
         rasterization_state_create_info.rasterizerDiscardEnable = RHI_FALSE;
         rasterization_state_create_info.polygonMode             = RHI_POLYGON_MODE_FILL;
         rasterization_state_create_info.lineWidth               = 1.0f;
@@ -361,12 +350,11 @@ namespace Piccolo
     void DirectionalLightShadowPass::setupDescriptorSet()
     {
         RHIDescriptorSetAllocateInfo mesh_directional_light_shadow_global_descriptor_set_alloc_info;
-        mesh_directional_light_shadow_global_descriptor_set_alloc_info.sType =
-            RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        mesh_directional_light_shadow_global_descriptor_set_alloc_info.pNext          = NULL;
-        mesh_directional_light_shadow_global_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPoor();
+        mesh_directional_light_shadow_global_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        mesh_directional_light_shadow_global_descriptor_set_alloc_info.pNext              = NULL;
+        mesh_directional_light_shadow_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
         mesh_directional_light_shadow_global_descriptor_set_alloc_info.descriptorSetCount = 1;
-        mesh_directional_light_shadow_global_descriptor_set_alloc_info.pSetLayouts = &m_descriptor_infos[0].layout;
+        mesh_directional_light_shadow_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 
         if (RHI_SUCCESS != m_rhi->allocateDescriptorSets(&mesh_directional_light_shadow_global_descriptor_set_alloc_info, m_descriptor_infos[0].descriptor_set))
         {
@@ -377,24 +365,18 @@ namespace Piccolo
         // this offset plus dynamic_offset should not be greater than the size of the buffer
         mesh_directional_light_shadow_perframe_storage_buffer_info.offset = 0;
         // the range means the size actually used by the shader per draw call
-        mesh_directional_light_shadow_perframe_storage_buffer_info.range =
-            sizeof(MeshDirectionalLightShadowPerframeStorageBufferObject);
-        mesh_directional_light_shadow_perframe_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_directional_light_shadow_perframe_storage_buffer_info.range <
-               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_directional_light_shadow_perframe_storage_buffer_info.range  = sizeof(MeshDirectionalLightShadowPerframeStorageBufferObject);
+        mesh_directional_light_shadow_perframe_storage_buffer_info.buffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        assert(mesh_directional_light_shadow_perframe_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
         RHIDescriptorBufferInfo mesh_directional_light_shadow_perdrawcall_storage_buffer_info = {};
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.offset                 = 0;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range =
-            sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.buffer =
-            m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
-        assert(mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range <
-               m_global_render_resource->_storage_buffer._max_storage_buffer_range);
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.offset                  = 0;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range  = sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_info.buffer = m_global_render_resource->_storage_buffer._global_upload_ringbuffer;
+        assert(mesh_directional_light_shadow_perdrawcall_storage_buffer_info.range < m_global_render_resource->_storage_buffer._max_storage_buffer_range);
 
         RHIDescriptorBufferInfo mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info = {};
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.offset                 = 0;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.offset                  = 0;
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.range =
             sizeof(MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject);
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info.buffer =
@@ -407,50 +389,37 @@ namespace Piccolo
         RHIWriteDescriptorSet descriptor_writes[3];
 
         RHIWriteDescriptorSet& mesh_directional_light_shadow_perframe_storage_buffer_write_info = descriptor_writes[0];
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.sType = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.pNext = NULL;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstSet          = descriptor_set_to_write;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstBinding      = 0;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstArrayElement = 0;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.descriptorCount = 1;
-        mesh_directional_light_shadow_perframe_storage_buffer_write_info.pBufferInfo =
-            &mesh_directional_light_shadow_perframe_storage_buffer_info;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.pNext                  = NULL;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstSet                 = descriptor_set_to_write;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstBinding             = 0;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.dstArrayElement        = 0;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.descriptorCount        = 1;
+        mesh_directional_light_shadow_perframe_storage_buffer_write_info.pBufferInfo            = &mesh_directional_light_shadow_perframe_storage_buffer_info;
 
-        RHIWriteDescriptorSet& mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info =
-            descriptor_writes[1];
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.sType =
-            RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.pNext           = NULL;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstSet          = descriptor_set_to_write;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstBinding      = 1;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstArrayElement = 0;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.descriptorCount = 1;
-        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.pBufferInfo =
-            &mesh_directional_light_shadow_perdrawcall_storage_buffer_info;
+        RHIWriteDescriptorSet& mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info = descriptor_writes[1];
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.pNext                  = NULL;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstSet                 = descriptor_set_to_write;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstBinding             = 1;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.dstArrayElement        = 0;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.descriptorType         = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.descriptorCount        = 1;
+        mesh_directional_light_shadow_perdrawcall_storage_buffer_write_info.pBufferInfo = &mesh_directional_light_shadow_perdrawcall_storage_buffer_info;
 
-        RHIWriteDescriptorSet& mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info =
-            descriptor_writes[2];
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.sType =
-            RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pNext = NULL;
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstSet =
-            descriptor_set_to_write;
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstBinding      = 2;
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstArrayElement = 0;
-        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.descriptorType =
-            RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        RHIWriteDescriptorSet& mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info = descriptor_writes[2];
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.sType                  = RHI_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pNext                  = NULL;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstSet                 = descriptor_set_to_write;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstBinding             = 2;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.dstArrayElement        = 0;
+        mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.descriptorType  = RHI_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.descriptorCount = 1;
         mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_write_info.pBufferInfo =
             &mesh_directional_light_shadow_per_drawcall_vertex_blending_storage_buffer_info;
 
-        m_rhi->updateDescriptorSets((sizeof(descriptor_writes) / sizeof(descriptor_writes[0])),
-                                    descriptor_writes,
-                                    0,
-                                    NULL);
+        m_rhi->updateDescriptorSets((sizeof(descriptor_writes) / sizeof(descriptor_writes[0])), descriptor_writes, 0, NULL);
     }
     void DirectionalLightShadowPass::drawModel()
     {
@@ -461,8 +430,7 @@ namespace Piccolo
             uint32_t         joint_count {0};
         };
 
-        std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>>
-            directional_light_mesh_drawcall_batch;
+        std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> directional_light_mesh_drawcall_batch;
 
         // reorganize mesh
         for (RenderMeshNode& node : *(m_visiable_nodes.p_directional_light_visible_mesh_nodes))
@@ -488,8 +456,7 @@ namespace Piccolo
             renderpass_begin_info.renderPass        = m_framebuffer.render_pass;
             renderpass_begin_info.framebuffer       = m_framebuffer.framebuffer;
             renderpass_begin_info.renderArea.offset = {0, 0};
-            renderpass_begin_info.renderArea.extent = {s_directional_light_shadow_map_dimension,
-                                                       s_directional_light_shadow_map_dimension};
+            renderpass_begin_info.renderArea.extent = {s_directional_light_shadow_map_dimension, s_directional_light_shadow_map_dimension};
 
             RHIClearValue clear_values[2];
             clear_values[0].color                 = {1.0f};
@@ -499,38 +466,30 @@ namespace Piccolo
 
             m_rhi->cmdBeginRenderPassPFN(m_rhi->getCurrentCommandBuffer(), &renderpass_begin_info, RHI_SUBPASS_CONTENTS_INLINE);
 
-            float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
             m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Directional Light Shadow", color);
         }
 
         // Mesh
         if (m_rhi->isPointLightShadowEnabled())
         {
-            float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
             m_rhi->pushEvent(m_rhi->getCurrentCommandBuffer(), "Mesh", color);
 
             m_rhi->cmdBindPipelinePFN(m_rhi->getCurrentCommandBuffer(), RHI_PIPELINE_BIND_POINT_GRAPHICS, m_render_pipelines[0].pipeline);
 
             // perframe storage buffer
-            uint32_t perframe_dynamic_offset =
-                roundUp(m_global_render_resource->_storage_buffer
-                            ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
-                        m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-            m_global_render_resource->_storage_buffer
-                ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+            uint32_t perframe_dynamic_offset = roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                                                       m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
                 perframe_dynamic_offset + sizeof(MeshPerframeStorageBufferObject);
-            assert(m_global_render_resource->_storage_buffer
-                       ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-                   (m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                    m_global_render_resource->_storage_buffer
-                        ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+            assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+                   (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                    m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
             MeshDirectionalLightShadowPerframeStorageBufferObject& perframe_storage_buffer_object =
                 (*reinterpret_cast<MeshDirectionalLightShadowPerframeStorageBufferObject*>(
-                    reinterpret_cast<uintptr_t>(
-                        m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
-                    perframe_dynamic_offset));
+                    reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) + perframe_dynamic_offset));
             perframe_storage_buffer_object = m_mesh_directional_light_shadow_perframe_storage_buffer_object;
 
             for (auto& [material, mesh_instanced] : directional_light_mesh_drawcall_batch)
@@ -552,54 +511,42 @@ namespace Piccolo
                                                         0,
                                                         NULL);
 
-                        RHIBuffer*     vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
+                        RHIBuffer*    vertex_buffers[] = {mesh->mesh_vertex_position_buffer};
                         RHIDeviceSize offsets[]        = {0};
                         m_rhi->cmdBindVertexBuffersPFN(m_rhi->getCurrentCommandBuffer(), 0, 1, vertex_buffers, offsets);
                         m_rhi->cmdBindIndexBufferPFN(m_rhi->getCurrentCommandBuffer(), mesh->mesh_index_buffer, 0, RHI_INDEX_TYPE_UINT16);
 
-                        uint32_t drawcall_max_instance_count =
-                            (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
-                             sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
-                        uint32_t drawcall_count =
-                            roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
+                        uint32_t drawcall_max_instance_count = (sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances) /
+                                                                sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject::mesh_instances[0]));
+                        uint32_t drawcall_count              = roundUp(total_instance_count, drawcall_max_instance_count) / drawcall_max_instance_count;
 
                         for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count; ++drawcall_index)
                         {
                             uint32_t current_instance_count =
-                                ((total_instance_count - drawcall_max_instance_count * drawcall_index) <
-                                 drawcall_max_instance_count) ?
+                                ((total_instance_count - drawcall_max_instance_count * drawcall_index) < drawcall_max_instance_count) ?
                                     (total_instance_count - drawcall_max_instance_count * drawcall_index) :
                                     drawcall_max_instance_count;
 
                             // perdrawcall storage buffer
                             uint32_t perdrawcall_dynamic_offset =
-                                roundUp(m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                                roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
                                         m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                            m_global_render_resource->_storage_buffer
-                                ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
-                                perdrawcall_dynamic_offset +
-                                sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
-                            assert(m_global_render_resource->_storage_buffer
-                                       ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-                                   (m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                                    m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+                            m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+                                perdrawcall_dynamic_offset + sizeof(MeshDirectionalLightShadowPerdrawcallStorageBufferObject);
+                            assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+                                   (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                                    m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
-                            MeshDirectionalLightShadowPerdrawcallStorageBufferObject&
-                                perdrawcall_storage_buffer_object =
-                                    (*reinterpret_cast<MeshDirectionalLightShadowPerdrawcallStorageBufferObject*>(
-                                        reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
-                                                                        ._global_upload_ringbuffer_memory_pointer) +
-                                        perdrawcall_dynamic_offset));
+                            MeshDirectionalLightShadowPerdrawcallStorageBufferObject& perdrawcall_storage_buffer_object =
+                                (*reinterpret_cast<MeshDirectionalLightShadowPerdrawcallStorageBufferObject*>(
+                                    reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                    perdrawcall_dynamic_offset));
                             for (uint32_t i = 0; i < current_instance_count; ++i)
                             {
                                 perdrawcall_storage_buffer_object.mesh_instances[i].model_matrix =
                                     *mesh_nodes[drawcall_max_instance_count * drawcall_index + i].model_matrix;
                                 perdrawcall_storage_buffer_object.mesh_instances[i].enable_vertex_blending =
-                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ? 1.0 :
-                                                                                                                  -1.0;
+                                    mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices ? 1.0 : -1.0;
                             }
 
                             // per drawcall vertex blending storage buffer
@@ -615,41 +562,28 @@ namespace Piccolo
                             }
                             if (least_one_enable_vertex_blending)
                             {
-                                per_drawcall_vertex_blending_dynamic_offset = roundUp(
-                                    m_global_render_resource->_storage_buffer
-                                        ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
-                                    m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
-                                m_global_render_resource->_storage_buffer
-                                    ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
+                                per_drawcall_vertex_blending_dynamic_offset =
+                                    roundUp(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()],
+                                            m_global_render_resource->_storage_buffer._min_storage_buffer_offset_alignment);
+                                m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] =
                                     per_drawcall_vertex_blending_dynamic_offset +
                                     sizeof(MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject);
-                                assert(m_global_render_resource->_storage_buffer
-                                           ._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
-                                       (m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
-                                        m_global_render_resource->_storage_buffer
-                                            ._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
+                                assert(m_global_render_resource->_storage_buffer._global_upload_ringbuffers_end[m_rhi->getCurrentFrameIndex()] <=
+                                       (m_global_render_resource->_storage_buffer._global_upload_ringbuffers_begin[m_rhi->getCurrentFrameIndex()] +
+                                        m_global_render_resource->_storage_buffer._global_upload_ringbuffers_size[m_rhi->getCurrentFrameIndex()]));
 
-                                MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject&
-                                    per_drawcall_vertex_blending_storage_buffer_object =
-                                        (*reinterpret_cast<
-                                            MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject*>(
-                                            reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer
-                                                                            ._global_upload_ringbuffer_memory_pointer) +
-                                            per_drawcall_vertex_blending_dynamic_offset));
+                                MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject& per_drawcall_vertex_blending_storage_buffer_object =
+                                    (*reinterpret_cast<MeshDirectionalLightShadowPerdrawcallVertexBlendingStorageBufferObject*>(
+                                        reinterpret_cast<uintptr_t>(m_global_render_resource->_storage_buffer._global_upload_ringbuffer_memory_pointer) +
+                                        per_drawcall_vertex_blending_dynamic_offset));
                                 for (uint32_t i = 0; i < current_instance_count; ++i)
                                 {
                                     if (mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices)
                                     {
-                                        for (uint32_t j = 0;
-                                             j <
-                                             mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count;
-                                             ++j)
+                                        for (uint32_t j = 0; j < mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_count; ++j)
                                         {
-                                            per_drawcall_vertex_blending_storage_buffer_object
-                                                .joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
-                                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i]
-                                                    .joint_matrices[j];
+                                            per_drawcall_vertex_blending_storage_buffer_object.joint_matrices[s_mesh_vertex_blending_max_joint_count * i + j] =
+                                                mesh_nodes[drawcall_max_instance_count * drawcall_index + i].joint_matrices[j];
                                         }
                                     }
                                 }
@@ -660,9 +594,7 @@ namespace Piccolo
                             }
 
                             // bind perdrawcall
-                            uint32_t dynamic_offsets[3] = {perframe_dynamic_offset,
-                                                           perdrawcall_dynamic_offset,
-                                                           per_drawcall_vertex_blending_dynamic_offset};
+                            uint32_t dynamic_offsets[3] = {perframe_dynamic_offset, perdrawcall_dynamic_offset, per_drawcall_vertex_blending_dynamic_offset};
                             m_rhi->cmdBindDescriptorSetsPFN(m_rhi->getCurrentCommandBuffer(),
                                                             RHI_PIPELINE_BIND_POINT_GRAPHICS,
                                                             m_render_pipelines[0].layout,
@@ -671,12 +603,7 @@ namespace Piccolo
                                                             &m_descriptor_infos[0].descriptor_set,
                                                             (sizeof(dynamic_offsets) / sizeof(dynamic_offsets[0])),
                                                             dynamic_offsets);
-                            m_rhi->cmdDrawIndexedPFN(m_rhi->getCurrentCommandBuffer(),
-                                                     mesh->mesh_index_count,
-                                                     current_instance_count,
-                                                     0,
-                                                     0,
-                                                     0);
+                            m_rhi->cmdDrawIndexedPFN(m_rhi->getCurrentCommandBuffer(), mesh->mesh_index_count, current_instance_count, 0, 0, 0);
                         }
                     }
                 }

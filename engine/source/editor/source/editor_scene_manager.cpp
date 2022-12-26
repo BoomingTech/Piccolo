@@ -65,26 +65,23 @@ namespace Piccolo
         }
         else
         {
-            Matrix4x4 model_matrix = selected_aixs->m_model_matrix;
-            Vector3 model_scale;
+            Matrix4x4  model_matrix = selected_aixs->m_model_matrix;
+            Vector3    model_scale;
             Quaternion model_rotation;
-            Vector3 model_translation;
+            Vector3    model_translation;
             model_matrix.decomposition(model_translation, model_scale, model_rotation);
-            float     window_forward   = game_engine_window_size.y / 2.0f / Math::tan(Math::degreesToRadians(camera_fov) / 2.0f);
+            float   window_forward   = game_engine_window_size.y / 2.0f / Math::tan(Math::degreesToRadians(camera_fov) / 2.0f);
             Vector2 screen_center_uv = Vector2(cursor_uv.x, 1 - cursor_uv.y) - Vector2(0.5, 0.5);
-            Vector3 world_ray_dir =
-                camera_forward * window_forward +
-                camera_right * (float)game_engine_window_size.x * screen_center_uv.x +
-                camera_up * (float)game_engine_window_size.y * screen_center_uv.y;
+            Vector3 world_ray_dir    = camera_forward * window_forward + camera_right * (float)game_engine_window_size.x * screen_center_uv.x +
+                                    camera_up * (float)game_engine_window_size.y * screen_center_uv.y;
 
-            Vector4 local_ray_origin =
-                model_matrix.inverse() * Vector4(camera_position, 1.0f);
-            Vector3 local_ray_origin_xyz = Vector3(local_ray_origin.x, local_ray_origin.y, local_ray_origin.z);
-            Quaternion inversed_rotation = model_rotation.inverse();
+            Vector4    local_ray_origin     = model_matrix.inverse() * Vector4(camera_position, 1.0f);
+            Vector3    local_ray_origin_xyz = Vector3(local_ray_origin.x, local_ray_origin.y, local_ray_origin.z);
+            Quaternion inversed_rotation    = model_rotation.inverse();
             inversed_rotation.normalise();
-            Vector3 local_ray_dir        = inversed_rotation * world_ray_dir;
+            Vector3 local_ray_dir = inversed_rotation * world_ray_dir;
 
-            Vector3 plane_normals[3] = { Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)};
+            Vector3 plane_normals[3] = {Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)};
 
             float plane_view_depth[3] = {intersectPlaneRay(plane_normals[0], 0, local_ray_origin_xyz, local_ray_dir),
                                          intersectPlaneRay(plane_normals[1], 0, local_ray_origin_xyz, local_ray_dir),
@@ -121,18 +118,14 @@ namespace Piccolo
                             continue;
                         }
                         // which axis is closer
-                        if ((intersect_pt[index00][index01] > EDGE_OF_AXIS_MIN) &&
-                            (intersect_pt[index00][index01] < AXIS_LENGTH) &&
-                            (intersect_pt[index00][index01] > max_dist) &&
-                            (Math::abs(intersect_pt[index00][i]) < EDGE_OF_AXIS_MAX))
+                        if ((intersect_pt[index00][index01] > EDGE_OF_AXIS_MIN) && (intersect_pt[index00][index01] < AXIS_LENGTH) &&
+                            (intersect_pt[index00][index01] > max_dist) && (Math::abs(intersect_pt[index00][i]) < EDGE_OF_AXIS_MAX))
                         {
                             max_dist        = intersect_pt[index00][index01];
                             m_selected_axis = index01;
                         }
-                        if ((intersect_pt[index10][index11] > EDGE_OF_AXIS_MIN) &&
-                            (intersect_pt[index10][index11] < AXIS_LENGTH) &&
-                            (intersect_pt[index10][index11] > max_dist) &&
-                            (Math::abs(intersect_pt[index10][i]) < EDGE_OF_AXIS_MAX))
+                        if ((intersect_pt[index10][index11] > EDGE_OF_AXIS_MIN) && (intersect_pt[index10][index11] < AXIS_LENGTH) &&
+                            (intersect_pt[index10][index11] > max_dist) && (Math::abs(intersect_pt[index10][i]) < EDGE_OF_AXIS_MAX))
                         {
                             max_dist        = intersect_pt[index10][index11];
                             m_selected_axis = index11;
@@ -147,10 +140,8 @@ namespace Piccolo
                     {
                         int   index0 = (i + 1) % 3;
                         int   index1 = (i + 2) % 3;
-                        float dist =
-                            Math::sqr(intersect_pt[index0][index1]) + Math::sqr(intersect_pt[index1][index0]);
-                        if ((intersect_pt[index0][i] > EDGE_OF_AXIS_MIN) &&
-                            (intersect_pt[index0][i] < EDGE_OF_AXIS_MAX) && (dist < DIST_THRESHOLD) &&
+                        float dist   = Math::sqr(intersect_pt[index0][index1]) + Math::sqr(intersect_pt[index1][index0]);
+                        if ((intersect_pt[index0][i] > EDGE_OF_AXIS_MIN) && (intersect_pt[index0][i] < EDGE_OF_AXIS_MAX) && (dist < DIST_THRESHOLD) &&
                             (dist < min_dist))
                         {
                             min_dist        = dist;
@@ -166,8 +157,7 @@ namespace Piccolo
                 float min_dist = 1e10f;
                 for (int i = 0; i < 3; ++i)
                 {
-                    const float dist =
-                        std::fabs(1 - std::hypot(intersect_pt[i].x, intersect_pt[i].y, intersect_pt[i].z));
+                    const float dist = std::fabs(1 - std::hypot(intersect_pt[i].x, intersect_pt[i].y, intersect_pt[i].z));
                     if ((dist < DIST_THRESHOLD) && (dist < min_dist))
                     {
                         min_dist        = dist;
@@ -285,8 +275,7 @@ namespace Piccolo
         std::shared_ptr<GObject> selected_object = getSelectedGObject().lock();
         if (selected_object != nullptr)
         {
-            std::shared_ptr<Level> current_active_level =
-                g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+            std::shared_ptr<Level> current_active_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
             if (current_active_level == nullptr)
                 return;
 
@@ -311,8 +300,7 @@ namespace Piccolo
         if (selected_object == nullptr)
             return;
 
-        float angularVelocity =
-            18.0f / Math::max(engine_window_size.x, engine_window_size.y); // 18 degrees while moving full screen
+        float   angularVelocity     = 18.0f / Math::max(engine_window_size.x, engine_window_size.y); // 18 degrees while moving full screen
         Vector2 delta_mouse_move_uv = {(new_mouse_pos_x - last_mouse_pos_x), (new_mouse_pos_y - last_mouse_pos_y)};
 
         Vector3    model_scale;
@@ -330,8 +318,7 @@ namespace Piccolo
 
         Vector4 model_origin_clip_position = proj_matrix * view_matrix * model_world_position_4;
         model_origin_clip_position /= model_origin_clip_position.w;
-        Vector2 model_origin_clip_uv =
-            Vector2((model_origin_clip_position.x + 1) / 2.0f, (model_origin_clip_position.y + 1) / 2.0f);
+        Vector2 model_origin_clip_uv = Vector2((model_origin_clip_position.x + 1) / 2.0f, (model_origin_clip_position.y + 1) / 2.0f);
 
         Vector4 axis_x_local_position_4(1, 0, 0, 1);
         if (m_axis_mode == EditorAxisMode::ScaleMode)
@@ -400,8 +387,7 @@ namespace Piccolo
             new_model_matrix = axis_model_matrix * translate_mat;
 
             new_model_matrix = new_model_matrix * Matrix4x4(model_rotation);
-            new_model_matrix =
-                new_model_matrix * Matrix4x4::buildScaleMatrix(model_scale.x, model_scale.y, model_scale.z);
+            new_model_matrix = new_model_matrix * Matrix4x4::buildScaleMatrix(model_scale.x, model_scale.y, model_scale.z);
 
             Vector3    new_scale;
             Quaternion new_rotation;
@@ -474,8 +460,7 @@ namespace Piccolo
             move_rot.fromAngleAxis(Radian(move_radian), axis_of_rotation);
             new_model_matrix = axis_model_matrix * move_rot;
             new_model_matrix = new_model_matrix * Matrix4x4(model_rotation);
-            new_model_matrix =
-                new_model_matrix * Matrix4x4::buildScaleMatrix(model_scale.x, model_scale.y, model_scale.z);
+            new_model_matrix = new_model_matrix * Matrix4x4::buildScaleMatrix(model_scale.x, model_scale.y, model_scale.z);
             Vector3    new_scale;
             Quaternion new_rotation;
             Vector3    new_translation;
@@ -566,9 +551,8 @@ namespace Piccolo
             m_scale_aixs.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
         }
 
-        g_editor_global_context.m_render_system->createAxis(
-            {m_translation_axis, m_rotation_axis, m_scale_aixs},
-            {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_aixs.m_mesh_data});
+        g_editor_global_context.m_render_system->createAxis({m_translation_axis, m_rotation_axis, m_scale_aixs},
+                                                            {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_aixs.m_mesh_data});
     }
 
     size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const

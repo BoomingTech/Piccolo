@@ -70,7 +70,7 @@ namespace Piccolo
         std::string m_name;
         std::string m_definition_url;
 
-        // we have to use the ReflectionPtr due to that the components need to be reflected 
+        // we have to use the ReflectionPtr due to that the components need to be reflected
         // in editor, and it's polymorphism
         std::vector<Reflection::ReflectionPtr<Component>> m_components;
     };

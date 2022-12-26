@@ -6,7 +6,7 @@ class Cursor
 {
 public:
     typedef std::vector<Cursor> List;
-    
+
     typedef CXCursorVisitor Visitor;
 
     Cursor(const CXCursor& handle);

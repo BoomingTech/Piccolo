@@ -116,8 +116,7 @@ namespace Piccolo
                 // position is relative to parent so transform upwards
                 if (m_parent)
                 {
-                    m_position =
-                        m_position + (m_parent->_getDerivedOrientation().inverse() * d) / m_parent->_getDerivedScale();
+                    m_position = m_position + (m_parent->_getDerivedOrientation().inverse() * d) / m_parent->_getDerivedScale();
                 }
                 else
                 {

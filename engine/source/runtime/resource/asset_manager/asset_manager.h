@@ -8,6 +8,7 @@
 #include <functional>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "_generated/serializer/all_serializer.h"
 
@@ -21,7 +22,7 @@ namespace Piccolo
         {
             // read json file to string
             std::filesystem::path asset_path = getFullPath(asset_url);
-            std::ifstream asset_json_file(asset_path);
+            std::ifstream         asset_json_file(asset_path);
             if (!asset_json_file)
             {
                 LOG_ERROR("open file: {} failed!", asset_path.generic_string());
@@ -66,7 +67,9 @@ namespace Piccolo
             return true;
         }
 
-        std::filesystem::path getFullPath(const std::string& relative_path) const;
+        void readTextFile(const std::filesystem::path& file_path, std::string& content);
+        void readBinaryFile(const std::filesystem::path& file_path, std::vector<unsigned char>& content);
 
+        std::filesystem::path getFullPath(const std::string& relative_path) const;
     };
 } // namespace Piccolo

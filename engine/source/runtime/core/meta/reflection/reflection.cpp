@@ -14,14 +14,10 @@ namespace Piccolo
         static std::multimap<std::string, MethodFunctionTuple*> m_method_map;
         static std::map<std::string, ArrayFunctionTuple*>       m_array_map;
 
-        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, FieldFunctionTuple* value)
-        {
-            m_field_map.insert(std::make_pair(name, value));
-        }
-        void TypeMetaRegisterinterface::registerToMethodMap(const char* name, MethodFunctionTuple* value)
-        {
-            m_method_map.insert(std::make_pair(name, value));
-        }
+        void TypeMetaRegisterinterface::registerToFieldMap(const char* name, FieldFunctionTuple* value) { m_field_map.insert(std::make_pair(name, value)); }
+
+        void TypeMetaRegisterinterface::registerToMethodMap(const char* name, MethodFunctionTuple* value) { m_method_map.insert(std::make_pair(name, value)); }
+
         void TypeMetaRegisterinterface::registerToArrayMap(const char* name, ArrayFunctionTuple* value)
         {
             if (m_array_map.find(name) == m_array_map.end())
@@ -53,6 +49,11 @@ namespace Piccolo
                 delete itr.second;
             }
             m_field_map.clear();
+            for (const auto& itr : m_method_map)
+            {
+                delete itr.second;
+            }
+            m_method_map.clear();
             for (const auto& itr : m_class_map)
             {
                 delete itr.second;
@@ -92,7 +93,11 @@ namespace Piccolo
             }
         }
 
-        TypeMeta::TypeMeta() : m_type_name(k_unknown_type), m_is_valid(false) { m_fields.clear(); m_methods.clear(); }
+        TypeMeta::TypeMeta() : m_type_name(k_unknown_type), m_is_valid(false)
+        {
+            m_fields.clear();
+            m_methods.clear();
+        }
 
         TypeMeta TypeMeta::newMetaFromName(std::string type_name)
         {
@@ -174,9 +179,7 @@ namespace Piccolo
 
         FieldAccessor TypeMeta::getFieldByName(const char* name)
         {
-            const auto it = std::find_if(m_fields.begin(), m_fields.end(), [&](const auto& i) {
-                return std::strcmp(i.getFieldName(), name) == 0;
-            });
+            const auto it = std::find_if(m_fields.begin(), m_fields.end(), [&](const auto& i) { return std::strcmp(i.getFieldName(), name) == 0; });
             if (it != m_fields.end())
                 return *it;
             return FieldAccessor(nullptr);
@@ -184,9 +187,7 @@ namespace Piccolo
 
         MethodAccessor TypeMeta::getMethodByName(const char* name)
         {
-            const auto it = std::find_if(m_methods.begin(), m_methods.end(), [&](const auto& i) {
-                return std::strcmp(i.getMethodName(), name) == 0;
-            });
+            const auto it = std::find_if(m_methods.begin(), m_methods.end(), [&](const auto& i) { return std::strcmp(i.getMethodName(), name) == 0; });
             if (it != m_methods.end())
                 return *it;
             return MethodAccessor(nullptr);
@@ -201,7 +202,6 @@ namespace Piccolo
             m_fields.clear();
             m_fields = dest.m_fields;
 
-            
             m_methods.clear();
             m_methods = dest.m_methods;
 
@@ -210,6 +210,7 @@ namespace Piccolo
 
             return *this;
         }
+
         FieldAccessor::FieldAccessor()
         {
             m_field_type_name = k_unknown_type;
@@ -285,31 +286,37 @@ namespace Piccolo
 
         MethodAccessor::MethodAccessor(MethodFunctionTuple* functions) : m_functions(functions)
         {
-            m_method_name      = k_unknown;
+            m_method_name = k_unknown;
             if (m_functions == nullptr)
             {
                 return;
             }
+            m_method_name = (std::get<0>(*m_functions))();
+        }
 
-            m_method_name      = (std::get<0>(*m_functions))();
+        TypeMeta MethodAccessor::getOwnerTypeMeta()
+        {
+            // todo: should check validation
+            TypeMeta f_type((std::get<0>(*m_functions))());
+            return f_type;
         }
-        const char* MethodAccessor::getMethodName() const{
-            return (std::get<0>(*m_functions))();
-        }
+
+        const char* MethodAccessor::getMethodName() const { return m_method_name; }
+
+        void MethodAccessor::invoke(void* instance) { (std::get<1>(*m_functions))(instance); }
+
         MethodAccessor& MethodAccessor::operator=(const MethodAccessor& dest)
         {
             if (this == &dest)
             {
                 return *this;
             }
-            m_functions       = dest.m_functions;
-            m_method_name      = dest.m_method_name;
+            m_functions   = dest.m_functions;
+            m_method_name = dest.m_method_name;
             return *this;
         }
-        void MethodAccessor::invoke(void* instance) { (std::get<1>(*m_functions))(instance); }
-        ArrayAccessor::ArrayAccessor() :
-            m_func(nullptr), m_array_type_name("UnKnownType"), m_element_type_name("UnKnownType")
-        {}
+
+        ArrayAccessor::ArrayAccessor() : m_func(nullptr), m_array_type_name("UnKnownType"), m_element_type_name("UnKnownType") {}
 
         ArrayAccessor::ArrayAccessor(ArrayFunctionTuple* array_func) : m_func(array_func)
         {

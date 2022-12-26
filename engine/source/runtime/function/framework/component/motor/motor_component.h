@@ -21,7 +21,7 @@ namespace Piccolo
     };
 
     REFLECTION_TYPE(MotorComponent)
-    CLASS(MotorComponent : public Component, WhiteListFields,WhiteListMethods)
+    CLASS(MotorComponent : public Component, WhiteListFields, WhiteListMethods)
     {
         REFLECTION_BODY(MotorComponent)
     public:
@@ -40,7 +40,7 @@ namespace Piccolo
         bool  getIsMoving() const { return m_is_moving; }
 
         META(Enable)
-        void getOffStuckDead();
+        void getOffStuckState();
 
     private:
         void calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time);

@@ -5,7 +5,7 @@ namespace Piccolo
     DebugDrawGroup* DebugDrawContext::tryGetOrCreateDebugDrawGroup(const std::string& name)
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        
+
         size_t debug_draw_group_count = m_debug_draw_groups.size();
         for (size_t debug_draw_group_index = 0; debug_draw_group_index < debug_draw_group_count; debug_draw_group_index++)
         {
@@ -37,10 +37,7 @@ namespace Piccolo
         m_debug_draw_groups.clear();
     }
 
-    void DebugDrawContext::tick(float delta_time)
-    {
-        removeDeadPrimitives(delta_time);
-    }
+    void DebugDrawContext::tick(float delta_time) { removeDeadPrimitives(delta_time); }
 
     void DebugDrawContext::removeDeadPrimitives(float delta_time)
     {
@@ -49,8 +46,9 @@ namespace Piccolo
         size_t debug_draw_group_count = m_debug_draw_groups.size();
         for (size_t debug_draw_group_index = 0; debug_draw_group_index < debug_draw_group_count; debug_draw_group_index++)
         {
-            if (m_debug_draw_groups[debug_draw_group_index] == nullptr)continue;
+            if (m_debug_draw_groups[debug_draw_group_index] == nullptr)
+                continue;
             m_debug_draw_groups[debug_draw_group_index]->removeDeadPrimitives(delta_time);
         }
     }
-}
+} // namespace Piccolo

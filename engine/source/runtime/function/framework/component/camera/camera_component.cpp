@@ -50,7 +50,7 @@ namespace Piccolo
         if (!m_parent_object.lock())
             return;
 
-        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -76,7 +76,7 @@ namespace Piccolo
 
     void CameraComponent::tickFirstPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -86,8 +86,8 @@ namespace Piccolo
         q_yaw.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_yaw, Vector3::UNIT_Z);
         q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, m_left);
 
-        const float offset  = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
-        m_position = current_character->getPosition() + offset * Vector3::UNIT_Z;
+        const float offset = static_cast<FirstPersonCameraParameter*>(m_camera_res.m_parameter)->m_vertical_offset;
+        m_position         = current_character->getPosition() + offset * Vector3::UNIT_Z;
 
         m_forward = q_yaw * q_pitch * m_forward;
         m_left    = q_yaw * q_pitch * m_left;
@@ -110,7 +110,7 @@ namespace Piccolo
 
     void CameraComponent::tickThirdPersonCamera(float delta_time)
     {
-        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -129,12 +129,11 @@ namespace Piccolo
         Vector3     offset            = Vector3(0, horizontal_offset, vertical_offset);
 
         Vector3 center_pos = current_character->getPosition() + Vector3::UNIT_Z * vertical_offset;
-        m_position =
-            current_character->getRotation() * param->m_cursor_pitch * offset + current_character->getPosition();
+        m_position         = current_character->getRotation() * param->m_cursor_pitch * offset + current_character->getPosition();
 
         m_forward = center_pos - m_position;
-        m_up = current_character->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
-        m_left = m_up.crossProduct(m_forward);
+        m_up      = current_character->getRotation() * param->m_cursor_pitch * Vector3::UNIT_Z;
+        m_left    = m_up.crossProduct(m_forward);
 
         current_character->setRotation(q_yaw * current_character->getRotation());
 
@@ -150,9 +149,10 @@ namespace Piccolo
     void CameraComponent::tickFreeCamera(float delta_time)
     {
         unsigned int command = g_runtime_global_context.m_input_system->getGameCommand();
-        if (command >= (unsigned int)GameCommand::invalid) return;
+        if (command >= (unsigned int)GameCommand::invalid)
+            return;
 
-        std::shared_ptr<Level> current_level = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
+        std::shared_ptr<Level>     current_level     = g_runtime_global_context.m_world_manager->getCurrentActiveLevel().lock();
         std::shared_ptr<Character> current_character = current_level->getCurrentActiveCharacter().lock();
         if (current_character == nullptr)
             return;
@@ -163,11 +163,12 @@ namespace Piccolo
         q_pitch.fromAngleAxis(g_runtime_global_context.m_input_system->m_cursor_delta_pitch, m_left);
 
         m_forward = q_yaw * q_pitch * m_forward;
-        m_left = q_yaw * q_pitch * m_left;
-        m_up = m_forward.crossProduct(m_left);
+        m_left    = q_yaw * q_pitch * m_left;
+        m_up      = m_forward.crossProduct(m_left);
 
-        bool has_move_command = ((unsigned int)GameCommand::forward | (unsigned int)GameCommand::backward |
-                                 (unsigned int)GameCommand::left | (unsigned int)GameCommand::right) & command;
+        bool has_move_command =
+            ((unsigned int)GameCommand::forward | (unsigned int)GameCommand::backward | (unsigned int)GameCommand::left | (unsigned int)GameCommand::right) &
+            command;
         if (has_move_command)
         {
             Vector3 move_direction = Vector3::ZERO;
@@ -199,8 +200,8 @@ namespace Piccolo
 
         RenderSwapContext& swap_context = g_runtime_global_context.m_render_system->getSwapContext();
         CameraSwapData     camera_swap_data;
-        camera_swap_data.m_camera_type = RenderCameraType::Motor;
-        camera_swap_data.m_view_matrix = desired_mat;
+        camera_swap_data.m_camera_type                     = RenderCameraType::Motor;
+        camera_swap_data.m_view_matrix                     = desired_mat;
         swap_context.getLogicSwapData().m_camera_swap_data = camera_swap_data;
     }
 } // namespace Piccolo

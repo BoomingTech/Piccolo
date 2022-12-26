@@ -15,7 +15,6 @@ public:
     bool shouldCompile(void) const;
 
 public:
-
     Class* m_parent;
 
     std::string m_name;

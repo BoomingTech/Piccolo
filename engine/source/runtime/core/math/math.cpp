@@ -7,10 +7,7 @@ namespace Piccolo
 
     Math::Math() { k_AngleUnit = AngleUnit::AU_DEGREE; }
 
-    bool Math::realEqual(float a, float b, float tolerance /* = std::numeric_limits<float>::epsilon() */)
-    {
-        return std::fabs(b - a) <= tolerance;
-    }
+    bool Math::realEqual(float a, float b, float tolerance /* = std::numeric_limits<float>::epsilon() */) { return std::fabs(b - a) <= tolerance; }
 
     float Math::degreesToRadians(float degrees) { return degrees * Math_fDeg2Rad; }
 
@@ -74,8 +71,7 @@ namespace Piccolo
         return Radian(-Math_HALF_PI);
     }
 
-    Matrix4x4
-    Math::makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix)
+    Matrix4x4 Math::makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix)
     {
         Matrix4x4 viewMatrix;
 
@@ -151,8 +147,7 @@ namespace Piccolo
         return ret;
     }
 
-    Matrix4x4
-    Math::makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar)
+    Matrix4x4 Math::makeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar)
     {
         float inv_width    = 1.0f / (right - left);
         float inv_height   = 1.0f / (top - bottom);
@@ -192,8 +187,7 @@ namespace Piccolo
         return proj_matrix;
     }
 
-    Matrix4x4
-    Math::makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar)
+    Matrix4x4 Math::makeOrthographicProjectionMatrix01(float left, float right, float bottom, float top, float znear, float zfar)
     {
         float inv_width    = 1.0f / (right - left);
         float inv_height   = 1.0f / (top - bottom);
