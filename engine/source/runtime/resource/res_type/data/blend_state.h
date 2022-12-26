@@ -29,6 +29,33 @@ namespace Piccolo
         std::vector<float>           blend_ratio;
     };
 
+    REFLECTION_TYPE(ClipBase)
+    CLASS(ClipBase, Fields)
+    {
+        REFLECTION_BODY(ClipBase);
+
+    public:
+        std::string              m_name;
+        virtual ~ClipBase() = default;
+        virtual float getLength() const { return 0; }
+    };
+
+    REFLECTION_TYPE(BasicClip)
+    CLASS(BasicClip : public ClipBase, Fields)
+    {
+        REFLECTION_BODY(BasicClip);
+
+    public:
+        std::string clip_file_path;
+        float       clip_file_length;
+        std::string anim_skel_map_path;
+        virtual ~BasicClip() override {}
+        virtual float getLength() const override
+        {
+            return clip_file_length;
+        }
+    };
+
     REFLECTION_TYPE(BlendState)
     CLASS(BlendState, Fields)
     {

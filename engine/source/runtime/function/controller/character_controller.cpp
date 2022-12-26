@@ -20,7 +20,7 @@ namespace Piccolo
         Quaternion orientation;
         orientation.fromAngleAxis(Radian(Degree(90.f)), Vector3::UNIT_X);
 
-        m_rigidbody_shape.m_local_transform = Transform(Vector3(0, 0, capsule.m_half_height + capsule.m_radius), orientation, Vector3::UNIT_SCALE);
+        m_rigidbody_shape.m_local_transform = Transform(Vector3(0, 0, capsule.half_height + capsule.radius), orientation, Vector3::UNIT_SCALE);
     }
 
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)

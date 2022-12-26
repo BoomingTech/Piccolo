@@ -21,7 +21,7 @@ namespace Piccolo
     public:
         ~Box() override {}
 
-        Vector3 m_half_extents {0.5f, 0.5f, 0.5f};
+        Vector3 half_extents {0.5f, 0.5f, 0.5f};
     };
 
     REFLECTION_TYPE(Sphere)
@@ -31,7 +31,7 @@ namespace Piccolo
 
     public:
         ~Sphere() override {}
-        float m_radius {0.5f};
+        float radius {0.5f};
     };
 
     REFLECTION_TYPE(Capsule)
@@ -41,7 +41,7 @@ namespace Piccolo
 
     public:
         ~Capsule() override {}
-        float m_radius {0.3f};
-        float m_half_height {0.7f};
+        float radius {0.3f};
+        float half_height {0.7f};
     };
 } // namespace Piccolo

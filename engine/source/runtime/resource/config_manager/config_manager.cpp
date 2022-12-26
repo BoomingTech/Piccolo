@@ -16,15 +16,15 @@ namespace Piccolo
         std::string   config_line;
         while (std::getline(config_file, config_line))
         {
-            size_t asset_config_pos = config_line.find_first_of(ASSET_CONFIG);
-            if (asset_config_pos > 0 && asset_config_pos < config_line.length())
+            size_t asset_config_pos = config_line.find(ASSET_CONFIG);
+            if (asset_config_pos >= 0 && asset_config_pos < config_line.length())
             {
                 m_current_config = ASSET_CONFIG;
                 continue;
             }
 
-            size_t key_config_pos = config_line.find_first_of(KEY_CONFIG);
-            if (key_config_pos > 0 && key_config_pos < config_line.length())
+            size_t key_config_pos = config_line.find(KEY_CONFIG);
+            if (key_config_pos >= 0 && key_config_pos < config_line.length())
             {
                 m_current_config = KEY_CONFIG;
                 continue;
