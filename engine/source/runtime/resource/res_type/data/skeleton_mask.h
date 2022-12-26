@@ -11,8 +11,8 @@ namespace Piccolo
         REFLECTION_BODY(BoneBlendMask);
 
     public:
-        std::string      skeleton_file_path;
-        std::vector<int> enabled;
+        std::string      m_skeleton_file_path;
+        std::vector<int> m_enabled;
     };
 
 } // namespace Piccolo

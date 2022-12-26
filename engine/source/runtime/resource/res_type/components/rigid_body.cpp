@@ -12,6 +12,18 @@ namespace Piccolo
             m_geometry = PICCOLO_REFLECTION_NEW(Box);
             PICCOLO_REFLECTION_DEEP_COPY(Box, m_geometry, res.m_geometry);
         }
+        else if (res.m_geometry.getTypeName() == "Capsule")
+        {
+            m_type     = RigidBodyShapeType::capsule;
+            m_geometry = PICCOLO_REFLECTION_NEW(Capsule);
+            PICCOLO_REFLECTION_DEEP_COPY(Capsule, m_geometry, res.m_geometry);
+        }
+        else if (res.m_geometry.getTypeName() == "Sphere")
+        {
+            m_type     = RigidBodyShapeType::sphere;
+            m_geometry = PICCOLO_REFLECTION_NEW(Sphere);
+            PICCOLO_REFLECTION_DEEP_COPY(Sphere, m_geometry, res.m_geometry);
+        }
         else
         {
             LOG_ERROR("Not supported shape type!");

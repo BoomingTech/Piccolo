@@ -20,7 +20,7 @@ namespace Piccolo
         Quaternion orientation;
         orientation.fromAngleAxis(Radian(Degree(90.f)), Vector3::UNIT_X);
 
-        m_rigidbody_shape.m_local_transform = Transform(Vector3(0, 0, capsule.half_height + capsule.radius), orientation, Vector3::UNIT_SCALE);
+        m_rigidbody_shape.m_local_transform = Transform(Vector3(0, 0, capsule.m_half_height + capsule.m_radius), orientation, Vector3::UNIT_SCALE);
     }
 
     Vector3 CharacterController::move(const Vector3& current_position, const Vector3& displacement)
@@ -28,13 +28,47 @@ namespace Piccolo
         std::shared_ptr<PhysicsScene> physics_scene = g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
         ASSERT(physics_scene);
 
-        Vector3 final_position = current_position + displacement;
+        std::vector<PhysicsHitInfo> hits;
 
-        Transform final_transform = Transform(final_position, Quaternion::IDENTITY, Vector3::UNIT_SCALE);
+        Transform world_transform = Transform(current_position + 0.1f * Vector3::UNIT_Z, Quaternion::IDENTITY, Vector3::UNIT_SCALE);
 
-        if (physics_scene->isOverlap(m_rigidbody_shape, final_transform.getMatrix()))
+        Vector3 vertical_displacement   = displacement.z * Vector3::UNIT_Z;
+        Vector3 horizontal_displacement = Vector3(displacement.x, displacement.y, 0.f);
+
+        Vector3 vertical_direction   = vertical_displacement.normalisedCopy();
+        Vector3 horizontal_direction = horizontal_displacement.normalisedCopy();
+
+        Vector3 final_position = current_position;
+
+        m_is_touch_ground = physics_scene->sweep(m_rigidbody_shape, world_transform.getMatrix(), Vector3::NEGATIVE_UNIT_Z, 0.105f, hits);
+
+        hits.clear();
+
+        world_transform.m_position -= 0.1f * Vector3::UNIT_Z;
+
+        // vertical pass
+        if (physics_scene->sweep(m_rigidbody_shape, world_transform.getMatrix(), vertical_direction, vertical_displacement.length(), hits))
         {
-            final_position = current_position;
+            final_position += hits[0].hit_distance * vertical_direction;
+        }
+        else
+        {
+            final_position += vertical_displacement;
+        }
+
+        hits.clear();
+
+        if (physics_scene->sweep(m_rigidbody_shape, world_transform.getMatrix(), horizontal_direction, horizontal_direction.length(), hits))
+        {
+            for (auto hit : hits)
+            {
+                auto along_direction = hits[0].hit_normal.crossProduct(Vector3::UNIT_Z);
+                final_position += 0.01 * horizontal_direction.dotProduct(along_direction) * hits[0].hit_distance * along_direction;
+            }
+        }
+        else
+        {
+            final_position += horizontal_displacement;
         }
 
         return final_position;

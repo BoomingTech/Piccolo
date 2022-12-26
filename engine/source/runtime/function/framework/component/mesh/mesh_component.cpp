@@ -66,9 +66,9 @@ namespace Piccolo
             animation_result.m_transforms.push_back({Matrix4x4::IDENTITY});
             if (animation_component != nullptr)
             {
-                for (auto& node : animation_component->getResult().node)
+                for (auto& node : animation_component->getResult().m_node)
                 {
-                    animation_result.m_transforms.push_back({Matrix4x4(node.transform)});
+                    animation_result.m_transforms.push_back({Matrix4x4(node.m_transform)});
                 }
             }
             for (GameObjectPartDesc& mesh_part : m_raw_meshes)

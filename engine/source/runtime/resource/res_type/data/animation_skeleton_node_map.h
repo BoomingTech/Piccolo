@@ -12,7 +12,7 @@ namespace Piccolo
         REFLECTION_BODY(AnimSkelMap);
 
     public:
-        std::vector<int> convert;
+        std::vector<int> m_convert;
     };
 
 } // namespace Piccolo

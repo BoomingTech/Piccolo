@@ -108,11 +108,11 @@ namespace Piccolo
     {
         switch (relativeTo)
         {
-            case TransformSpace::LOCAL:
+            case TransformSpace::_local:
                 // position is relative to parent so transform downwards
                 m_position = m_position + m_orientation * d;
                 break;
-            case TransformSpace::OBJECT:
+            case TransformSpace::_object:
                 // position is relative to parent so transform upwards
                 if (m_parent)
                 {
@@ -123,7 +123,7 @@ namespace Piccolo
                     m_position = m_position + d;
                 }
                 break;
-            case TransformSpace::AREN:
+            case TransformSpace::_aren:
                 m_position = m_position + d;
                 break;
         }
@@ -139,15 +139,15 @@ namespace Piccolo
 
         switch (relativeTo)
         {
-            case TransformSpace::AREN:
+            case TransformSpace::_aren:
                 // Rotations are normally relative to local axes, transform up
                 m_orientation = qnorm * m_orientation;
                 break;
-            case TransformSpace::OBJECT:
+            case TransformSpace::_object:
                 // Rotations are normally relative to local axes, transform up
                 m_orientation = m_orientation * _getDerivedOrientation().inverse() * qnorm * _getDerivedOrientation();
                 break;
-            case TransformSpace::LOCAL:
+            case TransformSpace::_local:
                 // Note the order of the mult, i.e. q comes after
                 m_orientation = m_orientation * qnorm;
                 break;
@@ -222,11 +222,11 @@ namespace Piccolo
 
         if (definition)
         {
-            m_name = definition->name;
-            setOrientation(definition->binding_pose.m_rotation);
-            setPosition(definition->binding_pose.m_position);
-            setScale(definition->binding_pose.m_scale);
-            m_inverse_Tpose = definition->tpose_matrix;
+            m_name = definition->m_name;
+            setOrientation(definition->m_binding_pose.m_rotation);
+            setPosition(definition->m_binding_pose.m_position);
+            setScale(definition->m_binding_pose.m_scale);
+            m_inverse_Tpose = definition->m_tpose_matrix;
             setAsInitialPose();
         }
         m_parent = parent_bone;
@@ -237,7 +237,7 @@ namespace Piccolo
     {
         if (m_definition)
         {
-            return m_definition->index;
+            return m_definition->m_index;
         }
         return std::numeric_limits<size_t>().max();
     }

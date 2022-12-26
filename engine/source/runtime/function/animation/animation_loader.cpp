@@ -19,20 +19,20 @@ namespace Piccolo
         std::shared_ptr<RawBone> createBone(SkeletonData* skeleton_data, int parent_index)
         {
             RawBone raw_bone;
-            raw_bone.index                    = skeleton_data->bones_map.size();
-            raw_bone.parent_index             = parent_index;
+            raw_bone.m_index                  = skeleton_data->m_bones_map.size();
+            raw_bone.m_parent_index           = parent_index;
             std::shared_ptr<RawBone> bone_ptr = std::make_shared<Piccolo::RawBone>();
             *bone_ptr                         = raw_bone;
-            skeleton_data->bones_map.push_back(*bone_ptr);
+            skeleton_data->m_bones_map.push_back(*bone_ptr);
             return bone_ptr;
         }
 
         AnimSkelMap buildAnimSkelMap(const AnimNodeMap& anim, const SkeletonData& skeleton)
         {
             AnimSkelMap anim_skel_map;
-            for (std::string iter : anim.convert)
+            for (std::string iter : anim.m_convert)
             {
-                anim_skel_map.convert.push_back(find_index_by_name(skeleton, iter));
+                anim_skel_map.m_convert.push_back(find_index_by_name(skeleton, iter));
             }
             return anim_skel_map;
         }
@@ -42,29 +42,29 @@ namespace Piccolo
             bone_index++;
             // 			if (!mesh_bind.bind[vertex_index])
             // 				mesh_bind.bind[vertex_index] = std::make_shared<SkeletonBinding>();
-            SkeletonBinding& vertex_binding = mesh_bind.bind[vertex_index];
-            if (vertex_binding.index0 == 0)
+            SkeletonBinding& vertex_binding = mesh_bind.m_bind[vertex_index];
+            if (vertex_binding.m_index0 == 0)
             {
-                vertex_binding.index0  = bone_index;
-                vertex_binding.weight0 = weight;
+                vertex_binding.m_index0  = bone_index;
+                vertex_binding.m_weight0 = weight;
                 return;
             }
-            if (vertex_binding.index1 == 0)
+            if (vertex_binding.m_index1 == 0)
             {
-                vertex_binding.index1  = bone_index;
-                vertex_binding.weight1 = weight;
+                vertex_binding.m_index1  = bone_index;
+                vertex_binding.m_weight1 = weight;
                 return;
             }
-            if (vertex_binding.index2 == 0)
+            if (vertex_binding.m_index2 == 0)
             {
-                vertex_binding.index2  = bone_index;
-                vertex_binding.weight2 = weight;
+                vertex_binding.m_index2  = bone_index;
+                vertex_binding.m_weight2 = weight;
                 return;
             }
-            if (vertex_binding.index3 == 0)
+            if (vertex_binding.m_index3 == 0)
             {
-                vertex_binding.index3  = bone_index;
-                vertex_binding.weight3 = weight;
+                vertex_binding.m_index3  = bone_index;
+                vertex_binding.m_weight3 = weight;
                 return;
             }
             // LOG_ERROR
@@ -75,7 +75,7 @@ namespace Piccolo
     {
         AnimationAsset animation_clip;
         g_runtime_global_context.m_asset_manager->loadAsset(animation_clip_url, animation_clip);
-        return std::make_shared<Piccolo::AnimationClip>(animation_clip.clip_data);
+        return std::make_shared<Piccolo::AnimationClip>(animation_clip.m_clip_data);
     }
 
     std::shared_ptr<Piccolo::SkeletonData> AnimationLoader::loadSkeletonData(std::string skeleton_data_url)

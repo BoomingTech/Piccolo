@@ -12,17 +12,17 @@ namespace Piccolo
         REFLECTION_BODY(Vertex);
 
     public:
-        float px;
-        float py;
-        float pz;
-        float nx;
-        float ny;
-        float nz;
-        float tx;
-        float ty;
-        float tz;
-        float u;
-        float v;
+        float m_px;
+        float m_py;
+        float m_pz;
+        float m_nx;
+        float m_ny;
+        float m_nz;
+        float m_tx;
+        float m_ty;
+        float m_tz;
+        float m_u;
+        float m_v;
     };
 
     REFLECTION_TYPE(SkeletonBinding)
@@ -31,24 +31,25 @@ namespace Piccolo
         REFLECTION_BODY(SkeletonBinding);
 
     public:
-        int   index0;
-        int   index1;
-        int   index2;
-        int   index3;
-        float weight0;
-        float weight1;
-        float weight2;
-        float weight3;
+        int   m_index0;
+        int   m_index1;
+        int   m_index2;
+        int   m_index3;
+        float m_weight0;
+        float m_weight1;
+        float m_weight2;
+        float m_weight3;
     };
+
     REFLECTION_TYPE(MeshData)
     CLASS(MeshData, Fields)
     {
         REFLECTION_BODY(MeshData);
 
     public:
-        std::vector<Vertex>          vertex_buffer;
-        std::vector<int>             index_buffer;
-        std::vector<SkeletonBinding> bind;
+        std::vector<Vertex>          m_vertex_buffer;
+        std::vector<int>             m_index_buffer;
+        std::vector<SkeletonBinding> m_bind;
     };
 
 } // namespace Piccolo

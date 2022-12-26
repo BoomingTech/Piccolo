@@ -1,142 +1,209 @@
 {
-    "components": [
-        {
-            "$context": {
-                "transform": {
-                    "position": {
-                        "x": 3,
-                        "y": 3,
-                        "z": 0
-                    },
-                    "rotation": {
-                        "w": 1,
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                    },
-                    "scale": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                    }
-                }
-            },
-            "$typeName": "TransformComponent"
-        },
-        {
-            "$context": {
-                "animation_res": {
-                    "blend_state": {
-                        "blend_anim_skel_map_path": [
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
-                        ],
-                        "blend_clip_file_length": [
-                            0.76666998863220215
-                        ],
-                        "blend_clip_file_path": [
-                            "asset/objects/character/player/components/animation/data/W2_CrouchWalk_Aim_F_Loop_IP.animation_clip.json"
-                        ],
-                        "blend_mask_file_path": [
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
-                            "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
-                        ],
-                        "blend_ratio": [
-                            0
-                        ],
-                        "blend_weight": [
-                            1
-                        ],
-                        "clip_count": 1
-                    },
-                    "frame_position": 0,
-                    "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json"
-                }
-            },
-            "$typeName": "AnimationComponent"
-        },
-        {
-            "$context": {
-                "mesh_res": {
-                    "sub_meshes": [
-                        {
-                            "material": "asset/objects/character/player/components/mesh/robot.material.json",
-                            "obj_file_ref": "asset/objects/character/player/components/animation/data/robot.mesh_bind.json",
-                            "transform": {
-                                "position": {
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "rotation": {
-                                    "w": 1,
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
-                                },
-                                "scale": {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            "$typeName": "MeshComponent"
-        },
-        {
-            "$context": {
-                "motor_res": {
-                    "controller_config": {
-                        "$context": {
-                            "capsule_shape": {
-                                "half_height": 0.69999998807907104,
-                                "radius": 0.30000001192092896
-                            }
-                        },
-                        "$typeName": "PhysicsControllerConfig"
-                    },
-                    "jump_height": 1,
-                    "max_move_speed_ratio": 1,
-                    "max_sprint_speed_ratio": 2,
-                    "move_acceleration": 2,
-                    "move_speed": 2,
-                    "sprint_acceleration": 2
-                }
-            },
-            "$typeName": "MotorComponent"
-        },
-        {
-            "$context": {
-                "camera_res": {
-                    "parameter": {
-                        "$context": {
-                            "fov": 70,
-                            "horizontal_offset": 3,
-                            "vertical_offset": 1.5
-                        },
-                        "$typeName": "ThirdPersonCameraParameter"
-                    }
-                }
-            },
-            "$typeName": "CameraComponent"
-        },
-        {
-            "$context": {
-                "lua_script_res": {
-                    "script_url": "scripts/player/set_jump_height.lua"
-                }
-            },
-            "$typeName": "LuaComponent"
-        },
-        {
-            "$context": {
-                "lua_script_res": {
-                    "script_url": "scripts/player/hello_world.lua"
-                }
-            },
-            "$typeName": "LuaComponent"
+  "components": [
+    {
+      "$context": {
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 3,
+            "z": 0
+          },
+          "rotation": {
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         }
-    ]
+      },
+      "$typeName": "TransformComponent"
+    },
+    {
+      "$context": {
+        "animation_res": {
+          "skeleton_file_path": "asset/objects/character/player/components/animation/data/skeleton_data_root.skeleton.json",
+          "clips": [
+            {
+              "$context": {
+                "name": "idle_walk_run",
+                "clip_count": 3,
+                "blend_clip_file_path": [
+                  "asset/objects/character/player/components/animation/data/idle.animation_clip.json",
+                  "asset/objects/character/player/components/animation/data/walk.animation_clip.json",
+                  "asset/objects/character/player/components/animation/data/run.animation_clip.json"
+                ],
+                "blend_clip_file_length": [
+                  3.36667,
+                  1.26667,
+                  0.76667
+                ],
+                "blend_anim_skel_map_path": [
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_map.json",
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+                ],
+                "blend_weight": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "blend_ratio": [
+                  0,
+                  0,
+                  0
+                ],
+                "blend_mask_file_path": [
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json",
+                  "asset/objects/character/player/components/animation/data/anim.skeleton_mask.json"
+                ],
+                "key": "speed",
+                "values": [
+                  0.0,
+                  2.0,
+                  4.0
+                ]
+              },
+              "$typeName": "BlendSpace1D"
+            },
+            {
+              "$context": {
+                "name": "walk_start",
+                "clip_file_path": "asset/objects/character/player/components/animation/data/walk_forward_start.animation_clip.json",
+                "clip_file_length": 1.46667,
+                "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+              },
+              "$typeName": "BasicClip"
+            },
+            {
+              "$context": {
+                "name": "walk_stop",
+                "clip_file_path": "asset/objects/character/player/components/animation/data/walk_forward_end.animation_clip.json",
+                "clip_file_length": 1.30,
+                "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+              },
+              "$typeName": "BasicClip"
+            },
+            {
+              "$context": {
+                "name": "jump_start",
+                "clip_file_path": "asset/objects/character/player/components/animation/data/jump_start.animation_clip.json",
+                "clip_file_length": 0.6,
+                "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+              },
+              "$typeName": "BasicClip"
+            },
+            {
+              "$context": {
+                "name": "jump_loop",
+                "clip_file_path": "asset/objects/character/player/components/animation/data/jump_loop.animation_clip.json",
+                "clip_file_length": 1.86667,
+                "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+              },
+              "$typeName": "BasicClip"
+            },
+            {
+              "$context": {
+                "name": "jump_stop",
+                "clip_file_path": "asset/objects/character/player/components/animation/data/jump_end.animation_clip.json",
+                "clip_file_length": 0.8,
+                "anim_skel_map_path": "asset/objects/character/player/components/animation/data/anim.skeleton_map.json"
+              },
+              "$typeName": "BasicClip"
+            }
+          ]
+        }
+      },
+      "$typeName": "AnimationComponent"
+    },
+    {
+      "$context": {
+        "mesh_res": {
+          "sub_meshes": [
+            {
+              "material": "asset/objects/character/player/components/mesh/robot.material.json",
+              "obj_file_ref": "asset/objects/character/player/components/animation/data/robot.mesh_bind.json",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "rotation": {
+                  "w": 1,
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "$typeName": "MeshComponent"
+    },
+    {
+      "$context": {
+        "motor_res": {
+          "controller_config": {
+            "$context": {
+              "capsule_shape": {
+                "half_height": 0.7,
+                "radius": 0.3
+              }
+            },
+            "$typeName": "PhysicsControllerConfig"
+          },
+          "jump_height": 1,
+          "max_move_speed_ratio": 1,
+          "max_sprint_speed_ratio": 2,
+          "move_acceleration": 2,
+          "move_speed": 2,
+          "sprint_acceleration": 2
+        }
+      },
+      "$typeName": "MotorComponent"
+    },
+    {
+      "$context": {
+        "camera_res": {
+          "parameter": {
+            "$context": {
+              "fov": 70,
+              "horizontal_offset": 3,
+              "vertical_offset": 1.5
+            },
+            "$typeName": "ThirdPersonCameraParameter"
+          }
+        }
+      },
+      "$typeName": "CameraComponent"
+    },
+    {
+      "$context": {
+        "lua_script_res": {
+          "script_url": "scripts/player/set_jump_height.lua"
+        }
+      },
+      "$typeName": "LuaComponent"
+    },
+    {
+      "$context": {
+        "lua_script_res": {
+          "script_url": "scripts/player/hello_world.lua"
+        }
+      },
+      "$typeName": "LuaComponent"
+    }
+  ]
 }

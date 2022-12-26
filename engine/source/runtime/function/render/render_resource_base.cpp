@@ -97,49 +97,49 @@ namespace Piccolo
             asset_manager->loadAsset<MeshData>(source.m_mesh_file, *bind_data);
 
             // vertex buffer
-            size_t vertex_size                     = bind_data->vertex_buffer.size() * sizeof(MeshVertexDataDefinition);
+            size_t vertex_size                     = bind_data->m_vertex_buffer.size() * sizeof(MeshVertexDataDefinition);
             ret.m_static_mesh_data.m_vertex_buffer = std::make_shared<BufferData>(vertex_size);
             MeshVertexDataDefinition* vertex       = (MeshVertexDataDefinition*)ret.m_static_mesh_data.m_vertex_buffer->m_data;
-            for (size_t i = 0; i < bind_data->vertex_buffer.size(); i++)
+            for (size_t i = 0; i < bind_data->m_vertex_buffer.size(); i++)
             {
-                vertex[i].x  = bind_data->vertex_buffer[i].px;
-                vertex[i].y  = bind_data->vertex_buffer[i].py;
-                vertex[i].z  = bind_data->vertex_buffer[i].pz;
-                vertex[i].nx = bind_data->vertex_buffer[i].nx;
-                vertex[i].ny = bind_data->vertex_buffer[i].ny;
-                vertex[i].nz = bind_data->vertex_buffer[i].nz;
-                vertex[i].tx = bind_data->vertex_buffer[i].tx;
-                vertex[i].ty = bind_data->vertex_buffer[i].ty;
-                vertex[i].tz = bind_data->vertex_buffer[i].tz;
-                vertex[i].u  = bind_data->vertex_buffer[i].u;
-                vertex[i].v  = bind_data->vertex_buffer[i].v;
+                vertex[i].x  = bind_data->m_vertex_buffer[i].m_px;
+                vertex[i].y  = bind_data->m_vertex_buffer[i].m_py;
+                vertex[i].z  = bind_data->m_vertex_buffer[i].m_pz;
+                vertex[i].nx = bind_data->m_vertex_buffer[i].m_nx;
+                vertex[i].ny = bind_data->m_vertex_buffer[i].m_ny;
+                vertex[i].nz = bind_data->m_vertex_buffer[i].m_nz;
+                vertex[i].tx = bind_data->m_vertex_buffer[i].m_tx;
+                vertex[i].ty = bind_data->m_vertex_buffer[i].m_ty;
+                vertex[i].tz = bind_data->m_vertex_buffer[i].m_tz;
+                vertex[i].u  = bind_data->m_vertex_buffer[i].m_u;
+                vertex[i].v  = bind_data->m_vertex_buffer[i].m_v;
 
                 bounding_box.merge(Vector3(vertex[i].x, vertex[i].y, vertex[i].z));
             }
 
             // index buffer
-            size_t index_size                     = bind_data->index_buffer.size() * sizeof(uint16_t);
+            size_t index_size                     = bind_data->m_index_buffer.size() * sizeof(uint16_t);
             ret.m_static_mesh_data.m_index_buffer = std::make_shared<BufferData>(index_size);
             uint16_t* index                       = (uint16_t*)ret.m_static_mesh_data.m_index_buffer->m_data;
-            for (size_t i = 0; i < bind_data->index_buffer.size(); i++)
+            for (size_t i = 0; i < bind_data->m_index_buffer.size(); i++)
             {
-                index[i] = static_cast<uint16_t>(bind_data->index_buffer[i]);
+                index[i] = static_cast<uint16_t>(bind_data->m_index_buffer[i]);
             }
 
             // skeleton binding buffer
-            size_t data_size                              = bind_data->bind.size() * sizeof(MeshVertexBindingDataDefinition);
+            size_t data_size                              = bind_data->m_bind.size() * sizeof(MeshVertexBindingDataDefinition);
             ret.m_skeleton_binding_buffer                 = std::make_shared<BufferData>(data_size);
             MeshVertexBindingDataDefinition* binding_data = reinterpret_cast<MeshVertexBindingDataDefinition*>(ret.m_skeleton_binding_buffer->m_data);
-            for (size_t i = 0; i < bind_data->bind.size(); i++)
+            for (size_t i = 0; i < bind_data->m_bind.size(); i++)
             {
-                binding_data[i].m_index0  = bind_data->bind[i].index0;
-                binding_data[i].m_index1  = bind_data->bind[i].index1;
-                binding_data[i].m_index2  = bind_data->bind[i].index2;
-                binding_data[i].m_index3  = bind_data->bind[i].index3;
-                binding_data[i].m_weight0 = bind_data->bind[i].weight0;
-                binding_data[i].m_weight1 = bind_data->bind[i].weight1;
-                binding_data[i].m_weight2 = bind_data->bind[i].weight2;
-                binding_data[i].m_weight3 = bind_data->bind[i].weight3;
+                binding_data[i].m_index0  = bind_data->m_bind[i].m_index0;
+                binding_data[i].m_index1  = bind_data->m_bind[i].m_index1;
+                binding_data[i].m_index2  = bind_data->m_bind[i].m_index2;
+                binding_data[i].m_index3  = bind_data->m_bind[i].m_index3;
+                binding_data[i].m_weight0 = bind_data->m_bind[i].m_weight0;
+                binding_data[i].m_weight1 = bind_data->m_bind[i].m_weight1;
+                binding_data[i].m_weight2 = bind_data->m_bind[i].m_weight2;
+                binding_data[i].m_weight3 = bind_data->m_bind[i].m_weight3;
             }
         }
 

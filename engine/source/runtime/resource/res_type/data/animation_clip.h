@@ -1,8 +1,10 @@
 #pragma once
 #include "runtime/core/math/transform.h"
 #include "runtime/core/meta/reflection/reflection.h"
+
 #include <string>
 #include <vector>
+
 namespace Piccolo
 {
 
@@ -12,7 +14,7 @@ namespace Piccolo
         REFLECTION_BODY(AnimNodeMap);
 
     public:
-        std::vector<std::string> convert;
+        std::vector<std::string> m_convert;
     };
 
     REFLECTION_TYPE(AnimationChannel)
@@ -21,10 +23,10 @@ namespace Piccolo
         REFLECTION_BODY(AnimationChannel);
 
     public:
-        std::string             name;
-        std::vector<Vector3>    position_keys;
-        std::vector<Quaternion> rotation_keys;
-        std::vector<Vector3>    scaling_keys;
+        std::string             m_name;
+        std::vector<Vector3>    m_position_keys;
+        std::vector<Quaternion> m_rotation_keys;
+        std::vector<Vector3>    m_scaling_keys;
     };
 
     REFLECTION_TYPE(AnimationClip)
@@ -33,9 +35,9 @@ namespace Piccolo
         REFLECTION_BODY(AnimationClip);
 
     public:
-        int                           total_frame {0};
-        int                           node_count {0};
-        std::vector<AnimationChannel> node_channels;
+        int                           m_total_frame {0};
+        int                           m_node_count {0};
+        std::vector<AnimationChannel> m_node_channels;
     };
 
     REFLECTION_TYPE(AnimationAsset)
@@ -44,9 +46,9 @@ namespace Piccolo
         REFLECTION_BODY(AnimationAsset);
 
     public:
-        AnimNodeMap   node_map;
-        AnimationClip clip_data;
-        std::string   skeleton_file_path;
+        AnimNodeMap   m_node_map;
+        AnimationClip m_clip_data;
+        std::string   m_skeleton_file_path;
     };
 
 } // namespace Piccolo

@@ -79,6 +79,13 @@ namespace Piccolo
         calculateTargetPosition(transform_component->getPosition());
 
         transform_component->setPosition(m_target_position);
+
+        AnimationComponent* animation_component = m_parent_object.lock()->tryGetComponent<AnimationComponent>("AnimationComponent");
+        if (animation_component != nullptr)
+        {
+            animation_component->updateSignal("speed", m_target_position.distance(transform_component->getPosition()) / delta_time);
+            animation_component->updateSignal("jumping", m_jump_state != JumpState::idle);
+        }
     }
 
     void MotorComponent::calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time)
