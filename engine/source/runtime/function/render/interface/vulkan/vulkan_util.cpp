@@ -25,6 +25,7 @@
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <exception>
 
 namespace Piccolo
 {
@@ -184,14 +185,14 @@ namespace Piccolo
         {
             LOG_ERROR(shader->getInfoLog());
             LOG_ERROR(shader->getInfoDebugLog());
-            throw std::exception(shader->getInfoLog());
+            throw std::runtime_error(shader->getInfoLog());
         }
 
         if (!shader->parse(&resources, defaultVersion, false, messages, includer))
         {
             LOG_ERROR(shader->getInfoLog());
             LOG_ERROR(shader->getInfoDebugLog());
-            throw std::exception(shader->getInfoLog());
+            throw std::runtime_error(shader->getInfoLog());
         }
 
         program->addShader(shader);
@@ -200,14 +201,14 @@ namespace Piccolo
         {
             LOG_ERROR(program->getInfoLog());
             LOG_ERROR(program->getInfoDebugLog());
-            throw std::exception(program->getInfoLog());
+            throw std::runtime_error(program->getInfoLog());
         }
 
         if (!program->mapIO())
         {
             LOG_ERROR(program->getInfoLog());
             LOG_ERROR(program->getInfoDebugLog());
-            throw std::exception(program->getInfoLog());
+            throw std::runtime_error(program->getInfoLog());
         }
 
         bool SpvToolsDisassembler = false;
