@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_map>
 
 namespace Piccolo
 {
@@ -27,6 +28,15 @@ namespace Piccolo
         const std::string& getGlobalParticleResUrl() const;
 
     private:
+        void setAssetConfig(const std::string& name,const std::string& value);
+        void setKeyConfig(const std::string& name,const std::string& value);
+
+    private:
+        const std::string ASSET_CONFIG = "[asset]";
+        const std::string KEY_CONFIG   = "[key]";
+        std::string       m_current_config = ASSET_CONFIG;
+
+        std::filesystem::path m_config_file_path;
         std::filesystem::path m_root_folder;
         std::filesystem::path m_asset_folder;
         std::filesystem::path m_schema_folder;
@@ -41,5 +51,7 @@ namespace Piccolo
         std::string m_default_world_url;
         std::string m_global_rendering_res_url;
         std::string m_global_particle_res_url;
+
+        std::unordered_map<std::string, std::string> m_key_binding;
     };
 } // namespace Piccolo

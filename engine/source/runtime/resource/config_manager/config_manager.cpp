@@ -11,60 +11,90 @@ namespace Piccolo
     void ConfigManager::initialize(const std::filesystem::path& config_file_path)
     {
         // read configs
+        m_config_file_path = config_file_path;
         std::ifstream config_file(config_file_path);
         std::string   config_line;
         while (std::getline(config_file, config_line))
         {
+            size_t asset_config_pos = config_line.find_first_of(ASSET_CONFIG);
+            if (asset_config_pos > 0 && asset_config_pos < config_line.length())
+            {
+                m_current_config = ASSET_CONFIG;
+                continue;
+            }
+
+            size_t key_config_pos = config_line.find_first_of(KEY_CONFIG);
+            if (key_config_pos > 0 && key_config_pos < config_line.length())
+            {
+                m_current_config = KEY_CONFIG;
+                continue;
+            }
+
             size_t seperate_pos = config_line.find_first_of('=');
             if (seperate_pos > 0 && seperate_pos < (config_line.length() - 1))
             {
                 std::string name  = config_line.substr(0, seperate_pos);
                 std::string value = config_line.substr(seperate_pos + 1, config_line.length() - seperate_pos - 1);
-                if (name == "BinaryRootFolder")
+
+                if (m_current_config == ASSET_CONFIG)
                 {
-                    m_root_folder = config_file_path.parent_path() / value;
+                    setAssetConfig(name, value);
                 }
-                else if (name == "AssetFolder")
+                else if (m_current_config == KEY_CONFIG)
                 {
-                    m_asset_folder = m_root_folder / value;
+                    setKeyConfig(name, value);
                 }
-                else if (name == "SchemaFolder")
-                {
-                    m_schema_folder = m_root_folder / value;
-                }
-                else if (name == "DefaultWorld")
-                {
-                    m_default_world_url = value;
-                }
-                else if (name == "BigIconFile")
-                {
-                    m_editor_big_icon_path = m_root_folder / value;
-                }
-                else if (name == "SmallIconFile")
-                {
-                    m_editor_small_icon_path = m_root_folder / value;
-                }
-                else if (name == "FontFile")
-                {
-                    m_editor_font_path = m_root_folder / value;
-                }
-                else if (name == "GlobalRenderingRes")
-                {
-                    m_global_rendering_res_url = value;
-                }
-                else if (name == "GlobalParticleRes")
-                {
-                    m_global_particle_res_url = value;
-                }
-#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
-                else if (name == "JoltAssetFolder")
-                {
-                    m_jolt_physics_asset_folder = m_root_folder / value;
-                }
-#endif
             }
         }
     }
+
+    void ConfigManager::setAssetConfig(const std::string& name, const std::string& value)
+    {
+        if (name == "BinaryRootFolder")
+        {
+            m_root_folder = m_config_file_path.parent_path() / value;
+        }
+        else if (name == "AssetFolder")
+        {
+            m_asset_folder = m_root_folder / value;
+        }
+        else if (name == "SchemaFolder")
+        {
+            m_schema_folder = m_root_folder / value;
+        }
+        else if (name == "DefaultWorld")
+        {
+            m_default_world_url = value;
+        }
+        else if (name == "BigIconFile")
+        {
+            m_editor_big_icon_path = m_root_folder / value;
+        }
+        else if (name == "SmallIconFile")
+        {
+            m_editor_small_icon_path = m_root_folder / value;
+        }
+        else if (name == "FontFile")
+        {
+            m_editor_font_path = m_root_folder / value;
+        }
+        else if (name == "GlobalRenderingRes")
+        {
+            m_global_rendering_res_url = value;
+        }
+        else if (name == "GlobalParticleRes")
+        {
+            m_global_particle_res_url = value;
+        }
+#ifdef ENABLE_PHYSICS_DEBUG_RENDERER
+        else if (name == "JoltAssetFolder")
+        {
+            m_jolt_physics_asset_folder = m_root_folder / value;
+        }
+#endif
+    }
+
+    void ConfigManager::setKeyConfig(const std::string& name, const std::string& value) { m_key_binding.emplace(name, value); }
 
     const std::filesystem::path& ConfigManager::getRootFolder() const { return m_root_folder; }
 
