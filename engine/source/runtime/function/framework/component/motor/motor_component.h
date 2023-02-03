@@ -48,6 +48,8 @@ namespace Piccolo
 
         META(Enable)
         MotorComponentRes m_motor_res;
+        META(Enable)
+        float             m_initial_jump_speed {0.f};
 
         float m_move_speed_ratio {0.f};
         float m_vertical_move_speed {0.f};
