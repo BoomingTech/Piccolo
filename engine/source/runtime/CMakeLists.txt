@@ -5,11 +5,10 @@ set(TARGET_NAME PiccoloRuntime)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(json_inlcude ${THIRD_PARTY_DIR}/json11)
-set(json_lib_dir ${THIRD_PARTY_DIR}/lib/json11)
+set(JSON_INCLUDE ${THIRD_PARTY_DIR}/json11)
 
-add_library(json11 ${json_inlcude}/json11.cpp)
-set_target_properties(json11 PROPERTIES FOLDER "ThirdParty/json11" )
+add_library(json11 ${JSON_INCLUDE}/json11.cpp)
+set_target_properties(json11 PROPERTIES FOLDER "ThirdParty/json11")
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files
@@ -47,6 +46,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE tinyobjloader stb)
 target_link_libraries(${TARGET_NAME} PUBLIC glfw)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC Jolt)
+target_link_libraries(${TARGET_NAME} PUBLIC lua_static sol2)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
 target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:json11>)
 
@@ -75,7 +75,7 @@ target_include_directories(
 
 target_include_directories(
   ${TARGET_NAME} 
-  PUBLIC $<BUILD_INTERFACE:${json_inlcude}>
+  PUBLIC $<BUILD_INTERFACE:${JSON_INCLUDE}>
 )
 
 target_include_directories(

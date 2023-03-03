@@ -1,0 +1,6 @@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+
+Name: sol2
+Description: C++ <-> Lua Wrapper Library
+Version: @sol2_VERSION@
+Cflags: -I${includedir}

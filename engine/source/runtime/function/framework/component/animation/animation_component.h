@@ -20,6 +20,8 @@ namespace Piccolo
 
         const AnimationResult& getResult() const;
 
+        const Skeleton& getSkeleton() const;
+
     protected:
         META(Enable)
         AnimationComponentRes m_animation_res;

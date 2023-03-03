@@ -7,9 +7,9 @@
 
 namespace Piccolo{
 namespace Reflection{
-    void TypeMetaRegister::Register(){
-    {{#class_defines}}TypeWrappersRegister::{{class_name}}();
-    {{/class_defines}}
+    void TypeMetaRegister::metaRegister(){
+        {{#sourefile_names}}TypeWrappersRegister::{{sourefile_name_upper_camel_case}}();
+        {{/sourefile_names}}
     }
 }
 }

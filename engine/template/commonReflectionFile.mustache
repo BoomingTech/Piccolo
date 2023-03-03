@@ -11,13 +11,13 @@ namespace Reflection{
     class Type{{class_name}}Operator{
     public:
         static const char* getClassName(){ return "{{class_name}}";}
-        static void* constructorWithJson(const PJson& json_context){
+        static void* constructorWithJson(const Json& json_context){
             {{class_name}}* ret_instance= new {{class_name}};
-            PSerializer::read(json_context, *ret_instance);
+            Serializer::read(json_context, *ret_instance);
             return ret_instance;
         }
-        static PJson writeByName(void* instance){
-            return PSerializer::write(*({{class_name}}*)instance);
+        static Json writeByName(void* instance){
+            return Serializer::write(*({{class_name}}*)instance);
         }
         // base class
         static int get{{class_name}}BaseClassReflectionInstanceList(ReflectionInstance* &out_list, void* instance){
@@ -37,6 +37,12 @@ namespace Reflection{
         static void* get_{{class_field_name}}(void* instance){ return static_cast<void*>(&(static_cast<{{class_name}}*>(instance)->{{class_field_name}}));}
         static bool isArray_{{class_field_name}}(){ {{#class_field_is_vector}}return true;{{/class_field_is_vector}}{{^class_field_is_vector}}return false;{{/class_field_is_vector}} }
         {{/class_field_defines}}
+
+        // methods
+        {{#class_method_defines}}
+        static const char* getMethodName_{{class_method_name}}(){ return "{{class_method_name}}";}
+        static void invoke_{{class_method_name}}(void * instance){static_cast<{{class_name}}*>(instance)->{{class_method_name}}();}
+        {{/class_method_defines}}
     };
 }//namespace TypeFieldReflectionOparator
 {{#vector_exist}}namespace ArrayReflectionOperator{
@@ -64,35 +70,44 @@ namespace Reflection{
 }//namespace ArrayReflectionOperator{{/vector_exist}}
 
     void TypeWrapperRegister_{{class_name}}(){
-        {{#class_field_defines}}FieldFunctionTuple* f_field_function_tuple_{{class_field_name}}=new FieldFunctionTuple(
+        {{#class_field_defines}}FieldFunctionTuple* field_function_tuple_{{class_field_name}}=new FieldFunctionTuple(
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::set_{{class_field_name}},
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::get_{{class_field_name}},
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::getClassName,
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::getFieldName_{{class_field_name}},
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::getFieldTypeName_{{class_field_name}},
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::isArray_{{class_field_name}});
-        REGISTER_FIELD_TO_MAP("{{class_name}}", f_field_function_tuple_{{class_field_name}});
+        REGISTER_FIELD_TO_MAP("{{class_name}}", field_function_tuple_{{class_field_name}});
         {{/class_field_defines}}
+
+        {{#class_method_defines}}
+        MethodFunctionTuple* method_function_tuple_{{class_method_name}}=new MethodFunctionTuple(
+            &TypeFieldReflectionOparator::Type{{class_name}}Operator::getMethodName_{{class_method_name}},
+            &TypeFieldReflectionOparator::Type{{class_name}}Operator::invoke_{{class_method_name}});
+        REGISTER_Method_TO_MAP("{{class_name}}", method_function_tuple_{{class_method_name}});
+        {{/class_method_defines}}
         
-        {{#vector_exist}}{{#vector_defines}}ArrayFunctionTuple* f_array_tuple_{{vector_useful_name}} = new  ArrayFunctionTuple(
+        {{#vector_exist}}{{#vector_defines}}ArrayFunctionTuple* array_tuple_{{vector_useful_name}} = new  ArrayFunctionTuple(
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::set,
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::get,
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::getSize,
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::getArrayTypeName,
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::getElementTypeName);
-        REGISTER_ARRAY_TO_MAP("{{{vector_type_name}}}", f_array_tuple_{{vector_useful_name}});
+        REGISTER_ARRAY_TO_MAP("{{{vector_type_name}}}", array_tuple_{{vector_useful_name}});
         {{/vector_defines}}{{/vector_exist}}
-        {{#class_need_register}}ClassFunctionTuple* f_class_function_tuple_{{class_name}}=new ClassFunctionTuple(
+        {{#class_need_register}}ClassFunctionTuple* class_function_tuple_{{class_name}}=new ClassFunctionTuple(
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::get{{class_name}}BaseClassReflectionInstanceList,
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::constructorWithJson,
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::writeByName);
-        REGISTER_BASE_CLASS_TO_MAP("{{class_name}}", f_class_function_tuple_{{class_name}});
+        REGISTER_BASE_CLASS_TO_MAP("{{class_name}}", class_function_tuple_{{class_name}});
         {{/class_need_register}}
     }{{/class_defines}}
 namespace TypeWrappersRegister{
-    {{#class_defines}}
-        void {{class_name}}(){ TypeWrapperRegister_{{class_name}}();}
+    void {{sourefile_name_upper_camel_case}}()
+    {
+        {{#class_defines}}TypeWrapperRegister_{{class_name}}();
     {{/class_defines}}
+    }
 }//namespace TypeWrappersRegister
 
 }//namespace Reflection

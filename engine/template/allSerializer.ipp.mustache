@@ -5,33 +5,33 @@
 namespace Piccolo{
     {{#class_defines}}
     template<>
-    PJson PSerializer::write(const {{class_name}}& instance){
-        PJson::object  ret_context;
-        {{#class_base_class_defines}}auto&&  json_context_{{class_base_class_index}} = PSerializer::write(*({{class_base_class_name}}*)&instance);
+    Json Serializer::write(const {{class_name}}& instance){
+        Json::object  ret_context;
+        {{#class_base_class_defines}}auto&&  json_context_{{class_base_class_index}} = Serializer::write(*({{class_base_class_name}}*)&instance);
         assert(json_context_{{class_base_class_index}}.is_object());
         auto&& json_context_map_{{class_base_class_index}} = json_context_{{class_base_class_index}}.object_items();
         ret_context.insert(json_context_map_{{class_base_class_index}}.begin() , json_context_map_{{class_base_class_index}}.end());{{/class_base_class_defines}}
-        {{#class_field_defines}}{{#class_field_is_vector}}PJson::array {{class_field_name}}_json;
+        {{#class_field_defines}}{{#class_field_is_vector}}Json::array {{class_field_name}}_json;
         for (auto& item : instance.{{class_field_name}}){
-            {{class_field_name}}_json.emplace_back(PSerializer::write(item));
+            {{class_field_name}}_json.emplace_back(Serializer::write(item));
         }
         ret_context.insert_or_assign("{{class_field_display_name}}",{{class_field_name}}_json);{{/class_field_is_vector}}
-        {{^class_field_is_vector}}ret_context.insert_or_assign("{{class_field_display_name}}", PSerializer::write(instance.{{class_field_name}}));{{/class_field_is_vector}}
+        {{^class_field_is_vector}}ret_context.insert_or_assign("{{class_field_display_name}}", Serializer::write(instance.{{class_field_name}}));{{/class_field_is_vector}}
         {{/class_field_defines}}
-        return  PJson(ret_context);
+        return  Json(ret_context);
     }
     template<>
-    {{class_name}}& PSerializer::read(const PJson& json_context, {{class_name}}& instance){
+    {{class_name}}& Serializer::read(const Json& json_context, {{class_name}}& instance){
         assert(json_context.is_object());
-        {{#class_base_class_defines}}PSerializer::read(json_context,*({{class_base_class_name}}*)&instance);{{/class_base_class_defines}}
+        {{#class_base_class_defines}}Serializer::read(json_context,*({{class_base_class_name}}*)&instance);{{/class_base_class_defines}}
         {{#class_field_defines}}
         if(!json_context["{{class_field_display_name}}"].is_null()){
             {{#class_field_is_vector}}assert(json_context["{{class_field_display_name}}"].is_array());
-            PJson::array array_{{class_field_name}} = json_context["{{class_field_display_name}}"].array_items();
+            Json::array array_{{class_field_name}} = json_context["{{class_field_display_name}}"].array_items();
             instance.{{class_field_name}}.resize(array_{{class_field_name}}.size());
             for (size_t index=0; index < array_{{class_field_name}}.size();++index){
-                PSerializer::read(array_{{class_field_name}}[index], instance.{{class_field_name}}[index]);
-            }{{/class_field_is_vector}}{{^class_field_is_vector}}PSerializer::read(json_context["{{class_field_display_name}}"], instance.{{class_field_name}});{{/class_field_is_vector}}
+                Serializer::read(array_{{class_field_name}}[index], instance.{{class_field_name}}[index]);
+            }{{/class_field_is_vector}}{{^class_field_is_vector}}Serializer::read(json_context["{{class_field_display_name}}"], instance.{{class_field_name}});{{/class_field_is_vector}}
         }{{/class_field_defines}}
         return instance;
     }{{/class_defines}}

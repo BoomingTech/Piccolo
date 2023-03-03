@@ -1,0 +1,33 @@
+name: Mac OS
+
+on: [push]
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    
+    - name: configure
+      run: |
+        cmake -B build/debug -D CMAKE_BUILD_TYPE:STRING=Debug "-DSOL2_LUA_VERSION:STRING=5.4" -DSOL2_PLATFORM:STRING=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA:BOOL=ON -DBUILD_LUA_AS_DLL:BOOL=OFF -DSOL2_TESTS:BOOL=ON -DSOL2_EXAMPLES:BOOL=ON -DSOL2_TESTS_EXAMPLES:BOOL=ON
+        cmake -B build/release -D CMAKE_BUILD_TYPE:STRING=Release "-DSOL2_LUA_VERSION:STRING=5.4" -DSOL2_PLATFORM:STRING=x64 -DSOL2_CI=ON -DSOL2_BUILD_LUA:BOOL=ON -DBUILD_LUA_AS_DLL:BOOL=OFF -DSOL2_TESTS:BOOL=ON -DSOL2_EXAMPLES:BOOL=ON -DSOL2_TESTS_EXAMPLES:BOOL=ON
+    - name: build
+      run: |
+        cmake --build build/debug   --config Debug
+        cmake --build build/release --config Release
+    - name: test
+      run: |
+        cd build/debug
+        ctest --build-config Debug
+        cd ../..
+        cd build/release
+        ctest --build-config Release
+        cd ../..

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "runtime/core/math/axis_aligned.h"
+
 #include "runtime/function/physics/physics_config.h"
 
 namespace JPH
@@ -81,6 +83,8 @@ namespace Piccolo
         /// @shape: rigidbody shape
         /// @return: true if overlapped with any rigidbodies
         bool isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform);
+
+        void getShapeBoundingBoxes(uint32_t body_id, std::vector<AxisAlignedBox>& out_bounding_boxes) const;
 
 #ifdef ENABLE_PHYSICS_DEBUG_RENDERER
         void drawPhysicsScene(JPH::DebugRenderer* debug_renderer);

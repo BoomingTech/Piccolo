@@ -34,14 +34,14 @@ namespace Piccolo
 
             // parse to json object and read to runtime res object
             std::string error;
-            auto&&      asset_json = PJson::parse(asset_json_text, error);
+            auto&&      asset_json = Json::parse(asset_json_text, error);
             if (!error.empty())
             {
                 LOG_ERROR("parse json file {} failed!", asset_url);
                 return false;
             }
 
-            PSerializer::read(asset_json, out_asset);
+            Serializer::read(asset_json, out_asset);
             return true;
         }
 
@@ -56,7 +56,7 @@ namespace Piccolo
             }
 
             // write to json object and dump to string
-            auto&&        asset_json      = PSerializer::write(out_asset);
+            auto&&        asset_json      = Serializer::write(out_asset);
             std::string&& asset_json_text = asset_json.dump();
 
             // write to file

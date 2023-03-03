@@ -5,6 +5,10 @@
 
 namespace Piccolo
 {
+    void RenderScene::clear()
+    {
+    }
+
     void RenderScene::updateVisibleObjects(std::shared_ptr<RenderResource> render_resource,
                                            std::shared_ptr<RenderCamera>   camera)
     {

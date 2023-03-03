@@ -5,6 +5,7 @@
 #include "runtime/core/math/vector4.h"
 
 #include "runtime/function/render/render_type.h"
+#include "interface/rhi.h"
 
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -178,53 +179,53 @@ namespace Piccolo
 
         uint32_t mesh_vertex_count;
 
-        VkBuffer      mesh_vertex_position_buffer;
+        RHIBuffer*    mesh_vertex_position_buffer;
         VmaAllocation mesh_vertex_position_buffer_allocation;
 
-        VkBuffer      mesh_vertex_varying_enable_blending_buffer;
+        RHIBuffer*    mesh_vertex_varying_enable_blending_buffer;
         VmaAllocation mesh_vertex_varying_enable_blending_buffer_allocation;
 
-        VkBuffer      mesh_vertex_joint_binding_buffer;
+        RHIBuffer*    mesh_vertex_joint_binding_buffer;
         VmaAllocation mesh_vertex_joint_binding_buffer_allocation;
 
-        VkDescriptorSet mesh_vertex_blending_descriptor_set;
+        RHIDescriptorSet* mesh_vertex_blending_descriptor_set;
 
-        VkBuffer      mesh_vertex_varying_buffer;
+        RHIBuffer*    mesh_vertex_varying_buffer;
         VmaAllocation mesh_vertex_varying_buffer_allocation;
 
         uint32_t mesh_index_count;
 
-        VkBuffer      mesh_index_buffer;
+        RHIBuffer*    mesh_index_buffer;
         VmaAllocation mesh_index_buffer_allocation;
     };
 
     // material
     struct VulkanPBRMaterial
     {
-        VkImage       base_color_texture_image = VK_NULL_HANDLE;
-        VkImageView   base_color_image_view    = VK_NULL_HANDLE;
-        VmaAllocation base_color_image_allocation;
+        RHIImage*       base_color_texture_image;
+        RHIImageView*   base_color_image_view;
+        VmaAllocation   base_color_image_allocation;
 
-        VkImage       metallic_roughness_texture_image = VK_NULL_HANDLE;
-        VkImageView   metallic_roughness_image_view    = VK_NULL_HANDLE;
-        VmaAllocation metallic_roughness_image_allocation;
+        RHIImage*       metallic_roughness_texture_image;
+        RHIImageView*   metallic_roughness_image_view;
+        VmaAllocation   metallic_roughness_image_allocation;
 
-        VkImage       normal_texture_image = VK_NULL_HANDLE;
-        VkImageView   normal_image_view    = VK_NULL_HANDLE;
-        VmaAllocation normal_image_allocation;
+        RHIImage*       normal_texture_image;
+        RHIImageView*   normal_image_view;
+        VmaAllocation   normal_image_allocation;
 
-        VkImage       occlusion_texture_image = VK_NULL_HANDLE;
-        VkImageView   occlusion_image_view    = VK_NULL_HANDLE;
-        VmaAllocation occlusion_image_allocation;
+        RHIImage*       occlusion_texture_image;
+        RHIImageView*   occlusion_image_view;
+        VmaAllocation   occlusion_image_allocation;
 
-        VkImage       emissive_texture_image = VK_NULL_HANDLE;
-        VkImageView   emissive_image_view    = VK_NULL_HANDLE;
-        VmaAllocation emissive_image_allocation;
+        RHIImage*       emissive_texture_image;
+        RHIImageView*   emissive_image_view;
+        VmaAllocation   emissive_image_allocation;
 
-        VkBuffer      material_uniform_buffer;
-        VmaAllocation material_uniform_buffer_allocation;
+        RHIBuffer*      material_uniform_buffer;
+        VmaAllocation   material_uniform_buffer_allocation;
 
-        VkDescriptorSet material_descriptor_set;
+        RHIDescriptorSet* material_descriptor_set;
     };
 
     // nodes
@@ -249,26 +250,26 @@ namespace Piccolo
 
     struct TextureDataToUpdate
     {
-        void*                base_color_image_pixels;
-        uint32_t             base_color_image_width;
-        uint32_t             base_color_image_height;
-        PICCOLO_PIXEL_FORMAT base_color_image_format;
-        void*                metallic_roughness_image_pixels;
-        uint32_t             metallic_roughness_image_width;
-        uint32_t             metallic_roughness_image_height;
-        PICCOLO_PIXEL_FORMAT metallic_roughness_image_format;
-        void*                normal_roughness_image_pixels;
-        uint32_t             normal_roughness_image_width;
-        uint32_t             normal_roughness_image_height;
-        PICCOLO_PIXEL_FORMAT normal_roughness_image_format;
-        void*                occlusion_image_pixels;
-        uint32_t             occlusion_image_width;
-        uint32_t             occlusion_image_height;
-        PICCOLO_PIXEL_FORMAT occlusion_image_format;
-        void*                emissive_image_pixels;
-        uint32_t             emissive_image_width;
-        uint32_t             emissive_image_height;
-        PICCOLO_PIXEL_FORMAT emissive_image_format;
-        VulkanPBRMaterial*   now_material;
+        void*              base_color_image_pixels;
+        uint32_t           base_color_image_width;
+        uint32_t           base_color_image_height;
+        RHIFormat base_color_image_format;
+        void*              metallic_roughness_image_pixels;
+        uint32_t           metallic_roughness_image_width;
+        uint32_t           metallic_roughness_image_height;
+        RHIFormat metallic_roughness_image_format;
+        void*              normal_roughness_image_pixels;
+        uint32_t           normal_roughness_image_width;
+        uint32_t           normal_roughness_image_height;
+        RHIFormat normal_roughness_image_format;
+        void*              occlusion_image_pixels;
+        uint32_t           occlusion_image_width;
+        uint32_t           occlusion_image_height;
+        RHIFormat occlusion_image_format;
+        void*              emissive_image_pixels;
+        uint32_t           emissive_image_width;
+        uint32_t           emissive_image_height;
+        RHIFormat emissive_image_format;
+        VulkanPBRMaterial* now_material;
     };
 } // namespace Piccolo
