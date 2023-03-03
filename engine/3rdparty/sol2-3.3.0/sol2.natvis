@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="sol::optional&lt;*&gt;">
+		<DisplayString Condition="m_has_value == false">empty</DisplayString>
+		<DisplayString Condition="m_has_value ==  true">{m_value}</DisplayString>
+		<Expand>
+			<Item Name="value" Condition="m_has_value == true">m_value</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::basic_reference&lt;*&gt;">
+		<DisplayString>ref={ref} state={luastate}</DisplayString>
+		<Expand>
+			<Item Name="reference index">ref</Item>
+			<Item Name="state">luastate</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::stack_reference">
+		<DisplayString>index={index} state={luastate}</DisplayString>
+		<Expand>
+			<Item Name="stack index">index</Item>
+			<Item Name="state">luastate</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::basic_coroutine&lt;*&gt;">
+		<DisplayString>ref={this->ref} status={stats} error handler={m_error_handler}</DisplayString>
+		<Expand>
+			<Item Name="status">stats</Item>
+			<Item Name="error handler">m_error_handler</Item>
+			<Item Name="reference">*($T1*)this</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::basic_protected_function&lt;*&gt;">
+		<DisplayString>status={stats} error handler={m_error_handler} index={index} state={luastate}</DisplayString>
+		<Expand>
+			<Item Name="error handler">m_error_handler</Item>
+			<Item Name="reference">*($T1*)this</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::state_view">
+		<DisplayString>L={L} globals={global} registry={reg}</DisplayString>
+		<Expand>
+			<Item Name="globals">global</Item>
+			<Item Name="registry">reg</Item>
+			<Item Name="state">L</Item>
+		</Expand>
+	</Type>
+	<Type Name="sol::state">
+		<DisplayString>L={L} globals={global} registry={reg}</DisplayString>
+		<Expand>
+			<Item Name="globals">global</Item>
+			<Item Name="registry">reg</Item>
+			<Item Name="state">L</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

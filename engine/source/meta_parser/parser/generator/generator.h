@@ -20,9 +20,11 @@ namespace Generator
         virtual ~GeneratorInterface() {};
 
     protected:
-        virtual void        prepareStatus(std::string path);
-        virtual void        genClassRenderData(std::shared_ptr<Class> class_temp, Mustache::data& class_def);
-        virtual void        genClassFieldRenderData(std::shared_ptr<Class> class_temp, Mustache::data& feild_defs);
+        virtual void prepareStatus(std::string path);
+        virtual void genClassRenderData(std::shared_ptr<Class> class_temp, Mustache::data& class_def);
+        virtual void genClassFieldRenderData(std::shared_ptr<Class> class_temp, Mustache::data& feild_defs);
+        virtual void genClassMethodRenderData(std::shared_ptr<Class> class_temp, Mustache::data& method_defs);
+
         virtual std::string processFileName(std::string path) = 0;
 
         std::string                             m_out_path {"gen_src"};

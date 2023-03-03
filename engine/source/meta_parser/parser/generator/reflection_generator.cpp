@@ -29,11 +29,13 @@ namespace Generator
         auto relativeDir = fs::path(path).filename().replace_extension("reflection.gen.h").string();
         return m_out_path + "/" + relativeDir;
     }
+
     int ReflectionGenerator::generate(std::string path, SchemaMoudle schema)
     {
         static const std::string vector_prefix = "std::vector<";
 
         std::string    file_path = processFileName(path);
+
         Mustache::data mustache_data;
         Mustache::data include_headfiles(Mustache::data::type::list);
         Mustache::data class_defines(Mustache::data::type::list);
@@ -45,7 +47,7 @@ namespace Generator
         // class defs
         for (auto class_temp : schema.classes)
         {
-            if (!class_temp->shouldCompileFilds())
+            if (!class_temp->shouldCompile())
                 continue;
 
             class_names.insert_or_assign(class_temp->getClassName(), false);
@@ -101,14 +103,15 @@ namespace Generator
 
         mustache_data.set("class_defines", class_defines);
         mustache_data.set("include_headfiles", include_headfiles);
+
+        std::string tmp = Utils::convertNameToUpperCamelCase(fs::path(path).stem().string(), "_");
+        mustache_data.set("sourefile_name_upper_camel_case", tmp);
+
         std::string render_string =
             TemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
         Utils::saveFile(render_string, file_path);
 
-        for (auto class_item : class_names)
-        {
-            m_type_list.emplace_back(class_item.first);
-        }
+        m_sourcefile_list.emplace_back(tmp);
 
         m_head_file_list.emplace_back(Utils::makeRelativePath(m_root_path, file_path).string());
         return 0;
@@ -117,18 +120,18 @@ namespace Generator
     {
         Mustache::data mustache_data;
         Mustache::data include_headfiles = Mustache::data::type::list;
-        Mustache::data class_defines     = Mustache::data::type::list;
+        Mustache::data sourefile_names    = Mustache::data::type::list;
 
         for (auto& head_file : m_head_file_list)
         {
             include_headfiles.push_back(Mustache::data("headfile_name", head_file));
         }
-        for (auto& class_name : m_type_list)
+        for (auto& sourefile_name_upper_camel_case : m_sourcefile_list)
         {
-            class_defines.push_back(Mustache::data("class_name", class_name));
+            sourefile_names.push_back(Mustache::data("sourefile_name_upper_camel_case", sourefile_name_upper_camel_case));
         }
         mustache_data.set("include_headfiles", include_headfiles);
-        mustache_data.set("class_defines", class_defines);
+        mustache_data.set("sourefile_names", sourefile_names);
         std::string render_string =
             TemplateManager::getInstance()->renderByTemplate("allReflectionFile", mustache_data);
         Utils::saveFile(render_string, m_out_path + "/all_reflection.h");

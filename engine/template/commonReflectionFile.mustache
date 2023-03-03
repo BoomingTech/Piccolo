@@ -37,6 +37,12 @@ namespace Reflection{
         static void* get_{{class_field_name}}(void* instance){ return static_cast<void*>(&(static_cast<{{class_name}}*>(instance)->{{class_field_name}}));}
         static bool isArray_{{class_field_name}}(){ {{#class_field_is_vector}}return true;{{/class_field_is_vector}}{{^class_field_is_vector}}return false;{{/class_field_is_vector}} }
         {{/class_field_defines}}
+
+        // methods
+        {{#class_method_defines}}
+        static const char* getMethodName_{{class_method_name}}(){ return "{{class_method_name}}";}
+        static void invoke_{{class_method_name}}(void * instance){static_cast<{{class_name}}*>(instance)->{{class_method_name}}();}
+        {{/class_method_defines}}
     };
 }//namespace TypeFieldReflectionOparator
 {{#vector_exist}}namespace ArrayReflectionOperator{
@@ -73,6 +79,13 @@ namespace Reflection{
             &TypeFieldReflectionOparator::Type{{class_name}}Operator::isArray_{{class_field_name}});
         REGISTER_FIELD_TO_MAP("{{class_name}}", field_function_tuple_{{class_field_name}});
         {{/class_field_defines}}
+
+        {{#class_method_defines}}
+        MethodFunctionTuple* method_function_tuple_{{class_method_name}}=new MethodFunctionTuple(
+            &TypeFieldReflectionOparator::Type{{class_name}}Operator::getMethodName_{{class_method_name}},
+            &TypeFieldReflectionOparator::Type{{class_name}}Operator::invoke_{{class_method_name}});
+        REGISTER_Method_TO_MAP("{{class_name}}", method_function_tuple_{{class_method_name}});
+        {{/class_method_defines}}
         
         {{#vector_exist}}{{#vector_defines}}ArrayFunctionTuple* array_tuple_{{vector_useful_name}} = new  ArrayFunctionTuple(
             &ArrayReflectionOperator::Array{{vector_useful_name}}Operator::set,
@@ -90,9 +103,11 @@ namespace Reflection{
         {{/class_need_register}}
     }{{/class_defines}}
 namespace TypeWrappersRegister{
-    {{#class_defines}}
-        void {{class_name}}(){ TypeWrapperRegister_{{class_name}}();}
+    void {{sourefile_name_upper_camel_case}}()
+    {
+        {{#class_defines}}TypeWrapperRegister_{{class_name}}();
     {{/class_defines}}
+    }
 }//namespace TypeWrappersRegister
 
 }//namespace Reflection
