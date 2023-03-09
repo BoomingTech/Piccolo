@@ -327,7 +327,7 @@ namespace Piccolo
         mesh_data.m_vertex_buffer = std::make_shared<BufferData>(mesh_vertices.size() * stride);
         mesh_data.m_index_buffer  = std::make_shared<BufferData>(mesh_vertices.size() * sizeof(uint16_t));
 
-        assert(mesh_vertices.size() <= std::numeric_limits<uint16_t>::max()); // take care of the index range, should be
+        assert(mesh_vertices.size() <= std::numeric_limits<uint32_t>::max()); // take care of the index range, should be
                                                                               // consistent with the index range used by
                                                                               // vulkan
 
