@@ -31,7 +31,6 @@ namespace Piccolo
         rhi->freeMemory(m_particle_component_res_memory);
         rhi->freeMemory(m_position_render_memory);
 
-        rhi->destroyBuffer(m_particle_storage_buffer);
         rhi->destroyBuffer(m_position_render_buffer);
         rhi->destroyBuffer(m_position_device_buffer);
         rhi->destroyBuffer(m_position_host_buffer);
