@@ -15,7 +15,6 @@ namespace Piccolo
     class ParticleEmitterBufferBatch
     {
     public:
-        RHIBuffer* m_particle_storage_buffer = nullptr;
         RHIBuffer* m_position_render_buffer = nullptr;
         RHIBuffer* m_position_device_buffer = nullptr;
         RHIBuffer* m_position_host_buffer = nullptr;
