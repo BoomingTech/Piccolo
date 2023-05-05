@@ -568,7 +568,7 @@ namespace Piccolo
                         m_rhi->cmdBindVertexBuffersPFN(
                             m_rhi->getCurrentCommandBuffer(), 0, 1, vertex_buffers, offsets);
                         m_rhi->cmdBindIndexBufferPFN(
-                            m_rhi->getCurrentCommandBuffer(), mesh.mesh_index_buffer, 0, RHI_INDEX_TYPE_UINT16);
+                            m_rhi->getCurrentCommandBuffer(), mesh.mesh_index_buffer, 0, RHI_INDEX_TYPE_UINT32);
 
                         uint32_t drawcall_max_instance_count =
                             (sizeof(MeshPointLightShadowPerdrawcallStorageBufferObject::mesh_instances) /

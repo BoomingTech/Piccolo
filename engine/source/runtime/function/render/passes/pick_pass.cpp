@@ -577,7 +577,7 @@ namespace Piccolo
                     m_rhi->cmdBindIndexBufferPFN(m_rhi->getCurrentCommandBuffer(),
                                                  mesh.mesh_index_buffer,
                                                  0,
-                                                 RHI_INDEX_TYPE_UINT16);
+                                                 RHI_INDEX_TYPE_UINT32);
 
                     uint32_t drawcall_max_instance_count =
                         (sizeof(MeshInefficientPickPerdrawcallStorageBufferObject::model_matrices) /
