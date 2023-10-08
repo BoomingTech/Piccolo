@@ -2,9 +2,9 @@
 
 if test \( $# -ne 1 \);
 then
-    echo "Usage: build.sh arch config"
+    echo "Usage: ./build_macos.sh config"
     echo ""
-    echo "Configs:"
+    echo "config:"
     echo "  debug   -   build with the debug configuration"
     echo "  release -   build with the release configuration"
     echo ""
