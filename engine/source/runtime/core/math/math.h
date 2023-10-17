@@ -255,6 +255,12 @@ namespace Piccolo
             return std::min({A, B, C});
         }
 
+        template<class T>
+        static constexpr T lerp(const T A, const T B, const float alpha)
+        {
+            return A + alpha * (B - A);
+        }
+
         static Matrix4x4
         makeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflect_matrix = nullptr);
 

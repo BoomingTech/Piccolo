@@ -18,6 +18,20 @@ namespace Piccolo
                           w * rhs.z + z * rhs.w + x * rhs.y - y * rhs.x);
     }
 
+    Quaternion::Quaternion(const Vector3& scaled_axis)
+    {
+	    float angle = scaled_axis.length();
+	    if (angle < k_epsilon)
+	    {
+		    *this = IDENTITY;
+	    }
+	    else
+	    {
+		    Vector3 axis = scaled_axis / angle;
+		    fromAngleAxis(Radian(angle * 0.5f), axis);
+	    }
+    }
+
     //-----------------------------------------------------------------------
     void Quaternion::fromRotationMatrix(const Matrix3x3& rotation)
     {
@@ -402,5 +416,64 @@ namespace Piccolo
         }
         result.normalise();
         return result;
+    }
+
+    Vector3 Quaternion::toAngleAxis()
+    {
+        const float sqr_len = x * x + y * y + z * z;
+        if (sqr_len > 0.0f)
+        {
+            const Radian rad     = 2.0 * Math::acos(w);
+            const float  inv_len = Math::invSqrt(sqr_len);
+            const float  temp    = inv_len * rad.valueRadians();
+            return {x * temp, y * temp, z * temp};
+        }
+        // angle is 0 (mod 2*pi), so any axis will do
+        return {x, y, z};
+    }
+
+    Quaternion Quaternion::QuaternionFromXFormXY(Vector3 x, Vector3 y)
+    {
+	    Vector3 c2 = x.crossProduct(y);
+	    c2.normalise();
+	    Vector3 c1 = c2.crossProduct(x);
+	    c1.normalise();
+	    Vector3 c0 = x;
+
+	    return QuaternionFromCols(c0, c1, c2);
+    }
+
+    Quaternion Quaternion::QuaternionFromCols(Vector3 c0, Vector3 c1, Vector3 c2)
+    {
+	    if (c2.z < 0.0f)
+	    {
+		    if (c0.x > c1.y)
+		    {
+			    Quaternion r = Quaternion(c1.z - c2.y, 1.0f + c0.x - c1.y - c2.z, c0.y + c1.x, c2.x + c0.z);
+			    r.normalise();
+			    return r;
+		    }
+		    else
+		    {
+			    Quaternion r = Quaternion(c2.x - c0.z, c0.y + c1.x, 1.0f - c0.x + c1.y - c2.z, c1.z + c2.y);
+			    r.normalise();
+			    return r;
+		    }
+	    }
+	    else
+	    {
+		    if (c0.x < -c1.y)
+		    {
+			    Quaternion r = Quaternion(c0.y - c1.x, c2.x + c0.z, c1.z + c2.y, 1.0f - c0.x - c1.y + c2.z);
+			    r.normalise();
+			    return r;
+		    }
+		    else
+		    {
+			    Quaternion r = Quaternion(1.0f + c0.x + c1.y + c2.z, c1.z - c2.y, c2.x - c0.z, c0.y - c1.x);
+			    r.normalise();
+			    return r;
+		    }
+	    }
     }
 } // namespace Piccolo

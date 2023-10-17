@@ -106,3 +106,4 @@ string(TOLOWER ${TARGET_NAME}/version.h VERSION_HEADER_LOCATION)
 ### precompile
 # set global vari used by precompile
 set(PICCOLO_RUNTIME_HEADS "${HEADER_FILES}" PARENT_SCOPE)
+

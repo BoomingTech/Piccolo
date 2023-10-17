@@ -4,6 +4,8 @@
 #include "runtime/function/framework/component/component.h"
 #include "runtime/resource/res_type/components/animation.h"
 
+#include "runtime/function/animation/lganim/anim_instance.h"
+
 namespace Piccolo
 {
     REFLECTION_TYPE(AnimationComponent)
@@ -24,8 +26,11 @@ namespace Piccolo
 
     protected:
         META(Enable)
-        AnimationComponentRes m_animation_res;
+        AnimationComponentRes              m_animation_res;
+		
+        std::shared_ptr<CAnimInstanceBase> m_anim_instance;
 
-        Skeleton m_skeleton;
+        Skeleton* m_skeleton;
+
     };
 } // namespace Piccolo
