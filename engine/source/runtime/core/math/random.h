@@ -82,10 +82,9 @@ namespace Piccolo
         template<typename... Params>
         explicit DistRandomNumberGenerator(SeedType&& seeding, Params&&...  /*params*/) : m_engine(seeding)
         {
-            // m_dist = CHAOS_NEW_T(DistributionFunc)(std::forward<Params>(params)...);
         }
 
-        ~DistRandomNumberGenerator() { CHAOS_DELETE_T(m_dist); }
+        ~DistRandomNumberGenerator() { delete m_dist; }
 
         template<typename... Params>
         void seed(Params&&... params)
@@ -97,4 +96,4 @@ namespace Piccolo
     };
 
     using DefaultRNG = RandomNumberGenerator<std::mt19937>;
-} // namespace Chaos
+} // namespace Piccolo

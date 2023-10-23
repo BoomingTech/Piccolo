@@ -10,7 +10,7 @@ namespace Piccolo
 {
     /** Class encapsulating a standard 4x4 homogeneous matrix.
     @remarks
-    CHAOS uses column vectors when applying matrix multiplications,
+    Piccolo uses column vectors when applying matrix multiplications,
     This means a vector is represented as a single column, 4-row
     matrix. This has the effect that the transformations implemented
     by the matrices happens right-to-left e.g. if vector V is to be
@@ -25,10 +25,10 @@ namespace Piccolo
     inexplicably chosen to differ from the accepted standard and uses
     row vectors and left-to-right matrix multiplication.
     @par
-    CHAOS deals with the differences between D3D and OpenGL etc.
-    internally when operating through different render systems. CHAOS
+    Piccolo deals with the differences between D3D and OpenGL etc.
+    internally when operating through different render systems. Piccolo
     users only need to conform to standard maths conventions, i.e.
-    right-to-left matrix multiplication, (CHAOS transposes matrices it
+    right-to-left matrix multiplication, (Piccolo transposes matrices it
     passes to D3D to compensate).
     @par
     The generic form M * V which shows the layout of the matrix
