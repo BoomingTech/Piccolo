@@ -3030,7 +3030,7 @@ namespace Piccolo
         command_buffer_allocate_info.commandBufferCount = pAllocateInfo->commandBufferCount;
 
         VkCommandBuffer vk_command_buffer;
-        pCommandBuffers = new RHICommandBuffer();
+        pCommandBuffers = new VulkanCommandBuffer();
         VkResult result = vkAllocateCommandBuffers(m_device, &command_buffer_allocate_info, &vk_command_buffer);
         ((VulkanCommandBuffer*)pCommandBuffers)->setResource(vk_command_buffer);
 

@@ -49,7 +49,7 @@ namespace Piccolo
         allocInfo.commandPool                 = m_rhi->getCommandPoor();
         allocInfo.commandBufferCount          = 1;
 
-        RHICommandBuffer* commandBuffer = new VulkanCommandBuffer();
+        RHICommandBuffer* commandBuffer = nullptr;
         if (RHI_SUCCESS != m_rhi->allocateCommandBuffers(&allocInfo, commandBuffer))
         {
             throw std::runtime_error("failed to allocate command buffers!");
