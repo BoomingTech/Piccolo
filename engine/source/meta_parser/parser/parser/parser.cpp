@@ -129,7 +129,11 @@ bool MetaParser::parseProject()
     {
         std::string temp_string(include_item);
         Utils::replace(temp_string, '\\', '/');
-        include_file << "#include  \"" << temp_string << "\"" << std::endl;
+        for(auto part_string: Utils::split(temp_string, ","))
+        {
+            part_string.erase(std::remove(part_string.begin(), part_string.end(), '\n'));
+            include_file << "#include  \"" << part_string << "\"" << std::endl;
+        }
     }
 
     include_file << "#endif" << std::endl;
