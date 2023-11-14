@@ -14,22 +14,22 @@ namespace Piccolo
 
 	struct character
 	{
-		Array1D<Vector3> positions;
-		Array1D<Vector3> normals;
-		Array1D<Vector2> texcoords;
+		Array1D<Vector3>        positions;
+		Array1D<Vector3>        normals;
+		Array1D<Vector2>        texcoords;
 		Array1D<unsigned short> triangles;
 
-		Array2D<float> bone_weights;
+		Array2D<float>          bone_weights;
 		Array2D<unsigned short> bone_indices;
 
-		Array1D<Vector3> bone_rest_positions;
+		Array1D<Vector3>    bone_rest_positions;
 		Array1D<Quaternion> bone_rest_rotations;
 	};
 
 	void character_load(character& c, const std::string& filename)
 	{
 		FILE* f;
-		auto r = fopen_s(&f, filename.c_str(), "rb");
+		auto  r = fopen_s(&f, filename.c_str(), "rb");
 		assert(r != 0);
 
 		array1d_read(c.positions, f);
@@ -51,35 +51,30 @@ namespace Piccolo
 		const std::shared_ptr<AssetManager> asset_manager = g_runtime_global_context.m_asset_manager;
 		assert(asset_manager);
 		const std::string abs_path = asset_manager->getFullPath("asset/animation/database.bin").generic_string();
-        LoadDataBase(m_data_base, abs_path);
-		BuildMatchingFeature(m_data_base,
-		                     m_feature_weight_foot_position,
-		                     m_feature_weight_foot_velocity,
-		                     m_feature_weight_hip_velocity,
-		                     m_feature_weight_trajectory_positions,
-		                     m_feature_weight_trajectory_directions);
+		LoadDataBase(m_data_base, abs_path);
+		BuildMatchingFeature(m_data_base, m_feature_weight_foot_position, m_feature_weight_foot_velocity, m_feature_weight_hip_velocity, m_feature_weight_trajectory_positions, m_feature_weight_trajectory_directions);
 		m_frame_index = m_data_base.m_range_starts(0);
 		// init data
-		m_curr_bone_positions = m_data_base.m_bone_positions(m_frame_index);
-		m_curr_bone_velocities = m_data_base.m_bone_velocities(m_frame_index);
-		m_curr_bone_rotations = m_data_base.m_bone_rotations(m_frame_index);
+		m_curr_bone_positions          = m_data_base.m_bone_positions(m_frame_index);
+		m_curr_bone_velocities         = m_data_base.m_bone_velocities(m_frame_index);
+		m_curr_bone_rotations          = m_data_base.m_bone_rotations(m_frame_index);
 		m_curr_bone_angular_velocities = m_data_base.m_bone_angular_velocities(m_frame_index);
-		m_curr_bone_contacts = m_data_base.m_contact_states(m_frame_index);
+		m_curr_bone_contacts           = m_data_base.m_contact_states(m_frame_index);
 
-		m_trns_bone_positions = m_data_base.m_bone_positions(m_frame_index);
-		m_trns_bone_velocities = m_data_base.m_bone_velocities(m_frame_index);
-		m_trns_bone_rotations = m_data_base.m_bone_rotations(m_frame_index);
+		m_trns_bone_positions          = m_data_base.m_bone_positions(m_frame_index);
+		m_trns_bone_velocities         = m_data_base.m_bone_velocities(m_frame_index);
+		m_trns_bone_rotations          = m_data_base.m_bone_rotations(m_frame_index);
 		m_trns_bone_angular_velocities = m_data_base.m_bone_angular_velocities(m_frame_index);
-		m_trns_bone_contacts = m_data_base.m_contact_states(m_frame_index);
+		m_trns_bone_contacts           = m_data_base.m_contact_states(m_frame_index);
 
-		m_bone_positions = m_data_base.m_bone_positions(m_frame_index);
-		m_bone_velocities = m_data_base.m_bone_velocities(m_frame_index);
-		m_bone_rotations = m_data_base.m_bone_rotations(m_frame_index);
+		m_bone_positions          = m_data_base.m_bone_positions(m_frame_index);
+		m_bone_velocities         = m_data_base.m_bone_velocities(m_frame_index);
+		m_bone_rotations          = m_data_base.m_bone_rotations(m_frame_index);
 		m_bone_angular_velocities = m_data_base.m_bone_angular_velocities(m_frame_index);
 
-		m_bone_offset_positions = Array1D<Piccolo::Vector3>(static_cast<int>(m_data_base.GetNumBones()));
-		m_bone_offset_velocities = Array1D<Piccolo::Vector3>(static_cast<int>(m_data_base.GetNumBones()));
-		m_bone_offset_rotations = Array1D<Piccolo::Quaternion>(static_cast<int>(m_data_base.GetNumBones()));
+		m_bone_offset_positions          = Array1D<Piccolo::Vector3>(static_cast<int>(m_data_base.GetNumBones()));
+		m_bone_offset_velocities         = Array1D<Piccolo::Vector3>(static_cast<int>(m_data_base.GetNumBones()));
+		m_bone_offset_rotations          = Array1D<Piccolo::Quaternion>(static_cast<int>(m_data_base.GetNumBones()));
 		m_bone_offset_angular_velocities = Array1D<Piccolo::Vector3>(static_cast<int>(m_data_base.GetNumBones()));
 
 		m_transition_src_position = Vector3::ZERO;
@@ -87,52 +82,26 @@ namespace Piccolo
 		m_transition_dst_position = Vector3::ZERO;
 		m_transition_dst_rotation = Quaternion::IDENTITY;
 
-		inertialize_pose_reset(m_bone_offset_positions,
-		                       m_bone_offset_velocities,
-		                       m_bone_offset_rotations,
-		                       m_bone_offset_angular_velocities,
-		                       m_transition_src_position,
-		                       m_transition_src_rotation,
-		                       m_transition_dst_position,
-		                       m_transition_dst_rotation,
-		                       m_bone_positions(0),
-		                       m_bone_rotations(0));
+		inertialize_pose_reset(m_bone_offset_positions, m_bone_offset_velocities, m_bone_offset_rotations, m_bone_offset_angular_velocities, m_transition_src_position, m_transition_src_rotation, m_transition_dst_position, m_transition_dst_rotation, m_bone_positions(0), m_bone_rotations(0));
 
-		inertialize_pose_update(m_bone_positions,
-		                        m_bone_velocities,
-		                        m_bone_rotations,
-		                        m_bone_angular_velocities,
-		                        m_bone_offset_positions,
-		                        m_bone_offset_velocities,
-		                        m_bone_offset_rotations,
-		                        m_bone_offset_angular_velocities,
-		                        m_data_base.m_bone_positions(m_frame_index),
-		                        m_data_base.m_bone_velocities(m_frame_index),
-		                        m_data_base.m_bone_rotations(m_frame_index),
-		                        m_data_base.m_bone_angular_velocities(m_frame_index),
-		                        m_transition_src_position,
-		                        m_transition_src_rotation,
-		                        m_transition_dst_position,
-		                        m_transition_dst_rotation,
-		                        m_inertialize_blending_halflife,
-		                        0.0f);
+		inertialize_pose_update(m_bone_positions, m_bone_velocities, m_bone_rotations, m_bone_angular_velocities, m_bone_offset_positions, m_bone_offset_velocities, m_bone_offset_rotations, m_bone_offset_angular_velocities, m_data_base.m_bone_positions(m_frame_index), m_data_base.m_bone_velocities(m_frame_index), m_data_base.m_bone_rotations(m_frame_index), m_data_base.m_bone_angular_velocities(m_frame_index), m_transition_src_position, m_transition_src_rotation, m_transition_dst_position, m_transition_dst_rotation, m_inertialize_blending_halflife, 0.0f);
 
 		// Trajectory & Gameplay Data
-		m_search_timer = m_search_time;
+		m_search_timer       = m_search_time;
 		m_force_search_timer = m_search_time;
 
-		m_desired_velocity = Vector3::ZERO;
+		m_desired_velocity             = Vector3::ZERO;
 		m_desired_velocity_change_curr = Vector3::ZERO;
 		m_desired_velocity_change_prev = Vector3::ZERO;
 
-		m_desired_rotation = Quaternion::IDENTITY;
+		m_desired_rotation             = Quaternion::IDENTITY;
 		m_desired_rotation_change_curr = Vector3::ZERO;
 		m_desired_rotation_change_prev = Vector3::ZERO;
 
-		m_simulation_position = Vector3::ZERO;
-		m_simulation_velocity = Vector3::ZERO;
-		m_simulation_acceleration = Vector3::ZERO;
-		m_simulation_rotation = Quaternion::IDENTITY;
+		m_simulation_position         = Vector3::ZERO;
+		m_simulation_velocity         = Vector3::ZERO;
+		m_simulation_acceleration     = Vector3::ZERO;
+		m_simulation_rotation         = Quaternion::IDENTITY;
 		m_simulation_angular_velocity = Vector3::ZERO;
 
 		m_trajectory_desired_velocities.resize(4);
@@ -145,19 +114,17 @@ namespace Piccolo
 
 
 		// for lmm
-		const std::string decompressor_path =
-			asset_manager->getFullPath("asset/animation/my_decompressor.bin").generic_string();
+		const std::string decompressor_path = asset_manager->getFullPath("asset/animation/my_decompressor.bin").generic_string();
 		LoadNetwork(m_decompressor, decompressor_path);
 
-		const std::string latent_path =
-			asset_manager->getFullPath("asset/animation/my_latent.bin").generic_string();
+		const std::string latent_path = asset_manager->getFullPath("asset/animation/my_latent.bin").generic_string();
 		LoadLatent(m_latent, latent_path);
 
 
 		//for retargeting
 		m_retarget_map.resize(58, (uint32_t)INDEX_NONE);
-		m_retarget_map[0] = Bone_Entity;
-		m_retarget_map[1] = Bone_Hips;
+		m_retarget_map[0]  = Bone_Entity;
+		m_retarget_map[1]  = Bone_Hips;
 		m_retarget_map[54] = Bone_LeftUpLeg;
 		m_retarget_map[55] = Bone_LeftLeg;
 		m_retarget_map[56] = Bone_LeftFoot;
@@ -166,23 +133,23 @@ namespace Piccolo
 		m_retarget_map[51] = Bone_RightLeg;
 		m_retarget_map[52] = Bone_RightFoot;
 		m_retarget_map[53] = Bone_RightToe;
-		m_retarget_map[3] = Bone_Spine;
-		m_retarget_map[4] = Bone_Spine1;
-		m_retarget_map[5] = Bone_Spine2;
-		m_retarget_map[6] = Bone_Neck;
-		m_retarget_map[7] = Bone_Head;
+		m_retarget_map[3]  = Bone_Spine;
+		m_retarget_map[4]  = Bone_Spine1;
+		m_retarget_map[5]  = Bone_Spine2;
+		m_retarget_map[6]  = Bone_Neck;
+		m_retarget_map[7]  = Bone_Head;
 		m_retarget_map[29] = Bone_LeftShoulder;
 		m_retarget_map[30] = Bone_LeftArm;
 		m_retarget_map[31] = Bone_LeftForeArm;
 		m_retarget_map[32] = Bone_LeftHand;
-		m_retarget_map[8] = Bone_RightShoulder;
-		m_retarget_map[9] = Bone_RightArm;
+		m_retarget_map[8]  = Bone_RightShoulder;
+		m_retarget_map[9]  = Bone_RightArm;
 		m_retarget_map[10] = Bone_RightForeArm;
 		m_retarget_map[11] = Bone_RightHand;
 
 
 		const std::string character_path = asset_manager->getFullPath("asset/animation/character.bin").generic_string();
-		character character_data;
+		character         character_data;
 		character_load(character_data, character_path);
 
 		auto size = character_data.bone_rest_positions.size;
@@ -201,12 +168,7 @@ namespace Piccolo
 		m_skeleton.buildSkeleton(*skeleton_res);
 	}
 
-	Vector3 desired_velocity_update(const Vector3 input_direction,
-	                                const float camera_yaw,
-	                                const Quaternion simulation_rotation,
-	                                const float fwrd_speed,
-	                                const float side_speed,
-	                                const float back_speed)
+	Vector3 desired_velocity_update(const Vector3 input_direction, const float camera_yaw, const Quaternion simulation_rotation, const float fwrd_speed, const float side_speed, const float back_speed)
 	{
 		// Find stick position in world space by rotating using camera azimuth
 		Vector3 global_stick_direction = Quaternion(Radian(camera_yaw), Vector3(0, 1, 0)) * input_direction;
@@ -221,12 +183,7 @@ namespace Piccolo
 		return simulation_rotation * local_desired_velocity;
 	}
 
-	Quaternion desired_rotation_update(const Quaternion desired_rotation,
-	                                   const Vector3 input_direction,
-	                                   const Vector3 camera_control,
-	                                   const float camera_yaw,
-	                                   const bool desired_strafe,
-	                                   const Vector3 desired_velocity)
+	Quaternion desired_rotation_update(const Quaternion desired_rotation, const Vector3 input_direction, const Vector3 camera_control, const float camera_yaw, const bool desired_strafe, const Vector3 desired_velocity)
 	{
 		Quaternion desired_rotation_curr = desired_rotation;
 
@@ -235,8 +192,8 @@ namespace Piccolo
 		// forward facing
 		if (desired_strafe)
 		{
-			Quaternion input_rotation = Quaternion(Radian(camera_yaw), Vector3(0, 1, 0));
-			Vector3 desired_direction = input_rotation * Vector3(0, 0, -1);
+			Quaternion input_rotation    = Quaternion(Radian(camera_yaw), Vector3(0, 1, 0));
+			Vector3    desired_direction = input_rotation * Vector3(0, 0, -1);
 
 			if (camera_control.squaredLength() > 0.01f)
 			{
@@ -251,7 +208,7 @@ namespace Piccolo
 		else if (input_direction.squaredLength() > 0.01f)
 		{
 			Vector3 desired_direction = desired_velocity.normalisedCopy();
-			Radian angle = Radian(std::atan2f(desired_direction.x, desired_direction.z));
+			Radian  angle             = Radian(std::atan2f(desired_direction.x, desired_direction.z));
 			return Quaternion(angle, Vector3(0, 1, 0));
 		}
 
@@ -268,7 +225,7 @@ namespace Piccolo
 		if (m_crrent_time > g_times_per_tick)
 		{
 			const int tick_count = static_cast<int>(m_crrent_time / g_times_per_tick);
-			m_crrent_time = m_crrent_time - g_times_per_tick * static_cast<float>(tick_count);
+			m_crrent_time        = m_crrent_time - g_times_per_tick * static_cast<float>(tick_count);
 		}
 		else
 		{
@@ -300,39 +257,26 @@ namespace Piccolo
 
 		Vector3 camera_control = Vector3::ZERO;
 
-		float simulation_fwrd_speed =
-			Math::lerp(m_simulation_run_fwrd_speed, m_simulation_walk_fwrd_speed, m_desired_gait);
-		float simulation_back_speed =
-			Math::lerp(m_simulation_run_side_speed, m_simulation_walk_side_speed, m_desired_gait);
-		float simulation_side_speed =
-			Math::lerp(m_simulation_run_back_speed, m_simulation_walk_back_speed, m_desired_gait);
+		float simulation_fwrd_speed = Math::lerp(m_simulation_run_fwrd_speed, m_simulation_walk_fwrd_speed, m_desired_gait);
+		float simulation_back_speed = Math::lerp(m_simulation_run_side_speed, m_simulation_walk_side_speed, m_desired_gait);
+		float simulation_side_speed = Math::lerp(m_simulation_run_back_speed, m_simulation_walk_back_speed, m_desired_gait);
 
-		float camera_yaw = Math_HALF_PI;
-		Vector3 desired_velocity_curr = desired_velocity_update(local_space_control_direction,
-		                                                        camera_yaw,
-		                                                        m_simulation_rotation,
-		                                                        simulation_fwrd_speed,
-		                                                        simulation_side_speed,
-		                                                        simulation_back_speed);
+		float   camera_yaw            = Math_HALF_PI;
+		Vector3 desired_velocity_curr = desired_velocity_update(local_space_control_direction, camera_yaw, m_simulation_rotation, simulation_fwrd_speed, simulation_side_speed, simulation_back_speed);
 
-		bool desired_strafe = false;
-		Quaternion desired_rotation_curr = desired_rotation_update(m_desired_rotation,
-		                                                           local_space_control_direction,
-		                                                           camera_control,
-		                                                           camera_yaw,
-		                                                           desired_strafe,
-		                                                           desired_velocity_curr);
+		bool       desired_strafe        = false;
+		Quaternion desired_rotation_curr = desired_rotation_update(m_desired_rotation, local_space_control_direction, camera_control, camera_yaw, desired_strafe, desired_velocity_curr);
 
 		// Check if we should force a search because input changed quickly
 		m_desired_velocity_change_prev = m_desired_velocity_change_curr;
 		m_desired_velocity_change_curr = (desired_velocity_curr - m_desired_velocity) / delta_time;
-		m_desired_velocity = desired_velocity_curr;
+		m_desired_velocity             = desired_velocity_curr;
 
 		{
 			m_desired_rotation_change_prev = m_desired_rotation_change_curr;
-			Quaternion temp = desired_rotation_curr.inverse() * m_desired_rotation;
-			Radian angle;
-			Vector3 axis;
+			Quaternion temp                = desired_rotation_curr.inverse() * m_desired_rotation;
+			Radian     angle;
+			Vector3    axis;
 			temp.toAngleAxis(angle, axis);
 			const Vector3 rot = axis * angle.valueRadians();
 
@@ -343,13 +287,9 @@ namespace Piccolo
 
 		bool force_search = false;
 
-		if (m_force_search_timer <= 0.0f &&
-			((m_desired_velocity_change_prev.squaredLength() >= m_desired_velocity_change_threshold &&
-					m_desired_velocity_change_curr.squaredLength() < m_desired_velocity_change_threshold) ||
-				(m_desired_rotation_change_prev.squaredLength() >= m_desired_rotation_change_threshold &&
-					m_desired_rotation_change_curr.squaredLength() < m_desired_rotation_change_threshold)))
+		if (m_force_search_timer <= 0.0f && ((m_desired_velocity_change_prev.squaredLength() >= m_desired_velocity_change_threshold && m_desired_velocity_change_curr.squaredLength() < m_desired_velocity_change_threshold) || (m_desired_rotation_change_prev.squaredLength() >= m_desired_rotation_change_threshold && m_desired_rotation_change_curr.squaredLength() < m_desired_rotation_change_threshold)))
 		{
-			force_search = true;
+			force_search         = true;
 			m_force_search_timer = m_search_time;
 		}
 		else if (m_force_search_timer > 0)
@@ -359,44 +299,13 @@ namespace Piccolo
 
 		// Predict Future Trajectory
 
-		trajectory_desired_rotations_predict(m_trajectory_desired_rotations,
-		                                     m_trajectory_desired_velocities,
-		                                     m_desired_rotation,
-		                                     camera_yaw,
-		                                     local_space_control_direction,
-		                                     camera_control,
-		                                     desired_strafe,
-		                                     20.0f * delta_time);
+		trajectory_desired_rotations_predict(m_trajectory_desired_rotations, m_trajectory_desired_velocities, m_desired_rotation, camera_yaw, local_space_control_direction, camera_control, desired_strafe, 20.0f * delta_time);
 
-		trajectory_rotations_predict(m_trajectory_rotations,
-		                             m_trajectory_angular_velocities,
-		                             m_simulation_rotation,
-		                             m_simulation_angular_velocity,
-		                             m_trajectory_desired_rotations,
-		                             m_simulation_rotation_halflife,
-		                             20.0f * delta_time);
+		trajectory_rotations_predict(m_trajectory_rotations, m_trajectory_angular_velocities, m_simulation_rotation, m_simulation_angular_velocity, m_trajectory_desired_rotations, m_simulation_rotation_halflife, 20.0f * delta_time);
 
-		trajectory_desired_velocities_predict(m_trajectory_desired_velocities,
-		                                      m_trajectory_rotations,
-		                                      m_desired_velocity,
-		                                      camera_yaw,
-		                                      local_space_control_direction,
-		                                      camera_control,
-		                                      desired_strafe,
-		                                      simulation_fwrd_speed,
-		                                      simulation_side_speed,
-		                                      simulation_back_speed,
-		                                      20.0f * delta_time);
+		trajectory_desired_velocities_predict(m_trajectory_desired_velocities, m_trajectory_rotations, m_desired_velocity, camera_yaw, local_space_control_direction, camera_control, desired_strafe, simulation_fwrd_speed, simulation_side_speed, simulation_back_speed, 20.0f * delta_time);
 
-		trajectory_positions_predict(m_trajectory_positions,
-		                             m_trajectory_velocities,
-		                             m_trajectory_accelerations,
-		                             m_simulation_position,
-		                             m_simulation_velocity,
-		                             m_simulation_acceleration,
-		                             m_trajectory_desired_velocities,
-		                             m_simulation_velocity_halflife,
-		                             20.0f * delta_time);
+		trajectory_positions_predict(m_trajectory_positions, m_trajectory_velocities, m_trajectory_accelerations, m_simulation_position, m_simulation_velocity, m_simulation_acceleration, m_trajectory_desired_velocities, m_simulation_velocity_halflife, 20.0f * delta_time);
 
 		Array1D<float> query(static_cast<int>(m_data_base.GetNumFeatures()));
 
@@ -404,38 +313,12 @@ namespace Piccolo
 		Slice1D<float> query_features = m_data_base.m_features(m_frame_index);
 
 		int offset = 0;
-		query_copy_denormalized_feature(query,
-		                                offset,
-		                                3,
-		                                query_features,
-		                                m_data_base.m_feature_offset,
-		                                m_data_base.m_feature_scale); // Left Foot Position
-		query_copy_denormalized_feature(query,
-		                                offset,
-		                                3,
-		                                query_features,
-		                                m_data_base.m_feature_offset,
-		                                m_data_base.m_feature_scale); // Right Foot Position
-		query_copy_denormalized_feature(query,
-		                                offset,
-		                                3,
-		                                query_features,
-		                                m_data_base.m_feature_offset,
-		                                m_data_base.m_feature_scale); // Left Foot Velocity
-		query_copy_denormalized_feature(query,
-		                                offset,
-		                                3,
-		                                query_features,
-		                                m_data_base.m_feature_offset,
-		                                m_data_base.m_feature_scale); // Right Foot Velocity
-		query_copy_denormalized_feature(query,
-		                                offset,
-		                                3,
-		                                query_features,
-		                                m_data_base.m_feature_offset,
-		                                m_data_base.m_feature_scale); // Hip Velocity
-		query_compute_trajectory_position_feature(
-			query, offset, m_bone_positions(0), m_bone_rotations(0), m_trajectory_positions);
+		query_copy_denormalized_feature(query, offset, 3, query_features, m_data_base.m_feature_offset, m_data_base.m_feature_scale); // Left Foot Position
+		query_copy_denormalized_feature(query, offset, 3, query_features, m_data_base.m_feature_offset, m_data_base.m_feature_scale); // Right Foot Position
+		query_copy_denormalized_feature(query, offset, 3, query_features, m_data_base.m_feature_offset, m_data_base.m_feature_scale); // Left Foot Velocity
+		query_copy_denormalized_feature(query, offset, 3, query_features, m_data_base.m_feature_offset, m_data_base.m_feature_scale); // Right Foot Velocity
+		query_copy_denormalized_feature(query, offset, 3, query_features, m_data_base.m_feature_offset, m_data_base.m_feature_scale); // Hip Velocity
+		query_compute_trajectory_position_feature(query, offset, m_bone_positions(0), m_bone_rotations(0), m_trajectory_positions);
 		query_compute_trajectory_direction_feature(query, offset, m_bone_rotations(0), m_trajectory_rotations);
 
 
@@ -445,8 +328,8 @@ namespace Piccolo
 		{
 			// Search
 
-			int best_index = end_of_anim ? -1 : m_frame_index;
-			float best_cost = FLT_MAX;
+			int   best_index = end_of_anim ? -1 : m_frame_index;
+			float best_cost  = FLT_MAX;
 
 			database_search(best_index, best_cost, m_data_base, query);
 
@@ -578,30 +461,26 @@ namespace Piccolo
 #else
 
 			//上一帧animation 中的root骨骼transform
-			Vector3 last_frame_root_position = m_data_base.m_bone_positions(m_frame_index)(0);
+			Vector3    last_frame_root_position = m_data_base.m_bone_positions(m_frame_index)(0);
 			Quaternion last_frame_root_rotation = m_data_base.m_bone_rotations(m_frame_index)(0);
 
 			m_frame_index++;
 			// 这一阵animation bone
-			Slice1D<Vector3> curr_frame_bone_positions = m_data_base.m_bone_positions(m_frame_index);
+			Slice1D<Vector3>    curr_frame_bone_positions = m_data_base.m_bone_positions(m_frame_index);
 			Slice1D<Quaternion> curr_frame_bone_rotations = m_data_base.m_bone_rotations(m_frame_index);
 #endif
 
 
 			//当前模拟的root位置
-			Vector3 curr_root_position = m_bone_positions(0);
+			Vector3    curr_root_position = m_bone_positions(0);
 			Quaternion curr_root_rotation = m_bone_rotations(0);
 
 			// 做root motion
-			Vector3 world_space_position =
-				curr_root_rotation *
-				(last_frame_root_rotation.inverse() * (curr_frame_bone_positions(0) - last_frame_root_position)) +
-				curr_root_position;
+			Vector3 world_space_position = curr_root_rotation * (last_frame_root_rotation.inverse() * (curr_frame_bone_positions(0) - last_frame_root_position)) + curr_root_position;
 
 			// Normalize here because quat inv mul can sometimes produce
 			// unstable returns when the two rotations are very close.
-			Quaternion world_space_rotation =
-				curr_root_rotation * (last_frame_root_rotation.inverse() * curr_frame_bone_rotations(0));
+			Quaternion world_space_rotation = curr_root_rotation * (last_frame_root_rotation.inverse() * curr_frame_bone_rotations(0));
 			world_space_rotation.normalise();
 			// root bone 需要使用模拟位置
 			m_bone_positions(0) = world_space_position;
@@ -619,24 +498,15 @@ namespace Piccolo
 
 		// Vector3 simulation_position_prev = m_simulation_position;
 
-		simulation_positions_update(m_simulation_position,
-		                            m_simulation_velocity,
-		                            m_simulation_acceleration,
-		                            m_desired_velocity,
-		                            m_simulation_velocity_halflife,
-		                            delta_time);
+		simulation_positions_update(m_simulation_position, m_simulation_velocity, m_simulation_acceleration, m_desired_velocity, m_simulation_velocity_halflife, delta_time);
 
-		simulation_rotations_update(m_simulation_rotation,
-		                            m_simulation_angular_velocity,
-		                            m_desired_rotation,
-		                            m_simulation_rotation_halflife,
-		                            delta_time);
+		simulation_rotations_update(m_simulation_rotation, m_simulation_angular_velocity, m_desired_rotation, m_simulation_rotation_halflife, delta_time);
 
 		// final
 		printf("best index:%d\n", m_frame_index);
 		// forward kinematic full
 		forward_kinematic_full();
-		m_root_motion = m_bone_positions(0);
+		m_root_motion   = m_bone_positions(0);
 		m_root_rotation = m_bone_rotations(0);
 
 		{
@@ -648,7 +518,7 @@ namespace Piccolo
 
 			denormalize_features(current_feature, m_data_base.m_feature_offset, m_data_base.m_feature_scale);
 			Quaternion rot = m_bone_rotations(0);
-			Vector3 pos = m_bone_positions(0);
+			Vector3    pos = m_bone_positions(0);
 
 			Vector3 traj0_pos = rot * Vector3(current_feature(15), 0.0f, current_feature(16)) + pos;
 			Vector3 traj1_pos = rot * Vector3(current_feature(17), 0.0f, current_feature(18)) + pos;
@@ -683,20 +553,15 @@ namespace Piccolo
 	}
 
 
-	void CAnimInstanceMotionMatching::BuildMatchingFeature(CDataBase& db,
-	                                                       const float feature_weight_foot_position,
-	                                                       const float feature_weight_foot_velocity,
-	                                                       const float feature_weight_hip_velocity,
-	                                                       const float feature_weight_trajectory_positions,
-	                                                       const float feature_weight_trajectory_directions)
+	void CAnimInstanceMotionMatching::BuildMatchingFeature(CDataBase& db, const float feature_weight_foot_position, const float feature_weight_foot_velocity, const float feature_weight_hip_velocity, const float feature_weight_trajectory_positions, const float feature_weight_trajectory_directions)
 	{
 		constexpr int num_features = 3 + // Left Foot Position
-			3 + // Right Foot Position
-			3 + // Left Foot Velocity
-			3 + // Right Foot Velocity
-			3 + // Hip Velocity
-			6 + // Trajectory Positions 2D
-			6; // Trajectory Directions 2D
+			3 +                          // Right Foot Position
+			3 +                          // Left Foot Velocity
+			3 +                          // Right Foot Velocity
+			3 +                          // Hip Velocity
+			6 +                          // Trajectory Positions 2D
+			6;                           // Trajectory Directions 2D
 
 		db.m_features.resize(static_cast<int>(db.GetNumFrames()), num_features);
 		db.m_feature_offset.resize(num_features);
@@ -720,11 +585,10 @@ namespace Piccolo
 	{
 		for (int i = 0; i < static_cast<int>(db.GetNumFrames()); i++)
 		{
-			Vector3 bone_position;
+			Vector3    bone_position;
 			Quaternion bone_rotation;
 
-			RecursiveForwardKinematics(
-				bone_position, bone_rotation, db.m_bone_positions(i), db.m_bone_rotations(i), db.m_bone_parents, bone);
+			RecursiveForwardKinematics(bone_position, bone_rotation, db.m_bone_positions(i), db.m_bone_rotations(i), db.m_bone_parents, bone);
 
 			bone_position = db.m_bone_rotations(i, 0).inverse() * (bone_position - db.m_bone_positions(i, 0));
 
@@ -742,21 +606,12 @@ namespace Piccolo
 	{
 		for (int i = 0; i < static_cast<int>(db.GetNumFrames()); i++)
 		{
-			Vector3 bone_position;
-			Vector3 bone_velocity;
+			Vector3    bone_position;
+			Vector3    bone_velocity;
 			Quaternion bone_rotation;
-			Vector3 bone_angular_velocity;
+			Vector3    bone_angular_velocity;
 
-			RecursiveForwardKinematicsVelocity(bone_position,
-			                                   bone_velocity,
-			                                   bone_rotation,
-			                                   bone_angular_velocity,
-			                                   db.m_bone_positions(i),
-			                                   db.m_bone_velocities(i),
-			                                   db.m_bone_rotations(i),
-			                                   db.m_bone_angular_velocities(i),
-			                                   db.m_bone_parents,
-			                                   bone);
+			RecursiveForwardKinematicsVelocity(bone_position, bone_velocity, bone_rotation, bone_angular_velocity, db.m_bone_positions(i), db.m_bone_velocities(i), db.m_bone_rotations(i), db.m_bone_angular_velocities(i), db.m_bone_parents, bone);
 
 			bone_velocity = db.m_bone_rotations(i, 0).inverse() * bone_velocity;
 
@@ -778,12 +633,9 @@ namespace Piccolo
 			int t1 = DatabaseTrajectoryIndexClamp(db, i, 40);
 			int t2 = DatabaseTrajectoryIndexClamp(db, i, 60);
 
-			const Vector3 trajectory_pos0 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t0, 0) - db.m_bone_positions(i, 0));
-			const Vector3 trajectory_pos1 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t1, 0) - db.m_bone_positions(i, 0));
-			const Vector3 trajectory_pos2 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t2, 0) - db.m_bone_positions(i, 0));
+			const Vector3 trajectory_pos0 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t0, 0) - db.m_bone_positions(i, 0));
+			const Vector3 trajectory_pos1 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t1, 0) - db.m_bone_positions(i, 0));
+			const Vector3 trajectory_pos2 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_positions(t2, 0) - db.m_bone_positions(i, 0));
 
 			db.m_features(i, offset + 0) = trajectory_pos0.x;
 			db.m_features(i, offset + 1) = trajectory_pos0.z;
@@ -806,12 +658,9 @@ namespace Piccolo
 			int t1 = DatabaseTrajectoryIndexClamp(db, i, 40);
 			int t2 = DatabaseTrajectoryIndexClamp(db, i, 60);
 
-			const Vector3 trajectory_dir0 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t0, 0) * Vector3(0, 0, 1));
-			const Vector3 trajectory_dir1 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t1, 0) * Vector3(0, 0, 1));
-			const Vector3 trajectory_dir2 =
-				db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t2, 0) * Vector3(0, 0, 1));
+			const Vector3 trajectory_dir0 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t0, 0) * Vector3(0, 0, 1));
+			const Vector3 trajectory_dir1 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t1, 0) * Vector3(0, 0, 1));
+			const Vector3 trajectory_dir2 = db.m_bone_rotations(i, 0).inverse() * (db.m_bone_rotations(t2, 0) * Vector3(0, 0, 1));
 
 			db.m_features(i, offset + 0) = trajectory_dir0.x;
 			db.m_features(i, offset + 1) = trajectory_dir0.z;
@@ -828,8 +677,8 @@ namespace Piccolo
 
 	void CAnimInstanceMotionMatching::DataBaseBuildBounds(CDataBase& db)
 	{
-		int nbound_sm = (db.GetNumFrames() + BOUND_SM_SIZE - 1) / BOUND_SM_SIZE;
-		int nbound_lr = (db.GetNumFrames() + BOUND_LR_SIZE - 1) / BOUND_LR_SIZE;
+		int nbound_sm   = (db.GetNumFrames() + BOUND_SM_SIZE - 1) / BOUND_SM_SIZE;
+		int nbound_lr   = (db.GetNumFrames() + BOUND_LR_SIZE - 1) / BOUND_LR_SIZE;
 		int num_feature = static_cast<int>(db.GetNumFeatures());
 		db.bound_sm_min.resize(nbound_sm, num_feature);
 		db.bound_sm_max.resize(nbound_sm, num_feature);
@@ -856,20 +705,14 @@ namespace Piccolo
 		}
 	}
 
-	void CAnimInstanceMotionMatching::RecursiveForwardKinematics(Vector3& bone_position,
-	                                                             Quaternion& bone_rotation,
-	                                                             const Slice1D<Vector3> bone_positions,
-	                                                             const Slice1D<Quaternion> bone_rotations,
-	                                                             const Slice1D<int> bone_parents,
-	                                                             const int bone)
+	void CAnimInstanceMotionMatching::RecursiveForwardKinematics(Vector3& bone_position, Quaternion& bone_rotation, const Slice1D<Vector3> bone_positions, const Slice1D<Quaternion> bone_rotations, const Slice1D<int> bone_parents, const int bone)
 	{
 		if (bone_parents(bone) != -1)
 		{
-			Vector3 parent_position;
+			Vector3    parent_position;
 			Quaternion parent_rotation;
 
-			RecursiveForwardKinematics(
-				parent_position, parent_rotation, bone_positions, bone_rotations, bone_parents, bone_parents(bone));
+			RecursiveForwardKinematics(parent_position, parent_rotation, bone_positions, bone_rotations, bone_parents, bone_parents(bone));
 
 			bone_position = parent_rotation * bone_positions(bone) + parent_position;
 			bone_rotation = parent_rotation * bone_rotations(bone);
@@ -881,12 +724,7 @@ namespace Piccolo
 		}
 	}
 
-	void CAnimInstanceMotionMatching::NormalizeFeature(Slice2D<float> features,
-	                                                   Slice1D<float> features_offset,
-	                                                   Slice1D<float> features_scale,
-	                                                   const int offset,
-	                                                   const int size,
-	                                                   const float weight = 1.0f)
+	void CAnimInstanceMotionMatching::NormalizeFeature(Slice2D<float> features, Slice1D<float> features_offset, Slice1D<float> features_scale, const int offset, const int size, const float weight = 1.0f)
 	{
 		// First compute what is essentially the mean
 		// value for each feature dimension
@@ -911,8 +749,7 @@ namespace Piccolo
 		{
 			for (int j = 0; j < size; j++)
 			{
-				vars(j) += Math::sqr(features(i, offset + j) - features_offset(offset + j)) /
-					static_cast<float>(features.rows);
+				vars(j) += Math::sqr(features(i, offset + j) - features_offset(offset + j)) / static_cast<float>(features.rows);
 			}
 		}
 
@@ -939,53 +776,33 @@ namespace Piccolo
 		{
 			for (int j = 0; j < size; j++)
 			{
-				features(i, offset + j) =
-					(features(i, offset + j) - features_offset(offset + j)) / features_scale(offset + j);
+				features(i, offset + j) = (features(i, offset + j) - features_offset(offset + j)) / features_scale(offset + j);
 			}
 		}
 	}
 
-	void CAnimInstanceMotionMatching::RecursiveForwardKinematicsVelocity(Vector3& bone_position,
-	                                                                     Vector3& bone_velocity,
-	                                                                     Quaternion& bone_rotation,
-	                                                                     Vector3& bone_angular_velocity,
-	                                                                     const Slice1D<Vector3> bone_positions,
-	                                                                     const Slice1D<Vector3> bone_velocities,
-	                                                                     const Slice1D<Quaternion> bone_rotations,
-	                                                                     const Slice1D<Vector3> bone_angular_velocities,
-	                                                                     const Slice1D<int> bone_parents,
-	                                                                     const int bone)
+	void CAnimInstanceMotionMatching::RecursiveForwardKinematicsVelocity(Vector3& bone_position, Vector3& bone_velocity, Quaternion& bone_rotation, Vector3& bone_angular_velocity, const Slice1D<Vector3> bone_positions, const Slice1D<Vector3> bone_velocities, const Slice1D<Quaternion> bone_rotations, const Slice1D<Vector3> bone_angular_velocities, const Slice1D<int> bone_parents, const int bone)
 	{
 		//
 		if (bone_parents(bone) != -1)
 		{
-			Vector3 parent_position;
-			Vector3 parent_velocity;
+			Vector3    parent_position;
+			Vector3    parent_velocity;
 			Quaternion parent_rotation;
-			Vector3 parent_angular_velocity;
+			Vector3    parent_angular_velocity;
 
-			RecursiveForwardKinematicsVelocity(parent_position,
-			                                   parent_velocity,
-			                                   parent_rotation,
-			                                   parent_angular_velocity,
-			                                   bone_positions,
-			                                   bone_velocities,
-			                                   bone_rotations,
-			                                   bone_angular_velocities,
-			                                   bone_parents,
-			                                   bone_parents(bone));
+			RecursiveForwardKinematicsVelocity(parent_position, parent_velocity, parent_rotation, parent_angular_velocity, bone_positions, bone_velocities, bone_rotations, bone_angular_velocities, bone_parents, bone_parents(bone));
 
-			bone_position = parent_rotation * bone_positions(bone) + parent_position;
-			bone_velocity = parent_velocity + parent_rotation * bone_velocities(bone) +
-				parent_angular_velocity.crossProduct(parent_rotation * bone_positions(bone));
-			bone_rotation = parent_rotation * bone_rotations(bone);
+			bone_position         = parent_rotation * bone_positions(bone) + parent_position;
+			bone_velocity         = parent_velocity + parent_rotation * bone_velocities(bone) + parent_angular_velocity.crossProduct(parent_rotation * bone_positions(bone));
+			bone_rotation         = parent_rotation * bone_rotations(bone);
 			bone_angular_velocity = parent_rotation * (bone_angular_velocities(bone) + parent_angular_velocity);
 		}
 		else
 		{
-			bone_position = bone_positions(bone);
-			bone_velocity = bone_velocities(bone);
-			bone_rotation = bone_rotations(bone);
+			bone_position         = bone_positions(bone);
+			bone_velocity         = bone_velocities(bone);
+			bone_rotation         = bone_rotations(bone);
 			bone_angular_velocity = bone_angular_velocities(bone);
 		}
 	}
@@ -1004,45 +821,23 @@ namespace Piccolo
 		return -1;
 	}
 
-	void CAnimInstanceMotionMatching::trajectory_desired_rotations_predict(Slice1D<Quaternion> desired_rotations,
-	                                                                       const Slice1D<Vector3> desired_velocities,
-	                                                                       const Quaternion desired_rotation,
-	                                                                       const float camera_azimuth,
-	                                                                       const Vector3 gamepadstick_left,
-	                                                                       const Vector3 gamepadstick_right,
-	                                                                       const bool desired_strafe,
-	                                                                       const float dt)
+	void CAnimInstanceMotionMatching::trajectory_desired_rotations_predict(Slice1D<Quaternion> desired_rotations, const Slice1D<Vector3> desired_velocities, const Quaternion desired_rotation, const float camera_azimuth, const Vector3 gamepadstick_left, const Vector3 gamepadstick_right, const bool desired_strafe, const float dt)
 	{
 		desired_rotations(0) = desired_rotation;
 
 		for (int i = 1; i < desired_rotations.size; i++)
 		{
-			desired_rotations(i) = desired_rotation_update(
-				desired_rotations(i - 1),
-				gamepadstick_left,
-				gamepadstick_right,
-				orbit_camera_update_azimuth(camera_azimuth, gamepadstick_right, desired_strafe, static_cast<float>(i) * dt),
-				desired_strafe,
-				desired_velocities(i));
+			desired_rotations(i) = desired_rotation_update(desired_rotations(i - 1), gamepadstick_left, gamepadstick_right, orbit_camera_update_azimuth(camera_azimuth, gamepadstick_right, desired_strafe, static_cast<float>(i) * dt), desired_strafe, desired_velocities(i));
 		}
 	}
 
-	float CAnimInstanceMotionMatching::orbit_camera_update_azimuth(const float azimuth,
-	                                                               const Vector3 gamepadstick_right,
-	                                                               const bool desired_strafe,
-	                                                               const float dt)
+	float CAnimInstanceMotionMatching::orbit_camera_update_azimuth(const float azimuth, const Vector3 gamepadstick_right, const bool desired_strafe, const float dt)
 	{
 		Vector3 gamepadaxis = desired_strafe ? Vector3::ZERO : gamepadstick_right;
 		return azimuth + 2.0f * dt * -gamepadaxis.x;
 	}
 
-	void CAnimInstanceMotionMatching::trajectory_rotations_predict(Slice1D<Quaternion> rotations,
-	                                                               Slice1D<Vector3> angular_velocities,
-	                                                               const Quaternion rotation,
-	                                                               const Vector3 angular_velocity,
-	                                                               const Slice1D<Quaternion> desired_rotations,
-	                                                               const float halflife,
-	                                                               const float dt)
+	void CAnimInstanceMotionMatching::trajectory_rotations_predict(Slice1D<Quaternion> rotations, Slice1D<Vector3> angular_velocities, const Quaternion rotation, const Vector3 angular_velocity, const Slice1D<Quaternion> desired_rotations, const float halflife, const float dt)
 	{
 		rotations.set(rotation);
 		angular_velocities.set(angular_velocity);
@@ -1053,95 +848,54 @@ namespace Piccolo
 		}
 	}
 
-	void CAnimInstanceMotionMatching::simulation_rotations_update(Quaternion& rotation,
-	                                                              Vector3& angular_velocity,
-	                                                              const Quaternion desired_rotation,
-	                                                              const float halflife,
-	                                                              const float dt)
+	void CAnimInstanceMotionMatching::simulation_rotations_update(Quaternion& rotation, Vector3& angular_velocity, const Quaternion desired_rotation, const float halflife, const float dt)
 	{
 		simple_spring_damper_exact(rotation, angular_velocity, desired_rotation, halflife, dt);
 	}
 
-	void
-	CAnimInstanceMotionMatching::trajectory_desired_velocities_predict(Slice1D<Vector3> desired_velocities,
-	                                                                   const Slice1D<Quaternion> trajectory_rotations,
-	                                                                   const Vector3 desired_velocity,
-	                                                                   const float camera_azimuth,
-	                                                                   const Vector3 gamepadstick_left,
-	                                                                   const Vector3 gamepadstick_right,
-	                                                                   const bool desired_strafe,
-	                                                                   const float fwrd_speed,
-	                                                                   const float side_speed,
-	                                                                   const float back_speed,
-	                                                                   const float dt)
+	void CAnimInstanceMotionMatching::trajectory_desired_velocities_predict(Slice1D<Vector3> desired_velocities, const Slice1D<Quaternion> trajectory_rotations, const Vector3 desired_velocity, const float camera_azimuth, const Vector3 gamepadstick_left, const Vector3 gamepadstick_right, const bool desired_strafe, const float fwrd_speed, const float side_speed, const float back_speed, const float dt)
 	{
 		desired_velocities(0) = desired_velocity;
 
 		for (int i = 1; i < desired_velocities.size; i++)
 		{
-			desired_velocities(i) = desired_velocity_update(
-				gamepadstick_left,
-				orbit_camera_update_azimuth(camera_azimuth, gamepadstick_right, desired_strafe, i * dt),
-				trajectory_rotations(i),
-				fwrd_speed,
-				side_speed,
-				back_speed);
+			desired_velocities(i) = desired_velocity_update(gamepadstick_left, orbit_camera_update_azimuth(camera_azimuth, gamepadstick_right, desired_strafe, i * dt), trajectory_rotations(i), fwrd_speed, side_speed, back_speed);
 		}
 	}
 
-	void CAnimInstanceMotionMatching::trajectory_positions_predict(Slice1D<Vector3> positions,
-	                                                               Slice1D<Vector3> velocities,
-	                                                               Slice1D<Vector3> accelerations,
-	                                                               const Vector3 position,
-	                                                               const Vector3 velocity,
-	                                                               const Vector3 acceleration,
-	                                                               const Slice1D<Vector3> desired_velocities,
-	                                                               const float halflife,
-	                                                               const float dt)
+	void CAnimInstanceMotionMatching::trajectory_positions_predict(Slice1D<Vector3> positions, Slice1D<Vector3> velocities, Slice1D<Vector3> accelerations, const Vector3 position, const Vector3 velocity, const Vector3 acceleration, const Slice1D<Vector3> desired_velocities, const float halflife, const float dt)
 	{
-		positions(0) = position;
-		velocities(0) = velocity;
+		positions(0)     = position;
+		velocities(0)    = velocity;
 		accelerations(0) = acceleration;
 
 		for (int i = 1; i < positions.size; i++)
 		{
-			positions(i) = positions(i - 1);
-			velocities(i) = velocities(i - 1);
+			positions(i)     = positions(i - 1);
+			velocities(i)    = velocities(i - 1);
 			accelerations(i) = accelerations(i - 1);
 
-			simulation_positions_update(
-				positions(i), velocities(i), accelerations(i), desired_velocities(i), halflife, dt);
+			simulation_positions_update(positions(i), velocities(i), accelerations(i), desired_velocities(i), halflife, dt);
 		}
 	}
 
-	void CAnimInstanceMotionMatching::simulation_positions_update(Vector3& position,
-	                                                              Vector3& velocity,
-	                                                              Vector3& acceleration,
-	                                                              const Vector3 desired_velocity,
-	                                                              const float halflife,
-	                                                              const float dt)
+	void CAnimInstanceMotionMatching::simulation_positions_update(Vector3& position, Vector3& velocity, Vector3& acceleration, const Vector3 desired_velocity, const float halflife, const float dt)
 	{
-		float y = halflife_to_damping(halflife) / 2.0f;
-		Vector3 j0 = velocity - desired_velocity;
-		Vector3 j1 = acceleration + j0 * y;
-		float eydt = fast_negexpf(y * dt);
+		float   y    = halflife_to_damping(halflife) / 2.0f;
+		Vector3 j0   = velocity - desired_velocity;
+		Vector3 j1   = acceleration + j0 * y;
+		float   eydt = fast_negexpf(y * dt);
 
 		Vector3 position_prev = position;
 
-		position = eydt * (((-j1) / (y * y)) + ((-j0 - j1 * dt) / y)) + (j1 / (y * y)) + j0 / y +
-			desired_velocity * dt + position_prev;
-		velocity = eydt * (j0 + j1 * dt) + desired_velocity;
+		position     = eydt * (((-j1) / (y * y)) + ((-j0 - j1 * dt) / y)) + (j1 / (y * y)) + j0 / y + desired_velocity * dt + position_prev;
+		velocity     = eydt * (j0 + j1 * dt) + desired_velocity;
 		acceleration = eydt * (acceleration - j1 * y * dt);
 
 		// position = simulation_collide_obstacles(position_prev, position, obstacles_positions, obstacles_scales);
 	}
 
-	void CAnimInstanceMotionMatching::query_copy_denormalized_feature(Slice1D<float> query,
-	                                                                  int& offset,
-	                                                                  const int size,
-	                                                                  const Slice1D<float> features,
-	                                                                  const Slice1D<float> features_offset,
-	                                                                  const Slice1D<float> features_scale)
+	void CAnimInstanceMotionMatching::query_copy_denormalized_feature(Slice1D<float> query, int& offset, const int size, const Slice1D<float> features, const Slice1D<float> features_offset, const Slice1D<float> features_scale)
 	{
 		for (int i = 0; i < size; i++)
 		{
@@ -1151,17 +905,12 @@ namespace Piccolo
 		offset += size;
 	}
 
-	void
-	CAnimInstanceMotionMatching::query_compute_trajectory_position_feature(Slice1D<float> query,
-	                                                                       int& offset,
-	                                                                       const Vector3 root_position,
-	                                                                       const Quaternion root_rotation,
-	                                                                       const Slice1D<Vector3> trajectory_positions)
+	void CAnimInstanceMotionMatching::query_compute_trajectory_position_feature(Slice1D<float> query, int& offset, const Vector3 root_position, const Quaternion root_rotation, const Slice1D<Vector3> trajectory_positions)
 	{
 		Quaternion inv_rot = root_rotation.inverse();
-		Vector3 traj0 = inv_rot * (trajectory_positions(1) - root_position);
-		Vector3 traj1 = inv_rot * (trajectory_positions(2) - root_position);
-		Vector3 traj2 = inv_rot * (trajectory_positions(3) - root_position);
+		Vector3    traj0   = inv_rot * (trajectory_positions(1) - root_position);
+		Vector3    traj1   = inv_rot * (trajectory_positions(2) - root_position);
+		Vector3    traj2   = inv_rot * (trajectory_positions(3) - root_position);
 
 		query(offset + 0) = traj0.x;
 		query(offset + 1) = traj0.z;
@@ -1179,16 +928,12 @@ namespace Piccolo
 		m_debug_position[3] = trajectory_positions(3);
 	}
 
-	void CAnimInstanceMotionMatching::query_compute_trajectory_direction_feature(
-		Slice1D<float> query,
-		int& offset,
-		const Quaternion root_rotation,
-		const Slice1D<Quaternion> trajectory_rotations)
+	void CAnimInstanceMotionMatching::query_compute_trajectory_direction_feature(Slice1D<float> query, int& offset, const Quaternion root_rotation, const Slice1D<Quaternion> trajectory_rotations)
 	{
 		Quaternion inv_rot = root_rotation.inverse();
-		Vector3 traj0 = inv_rot * (trajectory_rotations(1) * Vector3::UNIT_Z);
-		Vector3 traj1 = inv_rot * (trajectory_rotations(2) * Vector3::UNIT_Z);
-		Vector3 traj2 = inv_rot * (trajectory_rotations(3) * Vector3::UNIT_Z);
+		Vector3    traj0   = inv_rot * (trajectory_rotations(1) * Vector3::UNIT_Z);
+		Vector3    traj1   = inv_rot * (trajectory_rotations(2) * Vector3::UNIT_Z);
+		Vector3    traj2   = inv_rot * (trajectory_rotations(3) * Vector3::UNIT_Z);
 
 		query(offset + 0) = traj0.x;
 		query(offset + 1) = traj0.z;
@@ -1232,22 +977,13 @@ namespace Piccolo
 
 		for (int i = 0; i < static_cast<int>(m_data_base.GetNumBones()); ++i)
 		{
-			m_result_frame.m_parents[i] = m_data_base.m_bone_parents(i);
+			m_result_frame.m_parents[i]  = m_data_base.m_bone_parents(i);
 			m_result_frame.m_position[i] = m_bone_positions(i);
 			m_result_frame.m_rotation[i] = m_bone_rotations(i);
 		}
 	}
 
-	void CAnimInstanceMotionMatching::inertialize_pose_reset(Slice1D<Vector3> bone_offset_positions,
-	                                                         Slice1D<Vector3> bone_offset_velocities,
-	                                                         Slice1D<Quaternion> bone_offset_rotations,
-	                                                         Slice1D<Vector3> bone_offset_angular_velocities,
-	                                                         Vector3& transition_src_position,
-	                                                         Quaternion& transition_src_rotation,
-	                                                         Vector3& transition_dst_position,
-	                                                         Quaternion& transition_dst_rotation,
-	                                                         const Vector3 root_position,
-	                                                         const Quaternion root_rotation)
+	void CAnimInstanceMotionMatching::inertialize_pose_reset(Slice1D<Vector3> bone_offset_positions, Slice1D<Vector3> bone_offset_velocities, Slice1D<Quaternion> bone_offset_rotations, Slice1D<Vector3> bone_offset_angular_velocities, Vector3& transition_src_position, Quaternion& transition_src_rotation, Vector3& transition_dst_position, Quaternion& transition_dst_rotation, const Vector3 root_position, const Quaternion root_rotation)
 	{
 		bone_offset_positions.zero();
 		bone_offset_velocities.zero();
@@ -1267,26 +1003,7 @@ namespace Piccolo
 	// for the pose being transitioned from (src) as well
 	// as the pose being transitioned to (dst) in their
 	// own animation spaces.
-	void CAnimInstanceMotionMatching::inertialize_pose_transition(Slice1D<Vector3> bone_offset_positions,
-	                                                              Slice1D<Vector3> bone_offset_velocities,
-	                                                              Slice1D<Quaternion> bone_offset_rotations,
-	                                                              Slice1D<Vector3> bone_offset_angular_velocities,
-	                                                              Vector3& transition_src_position,
-	                                                              Quaternion& transition_src_rotation,
-	                                                              Vector3& transition_dst_position,
-	                                                              Quaternion& transition_dst_rotation,
-	                                                              const Vector3 root_position,
-	                                                              const Vector3 root_velocity,
-	                                                              const Quaternion root_rotation,
-	                                                              const Vector3 root_angular_velocity,
-	                                                              const Slice1D<Vector3> bone_src_positions,
-	                                                              const Slice1D<Vector3> bone_src_velocities,
-	                                                              const Slice1D<Quaternion> bone_src_rotations,
-	                                                              const Slice1D<Vector3> bone_src_angular_velocities,
-	                                                              const Slice1D<Vector3> bone_dst_positions,
-	                                                              const Slice1D<Vector3> bone_dst_velocities,
-	                                                              const Slice1D<Quaternion> bone_dst_rotations,
-	                                                              const Slice1D<Vector3> bone_dst_angular_velocities)
+	void CAnimInstanceMotionMatching::inertialize_pose_transition(Slice1D<Vector3> bone_offset_positions, Slice1D<Vector3> bone_offset_velocities, Slice1D<Quaternion> bone_offset_rotations, Slice1D<Vector3> bone_offset_angular_velocities, Vector3& transition_src_position, Quaternion& transition_src_rotation, Vector3& transition_dst_position, Quaternion& transition_dst_rotation, const Vector3 root_position, const Vector3 root_velocity, const Quaternion root_rotation, const Vector3 root_angular_velocity, const Slice1D<Vector3> bone_src_positions, const Slice1D<Vector3> bone_src_velocities, const Slice1D<Quaternion> bone_src_rotations, const Slice1D<Vector3> bone_src_angular_velocities, const Slice1D<Vector3> bone_dst_positions, const Slice1D<Vector3> bone_dst_velocities, const Slice1D<Quaternion> bone_dst_rotations, const Slice1D<Vector3> bone_dst_angular_velocities)
 	{
 		// First we record the root position and rotation
 		// in the animation data for the source and destination
@@ -1298,44 +1015,22 @@ namespace Piccolo
 
 		// We then find the velocities so we can transition the
 		// root inertiaizers
-		Vector3 world_space_dst_velocity =
-			transition_dst_rotation * (transition_src_rotation.inverse() * bone_dst_velocities(0));
+		Vector3 world_space_dst_velocity = transition_dst_rotation * (transition_src_rotation.inverse() * bone_dst_velocities(0));
 
-		Vector3 world_space_dst_angular_velocity =
-			transition_dst_rotation * (transition_src_rotation.inverse() * bone_dst_angular_velocities(0));
+		Vector3 world_space_dst_angular_velocity = transition_dst_rotation * (transition_src_rotation.inverse() * bone_dst_angular_velocities(0));
 
 		// Transition inertializers recording the offsets for
 		// the root joint
-		inertialize_transition(bone_offset_positions(0),
-		                       bone_offset_velocities(0),
-		                       root_position,
-		                       root_velocity,
-		                       root_position,
-		                       world_space_dst_velocity);
+		inertialize_transition(bone_offset_positions(0), bone_offset_velocities(0), root_position, root_velocity, root_position, world_space_dst_velocity);
 
-		inertialize_transition(bone_offset_rotations(0),
-		                       bone_offset_angular_velocities(0),
-		                       root_rotation,
-		                       root_angular_velocity,
-		                       root_rotation,
-		                       world_space_dst_angular_velocity);
+		inertialize_transition(bone_offset_rotations(0), bone_offset_angular_velocities(0), root_rotation, root_angular_velocity, root_rotation, world_space_dst_angular_velocity);
 
 		// Transition all the inertializers for each other bone
 		for (int i = 1; i < bone_offset_positions.size; i++)
 		{
-			inertialize_transition(bone_offset_positions(i),
-			                       bone_offset_velocities(i),
-			                       bone_src_positions(i),
-			                       bone_src_velocities(i),
-			                       bone_dst_positions(i),
-			                       bone_dst_velocities(i));
+			inertialize_transition(bone_offset_positions(i), bone_offset_velocities(i), bone_src_positions(i), bone_src_velocities(i), bone_dst_positions(i), bone_dst_velocities(i));
 
-			inertialize_transition(bone_offset_rotations(i),
-			                       bone_offset_angular_velocities(i),
-			                       bone_src_rotations(i),
-			                       bone_src_angular_velocities(i),
-			                       bone_dst_rotations(i),
-			                       bone_dst_angular_velocities(i));
+			inertialize_transition(bone_offset_rotations(i), bone_offset_angular_velocities(i), bone_src_rotations(i), bone_src_angular_velocities(i), bone_dst_rotations(i), bone_dst_angular_velocities(i));
 		}
 	}
 
@@ -1344,62 +1039,26 @@ namespace Piccolo
 	// as well as updating the offsets themselves. It takes
 	// as input the current playing animation as well as the
 	// root transition locations, a halflife, and a dt
-	void CAnimInstanceMotionMatching::inertialize_pose_update(Slice1D<Vector3> bone_positions,
-	                                                          Slice1D<Vector3> bone_velocities,
-	                                                          Slice1D<Quaternion> bone_rotations,
-	                                                          Slice1D<Vector3> bone_angular_velocities,
-	                                                          Slice1D<Vector3> bone_offset_positions,
-	                                                          Slice1D<Vector3> bone_offset_velocities,
-	                                                          Slice1D<Quaternion> bone_offset_rotations,
-	                                                          Slice1D<Vector3> bone_offset_angular_velocities,
-	                                                          const Slice1D<Vector3> bone_input_positions,
-	                                                          const Slice1D<Vector3> bone_input_velocities,
-	                                                          const Slice1D<Quaternion> bone_input_rotations,
-	                                                          const Slice1D<Vector3> bone_input_angular_velocities,
-	                                                          const Vector3 transition_src_position,
-	                                                          const Quaternion transition_src_rotation,
-	                                                          const Vector3 transition_dst_position,
-	                                                          const Quaternion transition_dst_rotation,
-	                                                          const float halflife,
-	                                                          const float dt)
+	void CAnimInstanceMotionMatching::inertialize_pose_update(Slice1D<Vector3> bone_positions, Slice1D<Vector3> bone_velocities, Slice1D<Quaternion> bone_rotations, Slice1D<Vector3> bone_angular_velocities, Slice1D<Vector3> bone_offset_positions, Slice1D<Vector3> bone_offset_velocities, Slice1D<Quaternion> bone_offset_rotations, Slice1D<Vector3> bone_offset_angular_velocities, const Slice1D<Vector3> bone_input_positions, const Slice1D<Vector3> bone_input_velocities, const Slice1D<Quaternion> bone_input_rotations, const Slice1D<Vector3> bone_input_angular_velocities, const Vector3 transition_src_position, const Quaternion transition_src_rotation, const Vector3 transition_dst_position, const Quaternion transition_dst_rotation, const float halflife, const float dt)
 	{
 		// First we find the next root position, velocity, rotation
 		// and rotational velocity in the world space by transforming
 		// the input animation from it's animation space into the
 		// space of the currently playing animation.
-		Vector3 world_space_position = transition_dst_rotation * (transition_src_rotation.inverse() *
-				(bone_input_positions(0) - transition_src_position)) +
-			transition_dst_position;
-		Vector3 world_space_velocity =
-			transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_velocities(0));
+		Vector3 world_space_position = transition_dst_rotation * (transition_src_rotation.inverse() * (bone_input_positions(0) - transition_src_position)) + transition_dst_position;
+		Vector3 world_space_velocity = transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_velocities(0));
 
 		// Normalize here because quat inv mul can sometimes produce
 		// unstable returns when the two rotations are very close.
-		Quaternion world_space_rotation =
-			transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_rotations(0));
+		Quaternion world_space_rotation = transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_rotations(0));
 		world_space_rotation.normalise();
 
-		Vector3 world_space_angular_velocity =
-			transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_angular_velocities(0));
+		Vector3 world_space_angular_velocity = transition_dst_rotation * (transition_src_rotation.inverse() * bone_input_angular_velocities(0));
 
 		// Then we update these two inertializers with these new world space inputs
-		inertialize_update(bone_positions(0),
-		                   bone_velocities(0),
-		                   bone_offset_positions(0),
-		                   bone_offset_velocities(0),
-		                   world_space_position,
-		                   world_space_velocity,
-		                   halflife,
-		                   dt);
+		inertialize_update(bone_positions(0), bone_velocities(0), bone_offset_positions(0), bone_offset_velocities(0), world_space_position, world_space_velocity, halflife, dt);
 
-		inertialize_update(bone_rotations(0),
-		                   bone_angular_velocities(0),
-		                   bone_offset_rotations(0),
-		                   bone_offset_angular_velocities(0),
-		                   world_space_rotation,
-		                   world_space_angular_velocity,
-		                   halflife,
-		                   dt);
+		inertialize_update(bone_rotations(0), bone_angular_velocities(0), bone_offset_rotations(0), bone_offset_angular_velocities(0), world_space_rotation, world_space_angular_velocity, halflife, dt);
 
 		// Then we update the inertializers for the rest of the bones
 		for (int i = 1; i < bone_positions.size; i++)
@@ -1409,29 +1068,13 @@ namespace Piccolo
 			// bone_rotations(i)          = bone_input_rotations(i);
 			// bone_angular_velocities(i) = bone_input_angular_velocities(i);
 
-			inertialize_update(bone_positions(i),
-			                   bone_velocities(i),
-			                   bone_offset_positions(i),
-			                   bone_offset_velocities(i),
-			                   bone_input_positions(i),
-			                   bone_input_velocities(i),
-			                   halflife,
-			                   dt);
+			inertialize_update(bone_positions(i), bone_velocities(i), bone_offset_positions(i), bone_offset_velocities(i), bone_input_positions(i), bone_input_velocities(i), halflife, dt);
 
-			inertialize_update(bone_rotations(i),
-			                   bone_angular_velocities(i),
-			                   bone_offset_rotations(i),
-			                   bone_offset_angular_velocities(i),
-			                   bone_input_rotations(i),
-			                   bone_input_angular_velocities(i),
-			                   halflife,
-			                   dt);
+			inertialize_update(bone_rotations(i), bone_angular_velocities(i), bone_offset_rotations(i), bone_offset_angular_velocities(i), bone_input_rotations(i), bone_input_angular_velocities(i), halflife, dt);
 		}
 	}
 
-	void CAnimInstanceMotionMatching::denormalize_features(Slice1D<float> features,
-	                                                       const Slice1D<float> features_offset,
-	                                                       const Slice1D<float> features_scale)
+	void CAnimInstanceMotionMatching::denormalize_features(Slice1D<float> features, const Slice1D<float> features_offset, const Slice1D<float> features_scale)
 	{
 		for (int i = 0; i < features.size; i++)
 		{
@@ -1447,115 +1090,72 @@ namespace Piccolo
 
 		// 先赋初值
 		AnimationResult retargeted_result;
-		const auto bone_num = dest_skeleton.getBonesCount();
+		const auto      bone_num = dest_skeleton.getBonesCount();
 
 		retargeted_result.node.resize(bone_num);
 		std::vector<std::string> names;
-		std::vector<Vector3> translate;
-		std::vector<Vector3> scaling;
-		std::vector<Quaternion> rotation;
-		std::vector<Matrix4x4> inv_t_pose;
-		std::vector<Matrix4x4> bone_space_transform;
-		std::vector<int32_t> parent_indices;
+		std::vector<Vector3>     translate;
+		std::vector<Vector3>     scaling;
+		std::vector<Quaternion>  rotation;
+		std::vector<Matrix4x4>   inv_t_pose;
+		std::vector<Transform>   bone_space_transform;
+		std::vector<int32_t>     parent_indices;
 
 		names.resize(bone_num);
 		translate.resize(bone_num);
 		scaling.resize(bone_num);
 		rotation.resize(bone_num);
 		inv_t_pose.resize(bone_num);
-		bone_space_transform.resize(bone_num, Matrix4x4::IDENTITY);
+		bone_space_transform.resize(bone_num);
 		parent_indices.resize(bone_num, INDEX_NONE);
 		//先使用t pose填充
 		for (int i = 0; i < bone_num; ++i)
 		{
-			auto& bone = dest_skeleton.getBones()[i];
-			const auto index = static_cast<int>(bone.getID());
+			auto&      bone                     = dest_skeleton.getBones()[i];
+			const auto index                    = static_cast<int>(bone.getID());
 			retargeted_result.node[index].index = index + 1;
-			bone_space_transform[index] = Matrix4x4(bone.m_position, bone.m_scale, bone.m_orientation);
-			translate[index] = bone.m_position;
-			scaling[index] = bone.m_scale;
-			rotation[index] = bone.m_orientation;
-			names[index] = bone.m_name;
-			inv_t_pose[index] = bone._getInverseTpose();
+			bone_space_transform[index]         = Transform(bone.m_position, bone.m_orientation, bone.m_scale);
+			translate[index]                    = bone.m_position;
+			scaling[index]                      = bone.m_scale;
+			rotation[index]                     = bone.m_orientation;
+			names[index]                        = bone.m_name;
+			inv_t_pose[index]                   = bone._getInverseTpose();
 
 			const auto parent_node = bone.getParent();
 			const auto parent_bone = dynamic_cast<Piccolo::Bone*>(parent_node);
-			parent_indices[index] = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
-		}
-#define use_mm_result 1
-#if use_mm_result
-        for (int dst_idx = 0; dst_idx < bone_num; ++dst_idx)
-		{
-            uint32_t src_idx = m_retarget_map[dst_idx];
-            if (src_idx == (uint32_t)INDEX_NONE)
-            {
-	            //没有重定向源，直接使用bind pose数据
-
-            }
-            else
-            {
-
-
-
-            }
+			parent_indices[index]  = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
 		}
 
-
-
-		for (uint32_t src_idx = 0; src_idx < Bone_Count; ++src_idx)
+		// re-targeting
+		for (int dst_idx = 0; dst_idx < bone_num; ++dst_idx)
 		{
-			std::string retargeted_bone_name = s_mm_pairs[src_idx].dest_name;
-
-			// 寻找在新骨架的index
-			int16_t dst_index = INDEX_NONE;
-			for (int16_t i = 0; i < static_cast<int16_t>(bone_num); i++)
+			uint32_t src_idx = m_retarget_map[dst_idx];
+			if (src_idx == (uint32_t)INDEX_NONE)
 			{
-				if (names[i] == retargeted_bone_name)
-				{
-					dst_index = i;
-					break;
-				}
-			}
-
-			if (dst_index == INDEX_NONE)
-			{
-				continue;
-			}
-			// root 骨骼translation需要使用动画数据
-			// 这里处理一下坐标转换。Assimp导入是y-up的左手坐标系。
-			
-			Quaternion rot = mm_result.m_rotation[src_idx];
-            Quaternion::LeftHandYUpToRightHandZUp(rot);
-			rot.normalise();
-
-			if (src_idx == 0)
-			{
-				Vector3 translate_offset = mm_result.m_position[src_idx];
-                Vector3::LeftHandYUpToRightHandZUp(translate_offset);
-				bone_space_transform[dst_index] = Matrix4x4(translate_offset, scaling[dst_index], rot);
+				//没有重定向源，直接使用bind pose数据
 			}
 			else
 			{
-				bone_space_transform[dst_index] = Matrix4x4(translate[dst_index], scaling[dst_index], rot);
+				Transform mm_local_trans = Transform(mm_result.m_position[src_idx], mm_result.m_rotation[src_idx], mm_result.m_scaling[src_idx]);
 			}
 		}
 
-#endif
+
 		std::vector<Matrix4x4> component_space_transform;
 		component_space_transform.resize(bone_num);
 		for (int i = 0; i < bone_num; ++i)
 		{
-			const int32_t parent_index = parent_indices[i];
-			Matrix4x4 parent_transform = Matrix4x4(Vector3::ZERO, Vector3::UNIT_SCALE, Quaternion::IDENTITY);
+			const int32_t parent_index     = parent_indices[i];
+			Matrix4x4     parent_transform = Matrix4x4(Vector3::ZERO, Vector3::UNIT_SCALE, Quaternion::IDENTITY);
 			// Matrix4x4::IDENTITY; // Matrix4x4(root_trans, Vector3::UNIT_SCALE, Quaternion::IDENTITY);
 			if (parent_index != INDEX_NONE)
 			{
 				parent_transform = component_space_transform[parent_index];
 			}
 			{
-				component_space_transform[i] = parent_transform * bone_space_transform[i];
+				component_space_transform[i] = parent_transform * bone_space_transform[i].getMatrix();
 			}
-			Matrix4x4 skinning_matrix = component_space_transform[i] * inv_t_pose[i];
+			Matrix4x4 skinning_matrix           = component_space_transform[i] * inv_t_pose[i];
 			retargeted_result.node[i].transform = skinning_matrix.toMatrix4x4_();
 		}
 
