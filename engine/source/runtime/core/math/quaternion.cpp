@@ -172,6 +172,22 @@ namespace Piccolo
         return object_orientation;
     }
 
+    Quaternion Quaternion::getQuaternionBetweenDirection(const Vector3& src, const Vector3& dst)
+    {
+	    Vector3 normalized_src = src.normalisedCopy();
+	    Vector3 normalized_dst = dst.normalisedCopy();
+
+        float cos = normalized_src.dotProduct(normalized_dst);
+	    if (cos < FLT_EPSILON)
+	    {
+		    //almost src and dst in line
+            return Quaternion::IDENTITY;
+	    }
+        Radian   sin      = Math::acos(cos);
+        Vector3 rot_axis = normalized_src.crossProduct(normalized_dst);
+        return {sin, rot_axis};
+    }
+
     void Quaternion::toAngleAxis(Radian& angle, Vector3& axis) const
     {
         // The quaternion representing the rotation is

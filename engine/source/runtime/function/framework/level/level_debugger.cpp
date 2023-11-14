@@ -18,7 +18,7 @@ namespace Piccolo
     {
         if (g_is_editor_mode)
         {
-            return;
+            // return;
         }
 
         if (g_runtime_global_context.m_render_debug_config->animation.show_bone_name)
@@ -108,26 +108,47 @@ namespace Piccolo
                                       .getMatrix();
 
         const Skeleton& skeleton    = animation_component->getSkeleton();
+        const auto&     result      = animation_component->GetComponentResult();
+        const auto&     parents      = animation_component->GetParentInfo();
+        if (result.empty())
+        {
+	        return;
+        }
         const Bone*     bones       = skeleton.getBones();
-        int32_t         bones_count = skeleton.getBonesCount();
+        // int32_t         bones_count = skeleton.getBonesCount();
+        int32_t         bones_count = static_cast<int32_t>(result.size());
         for (int32_t bone_index = 0; bone_index < bones_count; bone_index++)
         {
-            if (bones[bone_index].getParent() == nullptr || bone_index == 1)
-                continue;
+            // if (bones[bone_index].getParent() == nullptr || bone_index == 1)
+            //     continue;
 
-            Matrix4x4 bone_matrix = Transform(bones[bone_index]._getDerivedPosition(),
-                                              bones[bone_index]._getDerivedOrientation(),
-                                              bones[bone_index]._getDerivedScale())
-                                        .getMatrix();
+            // Matrix4x4 bone_matrix = Transform(bones[bone_index]._getDerivedPosition(),
+            //                                   bones[bone_index]._getDerivedOrientation(),
+            //                                   bones[bone_index]._getDerivedScale())
+            //                             .getMatrix();
             Vector4 bone_position(0.0f, 0.0f, 0.0f, 1.0f);
+            const Matrix4x4& bone_matrix = result[bone_index];
+
             bone_position = object_matrix * bone_matrix * bone_position;
             bone_position /= bone_position[3];
-
-            Node*     parent_bone        = bones[bone_index].getParent();
-            Matrix4x4 parent_bone_matrix = Transform(parent_bone->_getDerivedPosition(),
-                                                     parent_bone->_getDerivedOrientation(),
-                                                     parent_bone->_getDerivedScale())
-                                               .getMatrix();
+            debug_draw_group->addSphere(Vector3(bone_position.x, bone_position.y, bone_position.z),
+                                        0.015f,
+                                        Vector4(0.0f, 0.0f, 1.0f, 1.0f),
+                                        0.0f,
+                                        true);
+            Node*      parent_node = bones[bone_index].getParent();
+            const auto parent_bone       = dynamic_cast<Piccolo::Bone*>(parent_node);
+            int32_t    parent_idx  = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
+            // int32_t    parent_idx  = parents[bone_index];
+            // Matrix4x4 parent_bone_matrix = Transform(parent_bone->_getDerivedPosition(),
+            //                                          parent_bone->_getDerivedOrientation(),
+            //                                          parent_bone->_getDerivedScale())
+            //                                    .getMatrix();
+            if (parent_idx == INDEX_NONE)
+            {
+	            continue;
+            }
+            Matrix4x4 parent_bone_matrix = result[parent_idx];
             Vector4 parent_bone_position(0.0f, 0.0f, 0.0f, 1.0f);
             parent_bone_position = object_matrix * parent_bone_matrix * parent_bone_position;
             parent_bone_position /= parent_bone_position[3];
@@ -138,12 +159,10 @@ namespace Piccolo
                                       Vector4(1.0f, 0.0f, 0.0f, 1.0f),
                                       0.0f,
                                       true);
-            debug_draw_group->addSphere(Vector3(bone_position.x, bone_position.y, bone_position.z),
-                                        0.015f,
-                                        Vector4(0.0f, 0.0f, 1.0f, 1.0f),
-                                        0.0f,
-                                        true);
+            
         }
+
+        drawMotionMatching(animation_component, debug_draw_group);
     }
 
     void LevelDebugger::drawBonesName(std::shared_ptr<GObject> object) const
@@ -247,4 +266,57 @@ namespace Piccolo
         buffer << "camera direction : (" << direction.x << "," << direction.y << "," << direction.z << ")";
         debug_draw_group->addText(buffer.str(), Vector4(1.0f, 0.0f, 0.0f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 10, true);
     }
+
+    void LevelDebugger::drawMotionMatching(
+	    const AnimationComponent* animation_component, DebugDrawGroup* debug_draw_group)
+    {
+	    // draw motion matching debug info
+	    const auto anim_instance = animation_component->getInstance();
+	    const auto mm_instance = dynamic_cast<CAnimInstanceMotionMatching*>(anim_instance);
+	    const auto& positions = mm_instance->m_debug_position;
+	    const auto& directions = mm_instance->m_debug_direction;
+	    const auto& matched_positions = mm_instance->m_matched_position;
+	    const auto& matched_directions = mm_instance->m_matched_direction;
+
+
+	    Vector3 start = positions[0];
+        Vector3::LeftHandYUpToRightHandZUp(start);
+	    Vector3 matched_start = matched_positions[0];
+        Vector3::LeftHandYUpToRightHandZUp(matched_start);
+	    for (int i = 0; i < 4; ++i)
+	    {
+            const auto query_color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+            Vector3    end         = positions[i];
+            Vector3::LeftHandYUpToRightHandZUp(end);
+            // position
+            debug_draw_group->addSphere(end, 0.15f, query_color, 0.0f, true);
+            if (i != 0)
+            {
+                debug_draw_group->addLine(start, end, query_color, query_color, 0.0f, true);
+            }
+
+            // direction
+            Vector3 dir = directions[i];
+            Vector3::LeftHandYUpToRightHandZUp(dir);
+            Vector3 dir_end = end + dir;
+            debug_draw_group->addLine(end, dir_end, query_color, query_color, 0.0f, true);
+            start = end;
+
+            const auto matched_color = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+            // matched feature
+
+            Vector3 matched_end = matched_positions[i];
+            Vector3::LeftHandYUpToRightHandZUp(matched_end);
+            debug_draw_group->addSphere(matched_end, 0.15f, matched_color, 0.0f, true);
+            if (i != 0)
+            {
+                debug_draw_group->addLine(matched_start, matched_end, matched_color, matched_color, 0.0f, true);
+            }
+            Vector3 matched_dir = matched_directions[i];
+            Vector3::LeftHandYUpToRightHandZUp(matched_dir);
+            dir_end = matched_end + matched_dir;
+            debug_draw_group->addLine(matched_end, dir_end, matched_color, matched_color, 0.0f, true);
+            matched_start = matched_end;
+        }
+	}
 } // namespace Piccolo

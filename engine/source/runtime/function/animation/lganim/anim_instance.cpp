@@ -6,5 +6,13 @@ using namespace Piccolo;
 
 namespace Piccolo
 {
- 
-}
+    Transform CAnimInstanceBase::GetRootMotion()
+    {
+	    return {Vector3::ZERO, Quaternion::IDENTITY};
+    }
+
+	bool CAnimInstanceBase::HasRootMotion()
+	{
+		return true;
+	}
+} // namespace Piccolo

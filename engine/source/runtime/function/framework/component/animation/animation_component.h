@@ -23,7 +23,17 @@ namespace Piccolo
         const AnimationResult& getResult() const;
 
         const Skeleton& getSkeleton() const;
+        const std::vector<Matrix4x4>& GetComponentResult() const;
+        const std::vector<uint32_t>&  GetParentInfo() const;
 
+
+        bool HasRootMotion() const;
+        Transform GetRootMotion() const;
+
+        CAnimInstanceBase* getInstance() const
+        {
+	        return m_anim_instance.get();
+        }
     protected:
         META(Enable)
         AnimationComponentRes              m_animation_res;
@@ -32,5 +42,6 @@ namespace Piccolo
 
         Skeleton* m_skeleton;
 
+        int32_t m_ticked_frame;
     };
 } // namespace Piccolo

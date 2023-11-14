@@ -20,12 +20,25 @@ namespace Piccolo
         Transform(const Vector3& position, const Quaternion& rotation, const Vector3& scale) :
             m_position {position}, m_scale {scale}, m_rotation {rotation}
         {}
+        Transform(const Vector3& position, const Quaternion& rotation) :
+            m_position {position}, m_rotation {rotation}
+        {}
 
         Matrix4x4 getMatrix() const
         {
             Matrix4x4 temp;
             temp.makeTransform(m_position, m_scale, m_rotation);
             return temp;
+        }
+
+        Transform operator*(const Transform & rhs) const
+        {
+	        auto scaled_position = rhs.m_position * m_scale;
+	        auto r = m_rotation * rhs.m_rotation;
+	        auto t = m_rotation * scaled_position + m_position;
+	        auto s = m_scale * rhs.m_scale;
+
+        	return Transform(t, r, s);
         }
     };
 } // namespace Piccolo

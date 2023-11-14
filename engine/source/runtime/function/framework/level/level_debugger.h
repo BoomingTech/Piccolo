@@ -1,4 +1,6 @@
 #pragma once
+#include "function/framework/component/animation/animation_component.h"
+#include "function/render/debugdraw/debug_draw_group.h"
 #include "runtime/function/framework/level/level.h"
 #include "runtime/function/framework/object/object.h"
 
@@ -29,5 +31,6 @@ namespace Piccolo
         void drawBonesName(std::shared_ptr<GObject> object) const;
         void drawBoundingBox(std::shared_ptr<GObject> object) const;
         void drawCameraInfo(std::shared_ptr<GObject> object) const;
+        static void drawMotionMatching(const AnimationComponent* animation_component, DebugDrawGroup* debug_draw_group);
     };
 } // namespace Piccolo

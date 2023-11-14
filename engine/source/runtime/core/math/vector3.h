@@ -449,5 +449,13 @@ namespace Piccolo
         static const Vector3 NEGATIVE_UNIT_Y;
         static const Vector3 NEGATIVE_UNIT_Z;
         static const Vector3 UNIT_SCALE;
+
+    public:
+        static void LeftHandYUpToRightHandZUp(Vector3 & in_out)
+        {
+            const float y = in_out.y;
+            in_out.y      = -in_out.z;
+            in_out.z      = y;
+        }
     };
 } // namespace Piccolo

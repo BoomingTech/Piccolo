@@ -29,6 +29,16 @@ namespace Piccolo
 
         std::weak_ptr<PhysicsScene> getCurrentActivePhysicsScene() const;
 
+        int getFrameCount() const
+        {
+	        return m_frame_count;
+        }
+
+        void setFrameCount(int frame_count)
+        {
+	        m_frame_count = frame_count;
+        }
+
     private:
         bool loadWorld(const std::string& world_url);
         bool loadLevel(const std::string& level_url);
@@ -44,5 +54,7 @@ namespace Piccolo
 
         //debug level
         std::shared_ptr<LevelDebugger> m_level_debugger;
+
+        int32_t m_frame_count {0};
     };
 } // namespace Piccolo

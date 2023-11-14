@@ -55,6 +55,7 @@ namespace Piccolo
 		void fromDirection(const Vector3& direction, const Vector3& up_direction);
 
 		static Quaternion getQuaternionFromDirection(const Vector3& direction, const Vector3& up_direction);
+		static Quaternion getQuaternionBetweenDirection(const Vector3& src, const Vector3& dst);
 
 		void toAngleAxis(Radian& angle, Vector3& axis) const;
 
@@ -238,5 +239,13 @@ namespace Piccolo
 		static const Quaternion IDENTITY;
 
 		static const float k_epsilon;
+
+	public:
+        static void LeftHandYUpToRightHandZUp(Quaternion & in_out)
+        {
+            const float y = in_out.y;
+            in_out.y      = -in_out.z;
+            in_out.z      = y;
+        }
 	};
 } // namespace Piccolo

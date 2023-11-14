@@ -30,6 +30,7 @@ namespace Piccolo
 
         int getFPS() const { return m_fps; }
 
+        int getFrameCount() const { return m_frame_count; }
     protected:
         void logicalTick(float delta_time);
         bool rendererTick(float delta_time);

@@ -62,9 +62,10 @@ namespace Piccolo
 
         if (current_character->getObjectID() != m_parent_object.lock()->getID())
             return;
-
         TransformComponent* transform_component =
             m_parent_object.lock()->tryGetComponent<TransformComponent>("TransformComponent");
+        AnimationComponent* animation_component =
+            m_parent_object.lock()->tryGetComponent<AnimationComponent>("AnimationComponent");
 
         Radian turn_angle_yaw = g_runtime_global_context.m_input_system->m_cursor_delta_yaw;
 
@@ -78,6 +79,18 @@ namespace Piccolo
         calculatedDesiredMoveDirection(command, transform_component->getRotation());
         calculateDesiredDisplacement(delta_time);
         calculateTargetPosition(transform_component->getPosition());
+
+        if (/*is root motion*/ true)
+        {
+            animation_component->tick(delta_time);
+            Piccolo::Transform rt = animation_component->GetRootMotion();
+            auto LeftHandUpToRightHandZup = [](const Vector3& vector3) {
+                return Vector3(vector3.x, -vector3.z, vector3.y);
+            };
+            transform_component->setPosition(LeftHandUpToRightHandZup(rt.m_position));
+            // transform_component->setRotation(rt.m_rotation);
+            return;
+        }
 
         transform_component->setPosition(m_target_position);
     }
