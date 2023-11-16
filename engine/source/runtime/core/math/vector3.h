@@ -451,11 +451,12 @@ namespace Piccolo
         static const Vector3 UNIT_SCALE;
 
     public:
-        static void LeftHandYUpToRightHandZUp(Vector3 & in_out)
+        static void RightHandYUpToRightHandZUp(Vector3 & in_out)
         {
             const float y = in_out.y;
-            in_out.y      = -in_out.z;
+            in_out.y      = in_out.z;
             in_out.z      = y;
+            in_out.x      = -in_out.x;
         }
     };
 } // namespace Piccolo

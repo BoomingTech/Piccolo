@@ -273,31 +273,31 @@ namespace Piccolo
 	    // draw motion matching debug info
 	    const auto anim_instance = animation_component->getInstance();
 	    const auto mm_instance = dynamic_cast<CAnimInstanceMotionMatching*>(anim_instance);
-	    const auto& positions = mm_instance->m_debug_position;
-	    const auto& directions = mm_instance->m_debug_direction;
+        const auto& trajectory_positions = mm_instance->m_trajectory_position;
+        const auto& trajectory_directions = mm_instance->m_trajectory_direction;
 	    const auto& matched_positions = mm_instance->m_matched_position;
 	    const auto& matched_directions = mm_instance->m_matched_direction;
 
 
-	    Vector3 start = positions[0];
-        Vector3::LeftHandYUpToRightHandZUp(start);
+	    Vector3 start = trajectory_positions[0];
+        Vector3::RightHandYUpToRightHandZUp(start);
 	    Vector3 matched_start = matched_positions[0];
-        Vector3::LeftHandYUpToRightHandZUp(matched_start);
+        Vector3::RightHandYUpToRightHandZUp(matched_start);
 	    for (int i = 0; i < 4; ++i)
 	    {
             const auto query_color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            Vector3    end         = positions[i];
-            Vector3::LeftHandYUpToRightHandZUp(end);
+            Vector3    end         = trajectory_positions[i];
+            Vector3::RightHandYUpToRightHandZUp(end);
             // position
-            debug_draw_group->addSphere(end, 0.15f, query_color, 0.0f, true);
+            debug_draw_group->addSphere(end, 0.1f, query_color, 0.0f, true);
             if (i != 0)
             {
                 debug_draw_group->addLine(start, end, query_color, query_color, 0.0f, true);
             }
 
             // direction
-            Vector3 dir = directions[i];
-            Vector3::LeftHandYUpToRightHandZUp(dir);
+            Vector3 dir = trajectory_directions[i];
+            Vector3::RightHandYUpToRightHandZUp(dir);
             Vector3 dir_end = end + dir;
             debug_draw_group->addLine(end, dir_end, query_color, query_color, 0.0f, true);
             start = end;
@@ -306,14 +306,14 @@ namespace Piccolo
             // matched feature
 
             Vector3 matched_end = matched_positions[i];
-            Vector3::LeftHandYUpToRightHandZUp(matched_end);
-            debug_draw_group->addSphere(matched_end, 0.15f, matched_color, 0.0f, true);
+            Vector3::RightHandYUpToRightHandZUp(matched_end);
+            debug_draw_group->addSphere(matched_end, 0.1f, matched_color, 0.0f, true);
             if (i != 0)
             {
                 debug_draw_group->addLine(matched_start, matched_end, matched_color, matched_color, 0.0f, true);
             }
             Vector3 matched_dir = matched_directions[i];
-            Vector3::LeftHandYUpToRightHandZUp(matched_dir);
+            Vector3::RightHandYUpToRightHandZUp(matched_dir);
             dir_end = matched_end + matched_dir;
             debug_draw_group->addLine(matched_end, dir_end, matched_color, matched_color, 0.0f, true);
             matched_start = matched_end;

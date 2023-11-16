@@ -65,7 +65,7 @@ namespace Piccolo{
         REFLECTION_BODY(CAnimInstanceMotionMatching)
 	
 	public:
-		CAnimInstanceMotionMatching();
+        CAnimInstanceMotionMatching();
 		CAnimInstanceMotionMatching(AnimationComponentRes* res);
 		~CAnimInstanceMotionMatching() override = default;
 		void TickAnimation(float delta_time) override;
@@ -77,8 +77,8 @@ namespace Piccolo{
 
 
 		// debug info
-        std::vector<Vector3> m_debug_position;
-        std::vector<Vector3> m_debug_direction;
+        std::vector<Vector3> m_trajectory_position;
+        std::vector<Vector3> m_trajectory_direction;
 
         std::vector<Vector3> m_matched_position;
         std::vector<Vector3> m_matched_direction;
@@ -136,10 +136,10 @@ namespace Piccolo{
         Vector3 m_transition_dst_position;
         Quaternion m_transition_dst_rotation;
 
-		// Trajectory & Gameplay Data
-		float m_search_time{0.1f};
-		float m_search_timer;
-		float m_force_search_timer;
+        // Trajectory & Gameplay Data
+        float m_search_time{0.1f};
+        float m_search_timer{0};
+        float m_force_search_timer{0};
 
         Vector3 m_desired_velocity;
         Vector3 m_desired_velocity_change_curr;

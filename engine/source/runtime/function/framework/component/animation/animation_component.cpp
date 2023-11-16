@@ -1,4 +1,4 @@
-#include "runtime/function/framework/component/animation/animation_component.h"
+﻿#include "runtime/function/framework/component/animation/animation_component.h"
 
 #include "function/framework/world/world_manager.h"
 #include "function/global/global_context.h"

@@ -84,10 +84,9 @@ namespace Piccolo
         {
             animation_component->tick(delta_time);
             Piccolo::Transform rt = animation_component->GetRootMotion();
-            auto LeftHandUpToRightHandZup = [](const Vector3& vector3) {
-                return Vector3(vector3.x, -vector3.z, vector3.y);
-            };
-            transform_component->setPosition(LeftHandUpToRightHandZup(rt.m_position));
+            auto               pos = rt.m_position;
+            Vector3::RightHandYUpToRightHandZUp(pos);
+            transform_component->setPosition(pos);
             // transform_component->setRotation(rt.m_rotation);
             return;
         }
