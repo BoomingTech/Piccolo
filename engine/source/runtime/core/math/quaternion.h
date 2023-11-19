@@ -239,14 +239,5 @@ namespace Piccolo
 		static const Quaternion IDENTITY;
 
 		static const float k_epsilon;
-
-	public:
-        static void RightHandYUpToRightHandZUp(Quaternion & in_out)
-        {
-            const float y = in_out.y;
-            in_out.y      = in_out.z;
-            in_out.z      = y;
-            in_out.x      = -in_out.x;
-        }
 	};
 } // namespace Piccolo

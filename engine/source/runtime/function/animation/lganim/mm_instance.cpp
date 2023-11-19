@@ -152,8 +152,8 @@ namespace Piccolo
 		character_load(character_data, character_path);
 
 		auto size = character_data.bone_rest_positions.size;
-		m_mm_bind_pose.resize(size);
-		m_mm_rest_pose_ls_rot.resize(size);
+		m_mm_bind_pose.reserve(size);
+		m_mm_rest_pose_ls_rot.reserve(size);
 		for (int i = 0; i < size; ++i)
 		{
 			m_mm_bind_pose.emplace_back(character_data.bone_rest_positions(i), character_data.bone_rest_rotations(i));
@@ -260,7 +260,7 @@ namespace Piccolo
 		float simulation_back_speed = Math::lerp(m_simulation_run_side_speed, m_simulation_walk_side_speed, m_desired_gait);
 		float simulation_side_speed = Math::lerp(m_simulation_run_back_speed, m_simulation_walk_back_speed, m_desired_gait);
 
-		float   camera_yaw            = Math_HALF_PI;
+		float   camera_yaw            = 0.f;
 		Vector3 desired_velocity_curr = desired_velocity_update(local_space_control_direction, camera_yaw, m_simulation_rotation, simulation_fwrd_speed, simulation_side_speed, simulation_back_speed);
 
 		bool       desired_strafe        = false;
@@ -474,7 +474,7 @@ namespace Piccolo
 
 			// 做root motion
 			Vector3 world_space_position = curr_root_rotation * (last_frame_root_rotation.inverse() * (curr_frame_bone_positions(0) - last_frame_root_position));
-			printf("world_space_delta_move:[%f, %f, %f]\n", world_space_position.x, world_space_position.y, world_space_position.z);
+			// printf("world_space_delta_move:[%f, %f, %f]\n", world_space_position.x, world_space_position.y, world_space_position.z);
 			// Normalize here because quat inv mul can sometimes produce
 			// unstable returns when the two rotations are very close.
 			Quaternion world_space_rotation = curr_root_rotation * (last_frame_root_rotation.inverse() * curr_frame_bone_rotations(0));
@@ -500,7 +500,7 @@ namespace Piccolo
 		simulation_rotations_update(m_simulation_rotation, m_simulation_angular_velocity, m_desired_rotation, m_simulation_rotation_halflife, delta_time);
 
 		// final
-		printf("best index:%d\n", m_frame_index);
+		// printf("best index:%d\n", m_frame_index);
 		// forward kinematic full
 		forward_kinematic_full();
 		m_root_motion   = m_bone_positions(0);
@@ -1094,7 +1094,7 @@ namespace Piccolo
 		std::vector<Vector3>     scaling;
 		std::vector<Quaternion>  rotation;
 		std::vector<Matrix4x4>   inv_t_pose;
-		std::vector<Transform>   bone_space_transform;
+		std::vector<Transform>   target_rest_ls_transforms;
 		std::vector<int32_t>     parent_indices;
 
 		names.resize(bone_num);
@@ -1102,7 +1102,7 @@ namespace Piccolo
 		scaling.resize(bone_num);
 		rotation.resize(bone_num);
 		inv_t_pose.resize(bone_num);
-		bone_space_transform.resize(bone_num);
+		target_rest_ls_transforms.resize(bone_num);
 		parent_indices.resize(bone_num, INDEX_NONE);
 		//先使用t pose填充
 		for (int i = 0; i < bone_num; ++i)
@@ -1110,7 +1110,7 @@ namespace Piccolo
 			auto&      bone                     = dest_skeleton.getBones()[i];
 			const auto index                    = static_cast<int>(bone.getID());
 			retargeted_result.node[index].index = index + 1;
-			bone_space_transform[index]         = Transform(bone.m_position, bone.m_orientation, bone.m_scale);
+			target_rest_ls_transforms[index]         = Transform(bone.m_position, bone.m_orientation, bone.m_scale);
 			translate[index]                    = bone.m_position;
 			scaling[index]                      = bone.m_scale;
 			rotation[index]                     = bone.m_orientation;
@@ -1123,45 +1123,114 @@ namespace Piccolo
 		}
 
 		// re-targeting
-		for (int dst_idx = 0; dst_idx < bone_num; ++dst_idx)
+		std::vector<Transform> mm_anim_cs_trans;
+        std::vector<Transform> mm_rest_cs_trans;
+        mm_anim_cs_trans.reserve(m_mm_bind_pose.size());
+        mm_rest_cs_trans.reserve(m_mm_bind_pose.size());
+
+        for (size_t i = 0; i < m_mm_bind_pose.size(); ++i)
 		{
-			uint32_t src_idx = m_retarget_map[dst_idx];
-			if (src_idx == (uint32_t)INDEX_NONE)
-			{
-				//没有重定向源，直接使用bind pose数据
-			}
-			else
-			{
-				Vector3    mm_local_translation = mm_result.m_position[src_idx];
-				Quaternion mm_local_rotation    = mm_result.m_rotation[src_idx];
-				Vector3::RightHandYUpToRightHandZUp(mm_local_translation);
-				Quaternion::RightHandYUpToRightHandZUp(mm_local_rotation);
-				Transform mm_local_trans      = Transform(mm_local_translation, mm_local_rotation);
-				bone_space_transform[dst_idx] = mm_local_trans;
-			}
+            auto parent = mm_result.m_parents[i];
+            if (parent == (uint32_t)INDEX_NONE)
+            {
+                mm_anim_cs_trans.emplace_back(Vector3::ZERO, mm_result.m_rotation[i]);
+                mm_rest_cs_trans.emplace_back(m_mm_bind_pose[i]);
+            }
+            else
+            {
+	            auto& anim_parent_cs_tran = mm_anim_cs_trans[parent];
+	            auto& rest_parent_cs_tran = mm_rest_cs_trans[parent];
+	            mm_anim_cs_trans.emplace_back(anim_parent_cs_tran * Transform(mm_result.m_position[i], mm_result.m_rotation[i]));
+	            mm_rest_cs_trans.emplace_back(rest_parent_cs_tran * m_mm_bind_pose[i]);
+            }
 		}
 
 
-		std::vector<Transform> component_space_transform;
-		component_space_transform.resize(bone_num);
-		m_component_space_transform.resize(bone_num);
+
+		// std::vector<Transform> target_rest_pose_cs_transform;
+  //       target_rest_pose_cs_transform.resize(bone_num);
+  //       for (int i = 0; i < bone_num; ++i)
+  //       {
+  //           const int32_t parent_index     = parent_indices[i];
+  //           if (parent_index != INDEX_NONE)
+  //           {
+  //               Transform parent_transform    = target_rest_pose_cs_transform[parent_index];
+  //               target_rest_pose_cs_transform[i] = parent_transform * target_rest_ls_transforms[i];
+  //           }
+  //           else
+  //           {
+  //               target_rest_pose_cs_transform[i] = target_rest_ls_transforms[i];
+  //           }
+  //       }
+
+		/*
+		 *
+		 */
+        std::vector<Transform> target_anim_pose_cs_transforms;
+        target_anim_pose_cs_transforms.resize(bone_num);
+        for (int target_idx = 0; target_idx < bone_num; ++target_idx)
+        {
+            const uint32_t src_idx = m_retarget_map[target_idx];
+            const int32_t  parent_index = parent_indices[target_idx];
+            if (src_idx == (uint32_t)INDEX_NONE)
+            {
+				//没有对应的重定向骨骼，使用本身的
+                if (parent_index != INDEX_NONE)
+                {
+                    Transform parent_transform = target_anim_pose_cs_transforms[parent_index];
+                    target_anim_pose_cs_transforms[target_idx] = parent_transform * target_rest_ls_transforms[target_idx];
+                }
+                else
+                {
+                    target_anim_pose_cs_transforms[target_idx] = target_rest_ls_transforms[target_idx];
+                }
+            }
+            else
+            {
+                auto source_anim_cs = Math::RightHandYUpToZUp(mm_anim_cs_trans[src_idx]);
+                auto source_anim_ls = Math::RightHandYUpToZUp(mm_result.m_rotation[src_idx]);
+                auto source_rest_cs = Math::RightHandYUpToZUp(mm_rest_cs_trans[src_idx]);
+                auto source_rest_ls = Math::RightHandYUpToZUp(m_mm_rest_pose_ls_rot[src_idx]);
+                
+				if (parent_index != INDEX_NONE)
+                {
+                    Transform parent_transform = target_anim_pose_cs_transforms[parent_index];
+                    Transform target_rest_pose_ls_transform = target_rest_ls_transforms[target_idx];
+
+                    auto diff_rot_cs = source_anim_cs.m_rotation * source_rest_cs.m_rotation.inverse();
+                    auto diff_rot_ls = source_anim_ls * source_rest_ls.inverse();
+                    // auto diff_rot_ls = parent_transform.m_rotation.inverse() * diff_rot_cs;
+                    target_anim_pose_cs_transforms[target_idx].m_rotation = source_anim_cs.m_rotation;
+                        // parent_transform.m_rotation * diff_rot_ls * target_rest_pose_ls_transform.m_rotation;
+
+                    target_anim_pose_cs_transforms[target_idx].m_position = parent_transform.m_rotation * target_rest_pose_ls_transform.m_position + parent_transform.m_position;
+
+                    
+                }
+                else
+                {
+                    target_anim_pose_cs_transforms[target_idx].m_rotation = source_anim_cs.m_rotation *
+                                                                         source_rest_cs.m_rotation.inverse() *
+                                                                         target_rest_ls_transforms[target_idx].m_rotation;
+                    
+                    target_anim_pose_cs_transforms[target_idx].m_position = target_rest_ls_transforms[target_idx].m_position;
+                }
+            }
+        }
+
+		m_component_space_transform.resize(mm_anim_cs_trans.size());
+        m_parent_info.resize(mm_anim_cs_trans.size());
+		for (size_t i = 0; i < mm_anim_cs_trans.size(); ++i)
+		{
+            auto source_anim_cs = Math::RightHandYUpToZUp(mm_anim_cs_trans[i]);
+            m_component_space_transform[i] = source_anim_cs.getMatrix();
+            auto parent                    = mm_result.m_parents[i];
+            m_parent_info[i]               = parent;
+		}
 		for (int i = 0; i < bone_num; ++i)
 		{
-			const int32_t parent_index     = parent_indices[i];
-			Transform     parent_transform = Transform(Vector3::ZERO, Quaternion::IDENTITY, Vector3::UNIT_SCALE);
-
-			if (parent_index != INDEX_NONE)
-			{
-				parent_transform             = component_space_transform[parent_index];
-				component_space_transform[i] = parent_transform * bone_space_transform[i];
-			}
-			else
-			{
-				component_space_transform[i] = bone_space_transform[i];
-			}
-			Matrix4x4 skinning_matrix           = component_space_transform[i].getMatrix() * inv_t_pose[i];
+            Matrix4x4 skinning_matrix           = target_anim_pose_cs_transforms[i].getMatrix() * inv_t_pose[i];
 			retargeted_result.node[i].transform = skinning_matrix.toMatrix4x4_();
-			m_component_space_transform[i]      = component_space_transform[i].getMatrix();
 		}
 
 		m_result = retargeted_result;

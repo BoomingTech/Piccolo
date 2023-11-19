@@ -1,4 +1,6 @@
 #include "runtime/core/math/math.h"
+
+#include "transform.h"
 #include "runtime/core/math/matrix4.h"
 
 namespace Piccolo
@@ -232,5 +234,44 @@ namespace Piccolo
 
         return proj_matrix;
     }
+
+    template<typename T>
+    T Math::RightHandYUpToZUp(const T& in)
+    {
+        T out = in;
+        out.y       = in.z;
+        out.z       = in.y;
+        out.x       = -in.x;
+        return out;
+    }
+
+    template<>
+    Vector3 Math::RightHandYUpToZUp<Vector3>(const Vector3& in)
+    {
+        Vector3 out = in;
+        out.y = in.z;
+        out.z = in.y;
+        out.x = -in.x;
+        return out;
+    };
+    template<>
+    Quaternion Math::RightHandYUpToZUp<Quaternion>(const Quaternion& in)
+    {
+        Quaternion out = in;
+        out.y = in.z;
+        out.z = in.y;
+        out.x = -in.x;
+        return out;
+    };
+
+    template<>
+    Transform Math::RightHandYUpToZUp<Transform>(const Transform& in)
+    {
+        Transform out;
+        out.m_position = RightHandYUpToZUp(in.m_position);
+        out.m_rotation = RightHandYUpToZUp(in.m_rotation);
+        out.m_scale    = RightHandYUpToZUp(in.m_scale);
+        return out;
+    };
 
 } // namespace Piccolo

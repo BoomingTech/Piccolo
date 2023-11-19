@@ -138,8 +138,8 @@ namespace Piccolo
                                         true);
             Node*      parent_node = bones[bone_index].getParent();
             const auto parent_bone       = dynamic_cast<Piccolo::Bone*>(parent_node);
-            int32_t    parent_idx  = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
-            // int32_t    parent_idx  = parents[bone_index];
+            // int32_t    parent_idx  = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
+            int32_t    parent_idx  = (int32_t)parents[bone_index];
             // Matrix4x4 parent_bone_matrix = Transform(parent_bone->_getDerivedPosition(),
             //                                          parent_bone->_getDerivedOrientation(),
             //                                          parent_bone->_getDerivedScale())
@@ -279,15 +279,12 @@ namespace Piccolo
 	    const auto& matched_directions = mm_instance->m_matched_direction;
 
 
-	    Vector3 start = trajectory_positions[0];
-        Vector3::RightHandYUpToRightHandZUp(start);
-	    Vector3 matched_start = matched_positions[0];
-        Vector3::RightHandYUpToRightHandZUp(matched_start);
+	    Vector3 start = Math::RightHandYUpToZUp(trajectory_positions[0]);
+        Vector3 matched_start = Math::RightHandYUpToZUp(matched_positions[0]);
 	    for (int i = 0; i < 4; ++i)
 	    {
             const auto query_color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            Vector3    end         = trajectory_positions[i];
-            Vector3::RightHandYUpToRightHandZUp(end);
+            Vector3    end         = Math::RightHandYUpToZUp(trajectory_positions[i]);
             // position
             debug_draw_group->addSphere(end, 0.1f, query_color, 0.0f, true);
             if (i != 0)
@@ -296,8 +293,7 @@ namespace Piccolo
             }
 
             // direction
-            Vector3 dir = trajectory_directions[i];
-            Vector3::RightHandYUpToRightHandZUp(dir);
+            Vector3 dir = Math::RightHandYUpToZUp(trajectory_directions[i]);
             Vector3 dir_end = end + dir;
             debug_draw_group->addLine(end, dir_end, query_color, query_color, 0.0f, true);
             start = end;
@@ -305,15 +301,13 @@ namespace Piccolo
             const auto matched_color = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
             // matched feature
 
-            Vector3 matched_end = matched_positions[i];
-            Vector3::RightHandYUpToRightHandZUp(matched_end);
+            Vector3 matched_end = Math::RightHandYUpToZUp(matched_positions[i]);
             debug_draw_group->addSphere(matched_end, 0.1f, matched_color, 0.0f, true);
             if (i != 0)
             {
                 debug_draw_group->addLine(matched_start, matched_end, matched_color, matched_color, 0.0f, true);
             }
-            Vector3 matched_dir = matched_directions[i];
-            Vector3::RightHandYUpToRightHandZUp(matched_dir);
+            Vector3 matched_dir = Math::RightHandYUpToZUp(matched_directions[i]);
             dir_end = matched_end + matched_dir;
             debug_draw_group->addLine(matched_end, dir_end, matched_color, matched_color, 0.0f, true);
             matched_start = matched_end;
