@@ -86,6 +86,7 @@ namespace Piccolo{
         std::vector<Transform> m_mm_bind_pose;
         std::vector<Quaternion> m_mm_rest_pose_ls_rot;
 
+		bool first_update = true;
 
 
         Skeleton m_skeleton;

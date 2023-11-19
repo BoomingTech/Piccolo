@@ -140,11 +140,15 @@ namespace Piccolo
 		m_retarget_map[7]  = Bone_Head;
 		m_retarget_map[29] = Bone_LeftShoulder;
 		m_retarget_map[30] = Bone_LeftArm;
+		m_retarget_map[49] = Bone_LeftArm;
 		m_retarget_map[31] = Bone_LeftForeArm;
+		m_retarget_map[48] = Bone_LeftForeArm;
 		m_retarget_map[32] = Bone_LeftHand;
 		m_retarget_map[8]  = Bone_RightShoulder;
 		m_retarget_map[9]  = Bone_RightArm;
+		m_retarget_map[28]  = Bone_RightArm;
 		m_retarget_map[10] = Bone_RightForeArm;
+		m_retarget_map[27] = Bone_RightForeArm;
 		m_retarget_map[11] = Bone_RightHand;
 
 		const std::string character_path = asset_manager->getFullPath("asset/animation/character.bin").generic_string();
@@ -1120,6 +1124,30 @@ namespace Piccolo
 			const auto parent_node = bone.getParent();
 			const auto parent_bone = dynamic_cast<Piccolo::Bone*>(parent_node);
 			parent_indices[index]  = parent_bone ? static_cast<int>(parent_bone->getID()) : INDEX_NONE;
+		}
+        if (first_update)
+		{
+            first_update = false;
+            std::vector<int32_t> bone_layer;
+            bone_layer.resize(parent_indices.size());
+            for (size_t i = 0; i < parent_indices.size(); ++i)
+            {
+                auto p = parent_indices[i];
+                if (p == INDEX_NONE)
+                {
+                    bone_layer[i] = 0;
+                }
+                else
+                {
+                    bone_layer[i] = bone_layer[p] + 1;
+                }
+                for (int j = 0; j < bone_layer[i]; ++j)
+                {
+                    printf("\t");
+                }
+                printf("%llu-%s\n", i, names[i].c_str());
+            }
+			
 		}
 
 		// re-targeting
