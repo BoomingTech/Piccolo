@@ -239,9 +239,9 @@ namespace Piccolo
     T Math::RightHandYUpToZUp(const T& in)
     {
         T out = in;
-        out.y       = in.z;
+        out.y       = -in.z;
         out.z       = in.y;
-        out.x       = -in.x;
+        out.x       = in.x;
         return out;
     }
 
@@ -249,18 +249,18 @@ namespace Piccolo
     Vector3 Math::RightHandYUpToZUp<Vector3>(const Vector3& in)
     {
         Vector3 out = in;
-        out.y = in.z;
+        out.y = -in.z;
         out.z = in.y;
-        out.x = -in.x;
+        out.x = in.x;
         return out;
     };
     template<>
     Quaternion Math::RightHandYUpToZUp<Quaternion>(const Quaternion& in)
     {
         Quaternion out = in;
-        out.y = in.z;
+        out.y = -in.z;
         out.z = in.y;
-        out.x = -in.x;
+        out.x = in.x;
         return out;
     };
 
@@ -270,7 +270,7 @@ namespace Piccolo
         Transform out;
         out.m_position = RightHandYUpToZUp(in.m_position);
         out.m_rotation = RightHandYUpToZUp(in.m_rotation);
-        out.m_scale    = RightHandYUpToZUp(in.m_scale);
+        out.m_scale    = in.m_scale;
         return out;
     };
 

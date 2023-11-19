@@ -260,7 +260,7 @@ namespace Piccolo
 		float simulation_back_speed = Math::lerp(m_simulation_run_side_speed, m_simulation_walk_side_speed, m_desired_gait);
 		float simulation_side_speed = Math::lerp(m_simulation_run_back_speed, m_simulation_walk_back_speed, m_desired_gait);
 
-		float   camera_yaw            = 0.f;
+		float   camera_yaw            = Math_PI;
 		Vector3 desired_velocity_curr = desired_velocity_update(local_space_control_direction, camera_yaw, m_simulation_rotation, simulation_fwrd_speed, simulation_side_speed, simulation_back_speed);
 
 		bool       desired_strafe        = false;
@@ -1139,29 +1139,28 @@ namespace Piccolo
             else
             {
 	            auto& anim_parent_cs_tran = mm_anim_cs_trans[parent];
-	            auto& rest_parent_cs_tran = mm_rest_cs_trans[parent];
 	            mm_anim_cs_trans.emplace_back(anim_parent_cs_tran * Transform(mm_result.m_position[i], mm_result.m_rotation[i]));
-	            mm_rest_cs_trans.emplace_back(rest_parent_cs_tran * m_mm_bind_pose[i]);
+                mm_rest_cs_trans.emplace_back(m_mm_bind_pose[i]);
             }
 		}
 
 
 
-		// std::vector<Transform> target_rest_pose_cs_transform;
-  //       target_rest_pose_cs_transform.resize(bone_num);
-  //       for (int i = 0; i < bone_num; ++i)
-  //       {
-  //           const int32_t parent_index     = parent_indices[i];
-  //           if (parent_index != INDEX_NONE)
-  //           {
-  //               Transform parent_transform    = target_rest_pose_cs_transform[parent_index];
-  //               target_rest_pose_cs_transform[i] = parent_transform * target_rest_ls_transforms[i];
-  //           }
-  //           else
-  //           {
-  //               target_rest_pose_cs_transform[i] = target_rest_ls_transforms[i];
-  //           }
-  //       }
+		std::vector<Transform> target_rest_pose_cs_transforms;
+        target_rest_pose_cs_transforms.resize(bone_num);
+        for (int i = 0; i < bone_num; ++i)
+        {
+            const int32_t parent_index     = parent_indices[i];
+            if (parent_index != INDEX_NONE)
+            {
+                Transform parent_transform    = target_rest_pose_cs_transforms[parent_index];
+                target_rest_pose_cs_transforms[i] = parent_transform * target_rest_ls_transforms[i];
+            }
+            else
+            {
+                target_rest_pose_cs_transforms[i] = target_rest_ls_transforms[i];
+            }
+        }
 
 		/*
 		 *
@@ -1194,18 +1193,16 @@ namespace Piccolo
                 
 				if (parent_index != INDEX_NONE)
                 {
-                    Transform parent_transform = target_anim_pose_cs_transforms[parent_index];
-                    Transform target_rest_pose_ls_transform = target_rest_ls_transforms[target_idx];
+                    Transform& parent_transform             = target_anim_pose_cs_transforms[parent_index];
+                    Transform& target_rest_pose_ls_transform = target_rest_ls_transforms[target_idx];
+                    Transform& target_rest_pose_cs_transform = target_rest_pose_cs_transforms[target_idx];
 
-                    auto diff_rot_cs = source_anim_cs.m_rotation * source_rest_cs.m_rotation.inverse();
-                    auto diff_rot_ls = source_anim_ls * source_rest_ls.inverse();
-                    // auto diff_rot_ls = parent_transform.m_rotation.inverse() * diff_rot_cs;
-                    target_anim_pose_cs_transforms[target_idx].m_rotation = source_anim_cs.m_rotation;
-                        // parent_transform.m_rotation * diff_rot_ls * target_rest_pose_ls_transform.m_rotation;
+                    target_anim_pose_cs_transforms[target_idx].m_rotation = source_anim_cs.m_rotation *
+                                                                            source_rest_cs.m_rotation.inverse() *
+                                                                            target_rest_pose_cs_transform.m_rotation;
 
-                    target_anim_pose_cs_transforms[target_idx].m_position = parent_transform.m_rotation * target_rest_pose_ls_transform.m_position + parent_transform.m_position;
-
-                    
+                    target_anim_pose_cs_transforms[target_idx].m_position =
+						parent_transform.m_rotation * target_rest_pose_ls_transform.m_position + parent_transform.m_position;
                 }
                 else
                 {
@@ -1218,13 +1215,13 @@ namespace Piccolo
             }
         }
 
-		m_component_space_transform.resize(mm_anim_cs_trans.size());
-        m_parent_info.resize(mm_anim_cs_trans.size());
-		for (size_t i = 0; i < mm_anim_cs_trans.size(); ++i)
+		m_component_space_transform.resize(target_anim_pose_cs_transforms.size());
+        m_parent_info.resize(target_anim_pose_cs_transforms.size());
+        for (size_t i = 0; i < target_anim_pose_cs_transforms.size(); ++i)
 		{
-            auto source_anim_cs = Math::RightHandYUpToZUp(mm_anim_cs_trans[i]);
+            auto source_anim_cs            = target_anim_pose_cs_transforms[i];
             m_component_space_transform[i] = source_anim_cs.getMatrix();
-            auto parent                    = mm_result.m_parents[i];
+            auto parent                    = parent_indices[i]; //mm_result.m_parents[i];
             m_parent_info[i]               = parent;
 		}
 		for (int i = 0; i < bone_num; ++i)
