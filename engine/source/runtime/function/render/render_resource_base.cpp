@@ -70,11 +70,10 @@ namespace Piccolo
         if (!texture->m_pixels)
             return nullptr;
 
-        texture->m_width        = iw;
-        texture->m_height       = ih;
-        texture->m_format       = (is_srgb) ? RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB :
-                                              RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
-        texture->m_depth        = 1;
+        texture->m_width  = iw;
+        texture->m_height = ih;
+        texture->m_format = (is_srgb) ? RHIFormat::RHI_FORMAT_R8G8B8A8_SRGB : RHIFormat::RHI_FORMAT_R8G8B8A8_UNORM;
+        texture->m_depth  = 1;
         texture->m_array_layers = 1;
         texture->m_mip_levels   = 1;
         texture->m_type         = PICCOLO_IMAGE_TYPE::PICCOLO_IMAGE_TYPE_2D;
@@ -121,12 +120,12 @@ namespace Piccolo
             }
 
             // index buffer
-            size_t index_size                     = bind_data->index_buffer.size() * sizeof(uint16_t);
+            size_t index_size                     = bind_data->index_buffer.size() * sizeof(uint32_t);
             ret.m_static_mesh_data.m_index_buffer = std::make_shared<BufferData>(index_size);
-            uint16_t* index                       = (uint16_t*)ret.m_static_mesh_data.m_index_buffer->m_data;
+            uint32_t* index                       = (uint32_t*)ret.m_static_mesh_data.m_index_buffer->m_data;
             for (size_t i = 0; i < bind_data->index_buffer.size(); i++)
             {
-                index[i] = static_cast<uint16_t>(bind_data->index_buffer[i]);
+                index[i] = static_cast<uint32_t>(bind_data->index_buffer[i]);
             }
 
             // skeleton binding buffer
@@ -325,17 +324,17 @@ namespace Piccolo
 
         uint32_t stride           = sizeof(MeshVertexDataDefinition);
         mesh_data.m_vertex_buffer = std::make_shared<BufferData>(mesh_vertices.size() * stride);
-        mesh_data.m_index_buffer  = std::make_shared<BufferData>(mesh_vertices.size() * sizeof(uint16_t));
+        mesh_data.m_index_buffer  = std::make_shared<BufferData>(mesh_vertices.size() * sizeof(uint32_t));
 
-        assert(mesh_vertices.size() <= std::numeric_limits<uint16_t>::max()); // take care of the index range, should be
+        assert(mesh_vertices.size() <= std::numeric_limits<uint32_t>::max()); // take care of the index range, should be
                                                                               // consistent with the index range used by
                                                                               // vulkan
 
-        uint16_t* indices = (uint16_t*)mesh_data.m_index_buffer->m_data;
+        uint32_t* indices = (uint32_t*)mesh_data.m_index_buffer->m_data;
         for (size_t i = 0; i < mesh_vertices.size(); i++)
         {
             ((MeshVertexDataDefinition*)(mesh_data.m_vertex_buffer->m_data))[i] = mesh_vertices[i];
-            indices[i]                                                          = static_cast<uint16_t>(i);
+            indices[i]                                                          = static_cast<uint32_t>(i);
         }
 
         return mesh_data;
