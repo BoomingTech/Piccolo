@@ -307,7 +307,7 @@ namespace Piccolo
         uint32_t stride = sizeof(MeshVertexDataDefinition);
 
         // vertex
-        size_t vertex_data_size = ((2 * segments + 8) * 4) * stride;
+        size_t vertex_data_size = ((2 * segments + 8) * 3 + 8) * stride;
         m_mesh_data.m_static_mesh_data.m_vertex_buffer = std::make_shared<BufferData>(vertex_data_size);
         uint8_t* vertex_data = static_cast<uint8_t*>(m_mesh_data.m_static_mesh_data.m_vertex_buffer->m_data);
 
