@@ -382,7 +382,7 @@ namespace Piccolo
         RHIDescriptorSetAllocateInfo mesh_point_light_shadow_global_descriptor_set_alloc_info;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.pNext = NULL;
-        mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
+        mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPool();
         mesh_point_light_shadow_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_point_light_shadow_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[0].layout;
 

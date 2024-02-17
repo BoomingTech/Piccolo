@@ -408,7 +408,7 @@ namespace Piccolo
             RHIDescriptorSetAllocateInfo particlebillboard_global_descriptor_set_alloc_info;
             particlebillboard_global_descriptor_set_alloc_info.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             particlebillboard_global_descriptor_set_alloc_info.pNext = NULL;
-            particlebillboard_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
+            particlebillboard_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPool();
             particlebillboard_global_descriptor_set_alloc_info.descriptorSetCount = 1;
             particlebillboard_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[2].layout;
 
@@ -595,7 +595,7 @@ namespace Piccolo
             // Copy to staging buffer
             RHICommandBufferAllocateInfo cmdBufAllocateInfo {};
             cmdBufAllocateInfo.sType              = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPoor();
+            cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPool();
             cmdBufAllocateInfo.level              = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
             cmdBufAllocateInfo.commandBufferCount = 1;
             RHICommandBuffer* copyCmd;
@@ -650,7 +650,7 @@ namespace Piccolo
             }
 
             m_rhi->destroyFence(fence);
-            m_rhi->freeCommandBuffers(m_rhi->getCommandPoor(), 1, copyCmd);
+            m_rhi->freeCommandBuffers(m_rhi->getCommandPool(), 1, copyCmd);
         }
 
         const VkDeviceSize staggingBuferSize        = s_max_particles * sizeof(Particle);
@@ -709,7 +709,7 @@ namespace Piccolo
             // Copy to staging buffer
             RHICommandBufferAllocateInfo cmdBufAllocateInfo {};
             cmdBufAllocateInfo.sType              = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPoor();
+            cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPool();
             cmdBufAllocateInfo.level              = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
             cmdBufAllocateInfo.commandBufferCount = 1;
             RHICommandBuffer* copyCmd;
@@ -763,7 +763,7 @@ namespace Piccolo
             }
 
             m_rhi->destroyFence(fence);
-            m_rhi->freeCommandBuffers(m_rhi->getCommandPoor(), 1, copyCmd);
+            m_rhi->freeCommandBuffers(m_rhi->getCommandPool(), 1, copyCmd);
         }
     }
 
@@ -783,7 +783,7 @@ namespace Piccolo
 
         RHICommandBufferAllocateInfo cmdBufAllocateInfo {};
         cmdBufAllocateInfo.sType              = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPoor();
+        cmdBufAllocateInfo.commandPool        = m_rhi->getCommandPool();
         cmdBufAllocateInfo.level              = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
         cmdBufAllocateInfo.commandBufferCount = 1;
         if (RHI_SUCCESS != m_rhi->allocateCommandBuffers(&cmdBufAllocateInfo, m_compute_command_buffer))
@@ -1225,7 +1225,7 @@ namespace Piccolo
     {
         RHIDescriptorSetAllocateInfo particle_descriptor_set_alloc_info;
         particle_descriptor_set_alloc_info.sType          = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        particle_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPoor();
+        particle_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPool();
 
         m_descriptor_infos.resize(3 * m_emitter_count);
         for (int eid = 0; eid < m_emitter_count; ++eid)

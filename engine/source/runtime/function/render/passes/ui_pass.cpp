@@ -46,7 +46,7 @@ namespace Piccolo
         RHICommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType                       = RHI_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level                       = RHI_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool                 = m_rhi->getCommandPoor();
+        allocInfo.commandPool                 = m_rhi->getCommandPool();
         allocInfo.commandBufferCount          = 1;
 
         RHICommandBuffer* commandBuffer = new VulkanCommandBuffer();
@@ -79,7 +79,7 @@ namespace Piccolo
         m_rhi->queueSubmit(m_rhi->getGraphicsQueue(), 1, &submitInfo, RHI_NULL_HANDLE);
         m_rhi->queueWaitIdle(m_rhi->getGraphicsQueue());
 
-        m_rhi->freeCommandBuffers(m_rhi->getCommandPoor(), 1, commandBuffer);
+        m_rhi->freeCommandBuffers(m_rhi->getCommandPool(), 1, commandBuffer);
 
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
