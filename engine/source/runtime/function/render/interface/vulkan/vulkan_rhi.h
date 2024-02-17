@@ -117,8 +117,8 @@ namespace Piccolo
         void getPhysicalDeviceProperties(RHIPhysicalDeviceProperties* pProperties) override;
         RHICommandBuffer* getCurrentCommandBuffer() const override;
         RHICommandBuffer* const* getCommandBufferList() const override;
-        RHICommandPool* getCommandPoor() const override;
-        RHIDescriptorPool* getDescriptorPoor()const override;
+        RHICommandPool* getCommandPool() const override;
+        RHIDescriptorPool* getDescriptorPool()const override;
         RHIFence* const* getFenceList() const override;
         QueueFamilyIndices getQueueFamilyIndices() const override;
         RHIQueue* getGraphicsQueue() const override;
