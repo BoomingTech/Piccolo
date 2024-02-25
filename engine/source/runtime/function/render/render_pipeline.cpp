@@ -62,7 +62,7 @@ namespace Piccolo
             std::static_pointer_cast<RenderPass>(m_directional_light_pass)->m_framebuffer.attachments[0].view;
 
         MainCameraPassInitInfo main_camera_init_info;
-        main_camera_init_info.enble_fxaa = init_info.enable_fxaa;
+        main_camera_init_info.enable_fxaa = init_info.enable_fxaa;
         main_camera_pass->setParticlePass(particle_pass);
         m_main_camera_pass->initialize(&main_camera_init_info);
 

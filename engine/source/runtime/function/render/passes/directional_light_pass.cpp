@@ -465,7 +465,7 @@ namespace Piccolo
             directional_light_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (RenderMeshNode& node : *(m_visiable_nodes.p_directional_light_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visible_nodes.p_directional_light_visible_mesh_nodes))
         {
             auto& mesh_instanced = directional_light_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
