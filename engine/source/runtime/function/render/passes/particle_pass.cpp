@@ -653,7 +653,7 @@ namespace Piccolo
             m_rhi->freeCommandBuffers(m_rhi->getCommandPoor(), 1, copyCmd);
         }
 
-        const VkDeviceSize staggingBuferSize        = s_max_particles * sizeof(Particle);
+        const VkDeviceSize staggingBufferSize        = s_max_particles * sizeof(Particle);
         m_emitter_buffer_batches[id].m_emitter_desc = desc;
 
         // fill in data
@@ -681,7 +681,7 @@ namespace Piccolo
                                              RHI_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                              m_emitter_buffer_batches[id].m_position_host_buffer,
                                              m_emitter_buffer_batches[id].m_position_host_memory,
-                                             staggingBuferSize);
+                                             staggingBufferSize);
 
             // Flush writes to host visible buffer
             void* mapped;
@@ -697,14 +697,14 @@ namespace Piccolo
                                              RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                              m_emitter_buffer_batches[id].m_position_device_buffer,
                                              m_emitter_buffer_batches[id].m_position_device_memory,
-                                             staggingBuferSize);
+                                             staggingBufferSize);
 
             m_rhi->createBufferAndInitialize(RHI_BUFFER_USAGE_STORAGE_BUFFER_BIT | RHI_BUFFER_USAGE_TRANSFER_SRC_BIT |
                                                  RHI_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              RHI_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                              m_emitter_buffer_batches[id].m_position_render_buffer,
                                              m_emitter_buffer_batches[id].m_position_render_memory,
-                                             staggingBuferSize);
+                                             staggingBufferSize);
 
             // Copy to staging buffer
             RHICommandBufferAllocateInfo cmdBufAllocateInfo {};
@@ -727,7 +727,7 @@ namespace Piccolo
             RHIBufferCopy copyRegion = {};
             copyRegion.srcOffset     = 0;
             copyRegion.dstOffset     = 0;
-            copyRegion.size          = staggingBuferSize;
+            copyRegion.size          = staggingBufferSize;
             m_rhi->cmdCopyBuffer(copyCmd,
                                  m_emitter_buffer_batches[id].m_position_host_buffer,
                                  m_emitter_buffer_batches[id].m_position_device_buffer,
@@ -814,11 +814,11 @@ namespace Piccolo
         {
             RHIDescriptorSetLayoutBinding particle_layout_bindings[11] = {};
             {
-                RHIDescriptorSetLayoutBinding& uniform_layout_bingding = particle_layout_bindings[0];
-                uniform_layout_bingding.binding                        = 0;
-                uniform_layout_bingding.descriptorType                 = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                uniform_layout_bingding.descriptorCount                = 1;
-                uniform_layout_bingding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
+                RHIDescriptorSetLayoutBinding& uniform_layout_binding = particle_layout_bindings[0];
+                uniform_layout_binding.binding                        = 0;
+                uniform_layout_binding.descriptorType                 = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                uniform_layout_binding.descriptorCount                = 1;
+                uniform_layout_binding.stageFlags                     = RHI_SHADER_STAGE_COMPUTE_BIT;
             }
 
             {

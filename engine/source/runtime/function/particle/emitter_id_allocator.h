@@ -7,7 +7,7 @@ namespace Piccolo
 {
     using ParticleEmitterID = std::size_t;
 
-    constexpr ParticleEmitterID k_invalid_particke_emmiter_id = std::numeric_limits<std::size_t>::max();
+    constexpr ParticleEmitterID k_invalid_particle_emitter_id = std::numeric_limits<std::size_t>::max();
 
     class ParticleEmitterIDAllocator
     {

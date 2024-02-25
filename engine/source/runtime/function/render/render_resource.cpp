@@ -162,7 +162,7 @@ namespace Piccolo
 
         m_particlebillboard_perframe_storage_buffer_object.proj_view_matrix = proj_view_matrix;
         m_particlebillboard_perframe_storage_buffer_object.right_direction  = camera->right();
-        m_particlebillboard_perframe_storage_buffer_object.foward_direction = camera->forward();
+        m_particlebillboard_perframe_storage_buffer_object.forward_direction = camera->forward();
         m_particlebillboard_perframe_storage_buffer_object.up_direction     = camera->up();
     }
 
@@ -633,7 +633,7 @@ namespace Piccolo
             assert(0 == (index_buffer_size % sizeof(uint16_t)));
             uint32_t index_count = index_buffer_size / sizeof(uint16_t);
 
-            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPosition) * vertex_count;
             RHIDeviceSize vertex_varying_enable_blending_buffer_size =
                 sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
             RHIDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
@@ -666,8 +666,8 @@ namespace Piccolo
                            0,
                            &inefficient_staging_buffer_data);
 
-            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
+            MeshVertex::VulkanMeshVertexPosition* mesh_vertex_positions =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexPosition*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
             MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
                 reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(
@@ -842,7 +842,7 @@ namespace Piccolo
             assert(0 == (vertex_buffer_size % sizeof(MeshVertexDataDefinition)));
             uint32_t vertex_count = vertex_buffer_size / sizeof(MeshVertexDataDefinition);
 
-            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPostition) * vertex_count;
+            RHIDeviceSize vertex_position_buffer_size = sizeof(MeshVertex::VulkanMeshVertexPosition) * vertex_count;
             RHIDeviceSize vertex_varying_enable_blending_buffer_size =
                 sizeof(MeshVertex::VulkanMeshVertexVaryingEnableBlending) * vertex_count;
             RHIDeviceSize vertex_varying_buffer_size = sizeof(MeshVertex::VulkanMeshVertexVarying) * vertex_count;
@@ -871,8 +871,8 @@ namespace Piccolo
                            0,
                            &inefficient_staging_buffer_data);
 
-            MeshVertex::VulkanMeshVertexPostition* mesh_vertex_positions =
-                reinterpret_cast<MeshVertex::VulkanMeshVertexPostition*>(
+            MeshVertex::VulkanMeshVertexPosition* mesh_vertex_positions =
+                reinterpret_cast<MeshVertex::VulkanMeshVertexPosition*>(
                     reinterpret_cast<uintptr_t>(inefficient_staging_buffer_data) + vertex_position_buffer_offset);
             MeshVertex::VulkanMeshVertexVaryingEnableBlending* mesh_vertex_blending_varyings =
                 reinterpret_cast<MeshVertex::VulkanMeshVertexVaryingEnableBlending*>(

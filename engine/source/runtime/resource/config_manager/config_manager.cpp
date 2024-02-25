@@ -15,11 +15,11 @@ namespace Piccolo
         std::string   config_line;
         while (std::getline(config_file, config_line))
         {
-            size_t seperate_pos = config_line.find_first_of('=');
-            if (seperate_pos > 0 && seperate_pos < (config_line.length() - 1))
+            size_t separate_pos = config_line.find_first_of('=');
+            if (separate_pos > 0 && separate_pos < (config_line.length() - 1))
             {
-                std::string name  = config_line.substr(0, seperate_pos);
-                std::string value = config_line.substr(seperate_pos + 1, config_line.length() - seperate_pos - 1);
+                std::string name  = config_line.substr(0, separate_pos);
+                std::string value = config_line.substr(separate_pos + 1, config_line.length() - separate_pos - 1);
                 if (name == "BinaryRootFolder")
                 {
                     m_root_folder = config_file_path.parent_path() / value;

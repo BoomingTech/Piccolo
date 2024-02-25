@@ -62,7 +62,7 @@ namespace Piccolo
     private:
         EditorTranslationAxis m_translation_axis;
         EditorRotationAxis    m_rotation_axis;
-        EditorScaleAxis       m_scale_aixs;
+        EditorScaleAxis       m_scale_axis;
 
         GObjectID m_selected_gobject_id{ k_invalid_gobject_id };
         Matrix4x4 m_selected_object_matrix{ Matrix4x4::IDENTITY };

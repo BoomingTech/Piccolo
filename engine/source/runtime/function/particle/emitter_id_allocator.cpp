@@ -10,7 +10,7 @@ namespace Piccolo
     {
         std::atomic<ParticleEmitterID> new_emitter_ret = m_next_id.load();
         m_next_id++;
-        if (m_next_id >= k_invalid_particke_emmiter_id)
+        if (m_next_id >= k_invalid_particle_emitter_id)
         {
             LOG_FATAL("particle emitter id overflow");
         }

@@ -21,17 +21,17 @@ namespace Piccolo
 
     void RenderScene::setVisibleNodesReference()
     {
-        RenderPass::m_visiable_nodes.p_directional_light_visible_mesh_nodes = &m_directional_light_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
-        RenderPass::m_visiable_nodes.p_axis_node                            = &m_axis_node;
+        RenderPass::m_visible_nodes.p_directional_light_visible_mesh_nodes = &m_directional_light_visible_mesh_nodes;
+        RenderPass::m_visible_nodes.p_point_lights_visible_mesh_nodes      = &m_point_lights_visible_mesh_nodes;
+        RenderPass::m_visible_nodes.p_main_camera_visible_mesh_nodes       = &m_main_camera_visible_mesh_nodes;
+        RenderPass::m_visible_nodes.p_axis_node                            = &m_axis_node;
     }
 
     GuidAllocator<GameObjectPartId>& RenderScene::getInstanceIdAllocator() { return m_instance_id_allocator; }
 
     GuidAllocator<MeshSourceDesc>& RenderScene::getMeshAssetIdAllocator() { return m_mesh_asset_id_allocator; }
 
-    GuidAllocator<MaterialSourceDesc>& RenderScene::getMaterialAssetdAllocator()
+    GuidAllocator<MaterialSourceDesc>& RenderScene::getMaterialAssetAllocator()
     {
         return m_material_asset_id_allocator;
     }

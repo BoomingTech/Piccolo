@@ -163,7 +163,7 @@ namespace Piccolo
         return ret;
     }
 
-    AxisAlignedBox RenderResourceBase::getCachedBoudingBox(const MeshSourceDesc& source) const
+    AxisAlignedBox RenderResourceBase::getCachedBoundingBox(const MeshSourceDesc& source) const
     {
         auto find_it = m_bounding_box_cache_map.find(source);
         if (find_it != m_bounding_box_cache_map.end())

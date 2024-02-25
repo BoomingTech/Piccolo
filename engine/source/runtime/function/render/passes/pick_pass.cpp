@@ -434,7 +434,7 @@ namespace Piccolo
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (RenderMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visible_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& model_nodes    = mesh_instanced[node.ref_mesh];

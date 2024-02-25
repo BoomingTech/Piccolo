@@ -26,7 +26,7 @@ namespace Piccolo
         RenderPass::initialize(nullptr);
 
         const MainCameraPassInitInfo* _init_info = static_cast<const MainCameraPassInitInfo*>(init_info);
-        m_enable_fxaa                            = _init_info->enble_fxaa;
+        m_enable_fxaa                            = _init_info->enable_fxaa;
 
         setupAttachments();
         setupRenderPass();
@@ -2112,7 +2112,7 @@ namespace Piccolo
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (RenderMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visible_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
@@ -2385,7 +2385,7 @@ namespace Piccolo
         std::map<VulkanPBRMaterial*, std::map<VulkanMesh*, std::vector<MeshNode>>> main_camera_mesh_drawcall_batch;
 
         // reorganize mesh
-        for (RenderMeshNode& node : *(m_visiable_nodes.p_main_camera_visible_mesh_nodes))
+        for (RenderMeshNode& node : *(m_visible_nodes.p_main_camera_visible_mesh_nodes))
         {
             auto& mesh_instanced = main_camera_mesh_drawcall_batch[node.ref_material];
             auto& mesh_nodes     = mesh_instanced[node.ref_mesh];
@@ -2683,11 +2683,11 @@ namespace Piccolo
                                         &perframe_dynamic_offset);
 
         m_axis_storage_buffer_object.selected_axis = m_selected_axis;
-        m_axis_storage_buffer_object.model_matrix  = m_visiable_nodes.p_axis_node->model_matrix;
+        m_axis_storage_buffer_object.model_matrix  = m_visible_nodes.p_axis_node->model_matrix;
 
-        RHIBuffer*     vertex_buffers[3] = {m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_position_buffer,
-                                     m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_enable_blending_buffer,
-                                     m_visiable_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_buffer};
+        RHIBuffer*     vertex_buffers[3] = {m_visible_nodes.p_axis_node->ref_mesh->mesh_vertex_position_buffer,
+                                     m_visible_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_enable_blending_buffer,
+                                     m_visible_nodes.p_axis_node->ref_mesh->mesh_vertex_varying_buffer};
         RHIDeviceSize offsets[3]        = {0, 0, 0};
         m_rhi->cmdBindVertexBuffersPFN(m_rhi->getCurrentCommandBuffer(),
                                        0,
@@ -2695,7 +2695,7 @@ namespace Piccolo
                                        vertex_buffers,
                                        offsets);
         m_rhi->cmdBindIndexBufferPFN(m_rhi->getCurrentCommandBuffer(),
-                                     m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_buffer,
+                                     m_visible_nodes.p_axis_node->ref_mesh->mesh_index_buffer,
                                      0,
                                      RHI_INDEX_TYPE_UINT16);
         (*reinterpret_cast<AxisStorageBufferObject*>(reinterpret_cast<uintptr_t>(
@@ -2703,7 +2703,7 @@ namespace Piccolo
             m_axis_storage_buffer_object;
 
         m_rhi->cmdDrawIndexedPFN(m_rhi->getCurrentCommandBuffer(),
-                                 m_visiable_nodes.p_axis_node->ref_mesh->mesh_index_count,
+                                 m_visible_nodes.p_axis_node->ref_mesh->mesh_index_count,
                                  1,
                                  0,
                                  0,
