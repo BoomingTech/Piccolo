@@ -1528,7 +1528,7 @@ namespace Piccolo
         RHIDescriptorSetAllocateInfo mesh_global_descriptor_set_alloc_info;
         mesh_global_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         mesh_global_descriptor_set_alloc_info.pNext              = NULL;
-        mesh_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
+        mesh_global_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPool();
         mesh_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         mesh_global_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[_mesh_global].layout;
 
@@ -1656,7 +1656,7 @@ namespace Piccolo
         RHIDescriptorSetAllocateInfo skybox_descriptor_set_alloc_info;
         skybox_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         skybox_descriptor_set_alloc_info.pNext              = NULL;
-        skybox_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
+        skybox_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPool();
         skybox_descriptor_set_alloc_info.descriptorSetCount = 1;
         skybox_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[_skybox].layout;
 
@@ -1705,7 +1705,7 @@ namespace Piccolo
         RHIDescriptorSetAllocateInfo axis_descriptor_set_alloc_info;
         axis_descriptor_set_alloc_info.sType              = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         axis_descriptor_set_alloc_info.pNext              = NULL;
-        axis_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPoor();
+        axis_descriptor_set_alloc_info.descriptorPool     = m_rhi->getDescriptorPool();
         axis_descriptor_set_alloc_info.descriptorSetCount = 1;
         axis_descriptor_set_alloc_info.pSetLayouts        = &m_descriptor_infos[_axis].layout;
 
@@ -1757,7 +1757,7 @@ namespace Piccolo
         RHIDescriptorSetAllocateInfo gbuffer_light_global_descriptor_set_alloc_info;
         gbuffer_light_global_descriptor_set_alloc_info.sType          = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         gbuffer_light_global_descriptor_set_alloc_info.pNext          = NULL;
-        gbuffer_light_global_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPoor();
+        gbuffer_light_global_descriptor_set_alloc_info.descriptorPool = m_rhi->getDescriptorPool();
         gbuffer_light_global_descriptor_set_alloc_info.descriptorSetCount = 1;
         gbuffer_light_global_descriptor_set_alloc_info.pSetLayouts = &m_descriptor_infos[_deferred_lighting].layout;
 

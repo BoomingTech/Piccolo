@@ -123,8 +123,8 @@ namespace Piccolo
         virtual void getPhysicalDeviceProperties(RHIPhysicalDeviceProperties* pProperties) = 0;
         virtual RHICommandBuffer* getCurrentCommandBuffer() const = 0;
         virtual RHICommandBuffer* const* getCommandBufferList() const = 0;
-        virtual RHICommandPool* getCommandPoor() const = 0;
-        virtual RHIDescriptorPool* getDescriptorPoor() const = 0;
+        virtual RHICommandPool* getCommandPool() const = 0;
+        virtual RHIDescriptorPool* getDescriptorPool() const = 0;
         virtual RHIFence* const* getFenceList() const = 0;
         virtual QueueFamilyIndices getQueueFamilyIndices() const = 0;
         virtual RHIQueue* getGraphicsQueue() const = 0;
