@@ -70,6 +70,11 @@ if(NOT TARGET Jolt)
             MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
     endif()
 
+    if (MSVC)
+        target_compile_options(Jolt PRIVATE "/W4")
+    else()
+        target_compile_options(Jolt PRIVATE "-Wall")
+    endif()
 endif()
 
 if(NOT TARGET sol2)
