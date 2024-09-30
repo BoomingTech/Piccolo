@@ -57,7 +57,7 @@ namespace Piccolo
         {
             return m_selected_axis;
         }
-        RenderEntity* selected_aixs = getAxisMeshByType(m_axis_mode);
+        RenderEntity* selected_axis = getAxisMeshByType(m_axis_mode);
         m_selected_axis             = 3;
         if (m_is_show_axis == false)
         {
@@ -65,7 +65,7 @@ namespace Piccolo
         }
         else
         {
-            Matrix4x4 model_matrix = selected_aixs->m_model_matrix;
+            Matrix4x4 model_matrix = selected_axis->m_model_matrix;
             Vector3 model_scale;
             Quaternion model_rotation;
             Vector3 model_translation;
@@ -198,7 +198,7 @@ namespace Piccolo
                 axis_mesh = &m_rotation_axis;
                 break;
             case EditorAxisMode::ScaleMode:
-                axis_mesh = &m_scale_aixs;
+                axis_mesh = &m_scale_axis;
                 break;
             default:
                 break;
@@ -221,17 +221,17 @@ namespace Piccolo
             Matrix4x4     translation_matrix = Matrix4x4::getTrans(translation);
             Matrix4x4     scale_matrix       = Matrix4x4::buildScaleMatrix(1.0f, 1.0f, 1.0f);
             Matrix4x4     axis_model_matrix  = translation_matrix * scale_matrix;
-            RenderEntity* selected_aixs      = getAxisMeshByType(m_axis_mode);
+            RenderEntity* selected_axis      = getAxisMeshByType(m_axis_mode);
             if (m_axis_mode == EditorAxisMode::TranslateMode || m_axis_mode == EditorAxisMode::RotateMode)
             {
-                selected_aixs->m_model_matrix = axis_model_matrix;
+                selected_axis->m_model_matrix = axis_model_matrix;
             }
             else if (m_axis_mode == EditorAxisMode::ScaleMode)
             {
-                selected_aixs->m_model_matrix = axis_model_matrix * Matrix4x4(rotation);
+                selected_axis->m_model_matrix = axis_model_matrix * Matrix4x4(rotation);
             }
 
-            g_editor_global_context.m_render_system->setVisibleAxis(*selected_aixs);
+            g_editor_global_context.m_render_system->setVisibleAxis(*selected_axis);
         }
         else
         {
@@ -414,7 +414,7 @@ namespace Piccolo
 
             m_translation_axis.m_model_matrix = axis_model_matrix;
             m_rotation_axis.m_model_matrix    = axis_model_matrix;
-            m_scale_aixs.m_model_matrix       = axis_model_matrix;
+            m_scale_axis.m_model_matrix       = axis_model_matrix;
 
             g_editor_global_context.m_render_system->setVisibleAxis(m_translation_axis);
 
@@ -485,7 +485,7 @@ namespace Piccolo
             transform_component->setPosition(new_translation);
             transform_component->setRotation(new_rotation);
             transform_component->setScale(new_scale);
-            m_scale_aixs.m_model_matrix = new_model_matrix;
+            m_scale_axis.m_model_matrix = new_model_matrix;
         }
         else if (m_axis_mode == EditorAxisMode::ScaleMode) // scale
         {
@@ -562,13 +562,13 @@ namespace Piccolo
             GameObjectPartId axis_instance_id = {0xFFCC, 0xFFCC};
             MeshSourceDesc   mesh_source_desc = {"%%scale_axis%%"};
 
-            m_scale_aixs.m_instance_id   = instance_id_allocator.allocGuid(axis_instance_id);
-            m_scale_aixs.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
+            m_scale_axis.m_instance_id   = instance_id_allocator.allocGuid(axis_instance_id);
+            m_scale_axis.m_mesh_asset_id = mesh_asset_id_allocator.allocGuid(mesh_source_desc);
         }
 
         g_editor_global_context.m_render_system->createAxis(
-            {m_translation_axis, m_rotation_axis, m_scale_aixs},
-            {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_aixs.m_mesh_data});
+            {m_translation_axis, m_rotation_axis, m_scale_axis},
+            {m_translation_axis.m_mesh_data, m_rotation_axis.m_mesh_data, m_scale_axis.m_mesh_data});
     }
 
     size_t EditorSceneManager::getGuidOfPickedMesh(const Vector2& picked_uv) const

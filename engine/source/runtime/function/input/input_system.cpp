@@ -62,7 +62,7 @@ namespace Piccolo
                     m_game_command |= (unsigned int)GameCommand::sprint;
                     break;
                 case GLFW_KEY_F:
-                    m_game_command ^= (unsigned int)GameCommand::free_carema;
+                    m_game_command ^= (unsigned int)GameCommand::free_camera;
                     break;
                 default:
                     break;

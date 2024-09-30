@@ -23,14 +23,14 @@ namespace Piccolo
 #endif // __REFLECTION_PARSER__
 
 #define REFLECTION_BODY(class_name) \
-    friend class Reflection::TypeFieldReflectionOparator::Type##class_name##Operator; \
+    friend class Reflection::TypeFieldReflectionOperator::Type##class_name##Operator; \
     friend class Serializer;
     // public: virtual std::string getTypeName() override {return #class_name;}
 
 #define REFLECTION_TYPE(class_name) \
     namespace Reflection \
     { \
-        namespace TypeFieldReflectionOparator \
+        namespace TypeFieldReflectionOperator \
         { \
             class Type##class_name##Operator; \
         } \
@@ -76,9 +76,9 @@ namespace Piccolo
         class ArrayAccessor;
         class ReflectionInstance;
     } // namespace Reflection
-    typedef std::function<void(void*, void*)>      SetFuncion;
-    typedef std::function<void*(void*)>            GetFuncion;
-    typedef std::function<const char*()>           GetNameFuncion;
+    typedef std::function<void(void*, void*)>      SetFunction;
+    typedef std::function<void*(void*)>            GetFunction;
+    typedef std::function<const char*()>           GetNameFunction;
     typedef std::function<void(int, void*, void*)> SetArrayFunc;
     typedef std::function<void*(int, void*)>       GetArrayFunc;
     typedef std::function<int(void*)>              GetSizeFunc;
@@ -89,11 +89,11 @@ namespace Piccolo
     typedef std::function<Json(void*)>                                  WriteJsonByName;
     typedef std::function<int(Reflection::ReflectionInstance*&, void*)> GetBaseClassReflectionInstanceListFunc;
 
-    typedef std::tuple<SetFuncion, GetFuncion, GetNameFuncion, GetNameFuncion, GetNameFuncion, GetBoolFunc>
+    typedef std::tuple<SetFunction, GetFunction, GetNameFunction, GetNameFunction, GetNameFunction, GetBoolFunc>
                                                        FieldFunctionTuple;
-    typedef std::tuple<GetNameFuncion, InvokeFunction> MethodFunctionTuple;
+    typedef std::tuple<GetNameFunction, InvokeFunction> MethodFunctionTuple;
     typedef std::tuple<GetBaseClassReflectionInstanceListFunc, ConstructorWithJson, WriteJsonByName> ClassFunctionTuple;
-    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFuncion, GetNameFuncion>      ArrayFunctionTuple;
+    typedef std::tuple<SetArrayFunc, GetArrayFunc, GetSizeFunc, GetNameFunction, GetNameFunction>      ArrayFunctionTuple;
 
     namespace Reflection
     {

@@ -12,15 +12,15 @@
 
 namespace Piccolo
 {
-    void registerEdtorTickComponent(std::string component_type_name)
+    void registerEditorTickComponent(std::string component_type_name)
     {
         g_editor_tick_component_types.insert(component_type_name);
     }
 
     PiccoloEditor::PiccoloEditor()
     {
-        registerEdtorTickComponent("TransformComponent");
-        registerEdtorTickComponent("MeshComponent");
+        registerEditorTickComponent("TransformComponent");
+        registerEditorTickComponent("MeshComponent");
     }
 
     PiccoloEditor::~PiccoloEditor() {}
