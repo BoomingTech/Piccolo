@@ -36,6 +36,7 @@ namespace Piccolo
     public:
         std::string              m_name;
         std::string              m_definition;
+        bool                     m_active;
 
         std::vector<Reflection::ReflectionPtr<Component>> m_instanced_components;
     };

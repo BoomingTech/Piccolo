@@ -13,6 +13,8 @@
 #include <cassert>
 #include <unordered_set>
 
+#include "editor/include/editor_global_context.h"
+#include "function/render/render_system.h"
 #include "_generated/serializer/all_serializer.h"
 
 namespace Piccolo
@@ -40,6 +42,11 @@ namespace Piccolo
 
     void GObject::tick(float delta_time)
     {
+        if (!isActive())
+        {
+            return;
+        }
+            
         for (auto& component : m_components)
         {
             if (shouldComponentTick(component.getTypeName()))
@@ -66,6 +73,8 @@ namespace Piccolo
         m_components.clear();
 
         setName(object_instance_res.m_name);
+
+        m_active = object_instance_res.m_active;
 
         // load object instanced components
         m_components = object_instance_res.m_instanced_components;
@@ -107,6 +116,40 @@ namespace Piccolo
         out_object_instance_res.m_definition = m_definition_url;
 
         out_object_instance_res.m_instanced_components = m_components;
+        out_object_instance_res.m_active = m_active;
     }
 
+    // enable state
+    void GObject::setActive(bool active)
+    {
+        if (m_active != active)
+        {
+            m_active = active;
+            onActiveStateChange();
+        }
+    }
+
+    void GObject::onActiveStateChange()
+    {
+        if (isActive())
+        {
+            onActive();
+        }
+        else
+        {
+            onInactive();
+        }
+    }
+
+    void GObject::onActive()
+    {
+        TransformComponent* transform_component = tryGetComponent(TransformComponent);
+        transform_component->setDirtyFlag(true); // update render scene
+    }
+
+    void GObject::onInactive() const
+    {
+        RenderSwapContext& swap_context = g_editor_global_context.m_render_system->getSwapContext();
+        swap_context.getLogicSwapData().addDeleteGameObject(GameObjectDesc {getID(), {}});
+    }
 } // namespace Piccolo

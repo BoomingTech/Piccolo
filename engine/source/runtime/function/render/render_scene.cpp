@@ -71,6 +71,7 @@ namespace Piccolo
                 if (it->m_instance_id == find_guid)
                 {
                     m_render_entities.erase(it);
+                    m_instance_id_allocator.freeGuid(find_guid);
                     break;
                 }
             }

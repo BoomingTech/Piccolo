@@ -217,6 +217,7 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <cmath>
 #include <sstream>
 #include <functional>
+#include <cstdint>
 JPH_SUPPRESS_WARNINGS_STD_END
 #if defined(JPH_USE_SSE)
 	#include <immintrin.h>

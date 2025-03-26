@@ -416,10 +416,12 @@ namespace Piccolo
             const GObjectID          object_id = id_object_pair.first;
             std::shared_ptr<GObject> object    = id_object_pair.second;
             const std::string        name      = object->getName();
+            const bool               is_active = object->isActive();
             if (name.size() > 0)
             {
                 if (ImGui::Selectable(name.c_str(),
-                                      g_editor_global_context.m_scene_manager->getSelectedObjectID() == object_id))
+                                      g_editor_global_context.m_scene_manager->getSelectedObjectID() == object_id,
+                                      0, ImVec2(0, 0), !is_active))
                 {
                     if (g_editor_global_context.m_scene_manager->getSelectedObjectID() != object_id)
                     {
@@ -556,6 +558,26 @@ namespace Piccolo
         ImGui::Text("Name");
         ImGui::SameLine();
         ImGui::InputText("##Name", cname, IM_ARRAYSIZE(cname), ImGuiInputTextFlags_ReadOnly);
+
+        // active state
+        bool is_active = selected_object->isActive();
+        if (is_active)
+        {
+            if (ImGui::Button("Active"))
+            {
+                is_active = !is_active;
+                selected_object->setActive(is_active);
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Inactive"))
+            {
+                is_active = !is_active;
+                selected_object->setActive(is_active);
+            }
+        }
+        
 
         static ImGuiTableFlags flags                      = ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings;
         auto&&                 selected_object_components = selected_object->getComponents();
@@ -919,7 +941,7 @@ namespace Piccolo
         ImVec4*     colors = style->Colors;
 
         colors[ImGuiCol_Text]                  = ImVec4(0.4745f, 0.4745f, 0.4745f, 1.00f);
-        colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+        colors[ImGuiCol_TextDisabled]          = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
         colors[ImGuiCol_WindowBg]              = ImVec4(0.0078f, 0.0078f, 0.0078f, 1.00f);
         colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
         colors[ImGuiCol_PopupBg]               = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);

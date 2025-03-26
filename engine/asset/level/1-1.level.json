@@ -33,6 +33,7 @@
           }
         }
       ],
+      "active": true,
       "definition": "asset/objects/environment/particle/particle.object.json"
     },
     {
@@ -62,6 +63,7 @@
           }
         }
       ],
+      "active": true,
       "definition": "asset/objects/character/player/player.object.json"
     },
     {
@@ -91,6 +93,7 @@
           "$typeName": "TransformComponent"
         }
       ],
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
     {
@@ -120,6 +123,7 @@
           "$typeName": "TransformComponent"
         }
       ],
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
     {
@@ -149,10 +153,12 @@
           "$typeName": "TransformComponent"
         }
       ],
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json"
     },
     {
       "name": "Wall_4",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -182,6 +188,7 @@
     },
     {
       "name": "Wall_5",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -211,6 +218,7 @@
     },
     {
       "name": "Wall_6",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -240,6 +248,7 @@
     },
     {
       "name": "Wall_7",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -269,6 +278,7 @@
     },
     {
       "name": "Wall_8",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -298,6 +308,7 @@
     },
     {
       "name": "Wall_9",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -327,6 +338,7 @@
     },
     {
       "name": "Wall_10",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -356,6 +368,7 @@
     },
     {
       "name": "Wall_11",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -385,6 +398,7 @@
     },
     {
       "name": "Wall_12",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -414,6 +428,7 @@
     },
     {
       "name": "Wall_13",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -443,6 +458,7 @@
     },
     {
       "name": "Wall_14",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -472,6 +488,7 @@
     },
     {
       "name": "Wall_15",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -501,6 +518,7 @@
     },
     {
       "name": "Wall_16",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -530,6 +548,7 @@
     },
     {
       "name": "Wall_17",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall.object.json",
       "instanced_components": [
         {
@@ -559,6 +578,7 @@
     },
     {
       "name": "WallWithDoor_1",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_door.object.json",
       "instanced_components": [
         {
@@ -588,6 +608,7 @@
     },
     {
       "name": "WallWithDoor_2",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_door.object.json",
       "instanced_components": [
         {
@@ -617,6 +638,7 @@
     },
     {
       "name": "WallWithDoor_3",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_door.object.json",
       "instanced_components": [
         {
@@ -646,6 +668,7 @@
     },
     {
       "name": "WallWithDoor_4",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_door.object.json",
       "instanced_components": [
         {
@@ -675,6 +698,7 @@
     },
     {
       "name": "WallWithDoor_5",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_door.object.json",
       "instanced_components": [
         {
@@ -704,6 +728,7 @@
     },
     {
       "name": "WallWithWindow_1",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_window.object.json",
       "instanced_components": [
         {
@@ -733,6 +758,7 @@
     },
     {
       "name": "WallWithWindow_2",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_with_window.object.json",
       "instanced_components": [
         {
@@ -762,6 +788,7 @@
     },
     {
       "name": "WallBlock_1",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_block.object.json",
       "instanced_components": [
         {
@@ -791,6 +818,7 @@
     },
     {
       "name": "WallBlock_2",
+      "active": true,
       "definition": "asset/objects/environment/wall/wall_block.object.json",
       "instanced_components": [
         {
@@ -820,6 +848,7 @@
     },
     {
       "name": "Stairs",
+      "active": true,
       "definition": "asset/objects/environment/stairs/stairs.object.json",
       "instanced_components": [
         {
@@ -849,6 +878,7 @@
     },
     {
       "name": "Ground",
+      "active": true,
       "definition": "asset/objects/environment/floor/floor.object.json",
       "instanced_components": [
         {
@@ -886,6 +916,7 @@
           "z": 0
         }
       },
+      "active": true,
       "definition": "asset/objects/environment/fence/fence.object.json",
       "instanced_components": [
         {
