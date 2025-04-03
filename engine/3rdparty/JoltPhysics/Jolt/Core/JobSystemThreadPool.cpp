@@ -9,6 +9,7 @@
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <algorithm>
+#include <chrono>
 JPH_SUPPRESS_WARNINGS_STD_END
 
 #ifdef JPH_PLATFORM_WINDOWS
