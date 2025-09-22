@@ -16,7 +16,7 @@ namespace Piccolo
         FILE* fontFile = fopen(fontFilePath, "rb");
         if (fontFile == NULL)
         {
-            std::runtime_error("debug draw cannot open font.ttf");
+            throw std::runtime_error("debug draw cannot open font.ttf");
         }
         fseek(fontFile, 0, SEEK_END);
         uint64_t size = ftell(fontFile);
@@ -29,7 +29,7 @@ namespace Piccolo
         
         if (!stbtt_InitFont(&fontInfo, fontBuffer, 0))
         {
-            std::runtime_error("debug draw stb init font failed\n");
+            throw std::runtime_error("debug draw stb init font failed\n");
         }
 
         unsigned char* bitmap = (unsigned char*)calloc(m_bitmap_w * m_bitmap_h, sizeof(unsigned char));

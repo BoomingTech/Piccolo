@@ -385,12 +385,12 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	set(JOLT_PHYSICS_SRC_FILES ${JOLT_PHYSICS_SRC_FILES} ${JOLT_PHYSICS_ROOT}/Jolt.natvis)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	# Enable Precompiled Headers for Jolt
-	set_source_files_properties(${JOLT_PHYSICS_SRC_FILES} PROPERTIES COMPILE_FLAGS "/YuJolt/Jolt.h")
-	set(JOLT_PHYSICS_SRC_FILES ${JOLT_PHYSICS_SRC_FILES} ${JOLT_PHYSICS_ROOT}/pch.cpp)	
-	set_source_files_properties(${JOLT_PHYSICS_ROOT}/pch.cpp PROPERTIES COMPILE_FLAGS "/YcJolt/Jolt.h")
-endif()
+# if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+# 	# Enable Precompiled Headers for Jolt - DISABLED to fix build issues
+# 	# set_source_files_properties(${JOLT_PHYSICS_SRC_FILES} PROPERTIES COMPILE_FLAGS "/YuJolt/Jolt.h")
+# 	# set(JOLT_PHYSICS_SRC_FILES ${JOLT_PHYSICS_SRC_FILES} ${JOLT_PHYSICS_ROOT}/pch.cpp)	
+# 	# set_source_files_properties(${JOLT_PHYSICS_ROOT}/pch.cpp PROPERTIES COMPILE_FLAGS "/YcJolt/Jolt.h")
+# endif()
 
 # Group source files
 source_group(TREE ${JOLT_PHYSICS_ROOT} FILES ${JOLT_PHYSICS_SRC_FILES})

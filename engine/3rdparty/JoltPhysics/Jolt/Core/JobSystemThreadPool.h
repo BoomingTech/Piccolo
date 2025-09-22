@@ -7,6 +7,7 @@
 #include <Jolt/Core/FixedSizeFreeList.h>
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
+#include <chrono>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
