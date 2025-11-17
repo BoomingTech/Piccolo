@@ -41,6 +41,13 @@ if(ENABLE_PHYSICS_DEBUG_RENDERER)
 )
 endif()
 
+# Code signing for macOS (required for Apple Silicon)
+if(APPLE)
+  set(POST_BUILD_COMMANDS ${POST_BUILD_COMMANDS}
+    COMMAND codesign --force --deep --sign - "${BINARY_ROOT_DIR}/PiccoloEditor" || true
+  )
+endif()
+
 add_custom_command(TARGET ${TARGET_NAME} ${POST_BUILD_COMMANDS})
 
 #precompile

@@ -25,7 +25,7 @@ To build Piccolo, you must first install the following tools.
 - CMake 3.19 (or more recent)
 - Git 2.1 (or more recent)
 
-### macOS >= 10.15 (x86_64)
+### macOS >= 10.15 (x86_64 and Apple Silicon/ARM64)
 - Xcode 12.3 (or more recent)
 - CMake 3.19 (or more recent)
 - Git 2.1 (or more recent)
@@ -62,20 +62,38 @@ cmake -S . -B build
 
 ### Build on macOS
 
-> The following build instructions only tested on specific hardware of x86_64, and do not support M1 chips. For M1 compatible, we will release later.
-
 To compile Piccolo, you must have the most recent version of Xcode installed.
-Then run 'cmake' from the project's root directory, to generate a project of Xcode.
 
+#### Option 1: Using the build script (Recommended)
+
+**For native architecture (automatic detection):**
+```bash
+./build_macos.sh release
 ```
+
+**For universal binary (x86_64 + arm64):**
+```bash
+./build_macos.sh release --universal
+```
+
+**For debug build:**
+```bash
+./build_macos.sh debug
+```
+
+#### Option 2: Using CMake directly
+
+**For native architecture:**
+```bash
 cmake -S . -B build -G "Xcode"
-```
-and you can build the project with
-```
 cmake --build build --config Release
 ```
 
-Or you can execute the **build_macos.sh** to build the binaries.
+**For universal binary:**
+```bash
+cmake -S . -B build -G "Xcode" -DBUILD_UNIVERSAL_BINARY=ON
+cmake --build build --config Release
+```
 
 ### Build on Ubuntu 20.04
 You can execute the **build_linux.sh** to build the binaries.
