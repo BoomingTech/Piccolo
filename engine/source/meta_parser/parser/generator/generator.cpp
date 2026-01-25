@@ -53,9 +53,22 @@ namespace Generator
 
             filed_define.set("class_field_name", field->m_name);
             filed_define.set("class_field_type", field->m_type);
+            // Use the raw clang display type for accurate container detection/casting
+            CursorType cursor_type = field->getCurosr().getType();
+            std::string full_type = cursor_type.GetDisplayName();
+            CXTypeKind kind = cursor_type.GetKind();
+            filed_define.set("class_field_type_full", full_type);
             filed_define.set("class_field_display_name", field->m_display_name);
-            bool is_vector = field->m_type.find(vector_prefix) == 0;
+            bool is_vector = full_type.find(vector_prefix) == 0;
             filed_define.set("class_field_is_vector", is_vector);
+            // Debug output for MeshData fields
+            if (class_temp->getClassName() == "MeshData") {
+                std::cout << "Field: " << field->m_name 
+                          << ", m_type: " << field->m_type 
+                          << ", full_type: " << full_type
+                          << ", kind: " << kind
+                          << ", is_vector: " << is_vector << std::endl;
+            }
             feild_defs.push_back(filed_define);
         }
     }
