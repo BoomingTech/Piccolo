@@ -33,7 +33,7 @@ namespace Reflection{
         // fields
         {{#class_field_defines}}static const char* getFieldName_{{class_field_name}}(){ return "{{class_field_name}}";}
         static const char* getFieldTypeName_{{class_field_name}}(){ return "{{{class_field_type}}}";}
-        static void set_{{class_field_name}}(void* instance, void* field_value){ static_cast<{{class_name}}*>(instance)->{{class_field_name}} = *static_cast<{{{class_field_type}}}*>(field_value);}
+        static void set_{{class_field_name}}(void* instance, void* field_value){ /* Read-only reflection */ (void)instance; (void)field_value; }
         static void* get_{{class_field_name}}(void* instance){ return static_cast<void*>(&(static_cast<{{class_name}}*>(instance)->{{class_field_name}}));}
         static bool isArray_{{class_field_name}}(){ {{#class_field_is_vector}}return true;{{/class_field_is_vector}}{{^class_field_is_vector}}return false;{{/class_field_is_vector}} }
         {{/class_field_defines}}

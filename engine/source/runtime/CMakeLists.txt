@@ -5,6 +5,9 @@ set(TARGET_NAME PiccoloRuntime)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Prefer std::optional to sol2's internal optional implementation on modern libc++/Clang
+add_compile_definitions(SOL_USE_STD_OPTIONAL)
+
 set(JSON_INCLUDE ${THIRD_PARTY_DIR}/json11)
 
 add_library(json11 ${JSON_INCLUDE}/json11.cpp)

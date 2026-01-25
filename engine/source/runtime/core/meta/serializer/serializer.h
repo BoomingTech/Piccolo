@@ -82,6 +82,32 @@ namespace Piccolo
                 return instance;
             }
         }
+
+        // Generic vector serialization support
+        template<typename T>
+        static Json write(const std::vector<T>& instance)
+        {
+            Json::array arr;
+            for (const auto& item : instance)
+            {
+                arr.push_back(Serializer::write(item));
+            }
+            return Json(arr);
+        }
+
+        template<typename T>
+        static std::vector<T>& read(const Json& json_context, std::vector<T>& instance)
+        {
+            assert(json_context.is_array());
+            instance.clear();
+            for (const auto& item_json : json_context.array_items())
+            {
+                T item;
+                Serializer::read(item_json, item);
+                instance.push_back(std::move(item));
+            }
+            return instance;
+        }
     };
 
     // implementation of base types

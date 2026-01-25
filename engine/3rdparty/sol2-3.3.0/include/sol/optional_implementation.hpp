@@ -2187,11 +2187,12 @@ namespace sol {
 		///
 		/// \group emplace
 		template <class... Args>
-		T& emplace(Args&&... args) noexcept {
-			static_assert(std::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
-
-			*this = nullopt;
-			this->construct(std::forward<Args>(args)...);
+		T& emplace(Args&&...) noexcept {
+			// optional<T&> cannot construct a referenced value in-place; provide a
+			// stub that compiles but does not attempt construction. If this function
+			// is ever instantiated, it will simply return the current referenced value.
+			static_assert(std::is_lvalue_reference<T>::value, "T must be an lvalue reference");
+			return *m_value;
 		}
 
 		/// Swaps this optional with the other.

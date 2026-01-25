@@ -228,6 +228,24 @@ namespace Piccolo
         std::array<std::shared_ptr<TextureData>, 6> irradiance_maps,
         std::array<std::shared_ptr<TextureData>, 6> specular_maps)
     {
+        auto validate_maps = [](const std::array<std::shared_ptr<TextureData>, 6>& maps, const char* label) {
+            for (size_t i = 0; i < maps.size(); ++i)
+            {
+                if (!maps[i])
+                {
+                    throw std::runtime_error(std::string(label) + " map[" + std::to_string(i) + "] is null (asset not loaded)");
+                }
+
+                if (maps[i]->m_width == 0 || maps[i]->m_height == 0 || maps[i]->m_pixels == nullptr)
+                {
+                    throw std::runtime_error(std::string(label) + " map[" + std::to_string(i) + "] has invalid data (w/h/pixels)");
+                }
+            }
+        };
+
+        validate_maps(irradiance_maps, "irradiance");
+        validate_maps(specular_maps, "specular");
+
         // assume all textures have same width, height and format
         uint32_t irradiance_cubemap_miplevels =
             static_cast<uint32_t>(

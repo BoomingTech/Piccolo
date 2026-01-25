@@ -13,9 +13,9 @@ fi
 
 
 if test \( \( -n "$1" \) -a \( "$1" = "debug" \) \);then
-    CONFIG=" Debug"
+    CONFIG="Debug"
 elif test \( \( -n "$1" \) -a \( "$1" = "release" \) \);then
-    CONFIG=" Release"
+    CONFIG="Release"
 else
     echo "The config \"$1\" is not supported!"
     echo ""
@@ -26,6 +26,8 @@ else
     exit 1
 fi
 
-cmake -S . -B build -G "Xcode"
+# Use Unix Makefiles to avoid requiring full Xcode app
+cmake -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${CONFIG}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-cmake --build build --config "${CONFIG}"
+# Build (single-config generator, no --config needed)
+cmake --build build
