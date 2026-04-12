@@ -4,3 +4,12 @@ build/
 /python/*.egg-info
 /python/.eggs
 /python/tiny_obj_loader.h
+/tests/tester
+/tests/tester.dSYM
+/_codeql_build_dir/
+/_codeql_detected_source_root
+/python/_version.py
+/tinyobjloader.egg-info/
+**/__pycache__/
+
+/Testing/Temporary/

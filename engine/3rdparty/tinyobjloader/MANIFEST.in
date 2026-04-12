@@ -1,0 +1,8 @@
+include pyproject.toml
+include setup.py
+include README.md
+include LICENSE
+include python/sample.py
+include python/bindings.cc
+include python/tiny_obj_loader.cc
+include tiny_obj_loader.h

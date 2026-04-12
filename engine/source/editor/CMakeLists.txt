@@ -41,7 +41,7 @@ if(ENABLE_PHYSICS_DEBUG_RENDERER)
 )
 endif()
 
-add_custom_command(TARGET ${TARGET_NAME} ${POST_BUILD_COMMANDS})
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD ${POST_BUILD_COMMANDS})
 
 #precompile
 #set global vari used by precompile

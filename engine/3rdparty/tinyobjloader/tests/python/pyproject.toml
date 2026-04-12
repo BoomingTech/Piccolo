@@ -1,0 +1,12 @@
+[project]
+name = "tinyobjloader-tests"
+version = "0.0.1"
+description = "Tests for tinyobjloader Python bindings"
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = ["pytest>=8.0", "black==22.10.0"]
+
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"

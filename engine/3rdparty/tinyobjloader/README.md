@@ -1,32 +1,24 @@
 # tinyobjloader
 
-[![Build Status](https://travis-ci.org/tinyobjloader/tinyobjloader.svg?branch=master)](https://travis-ci.org/tinyobjloader/tinyobjloader)
+[![PyPI version](https://badge.fury.io/py/tinyobjloader.svg)](https://badge.fury.io/py/tinyobjloader)
 
-[![AZ Build Status](https://dev.azure.com/tinyobjloader/tinyobjloader/_apis/build/status/tinyobjloader.tinyobjloader?branchName=master)](https://dev.azure.com/tinyobjloader/tinyobjloader/_build/latest?definitionId=1&branchName=master)
-
-[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/m6wfkvket7gth8wn/branch/master?svg=true)](https://ci.appveyor.com/project/syoyo/tinyobjloader-6e4qf/branch/master)
-
-[![Coverage Status](https://coveralls.io/repos/github/syoyo/tinyobjloader/badge.svg?branch=master)](https://coveralls.io/github/syoyo/tinyobjloader?branch=master)
-
-[![AUR version](https://img.shields.io/aur/version/tinyobjloader?logo=arch-linux)](https://aur.archlinux.org/packages/tinyobjloader)
-
-Tiny but powerful single file wavefront obj loader written in C++03. No dependency except for C++ STL. It can parse over 10M polygons with moderate memory and time.
+Tiny but powerful single file wavefront obj loader written in C++11. No dependency except for C++ STL. It can parse over 10M polygons with moderate memory and time.
 
 `tinyobjloader` is good for embedding .obj loader to your (global illumination) renderer ;-)
 
-If you are looking for C89 version, please see https://github.com/syoyo/tinyobjloader-c .
+If you are looking for C99 version, please see https://github.com/syoyo/tinyobjloader-c .
 
 Version notice
 --------------
 
-We recommend to use `master`(`main`) branch. Its v2.0 release candidate. Most features are now nearly robust and stable(Remaining task for release v2.0 is polishing C++ and Python API).
+We recommend using the `release` (main) branch. It contains the v2.0 release candidate. Most features are now nearly robust and stable. (The remaining task for release v2.0 is polishing C++ and Python API, and fix built-in triangulation code).
 
 We have released new version v1.0.0 on 20 Aug, 2016.
 Old version is available as `v0.9.x` branch https://github.com/syoyo/tinyobjloader/tree/v0.9.x
 
 ## What's new
 
-* 29 Jul, 2021 : Added Mapbox's earcut for robust triangulation. Also fixes triangulation bug.
+* 29 Jul, 2021 : Added Mapbox's earcut for robust triangulation. Also fixes triangulation bug(still there is some issue in built-in triangulation algorithm: https://github.com/tinyobjloader/tinyobjloader/issues/319).
 * 19 Feb, 2020 : The repository has been moved to https://github.com/tinyobjloader/tinyobjloader !
 * 18 May, 2019 : Python binding!(See `python` folder. Also see https://pypi.org/project/tinyobjloader/)
 * 14 Apr, 2019 : Bump version v2.0.0 rc0. New C++ API and python bindings!(1.x API still exists for backward compatibility)
@@ -34,7 +26,7 @@ Old version is available as `v0.9.x` branch https://github.com/syoyo/tinyobjload
 
 ## Requirements
 
-* C++03 compiler
+* C++11 compiler
 
 ### Old version
 
@@ -72,7 +64,12 @@ TinyObjLoader is successfully used in ...
 * liblava - A modern C++ and easy-to-use framework for the Vulkan API. [MIT]: https://github.com/liblava/liblava
 * rtxON - Simple Vulkan raytracing tutorials  https://github.com/iOrange/rtxON
 * metal-ray-tracer - Writing ray-tracer using Metal Performance Shaders https://github.com/sergeyreznik/metal-ray-tracer https://sergeyreznik.github.io/metal-ray-tracer/index.html
-* Your project here! (Letting us know via github issue is welcome!)
+* Supernova Engine - 2D and 3D projects with Lua or C++ in data oriented design: https://github.com/supernovaengine/supernova
+* AGE (Arc Game Engine) - An open-source engine for building 2D & 3D real-time rendering and interactive contents: https://github.com/MohitSethi99/ArcGameEngine
+* [Wicked Engine<img src="https://github.com/turanszkij/WickedEngine/blob/master/Content/logo_small.png" width="28px" align="center"/>](https://github.com/turanszkij/WickedEngine) - 3D engine with modern graphics
+* [Lumina Game Engine](https://github.com/MrDrElliot/LuminaEngine) - A modern, high-performance game engine built with Vulkan
+* lacecore: Python polygonal mesh library optimized for cloud computation https://github.com/lace/lacecore
+* Your project here! (Plese send PR)
 
 ### Old version(v0.9.x)
 
@@ -106,10 +103,7 @@ TinyObjLoader is successfully used in ...
   * Vertex color(as an extension: https://blender.stackexchange.com/questions/31997/how-can-i-get-vertex-painted-obj-files-to-import-into-blender)
 * Texcoord
 * Normal
-* Material
-  * Unknown material attributes are returned as key-value(value is string) map.
 * Crease tag('t'). This is OpenSubdiv specific(not in wavefront .obj specification)
-* PBR material extension for .MTL. Its proposed here: http://exocortex.com/blog/extending_wavefront_mtl_to_support_pbr
 * Callback API for custom loading.
 * Double precision support(for HPC application).
 * Smoothing group
@@ -126,12 +120,16 @@ TinyObjLoader is successfully used in ...
 * [ ] surface.
 * [ ] Free form curve/surfaces
 
+### Material
+
+* PBR material extension for .MTL. Please see [pbr-mtl.md](pbr-mtl.md) for details.
+* Texture options
+* Unknown material attributes are returned as key-value(value is string) map.
 
 ## TODO
 
 * [ ] Fix obj_sticker example.
 * [ ] More unit test codes.
-* [x] Texture options
 
 ## License
 
@@ -150,7 +148,7 @@ One option is to simply copy the header file into your project and to make sure 
 
 ### Building tinyobjloader - Using vcpkg(not recommended though)
 
-Alghouth it is not a recommended way, you can download and install tinyobjloader using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+Although it is not a recommended way, you can download and install tinyobjloader using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
 
     git clone https://github.com/Microsoft/vcpkg.git
     cd vcpkg
@@ -241,12 +239,28 @@ TinyObjLoader now use `real_t` for floating point data type.
 Default is `float(32bit)`.
 You can enable `double(64bit)` precision by using `TINYOBJLOADER_USE_DOUBLE` define.
 
+### High-performance float parsing (fast_float)
+
+By default, TinyObjLoader embeds [fast_float v8.0.2](https://github.com/fastfloat/fast_float)
+for ~3× faster, bit-exact ASCII-to-float conversion (equivalent to `strtod` but without locale overhead).
+
+To opt out and use the built-in hand-written parser instead, define:
+
+```c++
+#define TINYOBJLOADER_DISABLE_FAST_FLOAT
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+```
+
+**Note:** If your project already includes `fast_float` under the `fast_float` namespace,
+defining `TINYOBJLOADER_DISABLE_FAST_FLOAT` avoids a redefinition conflict.
+
 ### Robust triangulation
 
 When you enable `triangulation`(default is enabled),
 TinyObjLoader triangulate polygons(faces with 4 or more vertices).
 
-Built-in trinagulation code may not work well in some polygon shape.
+Built-in triangulation code may not work well in some polygon shape.
 
 You can define `TINYOBJLOADER_USE_MAPBOX_EARCUT` for robust triangulation using `mapbox/earcut.hpp`.
 This requires C++11 compiler though. And you need to copy `mapbox/earcut.hpp` to your project.
@@ -256,7 +270,7 @@ If you have your own `mapbox/earcut.hpp` file incuded in your project, you can d
 
 ```c++
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-// Optional. define TINYOBJLOADER_USE_MAPBOX_EARCUT gives robust trinagulation. Requires C++11
+// Optional. define TINYOBJLOADER_USE_MAPBOX_EARCUT gives robust triangulation. Requires C++11
 //#define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #include "tiny_obj_loader.h"
 
@@ -328,7 +342,7 @@ for (size_t s = 0; s < shapes.size(); s++) {
 
 ```c++
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-// Optional. define TINYOBJLOADER_USE_MAPBOX_EARCUT gives robust trinagulation. Requires C++11
+// Optional. define TINYOBJLOADER_USE_MAPBOX_EARCUT gives robust triangulation. Requires C++11
 //#define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #include "tiny_obj_loader.h"
 
@@ -413,18 +427,24 @@ Here is some benchmark result. Time are measured on MacBook 12(Early 2016, Core 
 
 ## Python binding
 
+```
+$ python -m pip install tinyobjloader
+```
+
+See [python/sample.py](python/sample.py) for example use of Python binding of tinyobjloader.
+
 ### CI + PyPI upload
 
-cibuildwheels + twine upload for each git tagging event is handled in Azure Pipeline.
+cibuildwheels + twine upload for each git tagging event is handled in Github Actions.
 
 #### How to bump version(For developer)
 
 * Bump version in CMakeLists.txt
-* Update version in `python/setup.py`
-* Commit and push `master`. Confirm C.I. build is OK.
+* Commit and push `release`. Confirm C.I. build is OK.
 * Create tag starting with `v`(e.g. `v2.1.0`)
 * `git push --tags`
-  * cibuildwheels + pypi upload(through twine) will be automatically triggered in Azure Pipeline.
+  * version settings is automatically handled in python binding through setuptools_scm.
+  * cibuildwheels + pypi upload (through twine) will be automatically triggered in Github Actions.
 
 ## Tests
 

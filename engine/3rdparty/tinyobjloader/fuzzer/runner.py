@@ -2,10 +2,11 @@ import os, sys
 import glob
 import subprocess
 
+
 def main():
     for g in glob.glob("../tests/afl/id*"):
         print(g)
-    
+
         cmd = ["../a.out", g]
 
         proc = subprocess.Popen(cmd)

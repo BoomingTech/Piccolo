@@ -1,0 +1,4 @@
+newmtl has_kd
+Kd 1 0 0
+newmtl has_map
+map_Kd test.png

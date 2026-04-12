@@ -8,7 +8,7 @@
 
 // define some helper functions for pybind11
 #define TINY_OBJ_LOADER_PYTHON_BINDING
-#include "tiny_obj_loader.h"
+#include "../tiny_obj_loader.h"
 
 namespace py = pybind11;
 
@@ -38,15 +38,41 @@ PYBIND11_MODULE(tinyobjloader, tobj_module)
   py::class_<attrib_t>(tobj_module, "attrib_t")
     .def(py::init<>())
     .def_readonly("vertices", &attrib_t::vertices)
+    .def_readonly("vertex_weights", &attrib_t::vertex_weights)
+    .def_readonly("skin_weights", &attrib_t::skin_weights)
+    .def_readonly("normals", &attrib_t::normals)
+    .def_readonly("texcoords", &attrib_t::texcoords)
+    .def_readonly("colors", &attrib_t::colors)
     .def("numpy_vertices", [] (attrib_t &instance) {
         auto ret = py::array_t<real_t>(instance.vertices.size());
         py::buffer_info buf = ret.request();
         memcpy(buf.ptr, instance.vertices.data(), instance.vertices.size() * sizeof(real_t));
         return ret;
     })
-    .def_readonly("normals", &attrib_t::normals)
-    .def_readonly("texcoords", &attrib_t::texcoords)
-    .def_readonly("colors", &attrib_t::colors)
+    .def("numpy_vertex_weights", [] (attrib_t &instance) {
+        auto ret = py::array_t<real_t>(instance.vertex_weights.size());
+        py::buffer_info buf = ret.request();
+        memcpy(buf.ptr, instance.vertex_weights.data(), instance.vertex_weights.size() * sizeof(real_t));
+        return ret;
+    })
+    .def("numpy_normals", [] (attrib_t &instance) {
+        auto ret = py::array_t<real_t>(instance.normals.size());
+        py::buffer_info buf = ret.request();
+        memcpy(buf.ptr, instance.normals.data(), instance.normals.size() * sizeof(real_t));
+        return ret;
+    })
+    .def("numpy_texcoords", [] (attrib_t &instance) {
+        auto ret = py::array_t<real_t>(instance.texcoords.size());
+        py::buffer_info buf = ret.request();
+        memcpy(buf.ptr, instance.texcoords.data(), instance.texcoords.size() * sizeof(real_t));
+        return ret;
+    })
+    .def("numpy_colors", [] (attrib_t &instance) {
+        auto ret = py::array_t<real_t>(instance.colors.size());
+        py::buffer_info buf = ret.request();
+        memcpy(buf.ptr, instance.colors.data(), instance.colors.size() * sizeof(real_t));
+        return ret;
+    })
     ;
 
   py::class_<shape_t>(tobj_module, "shape_t")
@@ -119,20 +145,56 @@ PYBIND11_MODULE(tinyobjloader, tobj_module)
     .def("GetCustomParameter", &material_t::GetCustomParameter)
     ;
 
-  py::class_<mesh_t>(tobj_module, "mesh_t")
+  py::class_<mesh_t>(tobj_module, "mesh_t", py::buffer_protocol())
     .def(py::init<>())
     .def_readonly("num_face_vertices", &mesh_t::num_face_vertices)
     .def("numpy_num_face_vertices", [] (mesh_t &instance) {
-        auto ret = py::array_t<unsigned char>(instance.num_face_vertices.size());
+        using T = typename std::remove_reference<decltype(instance.num_face_vertices)>::type::value_type;
+        auto ret = py::array_t<T>(instance.num_face_vertices.size());
         py::buffer_info buf = ret.request();
-        memcpy(buf.ptr, instance.num_face_vertices.data(), instance.num_face_vertices.size() * sizeof(unsigned char));
+        memcpy(buf.ptr, instance.num_face_vertices.data(), instance.num_face_vertices.size() * sizeof(T));
         return ret;
+    })
+    .def("vertex_indices", [](mesh_t &self) {
+      // NOTE: we cannot use py::buffer_info and py:buffer as a return type.
+      // py::memoriview is not suited for vertex indices usecase, since indices data may be used after
+      // deleting C++ mesh_t object in Python world.
+      //
+      // So create a dedicated Python object(std::vector<int>) 
+      
+      std::vector<int> indices;
+      indices.resize(self.indices.size());
+      for (size_t i = 0; i < self.indices.size(); i++) {
+        indices[i] = self.indices[i].vertex_index;
+      }
+
+      return indices;
+    })
+    .def("normal_indices", [](mesh_t &self) {
+      
+      std::vector<int> indices;
+      indices.resize(self.indices.size());
+      for (size_t i = 0; i < self.indices.size(); i++) {
+        indices[i] = self.indices[i].normal_index;
+      }
+
+      return indices;
+    })
+    .def("texcoord_indices", [](mesh_t &self) {
+      
+      std::vector<int> indices;
+      indices.resize(self.indices.size());
+      for (size_t i = 0; i < self.indices.size(); i++) {
+        indices[i] = self.indices[i].texcoord_index;
+      }
+
+      return indices;
     })
     .def_readonly("indices", &mesh_t::indices)
     .def("numpy_indices", [] (mesh_t &instance) {
         // Flatten indexes. index_t is composed of 3 ints(vertex_index, normal_index, texcoord_index).
         // numpy_indices = [0, -1, -1, 1, -1, -1, ...]
-        // C++11 or later should pack POD struct tightly and does not reorder variables, 
+        // C++11 or later should pack POD struct tightly and does not reorder variables,
         // so we can memcpy to copy data.
         // Still, we check the size of struct and byte offsets of each variable just for sure.
         static_assert(sizeof(index_t) == 12, "sizeof(index_t) must be 12");
@@ -154,10 +216,34 @@ PYBIND11_MODULE(tinyobjloader, tobj_module)
     });
 
   py::class_<lines_t>(tobj_module, "lines_t")
-    .def(py::init<>());
+    .def(py::init<>())
+    .def_readonly("indices", &lines_t::indices)
+    .def_readonly("num_line_vertices", &lines_t::num_line_vertices)
+    ;
 
   py::class_<points_t>(tobj_module, "points_t")
-    .def(py::init<>());
+    .def(py::init<>())
+    .def_readonly("indices", &points_t::indices)
+    ;
 
+  py::class_<joint_and_weight_t>(tobj_module, "joint_and_weight_t")
+    .def(py::init<>())
+    .def_readonly("joint_id", &joint_and_weight_t::joint_id, "Joint index(NOTE: Joint info is provided externally, not from .obj")
+    .def_readonly("weight", &joint_and_weight_t::weight, "Weight value(NOTE: weight is not normalized)")
+    ;
+
+  py::class_<skin_weight_t>(tobj_module, "skin_weight_t")
+    .def(py::init<>())
+    .def_readonly("vertex_id", &skin_weight_t::vertex_id)
+    .def_readonly("weightValues", &skin_weight_t::weightValues)
+    ;
+
+  py::class_<tag_t>(tobj_module, "tag_t")
+    .def(py::init<>())
+    .def_readonly("name", &tag_t::name)
+    .def_readonly("intValues", &tag_t::intValues)  
+    .def_readonly("floatValues", &tag_t::floatValues)  
+    .def_readonly("stringValues", &tag_t::stringValues)  
+    ;
 }
 
