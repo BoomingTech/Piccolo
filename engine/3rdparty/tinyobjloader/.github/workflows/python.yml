@@ -1,0 +1,196 @@
+name: Python
+
+on: [push, pull_request]
+
+jobs:
+  check_format:
+    name: Check Python code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python and install dependencies
+        working-directory: tests/python
+        run: uv sync --project . --python 3.13
+
+      - name: Check code format
+        working-directory: tests/python
+        run: uv run --project . black --check ../..
+
+  build_wheels_quick:
+    name: Build wheels for quick testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true  # Optional, use if you use setuptools_scm
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.3.1
+        env:
+          # These are the only wheels we need for the `test_wheels` job. For
+          # faster iteration times, we limit the job to only build these wheels.
+          # Restrict to CPython to avoid building unused PyPy wheels.
+          CIBW_BUILD: "cp*-manylinux_x86_64"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-quick
+          path: ./wheelhouse/*.whl
+
+  test_wheels:
+    name: Test wheels with Python ${{ matrix.python-version }} and NumPy ${{ matrix.numpy-version }}
+    needs: [build_wheels_quick]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.9"
+            numpy-version: "1.25.2"
+          - python-version: "3.10"
+            numpy-version: "1.26.4"
+          - python-version: "3.11"
+            numpy-version: "1.26.4"
+          - python-version: "3.12"
+            numpy-version: "1.26.4"
+          - python-version: "3.11"
+            numpy-version: "2.4.2"
+          - python-version: "3.12"
+            numpy-version: "2.4.2"
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Download wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-wheels-quick
+          path: dist
+          merge-multiple: true
+      
+      - name: Set up Python ${{ matrix.python-version }} and install dependencies
+        working-directory: tests/python
+        run: uv sync --project . --python ${{ matrix.python-version }}
+
+      - name: Install NumPy ${{ matrix.numpy-version }}
+        working-directory: tests/python
+        run: |
+          uv pip install --project . --only-binary :all: numpy==${{ matrix.numpy-version }}
+
+      - name: Install manylinux wheel built for Python ${{ matrix.python-version }}
+        working-directory: tests/python
+        run: uv pip install --project . ../../dist/*cp$(echo ${{ matrix.python-version }} | tr -d .)*.whl
+      
+      - name: Run tests
+        working-directory: tests/python
+        run: uv run --project . pytest
+
+  build_wheels_main:
+    name: Build remaining wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true  # Optional, use if you use setuptools_scm
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.3.1
+        env:
+            CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
+            CIBW_ARCHS_WINDOWS: "AMD64"
+            # The quick build has already taken care of manylinux.
+            CIBW_SKIP: "*-manylinux_x86_64"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-main-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  # It looks cibuildwheels did not clean build folder(CMake), and it results to Windows arm64 build failure(trying to reuse x86 build of .obj)
+  # So supply separated build job for Windows ARM64 build
+  # TODO: clean build folder using CIBW_BEFORE_ALL?
+  build_wheels_win_arm64:
+    name: Build ARM64 wheels on Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true  # Optional, use if you use setuptools_scm
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.3.1
+        env:
+            CIBW_ARCHS_WINDOWS: "ARM64"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-win-arm64
+          path: ./wheelhouse/*.whl
+
+  make_sdist:
+    name: Make SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Optional, use if you use setuptools_scm
+        fetch-tags: true  # Optional, use if you use setuptools_scm
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
+
+  upload_all:
+    needs: [build_wheels_quick, build_wheels_main, build_wheels_win_arm64, make_sdist]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    # upload to PyPI on every tag starting with 'v'
+    # NOTE: Without github.event_name & githug.ref check, `upload_all` task is still triggered on 'main' branch push.
+    # (then get 'Branch "main" is not allowed to deploy to release due to environment protection rules.' error)
+    # So still do event_name and github.ref check.
+    # TODO: Make it work only using Github `environment` feature.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # alternatively, to publish when a GitHub Release is created, use the following rule:
+    # if: github.event_name == 'push' && github.event.action == 'published'
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        # Use Trusted Publisher feature:
+        # https://docs.pypi.org/trusted-publishers/
+        #  so no use of PYPI_API_TOKEN
+        #password: ${{ secrets.PYPI_API_TOKEN }}
+        #
+        # Avoid race condition when using multiple CIs
+        skip-existing: true
+        verbose: true

@@ -257,7 +257,7 @@ static void PrintInfo(const tinyobj::attrib_t& attrib,
     printf("  material.Pm     = %f\n", static_cast<const double>(materials[i].metallic));
     printf("  material.Ps     = %f\n", static_cast<const double>(materials[i].sheen));
     printf("  material.Pc     = %f\n", static_cast<const double>(materials[i].clearcoat_thickness));
-    printf("  material.Pcr    = %f\n", static_cast<const double>(materials[i].clearcoat_thickness));
+    printf("  material.Pcr    = %f\n", static_cast<const double>(materials[i].clearcoat_roughness));
     printf("  material.aniso  = %f\n", static_cast<const double>(materials[i].anisotropy));
     printf("  material.anisor = %f\n", static_cast<const double>(materials[i].anisotropy_rotation));
     printf("  material.map_Ke = %s\n", materials[i].emissive_texname.c_str());

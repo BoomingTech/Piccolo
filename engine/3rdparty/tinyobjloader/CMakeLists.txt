@@ -1,20 +1,29 @@
 #Tiny Object Loader Cmake configuration file.
 #This configures the Cmake system with multiple properties, depending
 #on the platform and configuration it is set to build in.
-project(tinyobjloader)
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.16)
+project(tinyobjloader CXX)
 set(TINYOBJLOADER_SOVERSION 2)
-set(TINYOBJLOADER_VERSION 2.0.0-rc.9)
+set(TINYOBJLOADER_VERSION 2.0.0-rc.13)
+set(PY_TARGET "pytinyobjloader")
 
 #optional double precision support
 option(TINYOBJLOADER_USE_DOUBLE "Build library with double precision instead of single (float)" OFF)
+option(TINYOBJLOADER_WITH_PYTHON "Build Python module(for developer). Use pyproject.toml/setup.py to build Python module for end-users" OFF)
+option(TINYOBJLOADER_PREFER_LOCAL_PYTHON_INSTALLATION
+      "Prefer locally-installed Python interpreter than system or conda/brew installed Python. Please specify your Python interpreter   with `Python3_EXECUTABLE` cmake option if you enable this option."
+      OFF)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/sanitizers)
+find_package(Sanitizers) # Address sanitizer (-DSANITIZE_ADDRESS=ON)
+
 
 if(TINYOBJLOADER_USE_DOUBLE)
   set(LIBRARY_NAME ${PROJECT_NAME}_double)
 else()
   set(LIBRARY_NAME ${PROJECT_NAME})
 endif()
-
 
 #Folder Shortcuts
 set(TINYOBJLOADEREXAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples)
@@ -46,7 +55,36 @@ set(TINYOBJLOADER_RUNTIME_DIR ${CMAKE_INSTALL_BINDIR})
 
 option(TINYOBJLOADER_BUILD_TEST_LOADER "Build Example Loader Application" OFF)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Build standalone .so for Python binding(for developer)
+if (TINYOBJLOADER_WITH_PYTHON)
+
+  if(TINYOBJLOADER_PREFER_LOCAL_PYTHON_INSTALLATION)
+    #message(STATUS "Local Python")
+    set(Python3_FIND_FRAMEWORK NEVER) # Do not search framework python
+    set(Python3_FIND_STRATEGY LOCATION)
+    set(Python3_FIND_REGISTRY NEVER) # Windows only
+  else()
+    set(Python3_FIND_FRAMEWORK LAST
+    )# Prefer Brew/Conda to Apple framework python
+  endif()
+
+  find_package(
+    Python3
+    COMPONENTS Interpreter Development
+    REQUIRED)
+
+  find_package(pybind11 CONFIG REQUIRED)
+
+endif()
+
+
+
 add_library(${LIBRARY_NAME} ${tinyobjloader-Source})
+add_sanitizers(${LIBRARY_NAME})
 
 if(BUILD_SHARED_LIBS)
   set_target_properties(${LIBRARY_NAME} PROPERTIES
@@ -83,6 +121,24 @@ if(TINYOBJLOADER_BUILD_OBJ_STICHER)
     DESTINATION
     ${TINYOBJLOADER_RUNTIME_DIR}
     )
+endif()
+
+if (TINYOBJLOADER_WITH_PYTHON)
+  # pybind11 method:
+  pybind11_add_module(${PY_TARGET} ${CMAKE_SOURCE_DIR}/python/bindings.cc ${CMAKE_SOURCE_DIR}/python/tiny_obj_loader.cc)
+
+  add_sanitizers(${PY_TARGET})
+  set_target_properties(${PY_TARGET} PROPERTIES OUTPUT_NAME "tinyobjloader")
+
+  # copy .so to jdepp/
+  add_custom_command(
+    TARGET ${PY_TARGET}
+    POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${PY_TARGET}>"
+            "${CMAKE_SOURCE_DIR}/python/$<TARGET_FILE_NAME:${PY_TARGET}>"
+    COMMENT "copying tinyobjloader native python module file to python/"
+    VERBATIM)
+
 endif()
 
 #Write CMake package config files

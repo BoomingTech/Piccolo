@@ -26,7 +26,7 @@ bool WriteMat(const std::string& filename, const std::vector<tinyobj::material_t
     fprintf(fp, "Ka %f %f %f\n", mat.ambient[0], mat.ambient[1], mat.ambient[2]);
     fprintf(fp, "Kd %f %f %f\n", mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]);
     fprintf(fp, "Ks %f %f %f\n", mat.specular[0], mat.specular[1], mat.specular[2]);
-    fprintf(fp, "Kt %f %f %f\n", mat.transmittance[0], mat.specular[1], mat.specular[2]);
+    fprintf(fp, "Kt %f %f %f\n", mat.transmittance[0], mat.transmittance[1], mat.transmittance[2]);
     fprintf(fp, "Ke %f %f %f\n", mat.emission[0], mat.emission[1], mat.emission[2]);
     fprintf(fp, "Ns %f\n", mat.shininess);
     fprintf(fp, "Ni %f\n", mat.ior);

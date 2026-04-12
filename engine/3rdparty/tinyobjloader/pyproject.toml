@@ -1,0 +1,55 @@
+[build-system]
+
+requires = [
+    # NOTE: setuptools_scm>=8 is not supported in py3.6 cibuildwheel env.
+    # so use older setuptools_scm for a while
+    #"setuptools>=64",
+    #"setuptools_scm>=8",
+    "setuptools>=45",
+    "setuptools_scm[toml]<8",
+    "wheel",
+    "pybind11>=2.10.0",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 140
+force-exclude = '''
+(
+    /deps/.*$
+    | /kuroga.py$
+    | /config-msvc.py$
+    | /config-posix.py$
+    | ^python/build/.*$
+    | ^python/dist/.*$
+    | ^python/tinyobjloader.egg-info/.*$
+)
+'''
+
+[project]
+name = "tinyobjloader"
+license = { text = "MIT AND ISC" }
+
+# version: Use setuptools_scm
+dynamic = ["version", "classifiers", "authors", "description"]
+
+
+readme = {file = "README.md", content-type = "text/markdown"}
+
+# Project URLs in pyproject.toml is not mature.
+# so write it to setup.py
+# https://github.com/pypa/packaging-problems/issues/606
+#
+# [project.urils]
+
+
+[tool.setuptools_scm]
+# setuptools_scm>=8
+#version_file = "python/_version.py"
+
+# setuptools_scm<8
+write_to = "python/_version.py"
+
+[tool.cibuildwheel]
+# Disable aarch64 build since it's too slow to build(docker + qemu).
+skip = ["cp38-*", "cp314t-*", "*_aarch64*"]
