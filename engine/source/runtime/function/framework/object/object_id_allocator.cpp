@@ -8,9 +8,8 @@ namespace Piccolo
 
     GObjectID ObjectIDAllocator::alloc()
     {
-        std::atomic<GObjectID> new_object_ret = m_next_id.load();
-        m_next_id++;
-        if (m_next_id >= k_invalid_gobject_id)
+        GObjectID new_object_ret = m_next_id++;
+        if (new_object_ret >= k_invalid_gobject_id - 1)
         {
             LOG_FATAL("gobject id overflow");
         }
@@ -19,3 +18,8 @@ namespace Piccolo
     }
 
 } // namespace Piccolo
+
+
+
+
+
