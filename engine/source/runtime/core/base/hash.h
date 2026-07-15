@@ -13,7 +13,7 @@ template<typename T, typename... Ts>
 inline void hash_combine(std::size_t& seed, const T& v, Ts... rest)
 {
     hash_combine(seed, v);
-    if constexpr (sizeof...(Ts) > 1)
+    if constexpr (sizeof...(Ts) > 0)
     {
         hash_combine(seed, rest...);
     }
